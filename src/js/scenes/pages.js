@@ -1,4 +1,32 @@
 // 選單頁面:操作說明、設定、了解歷史、CREDIT(版面參考 Top_Race 專案,改成鋼拳風雲錄的風格)
+
+// 敵人立繪四周的透明留白不一(橫向圖留白特別多):量出人物實際範圍,放大置中填滿圖框
+const fitPic = img => {
+  try {
+    const W = img.naturalWidth, H = img.naturalHeight, k = 128 / Math.max(W, H);
+    const c = document.createElement('canvas');
+    c.width = Math.round(W * k); c.height = Math.round(H * k);
+    const ctx = c.getContext('2d');
+    ctx.drawImage(img, 0, 0, c.width, c.height);
+    const d = ctx.getImageData(0, 0, c.width, c.height).data;
+    let l = c.width, t = c.height, r = -1, b = -1;
+    for (let y = 0; y < c.height; y++) for (let x = 0; x < c.width; x++) {
+      if (d[(y * c.width + x) * 4 + 3] < 20) continue;
+      if (x < l) l = x; if (x > r) r = x; if (y < t) t = y; if (y > b) b = y;
+    }
+    if (r < 0) return;
+    const box = img.parentElement, bw = box.clientWidth, bh = box.clientHeight;
+    const cw = (r - l + 1) / k, ch = (b - t + 1) / k, cx = (l / k + cw / 2), cy = (t / k + ch / 2);
+    const s = Math.min(bw / cw, bh / ch);
+    box.classList.add('fit');
+    Object.assign(img.style, {
+      width: W * s / bw * 100 + '%',
+      left: (bw / 2 - cx * s) / bw * 100 + '%',
+      top: (bh / 2 - cy * s) / bh * 100 + '%',
+    });
+  } catch (e) {} // file:// 下讀不到像素就維持原樣
+};
+
 G.pages = {
   current: null,
 
@@ -52,7 +80,7 @@ G.pages = {
         `<div class="ht-row"><div class="ht-ic">${ic}</div><div><b>${G.t(t)}</b><p>${G.t(d)}</p></div></div>`).join('');
     } else if (p === 1) {
       html = '<table class="ht-table"><tr>' + ['操作', '鍵盤', '滑鼠', '手機'].map(h => `<th>${G.t(h)}</th>`).join('') + '</tr>' +
-        H.controls.map(r => `<tr>${r.map((t, k) => k ? `<td>${t.replace(/\n/g, '<br>')}</td>` : `<th>${t}</th>`).join('')}</tr>`).join('') +
+        H.controls.map(r => `<tr>${r.map((t, k) => k ? `<td>${G.t(t).replace(/\n/g, '<br>')}</td>` : `<th>${G.t(t)}</th>`).join('')}</tr>`).join('') +
         '</table><h3 class="ht-h3">' + G.t('進階技巧') + '</h3>' +
         H.tips.map(([t, d]) => `<div class="ht-tip"><b>${G.t(t)}</b><p>${G.t(d)}</p></div>`).join('');
     } else if (p === 2) {
@@ -76,6 +104,7 @@ G.pages = {
     const body = G.$('#howtoBody');
     body.innerHTML = html;
     body.scrollTop = 0;
+    body.querySelectorAll('.ht-pic img').forEach(img => img.complete ? fitPic(img) : img.onload = () => fitPic(img));
   },
 
   // ---------- 設定 ----------

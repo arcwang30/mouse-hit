@@ -19,6 +19,9 @@ body {
   font-family: "Noto Sans TC", "Microsoft JhengHei", system-ui, sans-serif;
   user-select: none; touch-action: manipulation;
 }
+/* 繁中字型缺日文字形(楽、録、闘…),會混進別的字型;日文、英文各用自己的字型 */
+html:lang(ja) body { font-family: "Hiragino Sans", "Hiragino Kaku Gothic ProN", "Noto Sans JP", Meiryo, "Yu Gothic UI", sans-serif; }
+html:lang(en) body { font-family: system-ui, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Microsoft JhengHei", sans-serif; }
 button { font: inherit; color: inherit; cursor: pointer; }
 
 /* 9:16 直式框 */

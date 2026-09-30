@@ -62,6 +62,8 @@
 .ht-enemy { display: flex; align-items: center; gap: 3cqw; padding: 1cqw 0; }
 .ht-pic { width: 13cqw; height: 16cqw; flex-shrink: 0; display: flex; align-items: center; justify-content: center; font-size: 9cqw; }
 .ht-pic img { max-width: 100%; max-height: 100%; filter: drop-shadow(0 0 .5cqw #fff8); }
+.ht-pic.fit { position: relative; }
+.ht-pic.fit img { position: absolute; max-width: none; max-height: none; height: auto; }
 
 /* ---------- 設定 ---------- */
 #settingsBody { display: flex; flex-direction: column; gap: 3cqw; }
@@ -171,6 +173,7 @@
 .btn:disabled::after { display: none; }
 .btn.small { font-size: 3.4cqw; padding: 2.2cqw 3cqw; }
 .menu-grid .btn { --neon: var(--neon-c); --neon2: #b8fbff; font-size: 3.3cqw; }
+html:lang(en) .menu-grid .btn { padding-left: 1cqw; padding-right: 1cqw; letter-spacing: 0; }
 .btn.danger { --neon: var(--neon-r); --neon2: #ffb0c0; background: linear-gradient(180deg, #3a0a14, #14040a); box-shadow: inset 0 0 0 .45cqw var(--neon), inset 0 -1.4cqw 2.4cqw -1cqw var(--neon); }
 .btn.fb { --neon: #3ea8ff; --neon2: #8ee8ff; background: linear-gradient(180deg, #0c2a44, #061420); box-shadow: inset 0 0 0 .45cqw var(--neon), inset 0 -1.4cqw 2.4cqw -1cqw var(--neon); }
 
