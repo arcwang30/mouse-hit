@@ -52,4 +52,4 @@ powershell -ExecutionPolicy Bypass -File tools/serve.ps1
 - 音樂音效全部以 Web Audio 即時合成(`src/js/audio/`),不需音檔;配樂分主選單、三個關卡、BOSS 戰五首
 - 開場故事:漫畫 `assets/images/story/opening.jpg` 逐格演出(7 幕,座標與特效設定在 `src/js/scenes/scenes.js` 的 STORY)
 - 標題畫面:背景 `assets/images/backgrounds/title.jpg`、LOGO `assets/images/ui/logo.webp`(含落雷、雨、火星、LOGO 砸落動畫)
-- 戰鬥背景:`assets/images/backgrounds/stage1~3.jpg`;敵人立繪:`assets/images/enemies/`(敵人資料的 `img` 欄位),尚無立繪的敵人暫用 emoji
+- 戰鬥背景:`assets/images/backgrounds/stage1~3.jpg`;敵人立繪:`assets/images/enemies/`(全部 13 位,設定在敵人資料的 `img` 欄位;沒有 img 時會退回 emoji)
