@@ -1,5 +1,6 @@
 // 進入點與輸入對應
 G.save.load();
+G.applyI18n();
 G.grid.init();
 G.$('#hurtFlash').addEventListener('animationend', e => e.target.classList.remove('show'));
 
@@ -35,8 +36,20 @@ const KEYMAP = {
   Numpad7: 0, Numpad8: 1, Numpad9: 2, Numpad4: 3, Numpad5: 4, Numpad6: 5, Numpad1: 6, Numpad2: 7, Numpad3: 8,
   KeyQ: 0, KeyW: 1, KeyE: 2, KeyA: 3, KeyS: 4, KeyD: 5, KeyZ: 6, KeyX: 7, KeyC: 8,
 };
+// ---- PAUSE ----
+G.$('#pauseBtn').addEventListener('click', () => G.battle.pause());
+G.$('#pauseResume').onclick = () => G.battle.resume();
+G.$('#pauseSettings').onclick = () => G.pages.settingsOver();
+G.$('#pauseQuit').onclick = () => G.battle.quit();
+// 切到別的分頁 / App 時自動暫停
+document.addEventListener('visibilitychange', () => { if (document.hidden) G.battle.pause(); });
 document.addEventListener('keydown', e => {
-  if (!G.$('#battle').classList.contains('active') || e.repeat) return;
+  if (e.code !== 'Escape' || e.defaultPrevented || !G.$('#battle').classList.contains('active')) return;
+  G.clock.paused ? G.battle.resume() : G.battle.pause();
+});
+
+document.addEventListener('keydown', e => {
+  if (!G.$('#battle').classList.contains('active') || e.repeat || G.clock.paused) return;
   if (e.code in KEYMAP) { G.grid.tap(KEYMAP[e.code]); e.preventDefault(); }
   else if (e.code === 'Space') { G.battle.requestUlt(); e.preventDefault(); }
 });

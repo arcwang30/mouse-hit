@@ -29,7 +29,7 @@ G.grid = {
   // label:按鈕上方的小字(例如 HOLD、連打)
   set(i, icon, cls = '', life = 0, label = '') {
     const c = this.cells[i];
-    clearTimeout(this.timers[i]);
+    G.clock.cancel(this.timers[i]);
     c.className = 'cell ' + cls;
     void c.offsetWidth; // 重新觸發浮起動畫
     c.classList.add('on');
@@ -46,7 +46,7 @@ G.grid = {
   // anim:'press' 按下去 / 'sink' 沉回洞裡,播完才真正清空
   clear(i, anim) {
     const c = this.cells[i];
-    clearTimeout(this.timers[i]);
+    G.clock.cancel(this.timers[i]);
     const reset = () => {
       c.className = 'cell';
       c.querySelector('.icon').textContent = '';
@@ -55,7 +55,7 @@ G.grid = {
     };
     if (!anim) return reset();
     c.classList.add(anim);
-    this.timers[i] = setTimeout(reset, anim === 'press' ? 130 : 150);
+    this.timers[i] = G.clock.after(reset, anim === 'press' ? 130 : 150);
   },
 
   clearAll() {
@@ -70,7 +70,7 @@ G.grid = {
     c.classList.remove('good', 'bad', 'miss');
     void c.offsetWidth;
     c.classList.add(kind);
-    setTimeout(() => c.classList.remove(kind), 300);
+    G.clock.after(() => c.classList.remove(kind), 300);
   },
 
   // 敲打回饋:閃光 + 衝擊波 + 星芒 + 火花 + 按鍵壓扁回彈(+ 手機震動)
@@ -92,7 +92,7 @@ G.grid = {
     }
     fx.innerHTML = html;
     c.appendChild(fx);
-    setTimeout(() => fx.remove(), 480);
+    G.clock.after(() => fx.remove(), 480);
 
     c.classList.remove('thump');
     void c.offsetWidth;
@@ -169,7 +169,7 @@ G.molePhase = o => new Promise(resolve => {
   const setCounter = n => { if (!o.noCounter) G.$('#counter').textContent = n; }; // noCounter:由呼叫端自己顯示(例如獎勵關的擊中數)
   setCounter(o.count);
 
-  const kill = a => { a.ts.forEach(clearTimeout); a.ts = []; };
+  const kill = a => { a.ts.forEach(G.clock.cancel); a.ts = []; };
   const cell = i => G.grid.cells[i];
   const blockAt = i => G.grid.blocks.get(i);
   const roll = p => !!p && Math.random() < p;
@@ -177,8 +177,8 @@ G.molePhase = o => new Promise(resolve => {
   const finish = () => {
     if (finished) return;
     finished = true;
-    clearTimeout(spawnTimer);
-    pending.forEach(clearTimeout);
+    G.clock.cancel(spawnTimer);
+    pending.forEach(G.clock.cancel);
     active.forEach(a => { kill(a); a.fx && a.fx.cancel(); });
     active.clear();
     reserved.forEach(i => cell(i).classList.remove('target'));
@@ -214,7 +214,7 @@ G.molePhase = o => new Promise(resolve => {
     o.onMiss(i);
     settle();
   };
-  const armExpire = (i, a, ms) => a.ts.push(setTimeout(() => expire(i, a), ms));
+  const armExpire = (i, a, ms) => a.ts.push(G.clock.after(() => expire(i, a), ms));
 
   G.grid.handler = i => {
     const b = blockAt(i);
@@ -277,8 +277,8 @@ G.molePhase = o => new Promise(resolve => {
       c.classList.add('holding');
       G.audio.play('charge');
       G.grid.impact(i, 'miss'); // 按下:只有輕微的壓下感
-      a.ts.push(setTimeout(() => { a.full = true; c.classList.add('charged'); G.audio.play('ready'); }, a.holdMs));
-      a.ts.push(setTimeout(() => G.grid.release(i), a.holdMs + 900)); // 按太久自動放開
+      a.ts.push(G.clock.after(() => { a.full = true; c.classList.add('charged'); G.audio.play('ready'); }, a.holdMs));
+      a.ts.push(G.clock.after(() => G.grid.release(i), a.holdMs + 900)); // 按太久自動放開
       return;
     }
 
@@ -289,7 +289,7 @@ G.molePhase = o => new Promise(resolve => {
   // 結算一次命中。auto = 由技法自動打中(連鎖、爆裂、蓄力大師)
   const doHit = (i, a, auto) => {
     G.grid.impact(i, o.cls.includes('guard') ? 'guard' : a.gold ? 'num' : 'fist', a.gold || auto);
-    const ratio = Math.max(0, a.life - (performance.now() - a.born)) / a.life;
+    const ratio = Math.max(0, a.life - (G.clock.now() - a.born)) / a.life;
     kill(a); active.delete(i);
     G.grid.clear(i, 'press');
     G.grid.flash(i, 'good');
@@ -306,7 +306,7 @@ G.molePhase = o => new Promise(resolve => {
     autoHit: i => { if (finished || !hittable(i)) return false; doHit(i, active.get(i), true); return true; },
     targets: () => [...active.keys()].filter(hittable),
   });
-  const phaseStart = performance.now();
+  const phaseStart = G.clock.now();
 
   G.grid.releaseHandler = i => {
     const a = active.get(i);
@@ -333,7 +333,7 @@ G.molePhase = o => new Promise(resolve => {
       a.heavy = true;
       a.holdMs = mods.heavy.holdMs;
       cls = o.cls + ' hold heavy';
-      label = '頂住';
+      label = G.t('頂住');
       life += 500;
     } else if (kind === 'hold') {
       a.holdMs = o.hold.holdMs;
@@ -349,15 +349,15 @@ G.molePhase = o => new Promise(resolve => {
       else if (roll(mods.armor)) { a.armor = 1; cls += ' crystal'; }
     }
     if (mods.lockon && kind !== 'decoy') life *= 0.8;
-    if (o.slowFirst && performance.now() - phaseStart < o.slowFirst.ms) life *= o.slowFirst.mul; // 時之呼吸
+    if (o.slowFirst && G.clock.now() - phaseStart < o.slowFirst.ms) life *= o.slowFirst.mul; // 時之呼吸
     a.life = life = Math.round(life);
     a.icon = icon;
-    a.born = performance.now();
+    a.born = G.clock.now();
 
     if (kind !== 'decoy') { spawned++; setCounter(o.count - spawned); }
     const hidden = mods.hidden && (kind === 'normal' || kind === 'decoy');
     G.grid.set(i, hidden ? '❓' : icon, cls + (hidden ? ' hidden' : ''), life, label);
-    if (hidden) a.ts.push(setTimeout(() => { // 駭入:一段時間後才現形
+    if (hidden) a.ts.push(G.clock.after(() => { // 駭入:一段時間後才現形
       const c = cell(i);
       c.classList.remove('hidden');
       c.querySelector('.icon').textContent = icon;
@@ -380,7 +380,7 @@ G.molePhase = o => new Promise(resolve => {
         }
       }
       // 瞬移:存活到一半時跳到別格
-      if (roll(mods.blink)) a.ts.push(setTimeout(() => blink(i, a), life * 0.45));
+      if (roll(mods.blink)) a.ts.push(G.clock.after(() => blink(i, a), life * 0.45));
     }
   };
 
@@ -388,7 +388,7 @@ G.molePhase = o => new Promise(resolve => {
     if (finished || active.get(from) !== a || a.holding) return;
     const to = freeCell();
     if (to < 0) return;
-    const left = a.life - (performance.now() - a.born);
+    const left = a.life - (G.clock.now() - a.born);
     const src = cell(from);
     const icon = a.icon || src.querySelector('.icon').textContent; // 駭入中的 ❓ 瞬移後直接現形
     const label = src.querySelector('.label').textContent;
@@ -422,7 +422,7 @@ G.molePhase = o => new Promise(resolve => {
       i = -1;
     }
     if (i < 0) i = freeCell();
-    if (i < 0) { pending.push(setTimeout(() => spawnWhenFree(-1, kind, lifeMul, gid), 100)); return; }
+    if (i < 0) { pending.push(G.clock.after(() => spawnWhenFree(-1, kind, lifeMul, gid), 100)); return; }
     spawnOne(i, kind, lifeMul, gid);
   };
 
@@ -430,7 +430,7 @@ G.molePhase = o => new Promise(resolve => {
     if (finished) return;
     if (o.stop()) { finish(); return; }
     const free = freeCells();
-    if (!free.length) { spawnTimer = setTimeout(spawnGroup, 100); return; }
+    if (!free.length) { spawnTimer = G.clock.after(spawnGroup, 100); return; }
 
     const holdNow = o.hold && planned === o.hold.at; // HOLD 一定單獨出現
     let pat = holdNow ? 'single' : pickPattern();
@@ -459,9 +459,9 @@ G.molePhase = o => new Promise(resolve => {
     cells.forEach((i, n) => {
       const kind = holdNow ? 'hold' : 'normal';
       const delay = gap * n + lead;
-      if (lead) { reserved.add(i); pending.push(setTimeout(() => !finished && cell(i).classList.add('target'), gap * n)); }
+      if (lead) { reserved.add(i); pending.push(G.clock.after(() => !finished && cell(i).classList.add('target'), gap * n)); }
       if (!delay) spawnOne(i, kind, lifeMul, gid);
-      else pending.push(setTimeout(() => spawnWhenFree(i, kind, lifeMul, gid), delay));
+      else pending.push(G.clock.after(() => spawnWhenFree(i, kind, lifeMul, gid), delay));
     });
     // 陷阱另外加一個,不占用次數
     if (roll(o.decoyRate)) {
@@ -471,11 +471,11 @@ G.molePhase = o => new Promise(resolve => {
     // 多發之後多給一點喘息時間
     if (planned < o.count) {
       const rest = cells.length > 1 ? 1 + 0.55 * cells.length : 1;
-      spawnTimer = setTimeout(spawnGroup, o.interval * rest + gap * (cells.length - 1) + lead * 0.5);
+      spawnTimer = G.clock.after(spawnGroup, o.interval * rest + gap * (cells.length - 1) + lead * 0.5);
     }
   };
 
-  spawnTimer = setTimeout(spawnGroup, 300);
+  spawnTimer = G.clock.after(spawnGroup, 300);
 });
 
 // 連打階段:九宮格只留一個按鈕,在時間內連點 hits 下。回傳是否打破。
@@ -486,7 +486,7 @@ G.mashPhase = o => new Promise(resolve => {
   const end = broken => {
     if (done) return;
     done = true;
-    clearTimeout(timer);
+    G.clock.cancel(timer);
     G.grid.handler = null;
     G.grid.clear(i, broken ? 'press' : 'sink');
     resolve(broken);
@@ -504,5 +504,5 @@ G.mashPhase = o => new Promise(resolve => {
     if (left <= 0) end(true);
     else G.grid.setBadge(i, '×' + left);
   };
-  timer = setTimeout(() => end(false), o.life);
+  timer = G.clock.after(() => end(false), o.life);
 });

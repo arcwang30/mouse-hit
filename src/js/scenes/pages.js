@@ -8,8 +8,23 @@ G.pages = {
   },
 
   back() {
+    // PAUSE 中開啟的設定:關掉後回到 PAUSE 選單
+    const over = this.current && G.$('#' + this.current).classList.contains('over');
+    if (over) {
+      G.$('#' + this.current).classList.remove('active', 'over');
+      this.current = null;
+      G.battle.renderPause();
+      return;
+    }
     this.current = null;
     G.scenes.menu();
+  },
+
+  // 從 PAUSE 開啟設定:疊在戰鬥畫面上(戰鬥畫面不切走,停住的畫面保持原樣)
+  settingsOver() {
+    this.renderSettings();
+    this.current = 'settings';
+    G.$('#settings').classList.add('active', 'over');
   },
 
   // ---------- 操作說明:4 頁,◀ ▶ 或 ← → 切換 ----------
@@ -30,31 +45,31 @@ G.pages = {
 
   renderHowto() {
     const H = G.HOWTO, p = this.howtoPage;
-    G.$('#howtoSub').textContent = `${H.pages[p]}  (${p + 1}/${H.pages.length})`;
+    G.$('#howtoSub').textContent = `${G.t(H.pages[p])}  (${p + 1}/${H.pages.length})`;
     let html = '';
     if (p === 0) {
       html = H.rules.map(([ic, t, d]) =>
-        `<div class="ht-row"><div class="ht-ic">${ic}</div><div><b>${t}</b><p>${d}</p></div></div>`).join('');
+        `<div class="ht-row"><div class="ht-ic">${ic}</div><div><b>${G.t(t)}</b><p>${G.t(d)}</p></div></div>`).join('');
     } else if (p === 1) {
-      html = '<table class="ht-table"><tr><th>操作</th><th>鍵盤</th><th>滑鼠</th><th>手機</th></tr>' +
+      html = '<table class="ht-table"><tr>' + ['操作', '鍵盤', '滑鼠', '手機'].map(h => `<th>${G.t(h)}</th>`).join('') + '</tr>' +
         H.controls.map(r => `<tr>${r.map((t, k) => k ? `<td>${t.replace(/\n/g, '<br>')}</td>` : `<th>${t}</th>`).join('')}</tr>`).join('') +
-        '</table><h3 class="ht-h3">進階技巧</h3>' +
-        H.tips.map(([t, d]) => `<div class="ht-tip"><b>${t}</b><p>${d}</p></div>`).join('');
+        '</table><h3 class="ht-h3">' + G.t('進階技巧') + '</h3>' +
+        H.tips.map(([t, d]) => `<div class="ht-tip"><b>${G.t(t)}</b><p>${G.t(d)}</p></div>`).join('');
     } else if (p === 2) {
       // 用遊戲裡真正的按鈕樣式畫出小圖示
       html = H.symbols.map(([cls, ic, label, t, d]) =>
-        `<div class="ht-row"><div class="ht-cell cell on ${cls}"><span class="cap">${label ? `<span class="label">${label}</span>` : ''}<span class="icon">${ic}</span></span></div>` +
-        `<div><b>${t}</b><p>${d}</p></div></div>`).join('');
+        `<div class="ht-row"><div class="ht-cell cell on ${cls}"><span class="cap">${label ? `<span class="label">${G.t(label)}</span>` : ''}<span class="icon">${ic}</span></span></div>` +
+        `<div><b>${G.t(t)}</b><p>${G.t(d)}</p></div></div>`).join('');
     } else {
       // 各關敵人:立繪 + 名稱 + 機制
       html = G.STAGES.map(st => {
         const ids = [...new Set(st.waves.map(w => w.replace('+', '')))];
-        return `<div class="ht-stage"><div class="ht-stage-name">${st.name} <span>${'★'.repeat(st.stars)}${'☆'.repeat(5 - st.stars)}</span></div>` +
+        return `<div class="ht-stage"><div class="ht-stage-name">${G.t(st.name)} <span>${'★'.repeat(st.stars)}${'☆'.repeat(5 - st.stars)}</span></div>` +
           ids.map(id => {
             const e = G.ENEMIES[id], m = G.MECHS[id];
             const pic = e.img ? `<img src="../assets/images/${e.img}" alt="">` : `<span>${e.icon}</span>`;
-            return `<div class="ht-enemy"><div class="ht-pic">${pic}</div><div><b>${e.boss ? '【BOSS】' : ''}${e.name}</b>` +
-              `<p>${m ? m.hint : '沒有特殊機制,適合熟悉操作'}</p></div></div>`;
+            return `<div class="ht-enemy"><div class="ht-pic">${pic}</div><div><b>${e.boss ? G.t('【BOSS】') : ''}${G.t(e.name)}</b>` +
+              `<p>${G.t(m ? m.hint : '沒有特殊機制,適合熟悉操作')}</p></div></div>`;
           }).join('') + '</div>';
       }).join('');
     }
@@ -75,19 +90,22 @@ G.pages = {
       const v = d.vol[key];
       const bars = [1, 2, 3, 4, 5].map(k =>
         `<button class="st-bar${k <= v ? ' on' : ''}" data-vol="${key}" data-v="${k === v ? k - 1 : k}" style="--h:${40 + k * 12}%"></button>`).join('');
-      return `<div class="st-item"><div class="st-top"><b>${label}</b><span class="st-val">${v ? v : 'MUTE'}</span></div>` +
+      return `<div class="st-item"><div class="st-top"><b>${G.t(label)}</b><span class="st-val">${v ? v : G.t('MUTE')}</span></div>` +
         `<div class="st-vol"><button class="st-pm" data-vol="${key}" data-v="${v - 1}">−</button>${bars}<button class="st-pm" data-vol="${key}" data-v="${v + 1}">+</button></div></div>`;
     };
     const toggle = (key, label, sub) =>
-      `<button class="st-item st-toggle" data-toggle="${key}"><div><b>${label}</b><p>${sub}</p></div><span class="st-sw${d[key] ? ' on' : ''}">${d[key] ? 'ON' : 'OFF'}</span></button>`;
+      `<button class="st-item st-toggle" data-toggle="${key}"><div><b>${G.t(label)}</b><p>${G.t(sub)}</p></div><span class="st-sw${d[key] ? ' on' : ''}">${d[key] ? 'ON' : 'OFF'}</span></button>`;
+    // 語言:中文 / 日本語 / English
+    const lang = () => `<div class="st-item"><div class="st-top"><b>${G.t('語言')}</b><span class="st-val">LANGUAGE</span></div><div class="st-lang">` +
+      G.LANGS.map(([code, label]) => `<button class="st-lang-btn${G.lang() === code ? ' on' : ''}" data-lang="${code}">${label}</button>`).join('') + '</div></div>';
     G.$('#settingsBody').innerHTML =
-      vol('music', '音樂') + vol('sfx', '音效') +
+      lang() + vol('music', '音樂') + vol('sfx', '音效') +
       toggle('vibrate', '手機震動', '點擊與受傷時震動(支援的手機)') +
       toggle('shake', '畫面震動', '受傷、重擊時畫面搖晃') +
-      '<div class="st-row">' +
-      '<button class="btn small" id="stStory">📜 重看開場故事</button>' +
-      `<button class="btn small danger" id="stReset">${this.resetArmed ? '再按一次確認' : '🗑️ 重置存檔'}</button>` +
-      '</div><div class="st-note">音量 0~5(0 為靜音)</div>';
+      (G.clock.paused ? '' : '<div class="st-row">' +
+      '<button class="btn small" id="stStory">' + G.t('📜 重看開場故事') + '</button>' +
+      `<button class="btn small danger" id="stReset">${G.t(this.resetArmed ? '再按一次確認' : '🗑️ 重置存檔')}</button>` +
+      '</div>') + '<div class="st-note">' + G.t('音量 0~5(0 為靜音)') + '</div>';
   },
 
   setVol(key, v) {
@@ -103,6 +121,7 @@ G.pages = {
   settingsClick(e) {
     const t = e.target.closest('button');
     if (!t) return;
+    if (t.dataset.lang) { G.setLang(t.dataset.lang); G.audio.play('select'); return this.renderSettings(); }
     if (t.dataset.vol) return this.setVol(t.dataset.vol, +t.dataset.v);
     if (t.dataset.toggle) {
       const k = t.dataset.toggle;
@@ -122,7 +141,7 @@ G.pages = {
         return this.renderSettings();
       }
       this.resetArmed = false;
-      const keep = { vol: G.save.data.vol, vibrate: G.save.data.vibrate, shake: G.save.data.shake, muted: G.save.data.muted };
+      const keep = { lang: G.save.data.lang, vol: G.save.data.vol, vibrate: G.save.data.vibrate, shake: G.save.data.shake, muted: G.save.data.muted };
       try { localStorage.removeItem(G.save.key); } catch (err) {}
       G.save.load();
       Object.assign(G.save.data, keep); // 重置進度,保留設定
@@ -147,9 +166,10 @@ G.pages = {
     this.historyTab = (i + n) % n;
     if (!silent) G.audio.play('click');
     G.$('#historyTabs').innerHTML = G.HISTORY.tabs.map((t, k) =>
-      `<button class="pg-tab${k === this.historyTab ? ' on' : ''}" data-tab="${k}">${t}</button>`).join('');
+      `<button class="pg-tab${k === this.historyTab ? ' on' : ''}" data-tab="${k}">${G.t(t)}</button>`).join('');
     // 段落開頭 # 為標題、• 為項目
-    const body = G.HISTORY.body[this.historyTab].split('\n').map(p => {
+    const L = G.HISTORY_I18N[G.lang()];
+    const body = (L ? L[this.historyTab] : G.HISTORY.body[this.historyTab]).split('\n').map(p => {
       if (p.startsWith('# ')) return `<h3>${p.slice(2)}</h3>`;
       if (p.startsWith('• ')) return `<p class="li">${p.slice(2)}</p>`;
       return `<p>${p}</p>`;
@@ -168,8 +188,8 @@ G.pages = {
     const line = html => `<div class="cr-line" style="animation-delay:${0.15 + (n++) * 0.12}s">${html}</div>`;
     G.$('#creditsBody').innerHTML =
       line('<div class="cr-logo"><img src="../assets/images/ui/logo.webp" alt="鋼拳風雲錄"></div>') +
-      C.roles.map(([r, name]) => line(`<span class="cr-role">${r}</span><span class="cr-name">${name}</span>`)).join('') +
-      line('<h3 class="cr-thanks">特別感謝</h3>') +
+      C.roles.map(([r, name]) => line(`<span class="cr-role">${G.t(r)}</span><span class="cr-name">${name}</span>`)).join('') +
+      line(`<h3 class="cr-thanks">${G.t('特別感謝')}</h3>`) +
       C.thanks.map(t => line(`<div class="cr-thank">${t}</div>`)).join('') +
       line(`<div class="cr-foot">${C.footer}</div>`) +
       line('<img class="cr-hero" src="../assets/images/fx/ult_cutin.webp" alt="">');

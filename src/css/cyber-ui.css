@@ -436,3 +436,19 @@
   border-radius: 0; clip-path: polygon(25% 0, 75% 0, 100% 50%, 75% 100%, 25% 100%, 0 50%);
   background: linear-gradient(180deg, var(--steel-3), var(--steel-1));
 }
+
+/* ---- PAUSE ---- */
+.pause-btn { display: none; position: absolute; top: 2cqw; right: 12.5cqw; z-index: 20; width: 9cqw; height: 9cqw; border: 0;
+  font-size: 3.2cqw; font-weight: 900; letter-spacing: -.1em; color: var(--neon-c);
+  clip-path: polygon(25% 0, 75% 0, 100% 50%, 75% 100%, 25% 100%, 0 50%);
+  background: linear-gradient(180deg, var(--steel-3), var(--steel-1)); }
+#app:has(#battle.active) .pause-btn { display: block; }
+#app:has(#pauseMenu.show) .pause-btn { display: none; }
+#pauseMenu { z-index: 30; flex-direction: column; align-items: center; justify-content: center; gap: 5cqw;
+  background: repeating-linear-gradient(0deg, #0000 0 2px, #0003 2px 3px), #05080be8; }
+#pauseMenu h2 { margin: 0; font-family: var(--tech), sans-serif; font-size: 11cqw; letter-spacing: .2em;
+  color: var(--neon-c); text-shadow: 0 0 3cqw var(--neon-c); animation: blink 1.6s ease-in-out infinite; }
+.pause-btns { display: flex; flex-direction: column; gap: 3.5cqw; width: 70%; }
+.pause-note { font-size: 3cqw; color: var(--muted); }
+/* PAUSE 中開啟的設定:疊在戰鬥畫面上,戰鬥畫面保持原狀 */
+#settings.over { z-index: 40; background: #05080bf5; }

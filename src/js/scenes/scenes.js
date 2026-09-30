@@ -110,8 +110,8 @@ G.scenes = {
       caption.className = 'story-caption' + (b.speaker ? ' say' : '');
       void caption.offsetWidth;
       caption.classList.add('pop');
-      speaker.textContent = b.speaker || '';
-      type(b.text);
+      speaker.textContent = b.speaker ? G.t(b.speaker) : '';
+      type(G.t(b.text));
     };
 
     const next = () => {
@@ -212,12 +212,12 @@ G.scenes = {
     const sv = G.save.data;
     G.$('#stageList').innerHTML = G.STAGES.map((s, i) => {
       const locked = i >= sv.unlocked;
-      const best = sv.best[i] ? `最高分 ${sv.best[i]}` : '';
+      const best = sv.best[i] ? G.t('最高分 {0}', sv.best[i]) : '';
       // CSS 變數裡的 url() 會以 style.css 的位置解析相對路徑,所以這裡先轉成完整網址
       const art = s.img ? ` style="--card-bg:url('${new URL('../assets/images/' + s.img, location.href).href}')"` : '';
       return `<button class="stage-card bg-${s.bg}${s.img ? ' has-art' : ''}" data-i="${i}"${art} ${locked ? 'disabled' : ''}>
-        <div class="sc-name">${locked ? '🔒 ' : ''}${s.name} <span class="sc-stars">${'★'.repeat(s.stars)}${'☆'.repeat(5 - s.stars)}</span></div>
-        <div class="sc-desc">${locked ? '通過上一關後解鎖' : s.desc}</div>
+        <div class="sc-name">${locked ? '🔒 ' : ''}${G.t(s.name)} <span class="sc-stars">${'★'.repeat(s.stars)}${'☆'.repeat(5 - s.stars)}</span></div>
+        <div class="sc-desc">${G.t(locked ? '通過上一關後解鎖' : s.desc)}</div>
         <div class="sc-best">${best}</div>
       </button>`;
     }).join('');
@@ -237,8 +237,8 @@ G.scenes = {
       const cost = G.upgradeCost(lv);
       return `<div class="up-item">
         <div class="up-icon">${u.icon}</div>
-        <div class="up-body"><b>${u.name}</b> Lv.${lv}/${u.max}<div class="up-desc">${u.desc}</div></div>
-        <button class="btn small" data-id="${u.id}" ${maxed || sv.points < cost ? 'disabled' : ''}>${maxed ? 'MAX' : cost + ' 點'}</button>
+        <div class="up-body"><b>${G.t(u.name)}</b> Lv.${lv}/${u.max}<div class="up-desc">${G.t(u.desc)}</div></div>
+        <button class="btn small" data-id="${u.id}" ${maxed || sv.points < cost ? 'disabled' : ''}>${maxed ? 'MAX' : G.t('{0} 點', cost)}</button>
       </div>`;
     }).join('');
     G.$('#upList').querySelectorAll('button').forEach(b => {
@@ -260,7 +260,7 @@ G.scenes = {
     return new Promise(resolve => {
       const box = G.$('#branchCards');
       box.innerHTML = options.map((b, i) =>
-        `<button class="branch-card ${b.id}" data-i="${i}"><div class="br-icon">${b.icon}</div><b>${b.name}</b><div>${b.desc}</div></button>`).join('');
+        `<button class="branch-card ${b.id}" data-i="${i}"><div class="br-icon">${b.icon}</div><b>${G.t(b.name)}</b><div>${G.t(b.desc)}</div></button>`).join('');
       const el = G.$('#branch');
       el.classList.add('show');
       box.querySelectorAll('.branch-card').forEach(btn => {
@@ -287,11 +287,11 @@ G.scenes = {
         choices = G.shuffle(pool.filter(s => !s.rule)).slice(0, rules.length ? 2 : 3);
         if (rules.length) choices.splice(Math.floor(Math.random() * 3), 0, rules[0]);
       }
-      G.$('#skillPick h2').textContent = rulesOnly ? '修得一項技法' : '選擇一項技能';
+      G.$('#skillPick h2').textContent = G.t(rulesOnly ? '修得一項技法' : '選擇一項技能');
       const box = G.$('#skillCards');
       box.innerHTML = choices.map((s, i) =>
         `<button class="skill-card${s.rule ? ' rule' : ''}" data-i="${i}"><div class="sk-icon">${s.icon}</div>` +
-        `<b>${s.rule ? '<span class="rule-tag">技法</span>' : ''}${s.name}</b><div>${s.desc}</div></button>`).join('');
+        `<b>${s.rule ? '<span class="rule-tag">' + G.t('技法') + '</span>' : ''}${G.t(s.name)}</b><div>${G.t(s.desc)}</div></button>`).join('');
       const el = G.$('#skillPick');
       el.classList.add('show');
       box.querySelectorAll('.skill-card').forEach(b => {
@@ -309,20 +309,20 @@ G.scenes = {
 
   // ---- 結算 ----
   result(win, score, points, s, p) {
-    G.$('#resultTitle').textContent = win ? '🏆 過關!' : '💀 敗北…';
+    G.$('#resultTitle').textContent = G.t(win ? '🏆 過關!' : '💀 敗北…');
     G.bgm.stop();
     G.audio.play(win ? 'win' : 'lose');
     const skills = p.skills.map(id => G.SKILLS.find(k => k.id === id).icon).join(' ') || '—';
     G.$('#resultBox').innerHTML = `
-      <div>總傷害<b>${s.dmg}</b></div>
-      <div>命中 / 格擋<b>${s.hits} / ${s.blocks}</b></div>
-      <div>迅擋 / 破甲<b>${s.perfects || 0} / ${s.breaks || 0}</b></div>
-      <div>最高連擊 / FEVER<b>${s.maxCombo || 0} / ${s.fevers || 0} 次</b></div>
-      <div>必殺技次數<b>${s.ults}</b></div>
-      <div>擊倒 WAVE<b>${s.waves} / ${G.battle.stage.waves.length}</b></div>
-      <div>取得技能<b>${skills}</b></div>
-      <div class="score">積分<b>${score}</b></div>
-      <div class="score">獲得成長點數<b>+${points}</b></div>`;
+      <div>${G.t('總傷害')}<b>${s.dmg}</b></div>
+      <div>${G.t('命中 / 格擋')}<b>${s.hits} / ${s.blocks}</b></div>
+      <div>${G.t('迅擋 / 破甲')}<b>${s.perfects || 0} / ${s.breaks || 0}</b></div>
+      <div>${G.t('最高連擊 / FEVER')}<b>${G.t('{0} / {1} 次', s.maxCombo || 0, s.fevers || 0)}</b></div>
+      <div>${G.t('必殺技次數')}<b>${s.ults}</b></div>
+      <div>${G.t('擊倒 WAVE')}<b>${s.waves} / ${G.battle.stage.waves.length}</b></div>
+      <div>${G.t('取得技能')}<b>${skills}</b></div>
+      <div class="score">${G.t('積分')}<b>${score}</b></div>
+      <div class="score">${G.t('獲得成長點數')}<b>+${points}</b></div>`;
     G.show('result');
   },
 };

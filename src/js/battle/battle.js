@@ -39,7 +39,8 @@ function makeEnemy(spec, scale, w) {
   const hp = Math.round(d.hp * G.ENEMY_HP_MUL * scale * (1 + w * g.hp) * (elite ? 1.5 : 1));
   return Object.assign({}, d, {
     id, elite, hp, maxHp: hp, turn: 0,
-    name: (elite ? '精英・' : '') + d.name,
+    rawName: d.name,
+    name: (elite ? G.t('精英・') : '') + G.t(d.name),
     atk: Math.round(d.atk * (1 + (scale - 1) / 2) * (1 + w * g.atk) * (elite ? 1.2 : 1)),
     atkCount: d.atkCount + Math.floor(w / g.countEvery) + (elite ? 1 : 0),
     guardLife: Math.round(d.guardLife * (1 - w * g.life) * (elite ? 0.92 : 1)),
@@ -51,7 +52,58 @@ G.battle = {
 
   over() { return this.e.hp <= 0 || this.p.hp <= 0; },
 
+  // ---- PAUSE ----
+  pause() {
+    if (G.clock.paused || !G.$('#battle').classList.contains('active')) return;
+    G.clock.pause();
+    this.quitArmed = false;
+    this.renderPause();
+    G.$('#pauseMenu').classList.add('show');
+    G.audio.play('select');
+  },
+
+  resume() {
+    if (!G.clock.paused) return;
+    G.$('#pauseMenu').classList.remove('show');
+    G.audio.play('click');
+    G.clock.resume();
+  },
+
+  renderPause() {
+    G.$('#pauseQuit').textContent = G.t(this.quitArmed ? '再按一次確認' : '回到主畫面');
+    G.$('#pauseQuit').classList.toggle('danger', !!this.quitArmed);
+  },
+
+  // PAUSE 中切換語言:更新戰鬥畫面上已經顯示的文字
+  relabel() {
+    const e = this.e;
+    if (!e || !this.p || !G.$('#battle').classList.contains('active')) return;
+    if (e.rawName) e.name = (e.elite ? G.t('精英・') : '') + G.t(e.rawName);
+    G.$('#enemyName').textContent = (e.boss ? G.t('【BOSS】') : '') + e.name;
+    const st = [...G.$('#enemy').classList].find(c => STATE_LABEL[c]);
+    if (st) G.$('#enemyState').textContent = G.t(STATE_LABEL[st]);
+    this.render();
+    this.renderPause();
+  },
+
+  // 回到主畫面:本局作廢(不結算),停掉所有還在跑的計時器
+  quit() {
+    if (!this.quitArmed) { this.quitArmed = true; G.audio.play('fail'); return this.renderPause(); }
+    this.run = (this.run || 0) + 1;
+    G.clock.reset();
+    G.grid.handler = null;
+    G.grid.clearAll();
+    G.grid.clearBlocks();
+    this.endFever();
+    this.phase = null;
+    ['#pauseMenu', '#banner', '#cutin'].forEach(s => G.$(s).classList.remove('show'));
+    G.$('#stageView').classList.remove('rush');
+    G.scenes.menu();
+  },
+
   async start(stageIdx) {
+    const run = this.run = (this.run || 0) + 1; // 中途回到主畫面時,舊的戰鬥流程就此停下
+    G.clock.reset();
     this.stageIdx = stageIdx;
     this.stage = G.STAGES[stageIdx];
     this.p = makePlayer();
@@ -91,21 +143,24 @@ G.battle = {
       this.e = makeEnemy(spec, this.stage.scale, w);
       G.$('#waveTag').textContent = `WAVE ${w + 1}/${total}`;
       this.showSprite(this.e);
-      G.$('#enemyName').textContent = (this.e.boss ? '【BOSS】' : '') + this.e.name;
+      G.$('#enemyName').textContent = (this.e.boss ? G.t('【BOSS】') : '') + this.e.name;
       this.setEnemyState('idle');
       this.render();
       G.bgm.play(this.e.boss ? 'boss' : this.stage.bgm || 'battle' + stageIdx);
-      const intro = this.e.boss ? (w === total - 1 ? '魔王降臨!' : '中頭目出現!') : this.e.elite ? '精英來襲!' : '';
-      const hint = (G.MECHS[this.e.id] || {}).hint;
+      const intro = G.t(this.e.boss ? (w === total - 1 ? '魔王降臨!' : '中頭目出現!') : this.e.elite ? '精英來襲!' : '');
+      const hint = G.t((G.MECHS[this.e.id] || {}).hint || '');
       G.grid.clearBlocks();
       await G.banner(`WAVE ${w + 1}`, intro + this.e.name + (hint ? '\n' + hint : ''), hint ? 1900 : 1200);
 
       while (!this.over()) {
         await this.playerTurn();
+        if (run !== this.run) return;
         if (this.ultRequested && !this.over()) await this.ultimate();
         if (this.over()) break;
         await this.enemyTurn();
+        if (run !== this.run) return;
       }
+      if (run !== this.run) return;
 
       G.grid.clearBlocks(); // 敵人倒下,冰 / 觸手 / 熔岩一起消失
       if (this.p.hp <= 0) return this.finish(false);
@@ -113,7 +168,7 @@ G.battle = {
       this.setEnemyState('dead');
       G.audio.play('ko');
       this.stats.waves++;
-      await G.sleep(900);
+      await G.clock.wait(900);
       if (w < total - 1) {
         // 每個 WAVE 之間基礎回復 10% 最大 HP,再加上技能的回復量
         this.healPlayer(Math.round(this.p.maxHp * 0.1) + this.p.regen);
@@ -138,11 +193,11 @@ G.battle = {
     const mul = (1 + power / 100) * (broken ? 1.5 : 1);
 
     const bonus = [];
-    if (power) bonus.push(`反擊 +${power}%`);
-    if (broken) bonus.push('破甲 ×1.5');
-    if (counter) bonus.push(`反震 +${counter}`);
+    if (power) bonus.push(G.t('反擊 +{0}%', power));
+    if (broken) bonus.push(G.t('破甲 ×1.5'));
+    if (counter) bonus.push(G.t('反震 +{0}', counter));
     this.phase = 'attack';
-    this.setPhase(bonus.length ? `你的回合・${bonus.join('・')}` : '你的回合:點擊 👊,HOLD 要按住', 'atk');
+    this.setPhase(bonus.length ? G.t('你的回合・{0}', bonus.join('・')) : '你的回合:點擊 👊,HOLD 要按住', 'atk');
     this.setupBoard('attack');
     this.render();
 
@@ -205,7 +260,7 @@ G.battle = {
     if (s) {
       this.setEnemyState('ult');
       G.audio.play('bossSkill');
-      await G.banner(`${e.name}「${s.name}」`, s.desc, 1300);
+      await G.banner(G.t('{0}「{1}」', e.name, G.t(s.name)), s.desc, 1300);
       count += s.count || 0;
       life *= s.lifeMul || 1;
       dmg *= s.dmgMul || 1;
@@ -215,7 +270,7 @@ G.battle = {
       await G.banner('敵人攻擊!', '點擊 🛡️ 擋下攻擊', 800);
     }
     this.phase = 'defend';
-    this.setPhase(s ? `必殺技來襲:${s.name}!` : '防禦:點擊 🛡️ 擋下攻擊!', 'def');
+    this.setPhase(s ? G.t('必殺技來襲:{0}!', G.t(s.name)) : '防禦:點擊 🛡️ 擋下攻擊!', 'def');
     this.setupBoard('defend');
     const m = this.mech('def');
     this.soulReady = p.comboSoul;
@@ -233,7 +288,7 @@ G.battle = {
         // (擋不了的盾牌,例如「頂住」或已被你點掉,就留給下一個)
         if (!walled) {
           walled = true;
-          setTimeout(() => { if (api && api.autoHit(i)) this.float('鐵壁!', 'tag armor'); else walled = false; }, 220);
+          G.clock.after(() => { if (api && api.autoHit(i)) this.float('鐵壁!', 'tag armor'); else walled = false; }, 220);
         }
         return this.enemyShot(i % 3, ms, !!s);
       },
@@ -255,16 +310,16 @@ G.battle = {
         this.gainUlt(p.blockUlt);
         if (p.counter) this.counterStack = (this.counterStack || 0) + p.counter;
         if (info.heavy) {
-          info.grade = { cls: 'fast', text: `頂住! +${pct}%` };
+          info.grade = { cls: 'fast', text: G.t('頂住! +{0}%', pct) };
           G.audio.play('perfect');
           this.setEnemyState('stagger', 420);
         } else if (pct >= 8) {
-          info.grade = { cls: 'fast', text: `迅擋! +${pct}%` };
+          info.grade = { cls: 'fast', text: G.t('迅擋! +{0}%', pct) };
           this.stats.perfects++;
           G.audio.play('perfect');
           this.setEnemyState('stagger', 420);
         } else {
-          info.grade = { cls: pct >= 4 ? '' : 'late', text: `${pct >= 4 ? '格擋' : '險擋'} +${pct}%` };
+          info.grade = { cls: pct >= 4 ? '' : 'late', text: G.t(pct >= 4 ? '格擋 +{0}%' : '險擋 +{0}%', pct) };
           G.audio.play('block');
           this.setEnemyState('recoil', 260);
         }
@@ -284,13 +339,13 @@ G.battle = {
     const p = this.p, e = this.e;
     const hits = e.boss ? 8 : e.elite ? 6 : 5;
     this.setEnemyState('stagger');
-    await G.banner('破綻!', `2.5 秒內連打 ${hits} 下破甲`, 800);
+    await G.banner('破綻!', G.t('2.5 秒內連打 {0} 下破甲', hits), 800);
     this.phase = 'break';
-    this.setPhase(`破綻:連打中間的按鈕 ${hits} 下!`, 'atk');
+    this.setPhase(G.t('破綻:連打中間的按鈕 {0} 下!', hits), 'atk');
     this.setEnemyState('stagger');
     G.grid.removeBlock(4); // 連打按鈕固定在中間,先清掉那格的冰 / 觸手
     const broken = await G.mashPhase({
-      cell: 4, icon: '👊', label: '連打', hits, life: 2500,
+      cell: 4, icon: '👊', label: G.t('連打'), hits, life: 2500,
       onTap: (i, left) => {
         G.audio.play('chip');
         this.punchFx(Math.floor(Math.random() * 3), { small: true, dur: 110 });
@@ -309,7 +364,7 @@ G.battle = {
     } else {
       this.float('破甲失敗', 'tag miss');
     }
-    await G.sleep(500);
+    await G.clock.wait(500);
     if (e.hp > 0) this.setEnemyState('idle');
     this.render();
   },
@@ -318,7 +373,7 @@ G.battle = {
     const p = this.p;
     this.ultRequested = false;
     this.setPhase('必殺技:依序點擊數字!', 'ult');
-    await G.banner('必殺技!', `${(p.ultTime / 1000).toFixed(1)} 秒內依序點擊 1 → ${p.ultLen}`, 900);
+    await G.banner('必殺技!', G.t('{0} 秒內依序點擊 1 → {1}', (p.ultTime / 1000).toFixed(1), p.ultLen), 900);
 
     // 數字鍵避開被觸手 / 冰蓋住的格子
     const seq = G.shuffle([...Array(9).keys()].filter(i => !G.grid.blocks.has(i) || G.grid.blocks.get(i).type === 'lava')).slice(0, p.ultLen);
@@ -352,7 +407,7 @@ G.battle = {
       this.render();
       await this.cutIn();
       await this.barrage(Math.round(p.atk * p.ultMult));
-      await G.sleep(700);
+      await G.clock.wait(700);
     } else {
       p.ult = Math.floor(p.ultMax / 2);
       this.render();
@@ -366,7 +421,7 @@ G.battle = {
     const el = G.$('#cutin');
     el.classList.add('show');
     G.audio.play('cutin');
-    await G.sleep(1700);
+    await G.clock.wait(1700);
     el.classList.remove('show');
   },
 
@@ -380,11 +435,11 @@ G.battle = {
     for (let k = 0; k < RUSH; k++) {
       this.punchFx(Math.floor(Math.random() * 3), { spread: 0.45, dur: 130, small: true });
       if (k % EVERY === 0) { this.hurtEnemy(tick, false); dealt += tick; }
-      await G.sleep(GAP);
+      await G.clock.wait(GAP);
     }
-    await G.sleep(150);
+    await G.clock.wait(150);
     this.punchFx(1, { crit: true, final: true, dur: 260 });
-    await G.sleep(260);
+    await G.clock.wait(260);
     stage.classList.remove('rush');
     this.hurtEnemy(Math.max(1, total - dealt), true, true);
   },
@@ -417,7 +472,7 @@ G.battle = {
       b.style.left = ex + 'px';
       b.style.top = ey + 'px';
       stage.appendChild(b);
-      setTimeout(() => b.remove(), o.final ? 600 : 320);
+      G.clock.after(() => b.remove(), o.final ? 600 : 320);
     };
   },
 
@@ -446,7 +501,7 @@ G.battle = {
       b.style.left = x + 'px';
       b.style.top = y + 'px';
       stage.appendChild(b);
-      setTimeout(() => b.remove(), 500);
+      G.clock.after(() => b.remove(), 500);
     };
     return {
       // 擋下:在攻擊目前的位置彈開
@@ -551,9 +606,9 @@ G.battle = {
   // 狂打獎勵關:12 秒內拳頭狂冒,沒有敵人攻擊
   async bonusRound() {
     const p = this.p, realEnemy = this.e;
-    this.e = { name: '訓練木樁', icon: '🎯', hp: 1, maxHp: 1, turn: 0 };
+    this.e = { name: G.t('訓練木樁'), icon: '🎯', hp: 1, maxHp: 1, turn: 0 };
     this.showSprite(this.e);
-    G.$('#enemyName').textContent = '狂打獎勵關';
+    G.$('#enemyName').textContent = G.t('狂打獎勵關');
     this.setEnemyState('idle');
     this.render();
     G.$('#enemyHpText').textContent = 'BONUS';
@@ -563,7 +618,7 @@ G.battle = {
     let hits = 0, timeUp = false;
     // 結束用真正的計時器;倒數條只是畫面(頁面切到背景時動畫會暫停)
     const timer = this.timebar(BONUS_MS, () => {});
-    const endT = setTimeout(() => { timeUp = true; }, BONUS_MS);
+    const endT = G.clock.after(() => { timeUp = true; }, BONUS_MS);
     await G.molePhase({
       icon: '👊', cls: 'fist', count: 999, life: 800, interval: 150, noCounter: true, // 次數給很大,由 12 秒倒數決定結束
       patterns: { single: 2, pair: 3, triple: 3, rapid: 3, line: 2 },
@@ -579,14 +634,14 @@ G.battle = {
       stop: () => timeUp,
     });
     timer.stop();
-    clearTimeout(endT);
+    G.clock.cancel(endT);
     this.phase = null;
     // 獎勵:每擊 0.8 HP(上限 45% 最大 HP)、1.5 必殺值;打得好的話和「休息」差不多,再多一點必殺
     const heal = Math.min(Math.round(hits * 0.8), Math.round(p.maxHp * 0.45)), ult = hits * 1.5;
     this.healPlayer(heal);
     this.gainUlt(ult);
     this.stats.dmg += hits * 10; // 算進結算積分
-    await G.banner(`${hits} HIT!`, `回復 ${heal} HP・必殺 +${Math.round(ult)}`, 1400);
+    await G.banner(`${hits} HIT!`, G.t('回復 {0} HP・必殺 +{1}', heal, Math.round(ult)), 1400);
     this.e = realEnemy;
   },
 
@@ -594,7 +649,7 @@ G.battle = {
   // 每次手動打中拳頭後檢查:連鎖拳、爆裂拳、蓄力大師
   techniques(i, charged, api) {
     const p = this.p;
-    const later = (fn, ms) => setTimeout(fn, ms);
+    const later = (fn, ms) => G.clock.after(fn, ms);
     // 蓄力大師:集滿的重拳震掉場上所有拳頭
     if (p.holdMaster && charged) {
       const all = api.targets();
@@ -641,7 +696,7 @@ G.battle = {
   },
 
   // ---- 連擊 & FEVER ----
-  fever() { return performance.now() < (this.feverUntil || 0); },
+  fever() { return G.clock.now() < (this.feverUntil || 0); },
 
   comboHit() {
     this.comboN++;
@@ -671,7 +726,7 @@ G.battle = {
 
   startFever() {
     this.feverCharge = 0;
-    this.feverUntil = performance.now() + this.p.feverMs;
+    this.feverUntil = G.clock.now() + this.p.feverMs;
     this.stats.fevers++;
     G.$('#app').classList.add('fever');
     G.audio.play('fever');
@@ -699,7 +754,7 @@ G.battle = {
     el.classList.toggle('show', on || this.comboN >= 3);
     el.classList.toggle('fever', on);
     G.$('#comboNum').textContent = this.comboN;
-    const r = on ? (this.feverUntil - performance.now()) / this.p.feverMs : this.feverCharge / this.p.feverAt;
+    const r = on ? (this.feverUntil - G.clock.now()) / this.p.feverMs : this.feverCharge / this.p.feverAt;
     G.$('#feverFill').style.width = Math.max(0, Math.min(1, r)) * 100 + '%';
     G.$('#comboNum').classList.remove('pop');
     void G.$('#comboNum').offsetWidth;
@@ -765,12 +820,12 @@ G.battle = {
     const p = this.p, e = this.e;
     if (!p || !e) return;
     G.$('#playerHpFill').style.width = (p.hp / p.maxHp * 100) + '%';
-    G.$('#playerHpText').textContent = `炎鋼 HP ${p.hp}/${p.maxHp}`;
+    G.$('#playerHpText').textContent = G.t('炎鋼 HP {0}/{1}', p.hp, p.maxHp);
     G.$('#enemyHpFill').style.width = (e.hp / e.maxHp * 100) + '%';
     G.$('#enemyHpText').textContent = `${e.hp}/${e.maxHp}`;
     G.$('#ultFill').style.width = (p.ult / p.ultMax * 100) + '%';
     const full = p.ult >= p.ultMax;
-    G.$('#ultText').textContent = full ? '必殺 MAX!' : `必殺 ${Math.floor(p.ult / p.ultMax * 100)}%`;
+    G.$('#ultText').textContent = full ? G.t('必殺 MAX!') : G.t('必殺 {0}%', Math.floor(p.ult / p.ultMax * 100));
     G.$('.ult-bar').classList.toggle('full', full);
     const btn = G.$('#ultBtn');
     btn.disabled = !(full && this.phase === 'attack' && !this.ultRequested);
@@ -794,37 +849,37 @@ G.battle = {
 
   setPhase(text, kind) {
     const el = G.$('#phase');
-    el.textContent = text;
+    el.textContent = G.t(text);
     el.className = 'phase ' + (kind || '');
   },
 
   setEnemyState(s, ms) {
     const el = G.$('#enemy');
-    clearTimeout(this._stateTimer);
+    G.clock.cancel(this._stateTimer);
     const e = this.e || {};
     el.className = 'enemy ' + s + (e.boss ? ' boss' : '') + (e.elite ? ' elite' : '') + (e.img ? ' has-img' : '');
-    G.$('#enemyState').textContent = STATE_LABEL[s];
-    if (ms) this._stateTimer = setTimeout(() => { if (this.e.hp > 0) this.setEnemyState(this.phase === 'defend' ? 'attack' : 'idle'); }, ms);
+    G.$('#enemyState').textContent = G.t(STATE_LABEL[s]);
+    if (ms) this._stateTimer = G.clock.after(() => { if (this.e.hp > 0) this.setEnemyState(this.phase === 'defend' ? 'attack' : 'idle'); }, ms);
   },
 
   float(text, cls, onPlayer) {
     const f = document.createElement('div');
     f.className = 'float ' + cls;
-    f.textContent = text;
+    f.textContent = typeof text === 'string' ? G.t(text) : text;
     f.style.left = (30 + Math.random() * 40) + '%';
     if (cls.includes('tag')) f.style.left = '50%'; // 「破甲!」等招式名置中
     else if (!onPlayer && !cls.includes('big')) f.style.top = (12 + Math.random() * 38) + '%'; // 連打時數字散開不重疊
     (onPlayer ? G.$('.hud') : G.$('#stageView')).appendChild(f);
-    setTimeout(() => f.remove(), 900);
+    G.clock.after(() => f.remove(), 900);
   },
 
   timebar(ms, onEnd) {
     const fill = G.$('#timeFill');
-    const start = performance.now();
+    const start = G.clock.now();
     let raf, stopped = false;
-    const tick = now => {
+    const tick = () => {
       if (stopped) return;
-      const r = Math.max(0, 1 - (now - start) / ms);
+      const r = Math.max(0, 1 - (G.clock.now() - start) / ms); // PAUSE 時時鐘停住,倒數條也停住
       fill.style.width = r * 100 + '%';
       if (r <= 0) { stopped = true; onEnd(); return; }
       raf = requestAnimationFrame(tick);

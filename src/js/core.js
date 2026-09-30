@@ -13,6 +13,45 @@ G.shuffle = arr => {
   return a;
 };
 
+// 可暫停的時鐘:戰鬥中的計時器、等待與時間戳都走這裡,PAUSE 時整個凍結
+G.clock = {
+  paused: false, offset: 0, pausedAt: 0, seq: 0, timers: new Map(), anims: [],
+  now() { return (this.paused ? this.pausedAt : performance.now()) - this.offset; },
+  after(fn, ms) {
+    const id = ++this.seq, t = { fn, due: this.now() + ms, h: 0 };
+    this.timers.set(id, t);
+    if (!this.paused) this.arm(id, t);
+    return id;
+  },
+  arm(id, t) { t.h = setTimeout(() => { this.timers.delete(id); t.fn(); }, Math.max(0, t.due - this.now())); },
+  cancel: id => { const t = G.clock.timers.get(id); if (t) { clearTimeout(t.h); G.clock.timers.delete(id); } },
+  wait(ms) { return new Promise(r => this.after(r, ms)); },
+  pause() {
+    if (this.paused) return;
+    this.pausedAt = performance.now();
+    this.paused = true;
+    this.timers.forEach(t => clearTimeout(t.h));
+    // 畫面上的動畫(符號倒數、飛來的攻擊、特效)一起停住
+    this.anims = document.getAnimations().filter(a => a.playState === 'running');
+    this.anims.forEach(a => a.pause());
+  },
+  resume() {
+    if (!this.paused) return;
+    this.offset += performance.now() - this.pausedAt;
+    this.paused = false;
+    this.timers.forEach((t, id) => this.arm(id, t));
+    this.anims.forEach(a => { try { a.play(); } catch (e) {} });
+    this.anims = [];
+  },
+  // 離開戰鬥:丟掉所有還沒觸發的計時器
+  reset() {
+    this.timers.forEach(t => clearTimeout(t.h));
+    this.timers.clear();
+    this.paused = false;
+    this.anims = [];
+  },
+};
+
 G.show = id => {
   document.querySelectorAll('.screen').forEach(s => s.classList.toggle('active', s.id === id));
   // 選單類畫面(.art)共用動態背景
@@ -30,14 +69,14 @@ G.show = id => {
 };
 
 G.banner = async (main, sub = '', ms = 1000) => {
-  G.$('#bannerMain').textContent = main;
-  G.$('#bannerSub').textContent = sub;
+  G.$('#bannerMain').textContent = G.t(main);
+  G.$('#bannerSub').textContent = G.t(sub);
   const el = G.$('#banner');
   el.classList.add('show');
   G.audio.play('drum');
-  await G.sleep(ms);
+  await G.clock.wait(ms);
   el.classList.remove('show');
-  await G.sleep(150);
+  await G.clock.wait(150);
 };
 
 G.save = {
@@ -50,6 +89,10 @@ G.save = {
     this.data = Object.assign({ points: 0, unlocked: 1, best: {}, muted: false, vibrate: true, shake: true }, d || {});
     this.data.vol = Object.assign({ music: 3, sfx: 4 }, this.data.vol);
     this.data.up = Object.assign({ hp: 0, atk: 0, ult: 0, react: 0 }, this.data.up);
+    if (!this.data.lang) { // 第一次開啟:依瀏覽器語言決定
+      const l = (navigator.language || "zh").toLowerCase();
+      this.data.lang = l.startsWith("ja") ? "ja" : l.startsWith("zh") ? "zh" : "en";
+    }
   },
   write() {
     try { localStorage.setItem(this.key, JSON.stringify(this.data)); } catch (e) {}

@@ -23,8 +23,8 @@
       <div class="story-panel" id="storyPanel"><div class="panel-img" id="panelImg"></div><div class="panel-fx"></div></div>
     </div>
     <div class="story-caption" id="storyCaption"><span class="speaker" id="storySpeaker"></span><p id="storyText"></p></div>
-    <div class="story-hint">點擊畫面繼續</div>
-    <button class="skip" id="storySkip">跳過 ▶▶</button>
+    <div class="story-hint" data-i18n>點擊畫面繼續</div>
+    <button class="skip" id="storySkip" data-i18n>跳過 ▶▶</button>
   </section>
 
   <!-- 標題畫面 -->
@@ -34,20 +34,20 @@
     <div class="embers" id="embers"></div>
     <div class="bolt"></div>
     <div class="title-logo"><img src="../assets/images/ui/logo.webp" alt="鋼拳風雲錄"></div>
-    <div class="title-start">點擊畫面開始<small>TAP TO START</small></div>
+    <div class="title-start"><span data-i18n>點擊畫面開始</span><small>TAP TO START</small></div>
   </section>
 
   <!-- 主選單 -->
   <section id="menu" class="screen art">
     <div class="menu-logo"><img src="../assets/images/ui/logo.webp" alt="鋼拳風雲錄"></div>
-    <div class="menu-points">成長點數:<b id="menuPoints">0</b></div>
-    <button class="btn start" id="btnStart"><span>開始遊戲</span><small>START</small></button>
+    <div class="menu-points"><span data-i18n>成長點數:</span><b id="menuPoints">0</b></div>
+    <button class="btn start" id="btnStart"><span data-i18n>開始遊戲</span><small>START</small></button>
     <div class="menu-grid">
-      <button class="btn small" id="btnUpgrade">💪 成長</button>
-      <button class="btn small" id="btnHowto">🎮 操作說明</button>
-      <button class="btn small" id="btnSettings">⚙️ 設定</button>
-      <button class="btn small" id="btnStory">📜 故事</button>
-      <button class="btn small" id="btnHistory">📖 了解歷史</button>
+      <button class="btn small" id="btnUpgrade" data-i18n>💪 成長</button>
+      <button class="btn small" id="btnHowto" data-i18n>🎮 操作說明</button>
+      <button class="btn small" id="btnSettings" data-i18n>⚙️ 設定</button>
+      <button class="btn small" id="btnStory" data-i18n>📜 故事</button>
+      <button class="btn small" id="btnHistory" data-i18n>📖 了解歷史</button>
       <button class="btn small" id="btnCredits">⭐ CREDIT</button>
     </div>
     <div class="copyright">©Arc's Concept Game</div>
@@ -55,51 +55,51 @@
 
   <!-- 選擇關卡 -->
   <section id="stages" class="screen art page">
-    <header class="pg-head"><h2>選擇關卡</h2><div class="pg-sub">STAGE SELECT</div></header>
+    <header class="pg-head"><h2 data-i18n>選擇關卡</h2><div class="pg-sub">STAGE SELECT</div></header>
     <div id="stageList" class="stage-list"></div>
-    <div class="pg-foot"><button class="btn small" data-back>返回</button></div>
+    <div class="pg-foot"><button class="btn small" data-back data-i18n>返回</button></div>
   </section>
 
   <!-- 操作說明 -->
   <section id="howto" class="screen art page">
-    <header class="pg-head"><h2>操作說明</h2><div class="pg-sub" id="howtoSub"></div></header>
+    <header class="pg-head"><h2 data-i18n>操作說明</h2><div class="pg-sub" id="howtoSub"></div></header>
     <div class="pg-panel" id="howtoBody"></div>
     <div class="pg-foot">
       <button class="pg-arrow" id="howtoPrev">◀</button>
-      <button class="btn small" data-back>返回</button>
+      <button class="btn small" data-back data-i18n>返回</button>
       <button class="pg-arrow" id="howtoNext">▶</button>
     </div>
   </section>
 
   <!-- 設定 -->
   <section id="settings" class="screen art page">
-    <header class="pg-head"><h2>設定</h2><div class="pg-sub">SETTINGS</div></header>
+    <header class="pg-head"><h2 data-i18n>設定</h2><div class="pg-sub">SETTINGS</div></header>
     <div class="pg-panel" id="settingsBody"></div>
-    <div class="pg-foot"><button class="btn small" data-back>返回</button></div>
+    <div class="pg-foot"><button class="btn small" data-back data-i18n>返回</button></div>
   </section>
 
   <!-- 了解歷史 -->
   <section id="history" class="screen art page">
-    <header class="pg-head"><h2>了解歷史</h2></header>
+    <header class="pg-head"><h2 data-i18n>了解歷史</h2></header>
     <div class="pg-tabs" id="historyTabs"></div>
     <div class="pg-panel scroll" id="historyBody"></div>
-    <a class="btn small fb" id="fbLink" target="_blank" rel="noopener noreferrer">前往 Facebook 粉絲團</a>
-    <div class="pg-foot"><button class="btn small" data-back>返回</button></div>
+    <a class="btn small fb" id="fbLink" target="_blank" rel="noopener noreferrer" data-i18n>前往 Facebook 粉絲團</a>
+    <div class="pg-foot"><button class="btn small" data-back data-i18n>返回</button></div>
   </section>
 
   <!-- CREDIT -->
   <section id="credits" class="screen art page">
-    <header class="pg-head"><h2>CREDIT</h2><div class="pg-sub">製作名單</div></header>
+    <header class="pg-head"><h2>CREDIT</h2><div class="pg-sub" data-i18n>製作名單</div></header>
     <div class="pg-panel" id="creditsBody"></div>
-    <div class="pg-foot"><button class="btn small" data-back>返回</button></div>
+    <div class="pg-foot"><button class="btn small" data-back data-i18n>返回</button></div>
   </section>
 
   <!-- 成長升級 -->
   <section id="upgrade" class="screen art">
-    <h2>永久成長</h2>
-    <div class="menu-points">成長點數:<b id="upPoints">0</b></div>
+    <h2 data-i18n>永久成長</h2>
+    <div class="menu-points"><span data-i18n>成長點數:</span><b id="upPoints">0</b></div>
     <div id="upList" class="up-list"></div>
-    <button class="btn" id="upBack">返回</button>
+    <button class="btn" id="upBack" data-i18n>返回</button>
   </section>
 
   <!-- 戰鬥 -->
@@ -122,11 +122,11 @@
     <div class="hud">
       <div class="hud-row">
         <div class="bar player-bar"><div class="fill" id="playerHpFill"></div><span id="playerHpText"></span></div>
-        <div class="counter" title="反應次數倒數">剩餘 <b id="counter">-</b></div>
+        <div class="counter" title="反應次數倒數" data-i18n-title><span data-i18n>剩餘</span> <b id="counter">-</b></div>
       </div>
       <div class="hud-row">
         <div class="bar ult-bar"><div class="fill" id="ultFill"></div><span id="ultText"></span></div>
-        <button class="ult-btn" id="ultBtn" disabled>🔥 必殺</button>
+        <button class="ult-btn" id="ultBtn" disabled data-i18n>🔥 必殺</button>
       </div>
       <div class="phase" id="phase">準備</div>
       <div class="timebar"><div class="fill" id="timeFill"></div></div>
@@ -139,31 +139,42 @@
   <section id="result" class="screen art">
     <h2 id="resultTitle">過關!</h2>
     <div class="result-box" id="resultBox"></div>
-    <button class="btn" id="resultBack">返回主選單</button>
+    <button class="btn" id="resultBack" data-i18n>返回主選單</button>
   </section>
 
   <!-- 覆蓋層 -->
   <div id="skillPick" class="overlay">
-    <h2>選擇一項技能</h2>
+    <h2 data-i18n>選擇一項技能</h2>
     <div id="skillCards" class="skill-cards"></div>
   </div>
   <div id="branch" class="overlay">
-    <h2>選擇路線</h2>
-    <div class="branch-sub">兩條路,只能走一條</div>
+    <h2 data-i18n>選擇路線</h2>
+    <div class="branch-sub" data-i18n>兩條路,只能走一條</div>
     <div id="branchCards" class="branch-cards"></div>
   </div>
   <div id="banner" class="overlay banner"><div class="banner-main" id="bannerMain"></div><div class="banner-sub" id="bannerSub"></div></div>
   <div id="cutin" class="overlay cutin">
     <div class="speed-lines"></div>
     <img class="cutin-art" src="../assets/images/fx/ult_cutin.webp" alt="" draggable="false">
-    <div class="cutin-title">烈焰鋼拳・焚天</div>
-    <div class="cutin-sub">額上烈焰烙痕,燃盡一切!</div>
+    <div class="cutin-title" data-i18n>烈焰鋼拳・焚天</div>
+    <div class="cutin-sub" data-i18n>額上烈焰烙痕,燃盡一切!</div>
+  </div>
+  <div id="pauseMenu" class="overlay">
+    <h2>PAUSE</h2>
+    <div class="pause-btns">
+      <button class="btn" id="pauseResume" data-i18n>繼續遊戲</button>
+      <button class="btn" id="pauseSettings" data-i18n>設定</button>
+      <button class="btn" id="pauseQuit">回到主畫面</button>
+    </div>
+    <div class="pause-note" data-i18n>回到主畫面後,本局進度不會保留</div>
   </div>
   <div id="hurtFlash"></div>
-  <button class="mute" id="muteBtn" title="靜音(M)">🔊</button>
+  <button class="pause-btn" id="pauseBtn" title="PAUSE (Esc)">❚❚</button>
+  <button class="mute" id="muteBtn" title="靜音(M)" data-i18n-title>🔊</button>
 </div>
 
 <script src="js/core.js"></script>
+<script src="js/i18n.js"></script>
 <script src="js/audio/engine.js"></script>
 <script src="js/audio/bgm.js"></script>
 <script src="js/data/skills.js"></script>
@@ -173,6 +184,7 @@
 <script src="js/battle/grid.js"></script>
 <script src="js/battle/battle.js"></script>
 <script src="js/data/pages.js"></script>
+<script src="js/data/history-i18n.js"></script>
 <script src="js/scenes/scenes.js"></script>
 <script src="js/scenes/pages.js"></script>
 <script src="js/main.js"></script>
