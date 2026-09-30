@@ -34,7 +34,9 @@ G.save = {
   load() {
     let d = null;
     try { d = JSON.parse(localStorage.getItem(this.key)); } catch (e) {}
-    this.data = Object.assign({ points: 0, unlocked: 1, best: {}, muted: false }, d || {});
+    // vol:音樂 / 音效音量 0~5;vibrate:手機震動;shake:畫面震動
+    this.data = Object.assign({ points: 0, unlocked: 1, best: {}, muted: false, vibrate: true, shake: true }, d || {});
+    this.data.vol = Object.assign({ music: 3, sfx: 4 }, this.data.vol);
     this.data.up = Object.assign({ hp: 0, atk: 0, ult: 0, react: 0 }, this.data.up);
   },
   write() {

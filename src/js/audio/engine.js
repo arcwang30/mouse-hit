@@ -26,6 +26,7 @@ G.audio = {
     for (let i = 0; i < d.length; i++) d[i] = Math.random() * 2 - 1;
     this.noiseBuf = buf;
 
+    this.applyVolume();
     document.addEventListener('visibilitychange', () => {
       document.hidden ? ctx.suspend() : ctx.resume();
     });
@@ -42,6 +43,14 @@ G.audio = {
   },
 
   ready() { return !!this.ctx && this.ctx.state === 'running'; },
+
+  // 依設定的音量(0~5)調整音樂 / 音效;3 / 4 為原本的預設值
+  applyVolume() {
+    if (!this.ctx) return;
+    const v = G.save.data.vol, t = this.ctx.currentTime;
+    this.bgmBus.gain.setTargetAtTime(0.22 * v.music / 3, t, 0.05);
+    this.sfxBus.gain.setTargetAtTime(0.55 * v.sfx / 4, t, 0.05);
+  },
 
   setMuted(m) {
     this.muted = m;

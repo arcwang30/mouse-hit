@@ -97,13 +97,13 @@ G.grid = {
     c.classList.remove('thump');
     void c.offsetWidth;
     c.classList.add('thump');
-    if (big) {
+    if (big && G.save.data.shake) { // 設定可關閉畫面震動
       const g = G.$('#grid');
       g.classList.remove('quake');
       void g.offsetWidth;
       g.classList.add('quake');
     }
-    if (kind !== 'miss' && navigator.vibrate) {
+    if (kind !== 'miss' && G.save.data.vibrate && navigator.vibrate) {
       try { navigator.vibrate(big ? 35 : 12); } catch (e) {}
     }
   },

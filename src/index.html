@@ -8,6 +8,7 @@
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Orbitron:wght@600;800&display=swap">
   <link rel="stylesheet" href="css/style.css">
   <link rel="stylesheet" href="css/cyber-ui.css">
+  <link rel="stylesheet" href="css/menu-pages.css">
 </head>
 <body>
 <div id="app">
@@ -38,10 +39,48 @@
     <div class="menu-logo"><img src="../assets/images/ui/logo.webp" alt="鋼拳風雲錄"></div>
     <div class="menu-points">成長點數:<b id="menuPoints">0</b></div>
     <div id="stageList" class="stage-list"></div>
-    <div class="menu-row">
-      <button class="btn" id="btnUpgrade">💪 成長</button>
-      <button class="btn" id="btnStory">📜 故事</button>
+    <div class="menu-grid">
+      <button class="btn small" id="btnUpgrade">💪 成長</button>
+      <button class="btn small" id="btnHowto">🎮 操作說明</button>
+      <button class="btn small" id="btnSettings">⚙️ 設定</button>
+      <button class="btn small" id="btnStory">📜 故事</button>
+      <button class="btn small" id="btnHistory">📖 了解歷史</button>
+      <button class="btn small" id="btnCredits">⭐ CREDIT</button>
     </div>
+  </section>
+
+  <!-- 操作說明 -->
+  <section id="howto" class="screen art page">
+    <header class="pg-head"><h2>操作說明</h2><div class="pg-sub" id="howtoSub"></div></header>
+    <div class="pg-panel" id="howtoBody"></div>
+    <div class="pg-foot">
+      <button class="pg-arrow" id="howtoPrev">◀</button>
+      <button class="btn small" data-back>返回</button>
+      <button class="pg-arrow" id="howtoNext">▶</button>
+    </div>
+  </section>
+
+  <!-- 設定 -->
+  <section id="settings" class="screen art page">
+    <header class="pg-head"><h2>設定</h2><div class="pg-sub">SETTINGS</div></header>
+    <div class="pg-panel" id="settingsBody"></div>
+    <div class="pg-foot"><button class="btn small" data-back>返回</button></div>
+  </section>
+
+  <!-- 了解歷史 -->
+  <section id="history" class="screen art page">
+    <header class="pg-head"><h2>了解歷史</h2></header>
+    <div class="pg-tabs" id="historyTabs"></div>
+    <div class="pg-panel scroll" id="historyBody"></div>
+    <a class="btn small fb" id="fbLink" target="_blank" rel="noopener noreferrer">前往 Facebook 粉絲團</a>
+    <div class="pg-foot"><button class="btn small" data-back>返回</button></div>
+  </section>
+
+  <!-- CREDIT -->
+  <section id="credits" class="screen art page">
+    <header class="pg-head"><h2>CREDIT</h2><div class="pg-sub">製作名單</div></header>
+    <div class="pg-panel" id="creditsBody"></div>
+    <div class="pg-foot"><button class="btn small" data-back>返回</button></div>
   </section>
 
   <!-- 成長升級 -->
@@ -122,7 +161,9 @@
 <script src="js/data/upgrades.js"></script>
 <script src="js/battle/grid.js"></script>
 <script src="js/battle/battle.js"></script>
+<script src="js/data/pages.js"></script>
 <script src="js/scenes/scenes.js"></script>
+<script src="js/scenes/pages.js"></script>
 <script src="js/main.js"></script>
 </body>
 </html>

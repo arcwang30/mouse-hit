@@ -730,10 +730,13 @@ G.battle = {
     p.hp = Math.max(0, p.hp - d);
     G.audio.play('hurt');
     this.float('-' + d, 'hurt', true);
-    const app = G.$('#app');
-    app.classList.remove('shake');
-    void app.offsetWidth;
-    app.classList.add('shake');
+    if (G.save.data.shake) { // 設定可關閉畫面震動
+      const app = G.$('#app');
+      app.classList.remove('shake');
+      void app.offsetWidth;
+      app.classList.add('shake');
+    }
+    if (G.save.data.vibrate && navigator.vibrate) { try { navigator.vibrate(40); } catch (e) {} }
     if (p.hp <= 0 && p.revive > 0) {
       p.revive = 0;
       p.hp = Math.round(p.maxHp / 2);
