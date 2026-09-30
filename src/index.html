@@ -13,6 +13,9 @@
 <body>
 <div id="app">
 
+  <!-- 選單類畫面共用的動態背景(呼吸縮放 + 細雨 + 火星),只在 .art 畫面顯示 -->
+  <div id="artBg"><div class="art-img"></div><div class="rain"></div><div class="embers" id="artEmbers"></div></div>
+
   <!-- 故事開場 -->
   <section id="story" class="screen">
     <div class="story-dots" id="storyDots"></div>
@@ -38,7 +41,7 @@
   <section id="menu" class="screen art">
     <div class="menu-logo"><img src="../assets/images/ui/logo.webp" alt="鋼拳風雲錄"></div>
     <div class="menu-points">成長點數:<b id="menuPoints">0</b></div>
-    <div id="stageList" class="stage-list"></div>
+    <button class="btn start" id="btnStart"><span>開始遊戲</span><small>START</small></button>
     <div class="menu-grid">
       <button class="btn small" id="btnUpgrade">💪 成長</button>
       <button class="btn small" id="btnHowto">🎮 操作說明</button>
@@ -47,6 +50,14 @@
       <button class="btn small" id="btnHistory">📖 了解歷史</button>
       <button class="btn small" id="btnCredits">⭐ CREDIT</button>
     </div>
+    <div class="copyright">©Arc's Concept Game</div>
+  </section>
+
+  <!-- 選擇關卡 -->
+  <section id="stages" class="screen art page">
+    <header class="pg-head"><h2>選擇關卡</h2><div class="pg-sub">STAGE SELECT</div></header>
+    <div id="stageList" class="stage-list"></div>
+    <div class="pg-foot"><button class="btn small" data-back>返回</button></div>
   </section>
 
   <!-- 操作說明 -->

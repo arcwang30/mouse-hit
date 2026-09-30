@@ -117,3 +117,86 @@
 .cr-foot { margin-top: 4cqw; font-size: 3cqw; color: var(--steel-hi); letter-spacing: .08em; }
 .cr-hero { width: 55%; margin: 2cqw auto 0; display: block; animation: heroFloat 2.4s ease-in-out infinite alternate; }
 @keyframes heroFloat { to { transform: translateY(-3%) rotate(-2deg); } }
+
+/* ==========================================================
+   選單動態背景:和標題畫面同一張圖,呼吸縮放 + 細雨 + 少量火星
+   (不閃電、火星較少,避免和按鈕搶畫面)
+   ========================================================== */
+#artBg { position: absolute; inset: 0; overflow: hidden; display: none; background: #000; }
+#app.art-on #artBg { display: block; }
+#artBg .art-img {
+  position: absolute; inset: -3%;
+  background: url('../../assets/images/backgrounds/title.jpg') center top / cover;
+  filter: brightness(.82) saturate(1.05);
+  animation: breathe 20s ease-in-out infinite alternate;
+}
+#artBg .rain { opacity: .18; }
+#artBg::after { /* 只在最上緣與最下緣壓暗,讓標題與按鈕清楚 */
+  content: ""; position: absolute; inset: 0; pointer-events: none;
+  background: linear-gradient(180deg, #000a 0%, transparent 22%, transparent 62%, #000c 100%);
+}
+/* 背景變亮了,直接放在背景上的文字加陰影 */
+.menu-points, .pg-sub, #upgrade h2, #resultTitle { text-shadow: 0 .3cqw 0 #000, 0 0 2cqw #000; }
+.menu-points { padding: .6cqw 4cqw; background: #000a; clip-path: var(--chamfer); }
+
+/* ==========================================================
+   按鈕:賽博龐克風(斜切角 + 霓虹邊框 + 掃描光)
+   ========================================================== */
+.btn {
+  --neon: var(--fire); --neon2: var(--fire-2);
+  position: relative; overflow: hidden; border: 0; border-radius: 0;
+  clip-path: var(--chamfer);
+  padding: 3cqw 6cqw; font-weight: 800; font-size: 4.2cqw; letter-spacing: .08em;
+  color: #fff; text-shadow: 0 0 1.4cqw var(--neon);
+  background:
+    linear-gradient(180deg, #ffffff14, transparent 45%),
+    repeating-linear-gradient(0deg, #ffffff06 0 1px, transparent 1px 3px),
+    linear-gradient(180deg, #2b1418, #12080c);
+  box-shadow: inset 0 0 0 .45cqw var(--neon), inset 0 -1.4cqw 2.4cqw -1cqw var(--neon);
+  transition: filter .12s, transform .08s;
+}
+.btn::before { /* 左上角的斜切亮邊 */
+  content: ""; position: absolute; left: 0; top: 0; width: 3cqw; height: 3cqw;
+  background: linear-gradient(135deg, var(--neon2) 50%, transparent 50%);
+}
+.btn::after { /* 掃過的一道光 */
+  content: ""; position: absolute; top: 0; bottom: 0; width: 30%; left: -40%;
+  background: linear-gradient(100deg, transparent, #ffffff30, transparent);
+  animation: btnScan 3.2s ease-in-out infinite;
+}
+@keyframes btnScan { 0%, 60% { left: -40%; } 100% { left: 140%; } }
+.btn:hover { filter: brightness(1.2); }
+.btn:active { transform: translateY(.6cqw) scale(.98); box-shadow: inset 0 0 0 .45cqw var(--neon2), inset 0 0 4cqw var(--neon); }
+.btn:disabled { filter: grayscale(1) brightness(.55); }
+.btn:disabled::after { display: none; }
+.btn.small { font-size: 3.4cqw; padding: 2.2cqw 3cqw; }
+.menu-grid .btn { --neon: var(--neon-c); --neon2: #b8fbff; font-size: 3.3cqw; }
+.btn.danger { --neon: var(--neon-r); --neon2: #ffb0c0; background: linear-gradient(180deg, #3a0a14, #14040a); box-shadow: inset 0 0 0 .45cqw var(--neon), inset 0 -1.4cqw 2.4cqw -1cqw var(--neon); }
+.btn.fb { --neon: #3ea8ff; --neon2: #8ee8ff; background: linear-gradient(180deg, #0c2a44, #061420); box-shadow: inset 0 0 0 .45cqw var(--neon), inset 0 -1.4cqw 2.4cqw -1cqw var(--neon); }
+
+/* 開始遊戲:最醒目的主按鈕 */
+.btn.start {
+  width: 78%; padding: 3.6cqw 0 3cqw; flex-shrink: 0;
+  display: flex; flex-direction: column; align-items: center; line-height: 1.15;
+  background:
+    linear-gradient(180deg, #ffffff22, transparent 50%),
+    linear-gradient(180deg, #ff7a1a, #b52a05 60%, #5a1000);
+  box-shadow: inset 0 0 0 .5cqw var(--fire-2), 0 0 0 transparent;
+  animation: startPulse 1.6s ease-in-out infinite;
+}
+.btn.start span { font-size: 7cqw; letter-spacing: .3em; padding-left: .3em; text-shadow: 0 .4cqw 0 #5a1000, 0 0 2.4cqw #ffd400; }
+.btn.start small { font-family: var(--tech); font-size: 2.6cqw; letter-spacing: .6em; padding-left: .6em; color: #ffe8b0; }
+@keyframes startPulse { 50% { filter: brightness(1.25) drop-shadow(0 0 3cqw #ff5a1f); } }
+
+/* 關卡卡片也改成斜切角 + 霓虹邊 */
+.stage-card { border: 0; border-radius: 0; clip-path: var(--chamfer); box-shadow: inset 0 0 0 .4cqw #19f0ff80; }
+.stage-card:not(:disabled):hover { box-shadow: inset 0 0 0 .5cqw var(--neon-c), inset 0 0 4cqw #19f0ff50; }
+#stages .stage-list { flex: 1; min-height: 0; overflow-y: auto; justify-content: center; }
+#stages .stage-card { padding: 5cqw 4cqw; }
+
+/* 版權標示(同 Top_Race,主選單右下角) */
+.copyright {
+  position: absolute; right: 3cqw; bottom: 1.6cqw; font-size: 2.8cqw; font-weight: 700; color: #fff;
+  text-shadow: 0 0 .6cqw #000, 0 .2cqw 0 #000; opacity: .85; pointer-events: none;
+}
+#menu { padding-bottom: 6cqw; }

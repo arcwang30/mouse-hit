@@ -15,6 +15,18 @@ G.shuffle = arr => {
 
 G.show = id => {
   document.querySelectorAll('.screen').forEach(s => s.classList.toggle('active', s.id === id));
+  // 選單類畫面(.art)共用動態背景
+  const art = document.getElementById(id).classList.contains('art');
+  document.getElementById('app').classList.toggle('art-on', art);
+  const embers = document.getElementById('artEmbers');
+  if (art && !embers.childElementCount) { // 火星比標題畫面少,避免畫面太花
+    embers.innerHTML = Array.from({ length: 14 }, () => {
+      const size = 0.5 + Math.random() * 1.1;
+      return `<span style="left:${Math.random() * 100}%;width:${size}cqw;height:${size}cqw;` +
+        `--sway:${(Math.random() - 0.5) * 14}cqw;animation-duration:${7 + Math.random() * 7}s;` +
+        `animation-delay:-${Math.random() * 12}s"></span>`;
+    }).join('');
+  }
 };
 
 G.banner = async (main, sub = '', ms = 1000) => {

@@ -178,6 +178,7 @@ G.pages = {
 };
 
 // ---------- 事件綁定 ----------
+G.$('#btnStart').onclick = () => G.scenes.stages();
 G.$('#btnHowto').onclick = () => G.pages.howto();
 G.$('#btnSettings').onclick = () => G.pages.settings();
 G.$('#btnHistory').onclick = () => G.pages.history();

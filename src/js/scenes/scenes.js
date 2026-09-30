@@ -166,8 +166,14 @@ G.scenes = {
 
   // ---- 主選單 ----
   menu() {
+    G.$('#menuPoints').textContent = G.save.data.points;
+    G.show('menu');
+    G.bgm.play('menu');
+  },
+
+  // ---- 選擇關卡(主選單按「開始遊戲」後) ----
+  stages() {
     const sv = G.save.data;
-    G.$('#menuPoints').textContent = sv.points;
     G.$('#stageList').innerHTML = G.STAGES.map((s, i) => {
       const locked = i >= sv.unlocked;
       const best = sv.best[i] ? `最高分 ${sv.best[i]}` : '';
@@ -180,10 +186,9 @@ G.scenes = {
       </button>`;
     }).join('');
     G.$('#stageList').querySelectorAll('.stage-card').forEach(b => {
-      b.onclick = () => G.battle.start(+b.dataset.i);
+      b.onclick = () => { G.pages.current = null; G.battle.start(+b.dataset.i); };
     });
-    G.show('menu');
-    G.bgm.play('menu');
+    G.pages.open('stages'); // 共用選單頁面的返回按鈕與 Esc
   },
 
   // ---- 成長 ----

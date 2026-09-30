@@ -131,11 +131,8 @@ button { font: inherit; color: inherit; cursor: pointer; }
 /* ---- 主選單 ---- */
 #menu, #upgrade, #result { align-items: center; gap: min(3cqw, 2cqh); padding: min(6cqw, 4cqh) 6cqw; overflow-y: auto; }
 /* 選單類畫面:沿用標題背景圖,壓暗以便閱讀 */
-.screen.art {
-  background:
-    linear-gradient(180deg, #0d0b14b0 0%, #0d0b14d8 45%, #0d0b14f0 100%),
-    url('../../assets/images/backgrounds/title.jpg') center / cover;
-}
+/* 選單類畫面:背景改由 #artBg 動態顯示,這裡只留四周淡淡的暗角,不再整片壓暗 */
+.screen.art { background: radial-gradient(ellipse 85% 70% at 50% 45%, transparent 55%, #0008 100%); }
 /* LOGO 只取上半部(拳頭 + 中文標題),英文卷軸由背景圖本身提供 */
 .menu-logo { width: 74%; aspect-ratio: 896 / 600; overflow: hidden; flex-shrink: 0; margin-top: -1cqh; }
 .menu-logo img, .title-logo img { width: 100%; display: block; filter: drop-shadow(0 0 3cqw #ff5a1f80); }
