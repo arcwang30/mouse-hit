@@ -2,8 +2,8 @@
 // icon:沒有立繪時的暫代 emoji;img:assets/images/ 底下的立繪(有的話優先顯示)
 // guardLife:防禦符號停留毫秒;atkCount:每次攻擊出現的防禦符號數;shot:攻擊時飛向玩家的物件
 G.ENEMIES = {
-  monk:   { name: '武僧',     icon: '🧘', shot: '👊', hp: 60, atk: 8,  atkCount: 4, guardLife: 1300 },
-  agent:  { name: '情報員',   icon: '🕵️', shot: '🗡️', hp: 50, atk: 7,  atkCount: 5, guardLife: 1050 },
+  monk:   { name: '武僧',     icon: '🧘', img: 'enemies/monk.webp', shot: '🔥', hp: 60, atk: 8,  atkCount: 4, guardLife: 1300 },
+  agent:  { name: '情報員',   icon: '🕵️', img: 'enemies/agent.webp', shot: '📡', hp: 50, atk: 7,  atkCount: 5, guardLife: 1050 },
   ninja:  { name: '機械忍者', icon: '🥷', shot: '💠', hp: 70, atk: 9,  atkCount: 5, guardLife: 950 },
   gunner: { name: '電漿槍手', icon: '🔫', shot: '⚡', hp: 65, atk: 10, atkCount: 5, guardLife: 900 },
   drunk:  { name: '醉拳師',   icon: '🍶', shot: '🍶', hp: 85, atk: 11, atkCount: 4, guardLife: 1100 },
@@ -30,7 +30,7 @@ G.ENEMIES = {
     skill: { name: '深淵觸手', desc: '觸手亂舞,小心混在其中的 💀!', count: 3, decoy: 0.25, dmgMul: 1.3 },
   },
   poisonQueen: {
-    name: '毒霧妖姬', icon: '🐍', shot: '🧪', boss: true, hp: 170, atk: 12, atkCount: 6, guardLife: 1050,
+    name: '毒霧妖姬', icon: '🐍', img: 'enemies/poison_queen.webp', shot: '🧪', boss: true, hp: 170, atk: 12, atkCount: 6, guardLife: 1050,
     skill: { name: '毒霧迷蹤', desc: '毒霧遮蔽視線,小心 💀 毒雷!', fade: true, decoy: 0.25, dmgMul: 1.2 },
   },
   shadowKing: {
