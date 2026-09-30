@@ -1,6 +1,7 @@
 // 選單頁面:操作說明、設定、了解歷史、CREDIT(版面參考 Top_Race 專案,改成鋼拳風雲錄的風格)
 
-// 敵人立繪四周的透明留白不一(橫向圖留白特別多):量出人物實際範圍,放大置中填滿圖框
+// 敵人立繪四周的透明留白不一(橫向圖留白特別多):量出人物實際範圍,以身高填滿圖框
+// 姿勢特別寬的角色(披風、武器)左右會被裁掉一點,水平置中改對準身體最集中的位置
 const fitPic = img => {
   try {
     const W = img.naturalWidth, H = img.naturalHeight, k = 128 / Math.max(W, H);
@@ -9,15 +10,16 @@ const fitPic = img => {
     const ctx = c.getContext('2d');
     ctx.drawImage(img, 0, 0, c.width, c.height);
     const d = ctx.getImageData(0, 0, c.width, c.height).data;
-    let l = c.width, t = c.height, r = -1, b = -1;
+    let t = c.height, b = -1, n = 0, sx = 0;
     for (let y = 0; y < c.height; y++) for (let x = 0; x < c.width; x++) {
       if (d[(y * c.width + x) * 4 + 3] < 128) continue; // 忽略半透明的光暈、特效
-      if (x < l) l = x; if (x > r) r = x; if (y < t) t = y; if (y > b) b = y;
+      if (y < t) t = y; if (y > b) b = y;
+      n++; sx += x;
     }
-    if (r < 0) return;
+    if (!n) return;
     const box = img.parentElement, bw = box.clientWidth, bh = box.clientHeight;
-    const cw = (r - l + 1) / k, ch = (b - t + 1) / k, cx = (l / k + cw / 2), cy = (t / k + ch / 2);
-    const s = Math.min(bh / ch, bw * 1.35 / cw); // 以高度對齊;姿勢特別寬的角色允許左右稍微裁掉
+    const ch = (b - t + 1) / k, cx = (sx / n + 0.5) / k, cy = (t / k + ch / 2);
+    const s = bh / ch;
     box.classList.add('fit');
     Object.assign(img.style, {
       width: W * s / bw * 100 + '%',
