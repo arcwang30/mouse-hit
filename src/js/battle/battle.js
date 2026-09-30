@@ -347,7 +347,7 @@ G.battle = {
     const broken = await G.mashPhase({
       cell: 4, icon: '👊', label: G.t('連打'), hits, life: 2500,
       onTap: (i, left) => {
-        G.audio.play('chip');
+        G.audio.play('punch');
         this.punchFx(Math.floor(Math.random() * 3), { small: true, dur: 110 });
         this.setEnemyState('stagger');
       },

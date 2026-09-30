@@ -121,11 +121,7 @@ button { font: inherit; color: inherit; cursor: pointer; }
 #storyText { margin: 0; font-size: 4.8cqw; line-height: 1.75; font-weight: 700; letter-spacing: .04em; white-space: pre-line; }
 .story-caption.pop { animation: captionPop .3s ease-out; }
 @keyframes captionPop { from { transform: translateY(20%) skewX(-3deg); opacity: 0; } }
-.mute {
-  position: absolute; top: 2cqw; right: 2cqw; z-index: 20;
-  width: 9cqw; height: 9cqw; border: 0; border-radius: 50%; background: #0008; font-size: 4.5cqw; line-height: 1;
-}
-.skip { position: absolute; top: 3cqw; right: 14cqw; background: #0008; border: 1px solid #fff4; border-radius: 99px; padding: 1.5cqw 4cqw; }
+.skip { position: absolute; top: 3cqw; right: 3cqw; background: #0008; border: 1px solid #fff4; border-radius: 99px; padding: 1.5cqw 4cqw; }
 @keyframes blink { 50% { opacity: .3; } }
 
 /* ---- 主選單 ---- */

@@ -119,7 +119,7 @@ G.scenes = {
       if (typing) { // 還在打字:先把整段顯示出來
         clearInterval(typing);
         typing = null;
-        text.textContent = STORY[idx].text;
+        text.textContent = G.t(STORY[idx].text);
         hint.classList.remove('hide');
         return;
       }

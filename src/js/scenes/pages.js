@@ -141,7 +141,7 @@ G.pages = {
         return this.renderSettings();
       }
       this.resetArmed = false;
-      const keep = { lang: G.save.data.lang, vol: G.save.data.vol, vibrate: G.save.data.vibrate, shake: G.save.data.shake, muted: G.save.data.muted };
+      const keep = { lang: G.save.data.lang, vol: G.save.data.vol, vibrate: G.save.data.vibrate, shake: G.save.data.shake };
       try { localStorage.removeItem(G.save.key); } catch (err) {}
       G.save.load();
       Object.assign(G.save.data, keep); // 重置進度,保留設定

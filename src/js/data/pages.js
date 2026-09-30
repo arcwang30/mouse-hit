@@ -19,7 +19,6 @@ G.HOWTO = {
     ['HOLD 蓄力', '按住對應按鍵\n放開出拳', '按住左鍵\n放開出拳', '按住格子\n放開出拳'],
     ['必殺技', '空白鍵', '點「🔥 必殺」', '點「🔥 必殺」'],
     ['暫停', 'Esc', '右上角 ❚❚', '右上角 ❚❚'],
-    ['靜音', 'M', '右上角 🔊', '右上角 🔊'],
     ['開始 / 確認', 'Enter / 空白鍵', '左鍵', '點畫面'],
     ['返回', 'Esc', '「返回」按鈕', '「返回」按鈕'],
   ],
@@ -117,6 +116,6 @@ G.HISTORY = {
 // ---------- CREDIT ----------
 G.CREDITS = {
   roles: [['企劃', 'Arc Wang'], ['程式', 'AI'], ['美術', 'AI'], ['音樂音效', 'AI']],
-  thanks: ['Kelvin Lo', 'Bubu Lin', '大王KUNI', 'KT Lee', 'Gmoto', '國見比呂', 'Greed'],
+  thanks: ['Kelvin Lo', 'Bubu Lin', '大王KUNI', 'KT Lee', '國見比呂'],
   footer: '鋼拳風雲錄  STEEL FIST: WIND & CLOUD',
 };

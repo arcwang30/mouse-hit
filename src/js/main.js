@@ -8,21 +8,9 @@ G.$('#hurtFlash').addEventListener('animationend', e => e.target.classList.remov
 // 瀏覽器要求使用者互動後才能播放聲音
 ['pointerdown', 'keydown'].forEach(ev => document.addEventListener(ev, () => G.audio.unlock(), true));
 
-const muteBtn = G.$('#muteBtn');
-const applyMute = () => {
-  G.audio.setMuted(G.save.data.muted);
-  muteBtn.textContent = G.save.data.muted ? '🔇' : '🔊';
-};
-muteBtn.addEventListener('click', () => {
-  G.save.data.muted = !G.save.data.muted;
-  G.save.write();
-  applyMute();
-});
-applyMute();
-
 // 一般按鈕的點擊音(技能卡另有選取音)
 document.addEventListener('pointerdown', e => {
-  if (e.target.closest('.btn:not(:disabled), .stage-card:not(:disabled), .skip, .mute')) G.audio.play('click');
+  if (e.target.closest('.btn:not(:disabled), .stage-card:not(:disabled), .skip')) G.audio.play('click');
 });
 
 G.$('#btnUpgrade').onclick = () => G.scenes.upgrade();
@@ -57,7 +45,6 @@ document.addEventListener('keyup', e => {
   if (e.code in KEYMAP) G.grid.release(KEYMAP[e.code]); // 蓄力重拳:放開按鍵出拳
 });
 document.addEventListener('keydown', e => {
-  if (e.code === 'KeyM' && !e.repeat) muteBtn.click();
   if ((e.code === 'Enter' || e.code === 'Space') && G.$('#title').classList.contains('active')) G.$('#title').click();
 });
 
