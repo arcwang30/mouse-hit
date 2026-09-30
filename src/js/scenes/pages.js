@@ -49,7 +49,7 @@ G.pages = {
       // 各關敵人:立繪 + 名稱 + 機制
       html = G.STAGES.map(st => {
         const ids = [...new Set(st.waves.map(w => w.replace('+', '')))];
-        return `<div class="ht-stage"><div class="ht-stage-name">${st.name} <span>${'★'.repeat(st.stars)}${'☆'.repeat(3 - st.stars)}</span></div>` +
+        return `<div class="ht-stage"><div class="ht-stage-name">${st.name} <span>${'★'.repeat(st.stars)}${'☆'.repeat(5 - st.stars)}</span></div>` +
           ids.map(id => {
             const e = G.ENEMIES[id], m = G.MECHS[id];
             const pic = e.img ? `<img src="../assets/images/${e.img}" alt="">` : `<span>${e.icon}</span>`;

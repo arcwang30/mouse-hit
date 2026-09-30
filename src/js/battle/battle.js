@@ -94,7 +94,7 @@ G.battle = {
       G.$('#enemyName').textContent = (this.e.boss ? '【BOSS】' : '') + this.e.name;
       this.setEnemyState('idle');
       this.render();
-      G.bgm.play(this.e.boss ? 'boss' : 'battle' + stageIdx);
+      G.bgm.play(this.e.boss ? 'boss' : this.stage.bgm || 'battle' + stageIdx);
       const intro = this.e.boss ? (w === total - 1 ? '魔王降臨!' : '中頭目出現!') : this.e.elite ? '精英來襲!' : '';
       const hint = (G.MECHS[this.e.id] || {}).hint;
       G.grid.clearBlocks();
@@ -154,7 +154,7 @@ G.battle = {
       interval: Math.max(250, p.moleLife * 0.45), patterns: this.patterns(),
       // 蓄力重拳:每回合其中一顆拳頭需要按住蓄力
       hold: { at: 1 + Math.floor(Math.random() * (p.attackCount - 1)), icon: '👊', label: 'HOLD', holdMs: HOLD_MS * (p.holdMaster ? 0.6 : 1) },
-      mods: { gold: GOLD_RATE * p.goldMul, hidden: m.hidden, blink: m.blink },
+      mods: { gold: GOLD_RATE * p.goldMul, hidden: m.hidden, blink: m.blink, armor: m.armor },
       slowFirst: p.slowmo ? SLOWMO : null,
       onReady: a => { api = a; },
       // 炸彈:第 4 波起一般敵人也會混入;部分敵人機制會更多

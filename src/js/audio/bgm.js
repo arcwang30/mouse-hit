@@ -26,6 +26,26 @@
       lead: 'square', bass: 'sawtooth',
       kick: 'x...x..xx...x...', snare: '....x.......x..x', hat: 'x.xxx.xxx.xxx.xx', bassPat: 'x.xxx.xxx.xxx.xx',
     },
+    arena: { // 地下拳場 / 劇場:藍調五聲,厚重的反拍
+      bpm: 128, root: 53, scale: [0, 3, 5, 6, 7, 10], prog: [0, 0, 3, 4], seed: 59, density: 0.45,
+      lead: 'square', bass: 'sawtooth',
+      kick: 'x.....x.x.....x.', snare: '....x.......x...', hat: 'x.x.x.x.x.x.x.x.', bassPat: 'x..x..x.x..x..x.',
+    },
+    forge: { // 鋼鐵熔爐:低沉、機械感的敲擊
+      bpm: 136, root: 48, scale: [0, 1, 3, 5, 7, 8], prog: [0, 1, 0, 4], seed: 67, density: 0.4,
+      lead: 'sawtooth', bass: 'square',
+      kick: 'x.x...x.x.x...x.', snare: '....x.......x.x.', hat: 'x..xx..xx..xx..x', bassPat: 'x.x.x.x.x.x.x.x.',
+    },
+    snow: { // 雪嶺古寺:雲井音階,清冷
+      bpm: 118, root: 60, scale: [0, 1, 5, 7, 10], prog: [0, 3, 0, 2], seed: 73, density: 0.35,
+      lead: 'triangle', bass: 'triangle', pad: true,
+      kick: 'x...x...x...x...', snare: '....x.......x...', hat: '..x...x...x...xx', bassPat: 'x...x.x.x...x.x.',
+    },
+    sky: { // 天空要塞 / 終章:大調色彩,高速
+      bpm: 148, root: 55, scale: [0, 2, 4, 7, 9], prog: [0, 3, 4, 2], seed: 83, density: 0.5,
+      lead: 'square', bass: 'sawtooth',
+      kick: 'x...x...x...x...', snare: '....x..x....x..x', hat: 'xxxxxxxxxxxxxxxx', bassPat: 'x.xxx.xxx.xxx.xx',
+    },
     boss: { // BOSS 戰:快板、低音 16 分音符
       bpm: 156, root: 50, scale: [0, 1, 3, 7, 8], prog: [0, 0, 1, 4], seed: 47, density: 0.55,
       lead: 'sawtooth', bass: 'sawtooth',

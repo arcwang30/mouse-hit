@@ -216,7 +216,7 @@ G.scenes = {
       // CSS 變數裡的 url() 會以 style.css 的位置解析相對路徑,所以這裡先轉成完整網址
       const art = s.img ? ` style="--card-bg:url('${new URL('../assets/images/' + s.img, location.href).href}')"` : '';
       return `<button class="stage-card bg-${s.bg}${s.img ? ' has-art' : ''}" data-i="${i}"${art} ${locked ? 'disabled' : ''}>
-        <div class="sc-name">${locked ? '🔒 ' : ''}${s.name} <span class="sc-stars">${'★'.repeat(s.stars)}${'☆'.repeat(3 - s.stars)}</span></div>
+        <div class="sc-name">${locked ? '🔒 ' : ''}${s.name} <span class="sc-stars">${'★'.repeat(s.stars)}${'☆'.repeat(5 - s.stars)}</span></div>
         <div class="sc-desc">${locked ? '通過上一關後解鎖' : s.desc}</div>
         <div class="sc-best">${best}</div>
       </button>`;
