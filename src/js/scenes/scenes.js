@@ -34,11 +34,56 @@ G.scenes = {
       clearInterval(typing);
       G.$('#story').onclick = null;
       try { localStorage.setItem('gangquan_seen_story', '1'); } catch (e) {}
-      this.menu();
+      this.title();
     };
     G.$('#story').onclick = next;
     G.$('#storySkip').onclick = e => { e.stopPropagation(); done(); };
     type();
+  },
+
+  // ---- 標題畫面 ----
+  title() {
+    const el = G.$('#title');
+    if (!el.dataset.ready) { // 第一次進入時產生火星
+      el.dataset.ready = '1';
+      G.$('#embers').innerHTML = Array.from({ length: 26 }, () => {
+        const size = 0.6 + Math.random() * 1.4;
+        return `<span style="left:${Math.random() * 100}%;width:${size}cqw;height:${size}cqw;` +
+          `--sway:${(Math.random() - 0.5) * 16}cqw;animation-duration:${5 + Math.random() * 6}s;` +
+          `animation-delay:-${Math.random() * 10}s"></span>`;
+      }).join('');
+    }
+    el.classList.remove('leaving');
+    const logo = el.querySelector('.title-logo');
+    logo.classList.remove('enter');
+    void logo.offsetWidth; // 重新播放 LOGO 砸下來的動畫
+    logo.classList.add('enter');
+    G.show('title');
+    G.bgm.play('menu');
+
+    // 隨機落雷
+    clearTimeout(this._bolt);
+    const bolt = el.querySelector('.bolt'), bg = el.querySelector('.title-bg');
+    const strike = () => {
+      if (!el.classList.contains('active') || el.classList.contains('leaving')) return;
+      bolt.classList.remove('strike');
+      void bolt.offsetWidth;
+      bolt.classList.add('strike');
+      bg.classList.add('strike');
+      setTimeout(() => bg.classList.remove('strike'), 160);
+      setTimeout(() => G.audio.play('thunder'), 150);
+      this._bolt = setTimeout(strike, 4000 + Math.random() * 5000);
+    };
+    this._bolt = setTimeout(strike, 2200);
+
+    // 點一下(或按 Enter / 空白鍵)開始
+    el.onclick = () => {
+      if (el.classList.contains('leaving')) return;
+      el.classList.add('leaving');
+      clearTimeout(this._bolt);
+      G.audio.play('drum');
+      setTimeout(() => this.menu(), 480);
+    };
   },
 
   // ---- 主選單 ----

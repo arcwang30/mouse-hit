@@ -102,6 +102,10 @@ const SFX = {
   tap:     a => a.tone(200, 0.05, { type: 'triangle', vol: 0.08 }),
   select:  (a, t) => arp(a, t, 660, [0, 7, 12], 0.05, { type: 'triangle', vol: 0.22, dur: 0.3 }),
   levelup: (a, t) => arp(a, t, 523, [0, 4, 7, 12], 0.07, { type: 'square', vol: 0.14, dur: 0.22 }),
+  thunder: a => {
+    a.noise(0.08, { filter: 'highpass', freq: 2000, vol: 0.35 });
+    a.noise(1.8, { freq: 500, to: 60, vol: 0.55 });
+  },
   drum:    a => { a.tone(95, 0.45, { to: 45, vol: 0.9 }); a.noise(0.12, { freq: 600, vol: 0.4 }); }, // 太鼓
 
   // 九宮格

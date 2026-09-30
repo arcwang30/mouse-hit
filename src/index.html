@@ -16,13 +16,19 @@
     <button class="skip" id="storySkip">跳過 ▶▶</button>
   </section>
 
+  <!-- 標題畫面 -->
+  <section id="title" class="screen">
+    <div class="title-bg"></div>
+    <div class="rain"></div>
+    <div class="embers" id="embers"></div>
+    <div class="bolt"></div>
+    <div class="title-logo"><img src="../assets/images/ui/logo.webp" alt="鋼拳風雲錄"></div>
+    <div class="title-start">點擊畫面開始<small>TAP TO START</small></div>
+  </section>
+
   <!-- 主選單 -->
-  <section id="menu" class="screen">
-    <div class="logo">
-      <div class="logo-scar">🔥</div>
-      <h1>鋼拳風雲錄</h1>
-      <div class="logo-sub">烈火淬煉的孤星</div>
-    </div>
+  <section id="menu" class="screen art">
+    <div class="menu-logo"><img src="../assets/images/ui/logo.webp" alt="鋼拳風雲錄"></div>
     <div class="menu-points">成長點數:<b id="menuPoints">0</b></div>
     <div id="stageList" class="stage-list"></div>
     <div class="menu-row">
@@ -32,7 +38,7 @@
   </section>
 
   <!-- 成長升級 -->
-  <section id="upgrade" class="screen">
+  <section id="upgrade" class="screen art">
     <h2>永久成長</h2>
     <div class="menu-points">成長點數:<b id="upPoints">0</b></div>
     <div id="upList" class="up-list"></div>
@@ -71,7 +77,7 @@
   </section>
 
   <!-- 結算 -->
-  <section id="result" class="screen">
+  <section id="result" class="screen art">
     <h2 id="resultTitle">過關!</h2>
     <div class="result-box" id="resultBox"></div>
     <button class="btn" id="resultBack">返回主選單</button>

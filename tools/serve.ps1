@@ -2,7 +2,9 @@
 # Usage: powershell -ExecutionPolicy Bypass -File tools/serve.ps1 [-Port 8080]
 param([int]$Port = 8080)
 
-$root = (Resolve-Path (Join-Path $PSScriptRoot '..\src')).Path
+# Serve the project root, but only the src/ and assets/ folders (page lives at /src/index.html)
+$root = (Resolve-Path (Join-Path $PSScriptRoot '..')).Path
+$allowed = @((Join-Path $root 'src'), (Join-Path $root 'assets'))
 $types = @{
   '.html' = 'text/html; charset=utf-8'; '.css' = 'text/css; charset=utf-8'; '.js' = 'text/javascript; charset=utf-8'
   '.json' = 'application/json'; '.png' = 'image/png'; '.jpg' = 'image/jpeg'; '.webp' = 'image/webp'; '.svg' = 'image/svg+xml'
@@ -18,11 +20,16 @@ try {
   while ($listener.IsListening) {
     $ctx = $listener.GetContext()
     $path = [Uri]::UnescapeDataString($ctx.Request.Url.AbsolutePath)
-    if ($path -eq '/') { $path = '/index.html' }
-    $file = [IO.Path]::GetFullPath((Join-Path $root $path.TrimStart('/')))
     $res = $ctx.Response
+    if ($path -eq '/') {
+      $res.Redirect('/src/index.html')
+      $res.Close()
+      continue
+    }
+    $file = [IO.Path]::GetFullPath((Join-Path $root $path.TrimStart('/')))
+    $ok = @($allowed | Where-Object { $file.StartsWith($_ + '\') }).Count -gt 0
     try {
-      if ($file.StartsWith($root) -and (Test-Path $file -PathType Leaf)) {
+      if ($ok -and (Test-Path $file -PathType Leaf)) {
         $bytes = [IO.File]::ReadAllBytes($file)
         $ext = [IO.Path]::GetExtension($file).ToLower()
         $res.ContentType = if ($types[$ext]) { $types[$ext] } else { 'application/octet-stream' }

@@ -64,15 +64,16 @@ button { font: inherit; color: inherit; cursor: pointer; }
 @keyframes blink { 50% { opacity: .3; } }
 
 /* ---- 主選單 ---- */
-#menu, #upgrade, #result { align-items: center; gap: min(3cqw, 2cqh); padding: min(6cqw, 4cqh) 6cqw; overflow-y: auto; background: radial-gradient(circle at 50% 0%, #3a1030, var(--bg) 60%); }
-.logo { text-align: center; margin-top: 1cqh; flex-shrink: 0; }
-.logo-scar { font-size: min(9cqw, 6cqh); line-height: 1.1; filter: drop-shadow(0 0 4cqw var(--fire)); animation: flame 1.2s infinite alternate; }
-.logo h1 {
-  margin: 0; font-size: min(9cqw, 6cqh); line-height: 1.2; letter-spacing: .08em;
-  background: linear-gradient(180deg, #fff, var(--fire-2) 50%, var(--fire)); -webkit-background-clip: text; background-clip: text; color: transparent;
-  filter: drop-shadow(0 .6cqw 0 #5a1000);
+#menu, #upgrade, #result { align-items: center; gap: min(3cqw, 2cqh); padding: min(6cqw, 4cqh) 6cqw; overflow-y: auto; }
+/* 選單類畫面:沿用標題背景圖,壓暗以便閱讀 */
+.screen.art {
+  background:
+    linear-gradient(180deg, #0d0b14b0 0%, #0d0b14d8 45%, #0d0b14f0 100%),
+    url('../../assets/images/backgrounds/title.jpg') center / cover;
 }
-.logo-sub { color: var(--muted); letter-spacing: .3em; font-size: 3.5cqw; }
+/* LOGO 只取上半部(拳頭 + 中文標題),英文卷軸由背景圖本身提供 */
+.menu-logo { width: 74%; aspect-ratio: 896 / 600; overflow: hidden; flex-shrink: 0; margin-top: -1cqh; }
+.menu-logo img, .title-logo img { width: 100%; display: block; filter: drop-shadow(0 0 3cqw #ff5a1f80); }
 @keyframes flame { to { transform: scale(1.12) rotate(4deg); } }
 .menu-points { color: var(--fire-2); }
 .stage-list { display: flex; flex-direction: column; gap: 3cqw; width: 100%; }
@@ -418,3 +419,83 @@ h2 { margin: 0; }
   20%  { transform: translateX(-50%) scale(1); opacity: 1; }
   to   { transform: translateX(-50%) translateY(-60%); opacity: 0; }
 }
+
+/* ---- 標題畫面 ---- */
+#title { cursor: pointer; overflow: hidden; background: #000; }
+.title-bg {
+  position: absolute; inset: -3%;
+  background: url('../../assets/images/backgrounds/title.jpg') center top / cover;
+  animation: breathe 18s ease-in-out infinite alternate;
+}
+#title::after { /* 底部壓暗,讓開始提示清楚 */
+  content: ""; position: absolute; inset: 0; pointer-events: none;
+  background: linear-gradient(180deg, #0008 0%, transparent 18%, transparent 70%, #000c 100%);
+}
+@keyframes breathe { from { transform: scale(1); } to { transform: scale(1.07) translateY(-1%); } }
+
+/* 雨絲 */
+.rain {
+  position: absolute; inset: -20%; z-index: 1; pointer-events: none; opacity: .35;
+  background: repeating-linear-gradient(100deg, transparent 0 1.6cqw, #cfe3ff55 1.6cqw 1.75cqw, transparent 1.75cqw 5cqw);
+  background-size: 100% 22cqh;
+  animation: rain .45s linear infinite;
+}
+@keyframes rain { to { background-position: -4cqw 22cqh; } }
+
+/* 火星往上飄 */
+.embers { position: absolute; inset: 0; z-index: 2; pointer-events: none; }
+.embers span {
+  position: absolute; bottom: -3%; border-radius: 50%;
+  background: radial-gradient(circle, #fff6c8, #ffc23d 40%, #ff5a1f 70%, transparent 72%);
+  box-shadow: 0 0 1.5cqw #ff7a1a;
+  animation: ember linear infinite;
+}
+@keyframes ember {
+  0%   { transform: translate(0, 0); opacity: 0; }
+  10%  { opacity: 1; }
+  50%  { transform: translate(var(--sway), -55cqh); }
+  100% { transform: translate(calc(var(--sway) * -1), -110cqh); opacity: 0; }
+}
+
+/* 閃電:畫面瞬間閃白兩下 */
+.bolt { position: absolute; inset: 0; z-index: 3; pointer-events: none; background: #e8f0ff; opacity: 0; }
+.bolt.strike { animation: strike .6s ease-out; }
+.title-bg.strike { filter: brightness(1.5) contrast(1.1); transition: filter .05s; }
+@keyframes strike { 0% { opacity: .75; } 12% { opacity: .05; } 22% { opacity: .55; } 100% { opacity: 0; } }
+
+/* LOGO:由大到小砸下來,落地震動,之後標題持續發出火光 */
+.title-logo {
+  position: absolute; z-index: 4; left: 50%; top: 3%; width: 96%;
+  aspect-ratio: 896 / 600; overflow: hidden; transform: translateX(-50%); opacity: 0;
+}
+.title-logo.enter { animation: logoSlam .7s cubic-bezier(.2, .8, .3, 1.2) .25s forwards, logoGlow 2.4s ease-in-out 1.2s infinite alternate; }
+@keyframes logoSlam {
+  0%   { opacity: 0; transform: translateX(-50%) scale(2.2); filter: blur(1cqw) brightness(2); }
+  60%  { opacity: 1; transform: translateX(-50%) scale(.94); filter: none; }
+  72%  { transform: translateX(-51.5%) scale(1.02) rotate(-1deg); }
+  84%  { transform: translateX(-48.8%) scale(1) rotate(.6deg); }
+  100% { opacity: 1; transform: translateX(-50%) scale(1); }
+}
+@keyframes logoGlow {
+  from { opacity: 1; transform: translateX(-50%); filter: drop-shadow(0 0 1cqw #ff5a1f80); }
+  to   { opacity: 1; transform: translateX(-50%) scale(1.015); filter: drop-shadow(0 0 5cqw #ffb03cc0); }
+}
+
+/* 開始提示放在最底部(主角腳下),加深色底避免壓在角色身上看不清 */
+.title-start {
+  position: absolute; z-index: 4; left: 50%; bottom: 2.2%; transform: translateX(-50%);
+  text-align: center; white-space: nowrap; padding: 1.2cqw 7cqw 1.4cqw;
+  font-size: 4.8cqw; font-weight: 900; letter-spacing: .25em; color: #fff;
+  text-shadow: 0 0 2cqw #ff5a1f, 0 .4cqw 0 #000;
+  background: linear-gradient(90deg, transparent, #000c 20%, #000c 80%, transparent);
+  opacity: 0; animation: fadeIn .5s 1.2s forwards, startBlink 1.4s 1.7s infinite;
+}
+@keyframes startBlink { 0%, 100% { opacity: 1; } 50% { opacity: .35; } }
+.title-start small { display: block; font-size: 2.8cqw; letter-spacing: .5em; color: var(--fire-2); }
+@keyframes fadeIn { to { opacity: 1; } }
+
+/* 點下開始:整個畫面往前衝並閃白 */
+#title.leaving .title-logo { animation: logoOut .45s ease-in forwards; }
+#title.leaving .bolt { animation: strike .45s ease-out; }
+#title.leaving .title-bg { animation: none; transform: scale(1.15); transition: transform .45s ease-in; }
+@keyframes logoOut { to { opacity: 0; transform: translateX(-50%) scale(1.4); } }

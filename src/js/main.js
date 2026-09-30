@@ -45,8 +45,9 @@ document.addEventListener('keyup', e => {
 });
 document.addEventListener('keydown', e => {
   if (e.code === 'KeyM' && !e.repeat) muteBtn.click();
+  if ((e.code === 'Enter' || e.code === 'Space') && G.$('#title').classList.contains('active')) G.$('#title').click();
 });
 
 let seen = false;
 try { seen = localStorage.getItem('gangquan_seen_story') === '1'; } catch (e) {}
-seen ? G.scenes.menu() : G.scenes.story();
+seen ? G.scenes.title() : G.scenes.story();
