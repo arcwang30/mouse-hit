@@ -20,6 +20,7 @@ G.ENEMIES = {
   snowMonk:    { name: '雪山拳僧',   icon: '🏔️', img: 'enemies/snow_monk.webp', shot: '❄️', hp: 80,  atk: 11, atkCount: 5, guardLife: 1050 },
   droneOp:     { name: '無人機兵',   icon: '🛸', img: 'enemies/drone_op.webp', shot: '🛸', hp: 70,  atk: 10, atkCount: 6, guardLife: 850 },
   puppet:      { name: '人偶刺客',   icon: '🎎', img: 'enemies/puppet.png', shot: '🗡️', hp: 75,  atk: 11, atkCount: 5, guardLife: 950 },
+  patrolBot:   { name: '巡邏機兵',   icon: '🤖', img: 'enemies/patrol_bot.webp', shot: '🔴', hp: 80,  atk: 10, atkCount: 5, guardLife: 950 },
 
   // BOSS / 中頭目:每 3 次攻擊施放一次必殺技
   fatKing: {
@@ -104,6 +105,7 @@ G.MECHS = {
   snowMonk:    { hint: '冰封:結冰的格子要先敲破冰', board: 'ice', def: { ghost: 0.3 } },
   droneOp:     { hint: '無人機:準星鎖定後盾牌還會瞬移', def: { blink: 0.35, lockon: 450 } },
   puppet:      { hint: '人偶:殘影與瞬移混在一起', def: { ghost: 0.45, blink: 0.3 } },
+  patrolBot:   { hint: '警戒:拳頭裡混著 💣,盾牌先亮準星還帶鋼甲', atk: { bomb: 0.3 }, def: { lockon: 500, armor: 0.25 } },
   ironBull:    { hint: '蠻力:大量「頂住」重拳,發亮盾牌要點兩下', def: { heavy: { chance: 0.4, holdMs: 420 }, armor: 0.2 } },
   forgeMaster: { hint: '熔爐:熔岩格的拳頭傷害 ×2,盾牌帶著鋼甲', board: 'lava', def: { armor: 0.35 } },
   snowWitch:   { hint: '雪女:冰封格子,盾牌帶著殘影', board: 'ice', def: { ghost: 0.45 } },

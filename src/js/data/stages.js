@@ -63,7 +63,7 @@ G.STAGES = [
   {
     name: '第七關 霓虹地下鐵', bg: 'subway', bgm: 'battle1', deco: ['🚇', '💡', '🚦', '💡', '🚇'], stars: 4,
     desc: '深夜的末班列車,無人機在隧道裡來回巡邏。WAVE 4 有中頭目。',
-    waves: ['droneOp', 'gunner+', 'hacker+', 'ironBull', 'droneOp+', 'ninja+', 'thunderRonin'],
+    waves: ['droneOp', 'patrolBot', 'hacker+', 'ironBull', 'droneOp+', 'patrolBot+', 'thunderRonin'],
     events: [2, 4], scale: 1.9,
   },
   {
@@ -75,7 +75,7 @@ G.STAGES = [
   {
     name: '第九關 天空要塞', bg: 'sky', bgm: 'sky', deco: ['☁️', '🛰️', '⭐', '🛰️', '☁️'], stars: 5,
     desc: '漂浮在雲端的鋼鐵要塞,整座城市都在腳下。WAVE 4 有中頭目。',
-    waves: ['droneOp+', 'cyborg+', 'puppet+', 'thunderRonin', 'sumo+', 'hacker+', 'skyEmpress'],
+    waves: ['droneOp+', 'cyborg+', 'puppet+', 'thunderRonin', 'sumo+', 'patrolBot+', 'skyEmpress'],
     events: [2, 4], scale: 2.05,
   },
   {
