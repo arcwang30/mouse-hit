@@ -1,6 +1,7 @@
 // 進入點與輸入對應
 G.save.load();
 G.grid.init();
+G.$('#hurtFlash').addEventListener('animationend', e => e.target.classList.remove('show'));
 
 // ---- 音效 ----
 // 瀏覽器要求使用者互動後才能播放聲音
@@ -38,6 +39,9 @@ document.addEventListener('keydown', e => {
   if (!G.$('#battle').classList.contains('active') || e.repeat) return;
   if (e.code in KEYMAP) { G.grid.tap(KEYMAP[e.code]); e.preventDefault(); }
   else if (e.code === 'Space') { G.battle.requestUlt(); e.preventDefault(); }
+});
+document.addEventListener('keyup', e => {
+  if (e.code in KEYMAP) G.grid.release(KEYMAP[e.code]); // 蓄力重拳:放開按鍵出拳
 });
 document.addEventListener('keydown', e => {
   if (e.code === 'KeyM' && !e.repeat) muteBtn.click();

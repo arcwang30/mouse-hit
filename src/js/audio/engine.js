@@ -118,6 +118,17 @@ const SFX = {
     a.tone(2100, 0.2, { vol: 0.15 });
     a.noise(0.05, { filter: 'highpass', freq: 3000, vol: 0.3 });
   },
+  perfect: (a, t) => {
+    a.tone(1760, 0.35, { type: 'triangle', vol: 0.3 });
+    a.tone(2637, 0.3, { vol: 0.2, when: t + 0.04 });
+    a.noise(0.08, { filter: 'highpass', freq: 5000, vol: 0.3 });
+  },
+  chip:    a => { a.tone(900, 0.05, { type: 'square', vol: 0.12, to: 500 }); a.noise(0.04, { filter: 'bandpass', freq: 2500, q: 3, vol: 0.3 }); },
+  break:   a => {
+    a.noise(0.35, { freq: 4000, to: 300, vol: 0.7 });
+    a.tone(180, 0.3, { type: 'square', to: 50, vol: 0.35 });
+  },
+  charge:  a => a.tone(220, 0.65, { type: 'sawtooth', vol: 0.12, to: 880, attack: 0.05 }),
   hurt:    a => { a.tone(220, 0.3, { type: 'sawtooth', to: 70, vol: 0.35 }); a.noise(0.2, { freq: 1200, to: 200, vol: 0.5 }); },
   poison:  a => { a.tone(110, 0.4, { type: 'sawtooth', vol: 0.3, to: 90 }); a.tone(116, 0.4, { type: 'sawtooth', vol: 0.3, to: 95 }); },
 

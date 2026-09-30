@@ -37,7 +37,7 @@ powershell -ExecutionPolicy Bypass -File tools/serve.ps1
 
 | 動作 | 滑鼠 / 觸控 | 鍵盤 |
 |---|---|---|
-| 點擊九宮格 | 點擊格子 | 數字鍵盤 7-9 / 4-6 / 1-3,或 Q W E / A S D / Z X C |
+| 點擊九宮格 | 點擊格子(🔥 要按住再放開) | 數字鍵盤 7-9 / 4-6 / 1-3,或 Q W E / A S D / Z X C(🔥 按住按鍵再放開) |
 | 施放必殺技 | 必殺值 MAX 時點「🔥 必殺」 | 空白鍵 |
 | 靜音 | 右上角 🔊 | M |
 
@@ -46,6 +46,7 @@ powershell -ExecutionPolicy Bypass -File tools/serve.ps1
 - 3 個關卡 × 10 WAVE(WAVE 10 為 BOSS,第三關 WAVE 5 有中頭目),含精英敵人;敵人 5 種、BOSS 4 名(含 BOSS 必殺技)
 - 難度參數在 `src/js/data/stages.js`(`WAVE_GROWTH`、各關 `scale`),可用 `src/js/dev/balance-sim.js` 模擬通關率
 - 玩家攻擊 👊 / 敵人攻擊時防禦 🛡️ / 必殺技依序點數字 + 漫畫風演出
+- 進階按法:🔥 按住蓄力重拳(放開出拳)、🔒 連打破甲(精英與 BOSS)、盾牌發金光時格擋為完美格擋(下回合多一拳)
 - 20 個 Roguelike 技能,每擊倒一個 WAVE 三選一
 - 結算積分 → 成長點數 → 永久升級(存於瀏覽器 localStorage)
 - 音樂音效全部以 Web Audio 即時合成(`src/js/audio/`),不需音檔;配樂分主選單、三個關卡、BOSS 戰五首

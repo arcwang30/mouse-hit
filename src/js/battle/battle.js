@@ -1,5 +1,6 @@
 // 戰鬥流程:WAVE → 玩家攻擊 → 敵人攻擊/玩家防禦 → ... → 技能三選一 → 下一 WAVE
-const STATE_LABEL = { idle: '待機', attack: '攻擊', defend: '防禦', ult: '必殺技', hit: '受擊', recoil: '被格擋', dead: '擊倒' };
+const STATE_LABEL = { idle: '待機', attack: '攻擊', defend: '防禦', ult: '必殺技', hit: '受擊', recoil: '被格擋', stagger: '破防', dead: '擊倒' };
+const HOLD_MS = 650; // 蓄力重拳需要按住的時間
 
 function makePlayer() {
   const p = {
@@ -19,7 +20,7 @@ function makeEnemy(spec, scale, w) {
   const elite = spec.endsWith('+');
   const id = elite ? spec.slice(0, -1) : spec;
   const d = G.ENEMIES[id], g = G.WAVE_GROWTH;
-  const hp = Math.round(d.hp * scale * (1 + w * g.hp) * (elite ? 1.5 : 1));
+  const hp = Math.round(d.hp * G.ENEMY_HP_MUL * scale * (1 + w * g.hp) * (elite ? 1.5 : 1));
   return Object.assign({}, d, {
     id, elite, hp, maxHp: hp, turn: 0,
     name: (elite ? '精英・' : '') + d.name,
@@ -38,9 +39,10 @@ G.battle = {
     this.stageIdx = stageIdx;
     this.stage = G.STAGES[stageIdx];
     this.p = makePlayer();
-    this.stats = { dmg: 0, hits: 0, blocks: 0, waves: 0, ults: 0 };
+    this.stats = { dmg: 0, hits: 0, blocks: 0, perfects: 0, waves: 0, ults: 0 };
     this.ultRequested = false;
     this.counterStack = 0;
+    this.perfectStack = 0;
 
     G.$('#stageView').className = 'stage bg-' + this.stage.bg;
     G.$('#deco').innerHTML = this.stage.deco.map((d, i) =>
@@ -85,26 +87,60 @@ G.battle = {
 
   async playerTurn() {
     const p = this.p, e = this.e;
-    let first = true, combo = 0;
+    let first = true, combo = 0, broken = false;
     const counter = this.counterStack || 0; // 反震掌:上回合格擋累積的加成
+    const extra = this.perfectStack || 0;   // 完美格擋:敵人破防,本回合多出幾拳
     this.counterStack = 0;
+    this.perfectStack = 0;
+    const count = p.attackCount + extra;
+    const tough = e.elite || e.boss;
+
+    const tips = ['👊 點擊', '🔥 按住蓄力'];
+    if (tough) tips.push('🔒 連打');
+    let head = '你的回合';
+    if (counter) head += `・反震 +${counter}`;
+    if (extra) head += `・破防 +${extra}`;
     this.phase = 'attack';
-    this.setPhase(counter ? `你的回合:反震掌 每拳 +${counter}!` : '你的回合:點擊 👊 出拳!', 'atk');
+    this.setPhase(`${head}:${tips.join('/')}`, 'atk');
     this.render();
+
     await G.molePhase({
-      icon: '👊', cls: 'fist', count: p.attackCount, life: p.moleLife,
+      icon: '👊', cls: 'fist', count, life: p.moleLife,
       interval: Math.max(250, p.moleLife * 0.45),
-      onHit: i => {
+      // C. 蓄力重拳:每回合其中一顆拳頭換成 🔥
+      hold: { at: 1 + Math.floor(Math.random() * (count - 1)), icon: '🔥', holdMs: HOLD_MS },
+      // B. 連打破甲:精英與 BOSS 才會出現
+      mash: tough ? {
+        delay: 150, icon: '🔒', hits: e.boss ? 7 : 5, life: 2600,
+        onTap: i => { G.audio.play('chip'); this.punchFx(i % 3, { small: true, dur: 110 }); this.setEnemyState('defend', 200); },
+        onBreak: i => {
+          broken = true;
+          G.audio.play('break');
+          this.punchFx(i % 3, { crit: true });
+          this.float('破甲!', 'tag armor');
+          this.hurtEnemy(p.atk * 4, true);
+          this.setPhase('破甲!本回合之後每拳 ×1.5', 'atk');
+        },
+      } : null,
+      onHit: (i, info) => {
         let d = p.atk + combo * p.combo + counter;
         combo++;
         if (first && p.firstStrike) d *= 3;
         first = false;
         if (p.execute && e.hp < e.maxHp * 0.2) d *= 2;
+        if (broken) d *= 1.5;
+        const charged = info.hold && info.charged;
+        if (charged) d *= 3;
         const crit = Math.random() < p.crit;
         if (crit) d *= p.critMul;
         this.stats.hits++;
-        this.punchFx(i % 3, { crit });
-        this.hurtEnemy(Math.round(d), crit);
+        if (charged) {
+          this.float('蓄力重拳!', 'tag charge');
+          this.punchFx(i % 3, { crit: true, final: true, dur: 200 });
+        } else {
+          this.punchFx(i % 3, { crit });
+        }
+        this.hurtEnemy(Math.round(d), crit || charged, charged);
         if (p.lifesteal) this.healPlayer(p.lifesteal, true);
         this.gainUlt(p.ultGain);
       },
@@ -136,14 +172,24 @@ G.battle = {
     this.setPhase(s ? `必殺技來襲:${s.name}!` : '防禦:點擊 🛡️ 擋下攻擊!', 'def');
     await G.molePhase({
       icon: '🛡️', cls, count, life, interval: life * 0.5, decoyRate: s ? s.decoy : 0,
+      // A. 完美格擋:攻擊快打到時(最後 25%)才擋
+      perfectWindow: Math.max(180, life * 0.25),
       // 每個盾牌對應一發飛向玩家的攻擊,盾牌消失的瞬間正好命中
       onSpawn: (i, ms) => this.enemyShot(i % 3, ms, !!s),
-      onHit: () => {
+      onHit: (i, info) => {
         this.stats.blocks++;
-        G.audio.play('block');
         this.gainUlt(p.blockUlt);
         if (p.counter) this.counterStack = (this.counterStack || 0) + p.counter;
-        this.setEnemyState('recoil', 260);
+        if (info.perfect) {
+          this.stats.perfects++;
+          G.audio.play('perfect');
+          this.gainUlt(3);
+          this.perfectStack = Math.min(3, (this.perfectStack || 0) + 1);
+          this.setEnemyState('stagger', 420);
+        } else {
+          G.audio.play('block');
+          this.setEnemyState('recoil', 260);
+        }
       },
       onMiss: () => this.hurtPlayer(dmg),
       onDecoy: () => { G.audio.play('poison'); this.hurtPlayer(dmg * 1.5); },
@@ -284,13 +330,13 @@ G.battle = {
     };
     return {
       // 擋下:在攻擊目前的位置彈開
-      block: () => {
+      block: perfect => {
         const r = f.getBoundingClientRect(), sr = stage.getBoundingClientRect();
         const x = r.left + r.width / 2 - sr.left, y = r.top + r.height / 2 - sr.top;
         anim.cancel();
         f.remove();
-        burst('fx-block', '🛡️', x, y);
-        burst('fx-block-text', 'BLOCK!', x, y);
+        burst('fx-block' + (perfect ? ' perfect' : ''), perfect ? '✨' : '🛡️', x, y);
+        burst('fx-block-text' + (perfect ? ' perfect' : ''), perfect ? 'PERFECT!' : 'BLOCK!', x, y);
       },
       // 沒擋:正面命中鏡頭
       hit: () => {
@@ -394,7 +440,8 @@ G.battle = {
     f.className = 'float ' + cls;
     f.textContent = text;
     f.style.left = (30 + Math.random() * 40) + '%';
-    if (!onPlayer && !cls.includes('big')) f.style.top = (12 + Math.random() * 38) + '%'; // 連打時數字散開不重疊
+    if (cls.includes('tag')) f.style.left = '50%'; // 「破甲!」等招式名置中
+    else if (!onPlayer && !cls.includes('big')) f.style.top = (12 + Math.random() * 38) + '%'; // 連打時數字散開不重疊
     (onPlayer ? G.$('.hud') : G.$('#stageView')).appendChild(f);
     setTimeout(() => f.remove(), 900);
   },

@@ -10,7 +10,7 @@ window.simRun = function (stageIdx, skill, upLv) {
   G.save.data.up = saveUp;
 
   const st = G.STAGES[stageIdx];
-  let counterNext = 0; // 反震掌累積
+  let counterNext = 0, perfectNext = 0; // 反震掌累積、完美格擋多出的拳
   const clamp = x => Math.max(0.05, Math.min(0.99, x));
   const hurt = d => {
     p.hp -= Math.max(1, Math.round(d * (1 - p.armor)));
@@ -28,17 +28,25 @@ window.simRun = function (stageIdx, skill, upLv) {
         if (Math.random() < clamp(skill + 0.05)) { e.hp -= Math.round(p.atk * p.ultMult); p.ult = 0; }
         else p.ult = p.ultMax / 2;
       } else {
-        let combo = 0, first = true;
-        const counter = counterNext;
-        counterNext = 0;
+        let combo = 0, first = true, broken = false;
+        const counter = counterNext, count = p.attackCount + perfectNext;
+        counterNext = perfectNext = 0;
         const r = clamp(skill + (p.moleLife - 1200) / 2000);
-        for (let k = 0; k < p.attackCount && e.hp > 0; k++) {
+        // 連打破甲:精英 5 下、BOSS 7 下
+        if ((e.elite || e.boss) && Math.random() < clamp(skill + (e.boss ? 0 : 0.05))) {
+          e.hp -= p.atk * 4;
+          broken = true;
+        }
+        const holdAt = 1 + Math.floor(Math.random() * (count - 1));
+        for (let k = 0; k < count && e.hp > 0; k++) {
           if (Math.random() < r) {
             let d = p.atk + combo * p.combo + counter;
             combo++;
             if (first && p.firstStrike) d *= 3;
             first = false;
             if (p.execute && e.hp < e.maxHp * 0.2) d *= 2;
+            if (broken) d *= 1.5;
+            if (k === holdAt && Math.random() < clamp(skill)) d *= 3; // 蓄力重拳集滿
             if (Math.random() < p.crit) d *= p.critMul;
             e.hp -= Math.round(d);
             p.hp = Math.min(p.maxHp, p.hp + p.lifesteal);
@@ -61,6 +69,11 @@ window.simRun = function (stageIdx, skill, upLv) {
         if (Math.random() < gr) {
           p.ult = Math.min(p.ultMax, p.ult + p.blockUlt);
           counterNext += p.counter;
+          // 完美格擋:熟練度越高越常抓到時機
+          if (Math.random() < clamp((skill - 0.6) * 0.6)) {
+            p.ult = Math.min(p.ultMax, p.ult + 3);
+            perfectNext = Math.min(3, perfectNext + 1);
+          }
         } else hurt(dmg);
         if (decoy && Math.random() < decoy / (1 - decoy) * 0.2) hurt(dmg * 1.5);
       }
