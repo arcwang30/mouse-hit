@@ -173,6 +173,64 @@
 .label { font-family: var(--tech), sans-serif; border-radius: 0; clip-path: polygon(8% 0, 100% 0, 92% 100%, 0 100%); padding: .2cqw 2.4cqw; }
 .badge { font-family: var(--tech); }
 
+/* ---------- 敲打回饋特效 ---------- */
+.cell.thump { z-index: 2; animation: thump .2s ease-out; } /* 按鍵被敲:壓扁再回彈 */
+@keyframes thump {
+  30% { transform: scale(.88, .84); }
+  65% { transform: scale(1.05, 1.06); }
+}
+#grid.quake { animation: gridQuake .28s ease-out; } /* 重擊時整個九宮格震一下 */
+@keyframes gridQuake {
+  20% { transform: translate(-1.2cqw, .8cqw); }
+  45% { transform: translate(1cqw, -.6cqw); }
+  70% { transform: translate(-.5cqw, .4cqw); }
+}
+
+.tap-fx { position: absolute; inset: 0; z-index: 3; pointer-events: none; --c: #ffc23d; }
+.tap-fx.guard { --c: var(--neon-c); }
+.tap-fx.num   { --c: var(--neon-m); }
+.tap-fx.mash  { --c: #dfe8f0; }
+.tap-fx.bad   { --c: var(--neon-r); }
+.tap-fx.miss  { --c: #ffffff70; }
+.tap-fx i { position: absolute; left: 50%; top: 50%; display: block; }
+
+.tap-flash { /* 中心爆閃 */
+  width: 70%; height: 70%; border-radius: 50%; transform: translate(-50%, -50%);
+  background: radial-gradient(circle, #fff 0 15%, var(--c) 35%, transparent 70%);
+  mix-blend-mode: screen; animation: tapFlash .2s ease-out forwards;
+}
+.tap-ring { /* 衝擊波 */
+  width: 60%; height: 60%; border-radius: 50%; transform: translate(-50%, -50%) scale(.3);
+  border: .9cqw solid var(--c); box-shadow: 0 0 2cqw var(--c), inset 0 0 1.5cqw var(--c);
+  animation: tapRing .38s ease-out forwards;
+}
+.tap-star { /* 漫畫打擊星芒 */
+  width: 50%; height: 50%; transform: translate(-50%, -50%) scale(.2) rotate(-15deg); background: #fff;
+  clip-path: polygon(50% 0, 60% 32%, 95% 18%, 70% 46%, 100% 62%, 64% 64%, 74% 100%, 50% 72%, 24% 98%, 34% 64%, 0 60%, 30% 44%, 6% 16%, 40% 32%);
+  filter: drop-shadow(0 0 1.5cqw var(--c)); animation: tapStar .24s ease-out forwards;
+}
+.tap-spark { /* 往外噴的火花 */
+  width: 1.2cqw; height: 3.6cqw; margin: -1.8cqw 0 0 -.6cqw; border-radius: 99px;
+  background: linear-gradient(#fff 30%, var(--c)); box-shadow: 0 0 1cqw var(--c), 0 0 2.4cqw var(--c);
+  transform: rotate(var(--a)) translateY(-1.5cqw);
+  animation: tapSpark .36s cubic-bezier(.2, .7, .3, 1) forwards;
+}
+.tap-fx.big .tap-ring  { border-width: 1.4cqw; animation-duration: .5s; }
+.tap-fx.big .tap-star  { width: 75%; height: 75%; }
+.tap-fx.big .tap-spark { height: 4.6cqw; }
+.tap-fx.miss .tap-ring { width: 45%; height: 45%; border-width: .5cqw; box-shadow: none; }
+
+@keyframes tapFlash { from { opacity: 1; } to { opacity: 0; transform: translate(-50%, -50%) scale(1.3); } }
+@keyframes tapRing  { to { transform: translate(-50%, -50%) scale(1.7); opacity: 0; } }
+@keyframes tapStar  {
+  50%  { transform: translate(-50%, -50%) scale(1) rotate(0deg); opacity: 1; }
+  to   { transform: translate(-50%, -50%) scale(1.15) rotate(8deg); opacity: 0; }
+}
+@keyframes tapSpark {
+  60% { opacity: 1; }
+  to  { transform: rotate(var(--a)) translateY(calc(var(--d) * -1)) scaleY(.35); opacity: 0; }
+}
+
 /* ---------- 大字橫幅:故障風 ---------- */
 .banner {
   background:
