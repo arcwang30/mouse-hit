@@ -4,6 +4,9 @@ const ENEMY_IMG_DIR = '../assets/images/'; // 立繪與背景圖的根目錄,相
 const HOLD_MS = 650;       // 蓄力重拳需要按住的時間
 const BLOCK_PCT_MAX = 12;  // 盾牌一出現就擋下可得的反擊力(%),越晚越少
 const BLOCK_PCT_CAP = 60;  // 反擊力累積上限(%)
+const FEVER_AT = 15;       // 連擊累積幾次進入 FEVER
+const FEVER_MS = 10000;    // FEVER 持續時間
+const FEVER_MUL = 1.5;     // FEVER 期間傷害 / 反擊力 / 必殺集氣倍率
 
 function makePlayer() {
   const p = {
@@ -42,7 +45,10 @@ G.battle = {
     this.stageIdx = stageIdx;
     this.stage = G.STAGES[stageIdx];
     this.p = makePlayer();
-    this.stats = { dmg: 0, hits: 0, blocks: 0, perfects: 0, breaks: 0, waves: 0, ults: 0 };
+    this.stats = { dmg: 0, hits: 0, blocks: 0, perfects: 0, breaks: 0, waves: 0, ults: 0, maxCombo: 0, fevers: 0 };
+    this.comboN = 0;
+    this.feverCharge = 0;
+    this.endFever();
     this.ultRequested = false;
     this.counterStack = 0;
     this.counterPct = 0;
@@ -64,6 +70,7 @@ G.battle = {
 
     const total = this.stage.waves.length;
     for (let w = 0; w < total; w++) {
+      this.wave = w;
       this.e = makeEnemy(this.stage.waves[w], this.stage.scale, w);
       G.$('#waveTag').textContent = `WAVE ${w + 1}/${total}`;
       this.showSprite(this.e);
@@ -118,7 +125,7 @@ G.battle = {
 
     await G.molePhase({
       icon: '👊', cls: 'fist', count: p.attackCount, life: p.moleLife,
-      interval: Math.max(250, p.moleLife * 0.45),
+      interval: Math.max(250, p.moleLife * 0.45), patterns: this.patterns(),
       // 蓄力重拳:每回合其中一顆拳頭需要按住蓄力
       hold: { at: 1 + Math.floor(Math.random() * (p.attackCount - 1)), icon: '👊', label: 'HOLD', holdMs: HOLD_MS },
       onHit: (i, info) => {
@@ -127,6 +134,8 @@ G.battle = {
         if (first && p.firstStrike) d *= 3;
         first = false;
         if (p.execute && e.hp < e.maxHp * 0.2) d *= 2;
+        if (this.fever()) d *= FEVER_MUL;
+        this.comboHit();
         const charged = info.hold && info.charged;
         if (charged) d *= 3;
         const crit = Math.random() < p.crit;
@@ -142,7 +151,7 @@ G.battle = {
         if (p.lifesteal) this.healPlayer(p.lifesteal, true);
         this.gainUlt(p.ultGain);
       },
-      onMiss: () => { combo = 0; G.audio.play('whiff'); this.setEnemyState('defend', 450); },
+      onMiss: () => { combo = 0; this.comboBreak(); G.audio.play('whiff'); this.setEnemyState('defend', 450); },
       stop: () => this.over() || this.ultRequested,
     });
     this.phase = null;
@@ -170,12 +179,13 @@ G.battle = {
     this.setPhase(s ? `必殺技來襲:${s.name}!` : '防禦:點擊 🛡️ 擋下攻擊!', 'def');
     let missed = 0;
     await G.molePhase({
-      icon: '🛡️', cls, count, life, interval: life * 0.5, decoyRate: s ? s.decoy : 0,
+      icon: '🛡️', cls, count, life, interval: life * 0.5, decoyRate: s ? s.decoy : 0, patterns: this.patterns(),
       // 每個盾牌對應一發飛向玩家的攻擊,盾牌消失的瞬間正好命中
       onSpawn: (i, ms) => this.enemyShot(i % 3, ms, !!s),
       onHit: (i, info) => {
         // 越快擋下,累積的反擊力越多(下回合每拳傷害加成)
-        const pct = Math.round(BLOCK_PCT_MAX * info.ratio);
+        const pct = Math.round(BLOCK_PCT_MAX * info.ratio * (this.fever() ? FEVER_MUL : 1));
+        this.comboHit();
         this.counterPct = Math.min(BLOCK_PCT_CAP, (this.counterPct || 0) + pct);
         this.stats.blocks++;
         this.gainUlt(p.blockUlt);
@@ -191,8 +201,8 @@ G.battle = {
           this.setEnemyState('recoil', 260);
         }
       },
-      onMiss: () => { missed++; this.hurtPlayer(dmg); },
-      onDecoy: () => { missed++; G.audio.play('poison'); this.hurtPlayer(dmg * 1.5); },
+      onMiss: () => { missed++; this.comboBreak(); this.hurtPlayer(dmg); },
+      onDecoy: () => { missed++; this.comboBreak(); G.audio.play('poison'); this.hurtPlayer(dmg * 1.5); },
       stop: () => this.over(),
     });
     this.phase = null;
@@ -222,6 +232,7 @@ G.battle = {
     if (broken) {
       this.stats.breaks++;
       this.brokenNext = true;
+      this.comboHit();
       G.audio.play('break');
       this.punchFx(1, { crit: true, final: true, dur: 200 });
       this.float('破甲!', 'tag armor');
@@ -249,6 +260,7 @@ G.battle = {
         if (i === seq[idx]) {
           G.audio.play('note', idx);
           G.grid.impact(i, 'num', idx === seq.length - 1); // 最後一個數字是重擊
+          this.comboHit();
           G.grid.clear(i, 'press');
           G.grid.flash(i, 'good');
           if (++idx === seq.length) { timer.stop(); G.grid.handler = null; res(true); }
@@ -256,6 +268,7 @@ G.battle = {
           timer.stop();
           G.grid.flash(i, 'bad');
           G.grid.impact(i, 'bad');
+          this.comboBreak();
           G.grid.handler = null;
           res(false);
         }
@@ -274,6 +287,7 @@ G.battle = {
       p.ult = Math.floor(p.ultMax / 2);
       this.render();
       G.audio.play('fail');
+      this.comboBreak(); // 必殺失敗(按錯或超時)連擊歸零
       await G.banner('必殺技失敗', '氣勁散去了一半…', 900);
     }
   },
@@ -391,6 +405,79 @@ G.battle = {
     };
   },
 
+  // ---- 出現模式:越後面的 WAVE、越後面的關卡,越常出現多發 / 連線 / 掃射 ----
+  patterns() {
+    const t = this.wave / Math.max(1, this.stage.waves.length - 1);   // 本關進度 0 → 1
+    const k = Math.min(1.5, t + this.stageIdx * 0.3);                // 第二、三關起點較高
+    return {
+      single: 6 - 3 * k,
+      pair: 1 + 1.4 * k,
+      triple: 0.3 + 1.2 * k,
+      line: 0.6 + 1.4 * k,
+      sweep: 0.6 + 1.4 * k,
+      rapid: 0.8 + 1.2 * k,
+    };
+  },
+
+  // ---- 連擊 & FEVER ----
+  fever() { return performance.now() < (this.feverUntil || 0); },
+
+  comboHit() {
+    this.comboN++;
+    this.stats.maxCombo = Math.max(this.stats.maxCombo, this.comboN);
+    if (this.comboN % 10 === 0) G.audio.play('combo', this.comboN);
+    if (!this.fever() && ++this.feverCharge >= FEVER_AT) this.startFever();
+    this.renderCombo();
+  },
+
+  comboBreak() {
+    if (this.comboN >= 5) {
+      const el = G.$('#combo');
+      el.classList.remove('broke');
+      void el.offsetWidth;
+      el.classList.add('broke');
+    }
+    this.comboN = 0;
+    this.feverCharge = 0; // FEVER 已經開始就會跑完,只是連擊歸零
+    this.renderCombo();
+  },
+
+  startFever() {
+    this.feverCharge = 0;
+    this.feverUntil = performance.now() + FEVER_MS;
+    this.stats.fevers++;
+    G.$('#app').classList.add('fever');
+    G.audio.play('fever');
+    G.bgm.setRate(1.2);
+    this.float('FEVER!!', 'tag fever');
+    clearInterval(this._feverTimer);
+    this._feverTimer = setInterval(() => {
+      if (!this.fever()) this.endFever();
+      else this.renderCombo();
+    }, 100);
+  },
+
+  endFever() {
+    clearInterval(this._feverTimer);
+    this.feverUntil = 0;
+    G.$('#app').classList.remove('fever');
+    G.bgm.setRate(1);
+    this.renderCombo();
+  },
+
+  renderCombo() {
+    const el = G.$('#combo');
+    const on = this.fever();
+    el.classList.toggle('show', on || this.comboN >= 3);
+    el.classList.toggle('fever', on);
+    G.$('#comboNum').textContent = this.comboN;
+    const r = on ? (this.feverUntil - performance.now()) / FEVER_MS : this.feverCharge / FEVER_AT;
+    G.$('#feverFill').style.width = Math.max(0, Math.min(1, r)) * 100 + '%';
+    G.$('#comboNum').classList.remove('pop');
+    void G.$('#comboNum').offsetWidth;
+    G.$('#comboNum').classList.add('pop');
+  },
+
   requestUlt() {
     if (this.phase === 'attack' && this.p.ult >= this.p.ultMax) {
       this.ultRequested = true;
@@ -437,7 +524,7 @@ G.battle = {
 
   gainUlt(n) {
     const was = this.p.ult;
-    this.p.ult = Math.min(this.p.ultMax, this.p.ult + n);
+    this.p.ult = Math.min(this.p.ultMax, this.p.ult + n * (this.fever() ? FEVER_MUL : 1));
     if (was < this.p.ultMax && this.p.ult >= this.p.ultMax) G.audio.play('ready');
     this.render();
   },
@@ -516,6 +603,7 @@ G.battle = {
   },
 
   finish(win) {
+    this.endFever();
     const p = this.p, s = this.stats;
     let score = s.dmg + p.hp * 5 + s.waves * 300 + (win ? 1000 : 0);
     score = Math.round(score * p.scoreMul);

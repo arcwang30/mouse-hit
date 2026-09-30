@@ -58,7 +58,10 @@
   });
 
   G.bgm = {
-    cur: null, tr: null, step: 0, next: 0, timer: null,
+    cur: null, tr: null, step: 0, next: 0, timer: null, rate: 1,
+
+    // FEVER 時加快節奏(1 = 原速)
+    setRate(r) { this.rate = r; },
 
     play(name) {
       const a = G.audio;
@@ -82,7 +85,7 @@
     },
 
     tick() {
-      const a = G.audio, sd = 60 / this.tr.bpm / 4;
+      const a = G.audio, sd = 60 / (this.tr.bpm * this.rate) / 4;
       while (this.next < a.ctx.currentTime + 0.12) {
         this.schedule(this.step, this.next, sd);
         this.next += sd;

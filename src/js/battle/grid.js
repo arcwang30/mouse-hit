@@ -123,6 +123,7 @@ G.grid = {
 //   decoyRate      混入 💀 陷阱(不計入次數,點到觸發 onDecoy)
 //   onSpawn(i, ms) 回傳特效物件 { block, hit, cancel },在點中/錯過/提前結束時呼叫
 //   hold           { at, icon, label, holdMs } 第 at 個符號改成「按住蓄力」,放開時 onHit(i, { hold, charged })
+//   patterns       出現模式權重(single/pair/triple/line/sweep/rapid),見下方 spawnGroup
 G.molePhase = o => new Promise(resolve => {
   const active = new Map();
   let spawned = 0, settled = 0, finished = false, spawnTimer;
@@ -136,6 +137,7 @@ G.molePhase = o => new Promise(resolve => {
     if (finished) return;
     finished = true;
     clearTimeout(spawnTimer);
+    pending.forEach(clearTimeout);
     active.forEach(a => { kill(a); a.fx && a.fx.cancel(); });
     active.clear();
     G.grid.clearAll();
@@ -204,19 +206,12 @@ G.molePhase = o => new Promise(resolve => {
     settle();
   };
 
-  const spawn = () => {
-    if (finished) return;
-    if (o.stop()) { finish(); return; }
-    const i = freeCell();
-    if (i < 0) { spawnTimer = setTimeout(spawn, 100); return; }
-
-    const decoy = !!o.decoyRate && Math.random() < o.decoyRate;
-    const hold = !decoy && o.hold && spawned === o.hold.at;
-    const kind = decoy ? 'decoy' : hold ? 'hold' : 'normal';
-    const life = hold ? o.life + 400 : o.life;
-    if (!decoy) { spawned++; setCounter(o.count - spawned); }
-    if (decoy) G.grid.set(i, '💀', 'decoy', life);
-    else if (hold) G.grid.set(i, o.hold.icon, 'hold', life, o.hold.label);
+  // 在第 i 格放一個符號。kind:normal / hold / decoy;lifeMul:同時出現多個時放寬停留時間
+  const spawnOne = (i, kind, lifeMul = 1) => {
+    const life = Math.round((kind === 'hold' ? o.life + 400 : o.life) * lifeMul);
+    if (kind !== 'decoy') { spawned++; setCounter(o.count - spawned); }
+    if (kind === 'decoy') G.grid.set(i, '💀', 'decoy', life);
+    else if (kind === 'hold') G.grid.set(i, o.hold.icon, 'hold', life, o.hold.label);
     else G.grid.set(i, o.icon, o.cls, life);
     G.audio.play('pop');
 
@@ -225,13 +220,73 @@ G.molePhase = o => new Promise(resolve => {
     a.ts.push(setTimeout(() => {
       active.delete(i);
       G.grid.clear(i, 'sink');
-      if (!decoy) { G.grid.flash(i, 'bad'); a.fx && a.fx.hit(); o.onMiss(i); settle(); }
+      if (kind !== 'decoy') { G.grid.flash(i, 'bad'); a.fx && a.fx.hit(); o.onMiss(i); settle(); }
     }, life));
     active.set(i, a);
-    if (spawned < o.count) spawnTimer = setTimeout(spawn, o.interval);
   };
 
-  spawnTimer = setTimeout(spawn, 300);
+  // ---- 出現模式 ----
+  // patterns:各模式的權重,例如 { single: 5, pair: 2, triple: 1, line: 2, sweep: 2, rapid: 2 }
+  const LINES = [[0, 1, 2], [3, 4, 5], [6, 7, 8], [0, 3, 6], [1, 4, 7], [2, 5, 8], [0, 4, 8], [2, 4, 6]];
+  const pending = []; // 同一組裡延後出現的計時器
+  let planned = 0;    // 已排定的(非陷阱)符號數
+  const pickPattern = () => {
+    const w = o.patterns || { single: 1 };
+    let r = Math.random() * Object.values(w).reduce((s, v) => s + v, 0);
+    for (const [k, v] of Object.entries(w)) if ((r -= v) < 0) return k;
+    return 'single';
+  };
+  // 指定格被占用時改放其他空格;都滿了就稍後再試
+  const spawnWhenFree = (i, kind, lifeMul) => {
+    if (finished) return;
+    if (active.has(i)) i = freeCell();
+    if (i < 0) { pending.push(setTimeout(() => spawnWhenFree(-1, kind, lifeMul), 100)); return; }
+    spawnOne(i, kind, lifeMul);
+  };
+
+  const spawnGroup = () => {
+    if (finished) return;
+    if (o.stop()) { finish(); return; }
+    const free = [...Array(9).keys()].filter(i => !active.has(i));
+    if (!free.length) { spawnTimer = setTimeout(spawnGroup, 100); return; }
+
+    const holdNow = o.hold && planned === o.hold.at; // HOLD 一定單獨出現
+    let pat = holdNow ? 'single' : pickPattern();
+    let cells = null, gap = 0;
+    const line = G.shuffle(LINES).find(l => l.every(i => free.includes(i)));
+    if (pat === 'pair') cells = G.shuffle(free).slice(0, 2);
+    else if (pat === 'triple') cells = G.shuffle(free).slice(0, 3);
+    else if (pat === 'line') cells = line;
+    else if (pat === 'sweep' && line) { cells = Math.random() < 0.5 ? line : line.slice().reverse(); gap = 110; }
+    else if (pat === 'rapid') { cells = G.shuffle(free).slice(0, 3); gap = Math.max(160, o.interval * 0.35); }
+    if (!cells || cells.length < 2) { pat = 'single'; cells = [G.pick(free)]; }
+    cells = cells.slice(0, o.count - planned);
+    // 多發不能跨過 HOLD 的順位,截短讓下一組剛好輪到 HOLD
+    if (o.hold && !holdNow && planned < o.hold.at && planned + cells.length > o.hold.at) {
+      cells = cells.slice(0, o.hold.at - planned);
+    }
+    planned += cells.length;
+
+    // 同時出現越多,每個停留越久(3 個同時 = 1.5 倍)
+    const lifeMul = gap ? 1 : 1 + 0.25 * (cells.length - 1);
+    cells.forEach((i, n) => {
+      const kind = holdNow ? 'hold' : 'normal';
+      if (n === 0) spawnOne(i, kind, lifeMul);
+      else pending.push(setTimeout(() => spawnWhenFree(i, kind, lifeMul), gap * n));
+    });
+    // 陷阱另外加一個,不占用次數
+    if (o.decoyRate && Math.random() < o.decoyRate) {
+      const d = G.pick(free.filter(i => !cells.includes(i)));
+      if (d !== undefined) spawnOne(d, 'decoy');
+    }
+    // 多發之後多給一點喘息時間
+    if (planned < o.count) {
+      const rest = cells.length > 1 ? 1 + 0.55 * cells.length : 1;
+      spawnTimer = setTimeout(spawnGroup, o.interval * rest + gap * (cells.length - 1));
+    }
+  };
+
+  spawnTimer = setTimeout(spawnGroup, 300);
 });
 
 // 連打階段:九宮格只留一個按鈕,在時間內連點 hits 下。回傳是否打破。

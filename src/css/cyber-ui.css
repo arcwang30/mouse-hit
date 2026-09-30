@@ -231,6 +231,39 @@
   to  { transform: rotate(var(--a)) translateY(calc(var(--d) * -1)) scaleY(.35); opacity: 0; }
 }
 
+/* ---------- 連擊數 & FEVER ---------- */
+.combo {
+  position: absolute; right: 3cqw; top: 13cqh; z-index: 6; text-align: right; pointer-events: none;
+  opacity: 0; transform: translateX(30%); transition: opacity .2s, transform .2s;
+}
+.combo.show { opacity: 1; transform: none; }
+.combo b {
+  display: block; font-family: var(--tech); font-size: 9cqw; line-height: 1; color: #fff;
+  text-shadow: -.4cqw 0 var(--neon-m), .4cqw 0 var(--neon-c), 0 0 2cqw #000;
+}
+.combo b.pop { animation: comboPop .18s ease-out; }
+.combo span { font-family: var(--tech); font-size: 2.6cqw; letter-spacing: .25em; color: var(--neon-c); text-shadow: 0 0 1cqw var(--neon-c); }
+.fever-bar { width: 20cqw; height: 1.1cqw; margin: .6cqw 0 0 auto; background: #000a; box-shadow: inset 0 0 0 .2cqw #ffffff30; }
+.fever-bar i { display: block; height: 100%; width: 0; background: linear-gradient(90deg, var(--neon-c), var(--neon-m)); box-shadow: 0 0 1.2cqw var(--neon-m); transition: width .1s linear; }
+.combo.fever b { color: var(--neon-y); animation: feverHue .6s linear infinite; }
+.combo.fever span::after { content: " FEVER"; color: var(--neon-m); }
+.combo.fever .fever-bar i { background: linear-gradient(90deg, var(--neon-y), var(--neon-m)); }
+.combo.broke b { animation: comboBreak .45s ease-out; }
+@keyframes comboPop   { from { transform: scale(1.5); } }
+@keyframes comboBreak { 0% { color: var(--neon-r); transform: translateX(-1.5cqw); } 30% { transform: translateX(1.5cqw); } 100% { color: #fff; } }
+@keyframes feverHue   { 50% { filter: hue-rotate(60deg) brightness(1.3); } }
+
+/* FEVER 期間:九宮格霓虹外框、警示斜紋流動 */
+#app.fever .grid-wrap { box-shadow: inset 0 0 0 .6cqw var(--neon-m), inset 0 0 6cqw #ff2bd680; animation: feverGrid .5s ease-in-out infinite alternate; }
+#app.fever .hud::before { animation: hazardRun .5s linear infinite; background-size: auto, 5.66cqw 5.66cqw; }
+#app.fever .stage-bg { filter: brightness(.9) saturate(1.5) hue-rotate(-20deg) blur(.25cqw); }
+@keyframes feverGrid { to { box-shadow: inset 0 0 0 .6cqw var(--neon-y), inset 0 0 9cqw #ffd40070; } }
+@keyframes hazardRun { to { background-position: 0 0, 5.66cqw 0; } }
+.float.tag.fever {
+  font-family: var(--tech); font-size: 11cqw; color: var(--neon-y); top: 30%;
+  -webkit-text-stroke: .5cqw #000; text-shadow: -.8cqw 0 var(--neon-m), .8cqw 0 var(--neon-c);
+}
+
 /* ---------- 大字橫幅:故障風 ---------- */
 .banner {
   background:

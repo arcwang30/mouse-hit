@@ -106,6 +106,15 @@ const SFX = {
     a.noise(1.2, { filter: 'bandpass', freq: 900, q: 0.8, vol: 0.25 });
     for (let k = 0; k < 6; k++) a.noise(0.03, { filter: 'highpass', freq: 3000, vol: 0.3, when: t + Math.random() * 1.1 });
   },
+  combo: (a, t, n) => { // 每 10 連擊一聲,音越來越高
+    const up = Math.min(12, Math.floor(n / 10) * 2);
+    a.tone(semi(880, up), 0.12, { type: 'square', vol: 0.12 });
+    a.tone(semi(1320, up), 0.12, { type: 'square', vol: 0.1, when: t + 0.06 });
+  },
+  fever: (a, t) => { // 進入 FEVER:上升琶音 + 衝刺風聲
+    arp(a, t, 523, [0, 4, 7, 12, 16, 19, 24], 0.045, { type: 'square', vol: 0.16, dur: 0.18 });
+    a.noise(0.6, { filter: 'bandpass', freq: 500, to: 7000, q: 1.2, vol: 0.4 });
+  },
   thunder: a => {
     a.noise(0.08, { filter: 'highpass', freq: 2000, vol: 0.35 });
     a.noise(1.8, { freq: 500, to: 60, vol: 0.55 });

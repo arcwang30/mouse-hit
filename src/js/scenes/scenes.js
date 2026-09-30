@@ -246,6 +246,7 @@ G.scenes = {
       <div>總傷害<b>${s.dmg}</b></div>
       <div>命中 / 格擋<b>${s.hits} / ${s.blocks}</b></div>
       <div>迅擋 / 破甲<b>${s.perfects || 0} / ${s.breaks || 0}</b></div>
+      <div>最高連擊 / FEVER<b>${s.maxCombo || 0} / ${s.fevers || 0} 次</b></div>
       <div>必殺技次數<b>${s.ults}</b></div>
       <div>擊倒 WAVE<b>${s.waves} / ${G.battle.stage.waves.length}</b></div>
       <div>取得技能<b>${skills}</b></div>

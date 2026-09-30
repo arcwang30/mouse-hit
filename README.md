@@ -48,6 +48,8 @@ powershell -ExecutionPolicy Bypass -File tools/serve.ps1
 - 3 個關卡(街角公園、海港小鎮、未來鐘塔廣場)× 10 WAVE,WAVE 10 為 BOSS,另有中頭目與精英敵人;一般敵人 7 種、BOSS/中頭目 6 名(各有必殺技)
 - 難度參數在 `src/js/data/stages.js`(`WAVE_GROWTH`、各關 `scale`),可用 `src/js/dev/balance-sim.js` 模擬通關率
 - 玩家攻擊 👊 / 敵人攻擊時防禦 🛡️ / 必殺技依序點數字 + 漫畫風演出
+- 出現模式:單發、雙發、三發、連線、掃射、連閃,越後段越常出現複雜模式
+- 連擊與 FEVER:連擊 15 次進入 FEVER(10 秒,傷害/反擊力/集氣 ×1.5)
 - 進階按法:「HOLD」拳頭要按住蓄力再放開(×3);盾牌越快擋累積越多反擊力(金→藍→暗,下回合每拳 +%);全部擋下觸發「破綻」,中間按鈕連打破甲
 - 20 個 Roguelike 技能,每擊倒一個 WAVE 三選一
 - 結算積分 → 成長點數 → 永久升級(存於瀏覽器 localStorage)
