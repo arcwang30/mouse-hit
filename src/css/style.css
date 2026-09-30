@@ -24,12 +24,14 @@ button { font: inherit; color: inherit; cursor: pointer; }
 /* 9:16 直式框 */
 #app {
   position: relative;
+  width: min(100vw, calc(100vh * 9 / 16)); /* 舊瀏覽器不支援 dvh 時的後備 */
+  height: min(100vh, calc(100vw * 16 / 9));
   width: min(100vw, calc(100dvh * 9 / 16));
   height: min(100dvh, calc(100vw * 16 / 9));
   background: var(--bg);
   overflow: hidden;
   container-type: size;
-  font-size: 4cqw;
+  /* 基準字級不能寫在容器本身(cqw 會改用瀏覽器視窗寬度計算),改設在子層 */
 }
 #app.shake { animation: shake .3s; }
 @keyframes shake {
@@ -62,15 +64,15 @@ button { font: inherit; color: inherit; cursor: pointer; }
 @keyframes blink { 50% { opacity: .3; } }
 
 /* ---- 主選單 ---- */
-#menu, #upgrade, #result { align-items: center; gap: 4cqw; padding: 8cqw 6cqw; background: radial-gradient(circle at 50% 0%, #3a1030, var(--bg) 60%); }
-.logo { text-align: center; margin-top: 4cqh; }
-.logo-scar { font-size: 14cqw; filter: drop-shadow(0 0 4cqw var(--fire)); animation: flame 1.2s infinite alternate; }
+#menu, #upgrade, #result { align-items: center; gap: min(3cqw, 2cqh); padding: min(6cqw, 4cqh) 6cqw; overflow-y: auto; background: radial-gradient(circle at 50% 0%, #3a1030, var(--bg) 60%); }
+.logo { text-align: center; margin-top: 1cqh; flex-shrink: 0; }
+.logo-scar { font-size: min(9cqw, 6cqh); line-height: 1.1; filter: drop-shadow(0 0 4cqw var(--fire)); animation: flame 1.2s infinite alternate; }
 .logo h1 {
-  margin: 0; font-size: 12cqw; letter-spacing: .08em;
+  margin: 0; font-size: min(9cqw, 6cqh); line-height: 1.2; letter-spacing: .08em;
   background: linear-gradient(180deg, #fff, var(--fire-2) 50%, var(--fire)); -webkit-background-clip: text; background-clip: text; color: transparent;
   filter: drop-shadow(0 .6cqw 0 #5a1000);
 }
-.logo-sub { color: var(--muted); letter-spacing: .3em; }
+.logo-sub { color: var(--muted); letter-spacing: .3em; font-size: 3.5cqw; }
 @keyframes flame { to { transform: scale(1.12) rotate(4deg); } }
 .menu-points { color: var(--fire-2); }
 .stage-list { display: flex; flex-direction: column; gap: 3cqw; width: 100%; }
@@ -82,7 +84,7 @@ button { font: inherit; color: inherit; cursor: pointer; }
 .sc-name { font-weight: 800; font-size: 4.8cqw; text-shadow: 0 2px 4px #000; }
 .sc-desc { font-size: 3.3cqw; opacity: .9; text-shadow: 0 1px 3px #000; }
 .sc-best { font-size: 3cqw; color: var(--fire-2); }
-.menu-row { display: flex; gap: 4cqw; margin-top: auto; }
+.menu-row { display: flex; gap: 4cqw; margin-top: auto; flex-shrink: 0; }
 
 /* ---- 成長 ---- */
 .up-list { display: flex; flex-direction: column; gap: 3cqw; width: 100%; }
@@ -250,10 +252,10 @@ button { font: inherit; color: inherit; cursor: pointer; }
 @keyframes cutFlash { 0% { background: #fff; } 10% { background: var(--fire-2); } 20%, 100% { background: #fff; } }
 
 /* ---- 結算 ---- */
-.result-box { width: 100%; background: var(--panel); border-radius: 3cqw; padding: 4cqw 5cqw; display: flex; flex-direction: column; gap: 2.5cqw; }
+.result-box { width: 100%; background: var(--panel); border-radius: 3cqw; padding: 3.5cqw 5cqw; display: flex; flex-direction: column; gap: min(2.2cqw, 1.4cqh); }
 .result-box div { display: flex; justify-content: space-between; gap: 4cqw; }
-.result-box .score { font-size: 5cqw; color: var(--fire-2); }
-#resultTitle { font-size: 10cqw; margin: 6cqh 0 0; }
+.result-box .score { font-size: 4.4cqw; color: var(--fire-2); }
+#resultTitle { font-size: min(7.5cqw, 5cqh); margin: 2cqh 0 0; flex-shrink: 0; }
 #result .btn { margin-top: auto; }
 h2 { margin: 0; }
 
@@ -289,3 +291,7 @@ h2 { margin: 0; }
 }
 .stage.rush .enemy .sprite { animation: quake .08s infinite; }
 @keyframes rushLines { to { transform: rotate(6deg); } }
+
+/* 空間不足時改為捲動,不擠壓選項 */
+.stage-list, .up-list, .result-box, #menu .btn, #upgrade .btn, #result .btn { flex-shrink: 0; }
+.screen, .overlay { font-size: 4cqw; }
