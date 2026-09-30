@@ -1,8 +1,8 @@
 // 關卡:每關 10 個 WAVE,WAVE 10 為 BOSS
 // 敵人 id 後加 '+' 為精英版(HP x1.5、攻擊 x1.2、多一個防禦符號、符號停留較短)
 // scale:整關基礎倍率;WAVE_GROWTH:每過一個 WAVE 敵人變強的幅度
-// 敵人 HP 整體倍率(加入蓄力重拳、連打破甲後玩家輸出提高,用這裡拉回難度)
-G.ENEMY_HP_MUL = 1.6;
+// 敵人 HP 整體倍率(蓄力重拳、反擊力、破綻連打提高了玩家輸出,用這裡拉回難度)
+G.ENEMY_HP_MUL = 1.5;
 
 G.WAVE_GROWTH = {
   hp: 0.06,        // HP 每 WAVE +6%
@@ -22,7 +22,7 @@ G.STAGES = [
     name: '第二關 霓虹黑市', bg: 'city', deco: ['🏙️', '💡', '🌃', '🚥'], stars: 2,
     desc: '山腳下巨型都市的底層,霓虹招牌與地下交易交錯。',
     waves: ['agent', 'ninja', 'gunner', 'ninja', 'gunner+', 'agent+', 'ninja', 'gunner', 'ninja+', 'mechGeneral'],
-    scale: 1.25,
+    scale: 1.2,
   },
   {
     name: '第三關 天穹塔頂', bg: 'tower', deco: ['⚡', '🌕', '🛰️'], stars: 3,

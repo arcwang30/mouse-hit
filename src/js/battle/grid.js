@@ -10,7 +10,7 @@ G.grid = {
     for (let i = 0; i < 9; i++) {
       const c = document.createElement('button');
       c.className = 'cell';
-      c.innerHTML = '<span class="cap"><span class="icon"></span><span class="badge"></span></span>';
+      c.innerHTML = '<span class="cap"><span class="label"></span><span class="icon"></span><span class="badge"></span></span>';
       c.addEventListener('pointerdown', e => { e.preventDefault(); this.tap(i); });
       ['pointerup', 'pointercancel', 'pointerleave'].forEach(ev => c.addEventListener(ev, () => this.release(i)));
       el.appendChild(c);
@@ -19,14 +19,15 @@ G.grid = {
   },
 
   tap(i) {
-    if (this.handler) this.handler(i);
+    if (this.handler && this.cells[i]) this.handler(i);
   },
 
   release(i) {
-    if (this.releaseHandler) this.releaseHandler(i);
+    if (this.releaseHandler && this.cells[i]) this.releaseHandler(i);
   },
 
-  set(i, icon, cls = '', life = 0) {
+  // label:按鈕上方的小字(例如 HOLD、連打)
+  set(i, icon, cls = '', life = 0, label = '') {
     const c = this.cells[i];
     clearTimeout(this.timers[i]);
     c.className = 'cell ' + cls;
@@ -34,6 +35,7 @@ G.grid = {
     c.classList.add('on');
     c.style.setProperty('--life', life + 'ms');
     c.querySelector('.icon').textContent = icon;
+    c.querySelector('.label').textContent = label;
     c.querySelector('.badge').textContent = '';
   },
 
@@ -48,6 +50,7 @@ G.grid = {
     const reset = () => {
       c.className = 'cell';
       c.querySelector('.icon').textContent = '';
+      c.querySelector('.label').textContent = '';
       c.querySelector('.badge').textContent = '';
     };
     if (!anim) return reset();
@@ -69,19 +72,25 @@ G.grid = {
     c.classList.add(kind);
     setTimeout(() => c.classList.remove(kind), 300);
   },
+
+  bump(i) {
+    const c = this.cells[i];
+    c.classList.remove('bump');
+    void c.offsetWidth;
+    c.classList.add('bump');
+  },
 };
 
 // 打地鼠階段:依序在空格冒出符號,點中為 hit,時間到為 miss。
 // 基本選項:count, icon, cls, life, interval, onHit(i, info), onMiss(i), stop()
+//   info.ratio:點中時剩餘時間的比例(1 = 一出現就點,0 = 最後一刻)
 // 進階選項:
 //   decoyRate      混入 💀 陷阱(不計入次數,點到觸發 onDecoy)
 //   onSpawn(i, ms) 回傳特效物件 { block, hit, cancel },在點中/錯過/提前結束時呼叫
-//   perfectWindow  最後幾毫秒內點中算 PERFECT(info.perfect),期間格子發金光
-//   hold           { at, icon, holdMs } 第 at 個符號改成「按住蓄力」,放開時 onHit(i, { hold, charged })
-//   mash           { delay, icon, hits, life, onTap(i, left), onBreak(i) } 額外的連打符號(不計入次數)
+//   hold           { at, icon, label, holdMs } 第 at 個符號改成「按住蓄力」,放開時 onHit(i, { hold, charged })
 G.molePhase = o => new Promise(resolve => {
   const active = new Map();
-  let spawned = 0, settled = 0, finished = false, spawnTimer, mashTimer;
+  let spawned = 0, settled = 0, finished = false, spawnTimer;
   const setCounter = n => { G.$('#counter').textContent = n; };
   setCounter(o.count);
 
@@ -92,7 +101,6 @@ G.molePhase = o => new Promise(resolve => {
     if (finished) return;
     finished = true;
     clearTimeout(spawnTimer);
-    clearTimeout(mashTimer);
     active.forEach(a => { kill(a); a.fx && a.fx.cancel(); });
     active.clear();
     G.grid.clearAll();
@@ -122,24 +130,6 @@ G.molePhase = o => new Promise(resolve => {
       return;
     }
 
-    if (a.kind === 'mash') {
-      a.left--;
-      G.grid.flash(i, 'good');
-      cell(i).classList.remove('bump');
-      void cell(i).offsetWidth;
-      cell(i).classList.add('bump');
-      if (a.left > 0) {
-        G.grid.setBadge(i, '×' + a.left);
-        o.mash.onTap && o.mash.onTap(i, a.left);
-        return;
-      }
-      kill(a); active.delete(i);
-      G.grid.clear(i, 'press');
-      o.mash.onBreak(i);
-      if (o.stop()) finish();
-      return;
-    }
-
     if (a.kind === 'hold') {
       if (a.holding) return;
       kill(a);
@@ -155,13 +145,13 @@ G.molePhase = o => new Promise(resolve => {
     }
 
     // 一般符號
-    const remaining = a.life - (performance.now() - a.born);
+    const ratio = Math.max(0, a.life - (performance.now() - a.born)) / a.life;
     kill(a); active.delete(i);
     G.grid.clear(i, 'press');
     G.grid.flash(i, 'good');
-    const perfect = !!o.perfectWindow && remaining <= o.perfectWindow;
-    a.fx && a.fx.block(perfect);
-    o.onHit(i, { perfect });
+    const info = { ratio };
+    o.onHit(i, info);            // onHit 可在 info 填入 grade,交給特效顯示
+    a.fx && a.fx.block(info.grade);
     settle();
   };
 
@@ -186,14 +176,13 @@ G.molePhase = o => new Promise(resolve => {
     const kind = decoy ? 'decoy' : hold ? 'hold' : 'normal';
     const life = hold ? o.life + 400 : o.life;
     if (!decoy) { spawned++; setCounter(o.count - spawned); }
-    G.grid.set(i, decoy ? '💀' : hold ? o.hold.icon : o.icon, decoy ? 'decoy' : hold ? 'hold' : o.cls, life);
+    if (decoy) G.grid.set(i, '💀', 'decoy', life);
+    else if (hold) G.grid.set(i, o.hold.icon, 'hold', life, o.hold.label);
+    else G.grid.set(i, o.icon, o.cls, life);
     G.audio.play('pop');
 
     const a = { kind, life, born: performance.now(), ts: [], fx: null };
     if (kind === 'normal' && o.onSpawn) a.fx = o.onSpawn(i, life);
-    if (kind === 'normal' && o.perfectWindow) {
-      a.ts.push(setTimeout(() => cell(i).classList.add('perfect'), life - o.perfectWindow));
-    }
     a.ts.push(setTimeout(() => {
       active.delete(i);
       G.grid.clear(i, 'sink');
@@ -203,20 +192,33 @@ G.molePhase = o => new Promise(resolve => {
     if (spawned < o.count) spawnTimer = setTimeout(spawn, o.interval);
   };
 
-  // 連打符號:額外出現一個,時間到只是消失,沒有懲罰
-  if (o.mash) {
-    mashTimer = setTimeout(() => {
-      if (finished) return;
-      const i = freeCell();
-      if (i < 0) return;
-      G.grid.set(i, o.mash.icon, 'mash', o.mash.life);
-      G.grid.setBadge(i, '×' + o.mash.hits);
-      G.audio.play('pop');
-      const a = { kind: 'mash', left: o.mash.hits, ts: [] };
-      a.ts.push(setTimeout(() => { active.delete(i); G.grid.clear(i, 'sink'); }, o.mash.life));
-      active.set(i, a);
-    }, o.mash.delay);
-  }
-
   spawnTimer = setTimeout(spawn, 300);
+});
+
+// 連打階段:九宮格只留一個按鈕,在時間內連點 hits 下。回傳是否打破。
+// { cell, icon, label, hits, life, onTap(i, left) }
+G.mashPhase = o => new Promise(resolve => {
+  const i = o.cell;
+  let left = o.hits, done = false, timer;
+  const end = broken => {
+    if (done) return;
+    done = true;
+    clearTimeout(timer);
+    G.grid.handler = null;
+    G.grid.clear(i, broken ? 'press' : 'sink');
+    resolve(broken);
+  };
+  G.grid.set(i, o.icon, 'mash', o.life, o.label);
+  G.grid.setBadge(i, '×' + left);
+  G.audio.play('pop');
+  G.grid.handler = j => {
+    if (j !== i) { G.grid.flash(j, 'miss'); return; }
+    left--;
+    G.grid.flash(i, 'good');
+    G.grid.bump(i);
+    o.onTap && o.onTap(i, left);
+    if (left <= 0) end(true);
+    else G.grid.setBadge(i, '×' + left);
+  };
+  timer = setTimeout(() => end(false), o.life);
 });

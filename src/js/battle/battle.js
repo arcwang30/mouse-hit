@@ -1,6 +1,8 @@
 // 戰鬥流程:WAVE → 玩家攻擊 → 敵人攻擊/玩家防禦 → ... → 技能三選一 → 下一 WAVE
 const STATE_LABEL = { idle: '待機', attack: '攻擊', defend: '防禦', ult: '必殺技', hit: '受擊', recoil: '被格擋', stagger: '破防', dead: '擊倒' };
-const HOLD_MS = 650; // 蓄力重拳需要按住的時間
+const HOLD_MS = 650;       // 蓄力重拳需要按住的時間
+const BLOCK_PCT_MAX = 12;  // 盾牌一出現就擋下可得的反擊力(%),越晚越少
+const BLOCK_PCT_CAP = 60;  // 反擊力累積上限(%)
 
 function makePlayer() {
   const p = {
@@ -39,10 +41,11 @@ G.battle = {
     this.stageIdx = stageIdx;
     this.stage = G.STAGES[stageIdx];
     this.p = makePlayer();
-    this.stats = { dmg: 0, hits: 0, blocks: 0, perfects: 0, waves: 0, ults: 0 };
+    this.stats = { dmg: 0, hits: 0, blocks: 0, perfects: 0, breaks: 0, waves: 0, ults: 0 };
     this.ultRequested = false;
     this.counterStack = 0;
-    this.perfectStack = 0;
+    this.counterPct = 0;
+    this.brokenNext = false;
 
     G.$('#stageView').className = 'stage bg-' + this.stage.bg;
     G.$('#deco').innerHTML = this.stage.deco.map((d, i) =>
@@ -87,48 +90,34 @@ G.battle = {
 
   async playerTurn() {
     const p = this.p, e = this.e;
-    let first = true, combo = 0, broken = false;
-    const counter = this.counterStack || 0; // 反震掌:上回合格擋累積的加成
-    const extra = this.perfectStack || 0;   // 完美格擋:敵人破防,本回合多出幾拳
+    let first = true, combo = 0;
+    const counter = this.counterStack || 0;    // 反震掌:上回合格擋累積的每拳加成
+    const power = this.counterPct || 0;        // 格擋越快累積越多的反擊力(%)
+    const broken = this.brokenNext;            // 上一輪破綻連打成功:每拳 ×1.5
     this.counterStack = 0;
-    this.perfectStack = 0;
-    const count = p.attackCount + extra;
-    const tough = e.elite || e.boss;
+    this.counterPct = 0;
+    this.brokenNext = false;
+    const mul = (1 + power / 100) * (broken ? 1.5 : 1);
 
-    const tips = ['👊 點擊', '🔥 按住蓄力'];
-    if (tough) tips.push('🔒 連打');
-    let head = '你的回合';
-    if (counter) head += `・反震 +${counter}`;
-    if (extra) head += `・破防 +${extra}`;
+    const bonus = [];
+    if (power) bonus.push(`反擊 +${power}%`);
+    if (broken) bonus.push('破甲 ×1.5');
+    if (counter) bonus.push(`反震 +${counter}`);
     this.phase = 'attack';
-    this.setPhase(`${head}:${tips.join('/')}`, 'atk');
+    this.setPhase(bonus.length ? `你的回合・${bonus.join('・')}` : '你的回合:點擊 👊,HOLD 要按住', 'atk');
     this.render();
 
     await G.molePhase({
-      icon: '👊', cls: 'fist', count, life: p.moleLife,
+      icon: '👊', cls: 'fist', count: p.attackCount, life: p.moleLife,
       interval: Math.max(250, p.moleLife * 0.45),
-      // C. 蓄力重拳:每回合其中一顆拳頭換成 🔥
-      hold: { at: 1 + Math.floor(Math.random() * (count - 1)), icon: '🔥', holdMs: HOLD_MS },
-      // B. 連打破甲:精英與 BOSS 才會出現
-      mash: tough ? {
-        delay: 150, icon: '🔒', hits: e.boss ? 7 : 5, life: 2600,
-        onTap: i => { G.audio.play('chip'); this.punchFx(i % 3, { small: true, dur: 110 }); this.setEnemyState('defend', 200); },
-        onBreak: i => {
-          broken = true;
-          G.audio.play('break');
-          this.punchFx(i % 3, { crit: true });
-          this.float('破甲!', 'tag armor');
-          this.hurtEnemy(p.atk * 4, true);
-          this.setPhase('破甲!本回合之後每拳 ×1.5', 'atk');
-        },
-      } : null,
+      // 蓄力重拳:每回合其中一顆拳頭需要按住蓄力
+      hold: { at: 1 + Math.floor(Math.random() * (p.attackCount - 1)), icon: '👊', label: 'HOLD', holdMs: HOLD_MS },
       onHit: (i, info) => {
-        let d = p.atk + combo * p.combo + counter;
+        let d = (p.atk + combo * p.combo + counter) * mul;
         combo++;
         if (first && p.firstStrike) d *= 3;
         first = false;
         if (p.execute && e.hp < e.maxHp * 0.2) d *= 2;
-        if (broken) d *= 1.5;
         const charged = info.hold && info.charged;
         if (charged) d *= 3;
         const crit = Math.random() < p.crit;
@@ -170,32 +159,68 @@ G.battle = {
     }
     this.phase = 'defend';
     this.setPhase(s ? `必殺技來襲:${s.name}!` : '防禦:點擊 🛡️ 擋下攻擊!', 'def');
+    let missed = 0;
     await G.molePhase({
       icon: '🛡️', cls, count, life, interval: life * 0.5, decoyRate: s ? s.decoy : 0,
-      // A. 完美格擋:攻擊快打到時(最後 25%)才擋
-      perfectWindow: Math.max(180, life * 0.25),
       // 每個盾牌對應一發飛向玩家的攻擊,盾牌消失的瞬間正好命中
       onSpawn: (i, ms) => this.enemyShot(i % 3, ms, !!s),
       onHit: (i, info) => {
+        // 越快擋下,累積的反擊力越多(下回合每拳傷害加成)
+        const pct = Math.round(BLOCK_PCT_MAX * info.ratio);
+        this.counterPct = Math.min(BLOCK_PCT_CAP, (this.counterPct || 0) + pct);
         this.stats.blocks++;
         this.gainUlt(p.blockUlt);
         if (p.counter) this.counterStack = (this.counterStack || 0) + p.counter;
-        if (info.perfect) {
+        if (pct >= 8) {
+          info.grade = { cls: 'fast', text: `迅擋! +${pct}%` };
           this.stats.perfects++;
           G.audio.play('perfect');
-          this.gainUlt(3);
-          this.perfectStack = Math.min(3, (this.perfectStack || 0) + 1);
           this.setEnemyState('stagger', 420);
         } else {
+          info.grade = { cls: pct >= 4 ? '' : 'late', text: `${pct >= 4 ? '格擋' : '險擋'} +${pct}%` };
           G.audio.play('block');
           this.setEnemyState('recoil', 260);
         }
       },
-      onMiss: () => this.hurtPlayer(dmg),
-      onDecoy: () => { G.audio.play('poison'); this.hurtPlayer(dmg * 1.5); },
+      onMiss: () => { missed++; this.hurtPlayer(dmg); },
+      onDecoy: () => { missed++; G.audio.play('poison'); this.hurtPlayer(dmg * 1.5); },
       stop: () => this.over(),
     });
     this.phase = null;
+    if (e.hp > 0) this.setEnemyState('idle');
+    this.render();
+    // 全部擋下:敵人露出破綻,給一段專心連打的時間
+    if (!missed && !this.over()) await this.breakChance();
+  },
+
+  async breakChance() {
+    const p = this.p, e = this.e;
+    const hits = e.boss ? 8 : e.elite ? 6 : 5;
+    this.setEnemyState('stagger');
+    await G.banner('破綻!', `2.5 秒內連打 ${hits} 下破甲`, 800);
+    this.phase = 'break';
+    this.setPhase(`破綻:連打中間的按鈕 ${hits} 下!`, 'atk');
+    this.setEnemyState('stagger');
+    const broken = await G.mashPhase({
+      cell: 4, icon: '👊', label: '連打', hits, life: 2500,
+      onTap: (i, left) => {
+        G.audio.play('chip');
+        this.punchFx(Math.floor(Math.random() * 3), { small: true, dur: 110 });
+        this.setEnemyState('stagger');
+      },
+    });
+    this.phase = null;
+    if (broken) {
+      this.stats.breaks++;
+      this.brokenNext = true;
+      G.audio.play('break');
+      this.punchFx(1, { crit: true, final: true, dur: 200 });
+      this.float('破甲!', 'tag armor');
+      this.hurtEnemy(p.atk * 4, true);
+    } else {
+      this.float('破甲失敗', 'tag miss');
+    }
+    await G.sleep(500);
     if (e.hp > 0) this.setEnemyState('idle');
     this.render();
   },
@@ -330,13 +355,15 @@ G.battle = {
     };
     return {
       // 擋下:在攻擊目前的位置彈開
-      block: perfect => {
+      // grade:{ cls: 'fast' | '' | 'late', text } 依格擋速度顯示不同的字樣
+      block: (grade = { cls: '', text: 'BLOCK!' }) => {
         const r = f.getBoundingClientRect(), sr = stage.getBoundingClientRect();
         const x = r.left + r.width / 2 - sr.left, y = r.top + r.height / 2 - sr.top;
         anim.cancel();
         f.remove();
-        burst('fx-block' + (perfect ? ' perfect' : ''), perfect ? '✨' : '🛡️', x, y);
-        burst('fx-block-text' + (perfect ? ' perfect' : ''), perfect ? 'PERFECT!' : 'BLOCK!', x, y);
+        const fast = grade.cls === 'fast';
+        burst('fx-block ' + grade.cls, fast ? '✨' : '🛡️', x, y);
+        burst('fx-block-text ' + grade.cls, grade.text, x, y);
       },
       // 沒擋:正面命中鏡頭
       hit: () => {

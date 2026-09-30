@@ -350,15 +350,35 @@ h2 { margin: 0; }
   -webkit-text-stroke: .4cqw #000; paint-order: stroke fill;
 }
 
-/* A. 完美格擋:最後時刻格子發金光 */
-.cell.guard.perfect .cap {
-  background: linear-gradient(180deg, #fff6c8, #ffc23d 55%, #d98a00); --edge: #6b4100; color: #fff;
-  animation: none; box-shadow: inset 0 .9cqw 0 #ffffff90, 0 2.2cqw 0 var(--edge), 0 0 5cqw #ffc23d, 0 4.5cqw 3cqw #000c;
+/* 按鈕上方的小標籤(HOLD、連打) */
+.label {
+  position: absolute; top: 5%; left: 50%; transform: translateX(-50%); z-index: 2;
+  font-size: 3.2cqw; font-weight: 900; letter-spacing: .08em; color: #fff; white-space: nowrap;
+  background: #000a; border-radius: 99px; padding: .2cqw 1.8cqw;
 }
-.cell.perfect { box-shadow: inset 0 1.8cqw 2.2cqw #000d, 0 0 0 .6cqw #ffc23d; }
-.fx-block.perfect { filter: drop-shadow(0 0 4cqw #ffc23d) drop-shadow(0 0 1cqw #fff); font-size: 20cqw; }
-.fx-block.perfect::after { border-color: #ffe08a; }
-.fx-block-text.perfect { -webkit-text-stroke-color: #b36b00; color: #fff6c8; font-size: 7.5cqw; }
+.label:empty { display: none; }
+.cell .icon, .badge { position: relative; z-index: 1; }
+.badge { position: absolute; }
+
+/* 格擋越快越好:盾牌分三段變色,對應三種判定(與 battle.js 的 BLOCK_PCT_MAX 換算一致)
+   金色(前 37%)= 迅擋、藍色 = 格擋、最後 30% 變暗 = 險擋 */
+.cell.guard.on .cap::before {
+  content: ""; position: absolute; inset: 0; border-radius: inherit;
+  background: linear-gradient(180deg, #fff6c8, #ffc23d 55%, #d98a00);
+  animation: guardGold var(--life) linear forwards;
+}
+.cell.guard.on .cap { animation: rise .2s cubic-bezier(.3, 1.7, .5, 1), guardLate var(--life) linear forwards; }
+.cell.guard.on.press .cap { animation: none; }
+.cell.guard.on.sink .cap { animation: sink .14s ease-in forwards; }
+.cell.guard.on.press .cap::before, .cell.guard.on.sink .cap::before { animation-play-state: paused; }
+@keyframes guardGold { 0%, 35% { opacity: 1; } 38%, 100% { opacity: 0; } }
+@keyframes guardLate { 0%, 69% { filter: none; } 72%, 100% { filter: saturate(.35) brightness(.72); } }
+
+.fx-block.fast { filter: drop-shadow(0 0 4cqw #ffc23d) drop-shadow(0 0 1cqw #fff); font-size: 20cqw; }
+.fx-block.fast::after { border-color: #ffe08a; }
+.fx-block-text.fast { -webkit-text-stroke-color: #b36b00; color: #fff6c8; font-size: 7cqw; }
+.fx-block.late { filter: grayscale(.5) drop-shadow(0 0 2cqw #3da9ff); font-size: 12cqw; }
+.fx-block-text.late { -webkit-text-stroke-color: #555; color: #ccc; font-size: 5cqw; }
 .enemy.stagger .sprite { animation: stagger .42s ease-out; filter: drop-shadow(0 0 3cqw #ffc23d) grayscale(.4); }
 .enemy.stagger .state-tag { background: #d98a00; }
 @keyframes stagger {
@@ -367,15 +387,17 @@ h2 { margin: 0; }
   70% { transform: translate(-2%, 0) rotate(-3deg); }
 }
 
-/* B. 連打破甲:鐵鎖護甲,每點一下彈一下 */
-.cell.mash .cap { background: linear-gradient(180deg, #d9d4cc, #8f877c 55%, #5b544b); --edge: #2e2a25; color: #fff; }
-.cell.mash .icon { font-size: 13cqw; }
+/* 破綻連打:鋼鐵色拳頭 + 「連打」+ 剩餘次數,每點一下彈一下 */
+.cell.mash .cap { background: linear-gradient(180deg, #eef3f8, #9fb2c6 55%, #56687c); --edge: #26313d; color: #fff; }
+.cell.mash .icon { font-size: 11cqw; margin-top: 3cqw; }
+.cell.mash .badge { font-size: 5.5cqw; right: 5%; top: auto; bottom: 14%; color: #ffe08a; }
 .cell.mash.bump .cap { animation: bump .12s ease-out; }
 @keyframes bump { 40% { transform: translateY(8%) scale(.94); filter: brightness(1.5); } }
 
-/* C. 蓄力重拳:按住時集氣條由左往右填滿,滿了發光抖動 */
-.cell.hold .cap { background: linear-gradient(180deg, #ffe08a, #ff7a1a 55%, #b52a05); --edge: #6a1500; color: #fff; }
-.cell.hold .icon { animation: flame 0.5s infinite alternate; }
+/* 蓄力重拳:深紅色拳頭 + 「HOLD」,按住時集氣條由左往右填滿,滿了發光抖動 */
+.cell.hold .cap { background: linear-gradient(180deg, #ffb0b8, #e0243a 55%, #8a0a1c); --edge: #4a0010; color: #fff; }
+.cell.hold .icon { font-size: 11cqw; margin-top: 3cqw; }
+.cell.hold .label { background: #ffc23d; color: #4a0010; }
 .cell.holding .cap { transform: translateY(8%); box-shadow: inset 0 .9cqw 0 #ffffff70, 0 1cqw 0 var(--edge), 0 2cqw 2cqw #000a; animation: none; }
 .cell.holding .cap::after {
   content: ""; position: absolute; left: 12%; right: 12%; bottom: 7%; height: 2cqw; border-radius: 99px;
@@ -390,6 +412,7 @@ h2 { margin: 0; }
 .float.tag { top: 14%; transform: translateX(-50%); font-size: 8cqw; -webkit-text-stroke: .6cqw #000; paint-order: stroke fill; animation: tagPop .9s ease-out forwards; }
 .float.tag.armor  { color: #d9d4cc; }
 .float.tag.charge { color: #ffc23d; }
+.float.tag.miss   { color: #999; font-size: 6cqw; }
 @keyframes tagPop {
   from { transform: translateX(-50%) scale(2); opacity: 0; }
   20%  { transform: translateX(-50%) scale(1); opacity: 1; }
