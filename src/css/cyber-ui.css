@@ -264,6 +264,103 @@
   -webkit-text-stroke: .5cqw #000; text-shadow: -.8cqw 0 var(--neon-m), .8cqw 0 var(--neon-c);
 }
 
+/* ---------- 第二階段:特殊符號 ---------- */
+/* 金拳:短暫出現的高傷害拳 */
+.cell.gold .cap { background: linear-gradient(180deg, #fffbe0, #ffd400 45%, #d98a00); --edge: #6b4100; color: #fff; }
+.cell.gold.on .cap { animation: rise .2s cubic-bezier(.3, 1.7, .5, 1), goldShine .5s linear infinite; }
+.cell.gold .label { background: #000; color: var(--neon-y); }
+@keyframes goldShine { 50% { filter: brightness(1.35) drop-shadow(0 0 2cqw var(--neon-y)); } }
+
+/* 晶盾:要點兩下,第一下出現裂痕 */
+.cell.crystal .cap { background: linear-gradient(180deg, #f0d9ff, #b04dff 55%, #5a1a8a); --edge: #2d0a47; }
+.cell.crystal .cap::before { display: none; }
+.cell.crystal .icon { filter: drop-shadow(0 0 1.5cqw #fff); }
+.cell.cracked .cap {
+  background:
+    linear-gradient(115deg, transparent 46%, #fff 47% 49%, transparent 50%),
+    linear-gradient(60deg, transparent 58%, #fff 59% 60.5%, transparent 61%),
+    linear-gradient(180deg, #e6c8ff, #9a3de0 55%, #4a1478);
+}
+
+/* 醉影:半透明、晃動的假符號 */
+.cell.ghost .cap {
+  opacity: .38; filter: blur(.35cqw) saturate(.3) brightness(1.3); outline: .5cqw dashed #ffffffc0; outline-offset: -.8cqw;
+  animation: ghostSway .9s ease-in-out infinite alternate;
+}
+.cell.ghost .cap::after, .cell.ghost .cap::before { display: none; }
+@keyframes ghostSway { from { transform: translate(-4%, -4%) rotate(-3deg); } to { transform: translate(4%, -4%) rotate(3deg); } }
+
+/* 駭入:現形前是雜訊色的 ❓ */
+.cell.hidden .cap {
+  background: repeating-linear-gradient(0deg, #ffffff10 0 2px, transparent 2px 4px), linear-gradient(180deg, #5a6570, #2a3038);
+  --edge: #111; color: #fff;
+}
+.cell.hidden .icon { color: var(--neon-c); text-shadow: 0 0 2cqw var(--neon-c); animation: glitchIcon .25s steps(2) infinite; }
+.cell.hidden .cap::before { display: none; }
+@keyframes glitchIcon { 50% { transform: translateX(6%); filter: hue-rotate(90deg); } }
+
+/* 鎖定:盾牌出現前先亮紅色準星 */
+.cell.target::before {
+  background:
+    linear-gradient(var(--neon-r), var(--neon-r)) center / 70% .4cqw no-repeat,
+    linear-gradient(var(--neon-r), var(--neon-r)) center / .4cqw 70% no-repeat,
+    radial-gradient(circle, transparent 30%, var(--neon-r) 32% 36%, transparent 38%),
+    #120306;
+  animation: targetPulse .3s ease-in-out infinite alternate;
+}
+@keyframes targetPulse { to { filter: brightness(1.8); transform: scale(.92); } }
+
+/* 瞬移:在新位置閃現 */
+.cell.blinked .cap { animation: blinkIn .18s ease-out; }
+@keyframes blinkIn { from { transform: scaleX(.1) scaleY(1.4); filter: brightness(3) hue-rotate(160deg); } }
+
+/* 重擊:要按住「頂住」的盾牌 */
+.cell.guard.heavy .cap { background: linear-gradient(180deg, #ffd0a0, #ff6a1a 55%, #8a2400); --edge: #3d1000; }
+.cell.guard.heavy .cap::before { display: none; }
+.cell.guard.heavy .label { background: var(--neon-r); color: #fff; }
+
+/* ---------- 第二階段:格子狀態 ---------- */
+.blk { position: absolute; inset: 6%; border-radius: 1.8cqw; pointer-events: none; display: none; }
+.blk.lava, .blk.ice, .blk.tentacle { display: block; }
+/* 熔岩:在按鈕下方發紅光 */
+.cell:has(.blk.lava) { box-shadow: 0 0 0 .5cqw #ff5a1f, 0 0 5cqw #ff5a1fc0; } /* 熔岩格:插座外圈燒紅 */
+.blk.lava {
+  z-index: 0; inset: 0;
+  background: radial-gradient(circle at 50% 60%, #ffd400 0 10%, #ff5a1f 35%, #7a1000 70%);
+  box-shadow: 0 0 4cqw #ff5a1f, inset 0 0 3cqw #000a;
+  animation: lavaGlow 1s ease-in-out infinite alternate;
+}
+@keyframes lavaGlow { to { filter: brightness(1.3) saturate(1.2); } }
+/* 冰封:蓋在按鈕上的半透明冰層 */
+.blk.ice {
+  z-index: 2;
+  background:
+    linear-gradient(125deg, transparent 40%, #ffffffa0 41% 42.5%, transparent 43%),
+    linear-gradient(35deg, transparent 62%, #ffffff80 63% 64%, transparent 65%),
+    linear-gradient(180deg, #d8f6ffd0, #6fd3ffb0);
+  box-shadow: inset 0 0 0 .5cqw #ffffffc0, 0 0 3cqw #6fd3ff;
+}
+/* 觸手:完全蓋住格子,顯示剩餘敲擊次數 */
+.blk.tentacle {
+  z-index: 2; display: flex; align-items: center; justify-content: center; font-size: 13cqw;
+  background: radial-gradient(circle, #5a2a8a, #1c0830 75%);
+  box-shadow: inset 0 0 0 .5cqw #b04dff, 0 0 3cqw #6a1c9e;
+  animation: tentacleWiggle 1.2s ease-in-out infinite alternate;
+}
+.blk.tentacle::after {
+  content: attr(data-hp); position: absolute; right: 6%; bottom: 4%;
+  font-family: var(--tech); font-size: 4.4cqw; font-weight: 900; color: var(--neon-y); -webkit-text-stroke: .3cqw #000;
+}
+@keyframes tentacleWiggle { to { transform: rotate(4deg) scale(1.03); } }
+
+/* 招式名飄字顏色 */
+.float.tag.gold { color: var(--neon-y); }
+.float.tag.lava { color: #ff7a1a; }
+.float.tag.line { color: var(--neon-c); font-family: var(--tech), sans-serif; }
+
+/* 登場橫幅的副標可換行(第二行是敵人機制提示) */
+.banner-sub { white-space: pre-line; line-height: 1.6; }
+
 /* ---------- 大字橫幅:故障風 ---------- */
 .banner {
   background:

@@ -10,7 +10,7 @@ G.grid = {
     for (let i = 0; i < 9; i++) {
       const c = document.createElement('button');
       c.className = 'cell';
-      c.innerHTML = '<span class="cap"><span class="label"></span><span class="icon"></span><span class="badge"></span></span>';
+      c.innerHTML = '<span class="blk"></span><span class="cap"><span class="label"></span><span class="icon"></span><span class="badge"></span></span>';
       c.addEventListener('pointerdown', e => { e.preventDefault(); this.tap(i); });
       ['pointerup', 'pointercancel', 'pointerleave'].forEach(ev => c.addEventListener(ev, () => this.release(i)));
       el.appendChild(c);
@@ -108,6 +108,32 @@ G.grid = {
     }
   },
 
+  // ---- 格子狀態(由敵人機制放置,跨回合保留,和按鈕分開顯示) ----
+  // ice 冰封:符號可以出現,但要先敲破冰;tentacle 觸手:符號不會出現,敲 hp 下清除;lava 熔岩:打在上面傷害加倍但會燙傷
+  blocks: new Map(),
+
+  setBlock(i, type, hp = 1) {
+    this.blocks.set(i, { type, hp });
+    this.renderBlock(i);
+  },
+
+  removeBlock(i) {
+    this.blocks.delete(i);
+    this.renderBlock(i);
+  },
+
+  clearBlocks(type) {
+    [...this.blocks.keys()].forEach(i => { if (!type || this.blocks.get(i).type === type) this.removeBlock(i); });
+  },
+
+  renderBlock(i) {
+    const b = this.blocks.get(i);
+    const el = this.cells[i].querySelector('.blk');
+    el.className = 'blk' + (b ? ' ' + b.type : '');
+    el.textContent = b && b.type === 'tentacle' ? '🐙' : '';
+    el.dataset.hp = b && b.hp > 1 ? '×' + b.hp : '';
+  },
+
   bump(i) {
     const c = this.cells[i];
     c.classList.remove('bump');
@@ -118,20 +144,33 @@ G.grid = {
 
 // 打地鼠階段:依序在空格冒出符號,點中為 hit,時間到為 miss。
 // 基本選項:count, icon, cls, life, interval, onHit(i, info), onMiss(i), stop()
-//   info.ratio:點中時剩餘時間的比例(1 = 一出現就點,0 = 最後一刻)
+//   info:{ ratio 點中時剩餘時間比例(1 = 一出現就點), gold 金拳, lava 在熔岩格上, hold/charged/heavy 按住類 }
+//   onHit 回傳 false 代表這下不算成功(例如「頂住」沒按滿),會改成播放被打中的特效
 // 進階選項:
-//   decoyRate      混入 💀 陷阱(不計入次數,點到觸發 onDecoy)
-//   onSpawn(i, ms) 回傳特效物件 { block, hit, cancel },在點中/錯過/提前結束時呼叫
-//   hold           { at, icon, label, holdMs } 第 at 個符號改成「按住蓄力」,放開時 onHit(i, { hold, charged })
 //   patterns       出現模式權重(single/pair/triple/line/sweep/rapid),見下方 spawnGroup
+//   hold           { at, icon, label, holdMs } 第 at 個符號改成「按住蓄力」,放開時 onHit(i, { hold, charged })
+//   decoyRate      混入陷阱(不計入次數,點到觸發 onDecoy);decoyIcon 陷阱圖示,預設 💀
+//   onSpawn(i, ms) 回傳特效物件 { block, hit, cancel },在點中/錯過/提前結束時呼叫
+//   onLine(cells)  連線 / 掃射出現的一整條全部打中
+//   onGhost(i)     點到殘影;onChip(i, type, cleared) 敲到觸手 / 冰
+//   mods           敵人機制與特殊符號(機率 0~1):
+//     gold   金拳:停留較短、傷害高       armor  晶盾:要點兩下
+//     blink  瞬移:存活一半時跳到別格     ghost  醉影:旁邊多一個假的殘影
+//     hidden 駭入:前段時間顯示成 ❓(數值 = 現形時間比例)
+//     lockon 鎖定:出現前先顯示準星(數值 = 提前毫秒數)
+//     heavy  { chance, holdMs } 重擊:要按住「頂住」才算擋下
 G.molePhase = o => new Promise(resolve => {
-  const active = new Map();
+  const mods = o.mods || {};
+  const active = new Map();     // 格子 → 目前的符號
+  const reserved = new Set();   // 已被鎖定準星預約的格子
   let spawned = 0, settled = 0, finished = false, spawnTimer;
   const setCounter = n => { G.$('#counter').textContent = n; };
   setCounter(o.count);
 
   const kill = a => { a.ts.forEach(clearTimeout); a.ts = []; };
   const cell = i => G.grid.cells[i];
+  const blockAt = i => G.grid.blocks.get(i);
+  const roll = p => !!p && Math.random() < p;
 
   const finish = () => {
     if (finished) return;
@@ -140,6 +179,7 @@ G.molePhase = o => new Promise(resolve => {
     pending.forEach(clearTimeout);
     active.forEach(a => { kill(a); a.fx && a.fx.cancel(); });
     active.clear();
+    reserved.forEach(i => cell(i).classList.remove('target'));
     G.grid.clearAll();
     G.grid.handler = null;
     G.grid.releaseHandler = null;
@@ -149,22 +189,79 @@ G.molePhase = o => new Promise(resolve => {
     settled++;
     if (settled >= o.count || o.stop()) finish();
   };
-  const freeCell = () => {
-    const free = [...Array(9).keys()].filter(i => !active.has(i));
-    return free.length ? G.pick(free) : -1;
+  // 可以放符號的格子:沒被占用、沒被預約、沒被觸手蓋住
+  const freeCells = () => [...Array(9).keys()].filter(i =>
+    !active.has(i) && !reserved.has(i) && !(blockAt(i) && blockAt(i).type === 'tentacle'));
+  const freeCell = () => { const f = freeCells(); return f.length ? G.pick(f) : -1; };
+
+  // 連線 / 掃射:整條打中就觸發獎勵
+  const groups = new Map();
+  const groupHit = a => {
+    const g = a.gid && groups.get(a.gid);
+    if (!g) return;
+    g.hit.push(a.cell);
+    if (g.hit.length === g.size && o.onLine) o.onLine(g.hit);
   };
 
+  const expire = (i, a) => {
+    active.delete(i);
+    G.grid.clear(i, 'sink');
+    if (a.kind === 'decoy' || a.kind === 'ghost') return;
+    G.grid.flash(i, 'bad');
+    a.fx && a.fx.hit();
+    o.onMiss(i);
+    settle();
+  };
+  const armExpire = (i, a, ms) => a.ts.push(setTimeout(() => expire(i, a), ms));
+
   G.grid.handler = i => {
+    const b = blockAt(i);
+    // 觸手:敲 hp 下清掉
+    if (b && b.type === 'tentacle') {
+      b.hp--;
+      G.grid.bump(i);
+      G.grid.impact(i, 'mash', b.hp <= 0);
+      G.audio.play('chip');
+      if (b.hp <= 0) G.grid.removeBlock(i); else G.grid.renderBlock(i);
+      o.onChip && o.onChip(i, 'tentacle', b.hp <= 0);
+      return;
+    }
+    // 冰封:先敲破冰,下一下才打得到符號
+    if (b && b.type === 'ice') {
+      G.grid.removeBlock(i);
+      G.grid.impact(i, 'guard');
+      G.audio.play('block');
+      o.onChip && o.onChip(i, 'ice', true);
+      return;
+    }
+
     const a = active.get(i);
     if (!a) { G.grid.flash(i, 'miss'); G.grid.impact(i, 'miss'); G.audio.play('tap'); return; }
+
+    if (a.kind === 'ghost') { // 殘影:點了就消失,中斷連擊
+      kill(a); active.delete(i);
+      G.grid.clear(i, 'sink');
+      G.grid.impact(i, 'miss');
+      o.onGhost && o.onGhost(i);
+      return;
+    }
 
     if (a.kind === 'decoy') {
       kill(a); active.delete(i);
       G.grid.clear(i, 'press');
       G.grid.flash(i, 'bad');
-      G.grid.impact(i, 'bad');
+      G.grid.impact(i, 'bad', true);
       o.onDecoy && o.onDecoy(i);
       if (o.stop()) finish();
+      return;
+    }
+
+    if (a.armor > 0) { // 晶盾:第一下只敲裂
+      a.armor--;
+      cell(i).classList.add('cracked');
+      G.grid.bump(i);
+      G.grid.impact(i, 'guard');
+      G.audio.play('chip');
       return;
     }
 
@@ -174,24 +271,25 @@ G.molePhase = o => new Promise(resolve => {
       a.holding = true;
       a.full = false;
       const c = cell(i);
-      c.style.setProperty('--hold', o.hold.holdMs + 'ms');
+      c.style.setProperty('--hold', a.holdMs + 'ms');
       c.classList.add('holding');
       G.audio.play('charge');
-      G.grid.impact(i, 'miss'); // 按下蓄力:只有輕微的壓下感
-      a.ts.push(setTimeout(() => { a.full = true; c.classList.add('charged'); G.audio.play('ready'); }, o.hold.holdMs));
-      a.ts.push(setTimeout(() => G.grid.release(i), o.hold.holdMs + 900)); // 按太久自動出拳
+      G.grid.impact(i, 'miss'); // 按下:只有輕微的壓下感
+      a.ts.push(setTimeout(() => { a.full = true; c.classList.add('charged'); G.audio.play('ready'); }, a.holdMs));
+      a.ts.push(setTimeout(() => G.grid.release(i), a.holdMs + 900)); // 按太久自動放開
       return;
     }
 
     // 一般符號
-    G.grid.impact(i, o.cls.includes('guard') ? 'guard' : 'fist');
+    G.grid.impact(i, o.cls.includes('guard') ? 'guard' : a.gold ? 'num' : 'fist', a.gold);
     const ratio = Math.max(0, a.life - (performance.now() - a.born)) / a.life;
     kill(a); active.delete(i);
     G.grid.clear(i, 'press');
     G.grid.flash(i, 'good');
-    const info = { ratio };
-    o.onHit(i, info);            // onHit 可在 info 填入 grade,交給特效顯示
+    const info = { ratio, gold: a.gold, lava: !!(blockAt(i) && blockAt(i).type === 'lava') };
+    o.onHit(i, info); // onHit 可在 info 填入 grade,交給特效顯示
     a.fx && a.fx.block(info.grade);
+    groupHit(a);
     settle();
   };
 
@@ -200,36 +298,100 @@ G.molePhase = o => new Promise(resolve => {
     if (!a || a.kind !== 'hold' || !a.holding) return;
     kill(a); active.delete(i);
     G.grid.clear(i, 'press');
-    G.grid.flash(i, 'good');
-    G.grid.impact(i, 'fist', a.full); // 集滿放開是重擊
-    o.onHit(i, { hold: true, charged: a.full });
+    G.grid.flash(i, a.full ? 'good' : a.heavy ? 'bad' : 'good');
+    G.grid.impact(i, a.heavy ? 'guard' : 'fist', a.full); // 集滿放開是重擊
+    const info = { hold: true, charged: a.full, heavy: a.heavy };
+    const ok = o.onHit(i, info) !== false;
+    if (a.fx) ok ? a.fx.block(info.grade) : a.fx.hit();
     settle();
   };
 
-  // 在第 i 格放一個符號。kind:normal / hold / decoy;lifeMul:同時出現多個時放寬停留時間
-  const spawnOne = (i, kind, lifeMul = 1) => {
-    const life = Math.round((kind === 'hold' ? o.life + 400 : o.life) * lifeMul);
+  // 在第 i 格放一個符號。kind:normal / hold / decoy / ghost;lifeMul:同時出現多個時放寬停留時間
+  const spawnOne = (i, kind, lifeMul = 1, gid = 0) => {
+    reserved.delete(i);
+    let life = o.life * lifeMul;
+    const a = { kind, cell: i, gid, ts: [], fx: null };
+    let icon = o.icon, cls = o.cls, label = '';
+
+    if (kind === 'normal' && roll(mods.heavy && mods.heavy.chance)) { // 重擊:改成要頂住
+      kind = a.kind = 'hold';
+      a.heavy = true;
+      a.holdMs = mods.heavy.holdMs;
+      cls = o.cls + ' hold heavy';
+      label = '頂住';
+      life += 500;
+    } else if (kind === 'hold') {
+      a.holdMs = o.hold.holdMs;
+      icon = o.hold.icon;
+      cls = 'hold';
+      label = o.hold.label;
+      life += 400;
+    } else if (kind === 'decoy') {
+      icon = o.decoyIcon || '💀';
+      cls = 'decoy';
+    } else if (kind === 'normal') {
+      if (roll(mods.gold)) { a.gold = true; cls += ' gold'; label = '×2.5'; life *= 0.6; }
+      else if (roll(mods.armor)) { a.armor = 1; cls += ' crystal'; }
+    }
+    if (mods.lockon && kind !== 'decoy') life *= 0.8;
+    a.life = life = Math.round(life);
+    a.icon = icon;
+    a.born = performance.now();
+
     if (kind !== 'decoy') { spawned++; setCounter(o.count - spawned); }
-    if (kind === 'decoy') G.grid.set(i, '💀', 'decoy', life);
-    else if (kind === 'hold') G.grid.set(i, o.hold.icon, 'hold', life, o.hold.label);
-    else G.grid.set(i, o.icon, o.cls, life);
+    const hidden = mods.hidden && (kind === 'normal' || kind === 'decoy');
+    G.grid.set(i, hidden ? '❓' : icon, cls + (hidden ? ' hidden' : ''), life, label);
+    if (hidden) a.ts.push(setTimeout(() => { // 駭入:一段時間後才現形
+      const c = cell(i);
+      c.classList.remove('hidden');
+      c.querySelector('.icon').textContent = icon;
+    }, life * mods.hidden));
     G.audio.play('pop');
 
-    const a = { kind, life, born: performance.now(), ts: [], fx: null };
-    if (kind === 'normal' && o.onSpawn) a.fx = o.onSpawn(i, life);
-    a.ts.push(setTimeout(() => {
-      active.delete(i);
-      G.grid.clear(i, 'sink');
-      if (kind !== 'decoy') { G.grid.flash(i, 'bad'); a.fx && a.fx.hit(); o.onMiss(i); settle(); }
-    }, life));
+    if (o.onSpawn && (kind === 'normal' || a.heavy)) a.fx = o.onSpawn(i, life);
+    armExpire(i, a, life);
     active.set(i, a);
+
+    if (kind === 'normal' || a.heavy) {
+      // 醉影:旁邊多一個假的
+      if (roll(mods.ghost)) {
+        const g = freeCell();
+        if (g >= 0) {
+          G.grid.set(g, icon, cls + ' ghost', life, label);
+          const ga = { kind: 'ghost', cell: g, ts: [], life, born: a.born };
+          armExpire(g, ga, life);
+          active.set(g, ga);
+        }
+      }
+      // 瞬移:存活到一半時跳到別格
+      if (roll(mods.blink)) a.ts.push(setTimeout(() => blink(i, a), life * 0.45));
+    }
+  };
+
+  const blink = (from, a) => {
+    if (finished || active.get(from) !== a || a.holding) return;
+    const to = freeCell();
+    if (to < 0) return;
+    const left = a.life - (performance.now() - a.born);
+    const src = cell(from);
+    const icon = a.icon || src.querySelector('.icon').textContent; // 駭入中的 ❓ 瞬移後直接現形
+    const label = src.querySelector('.label').textContent;
+    const cls = [...src.classList].filter(c => !['cell', 'on', 'press', 'sink', 'thump', 'hidden', 'target'].includes(c)).join(' ');
+    kill(a);
+    active.delete(from);
+    G.grid.clear(from, 'sink');
+    G.grid.set(to, icon, cls + ' blinked', left, label);
+    G.audio.play('whiff');
+    a.cell = to;
+    armExpire(to, a, left);
+    active.set(to, a);
   };
 
   // ---- 出現模式 ----
-  // patterns:各模式的權重,例如 { single: 5, pair: 2, triple: 1, line: 2, sweep: 2, rapid: 2 }
   const LINES = [[0, 1, 2], [3, 4, 5], [6, 7, 8], [0, 3, 6], [1, 4, 7], [2, 5, 8], [0, 4, 8], [2, 4, 6]];
   const pending = []; // 同一組裡延後出現的計時器
   let planned = 0;    // 已排定的(非陷阱)符號數
+  let gidSeq = 0;
   const pickPattern = () => {
     const w = o.patterns || { single: 1 };
     let r = Math.random() * Object.values(w).reduce((s, v) => s + v, 0);
@@ -237,17 +399,21 @@ G.molePhase = o => new Promise(resolve => {
     return 'single';
   };
   // 指定格被占用時改放其他空格;都滿了就稍後再試
-  const spawnWhenFree = (i, kind, lifeMul) => {
+  const spawnWhenFree = (i, kind, lifeMul, gid) => {
     if (finished) return;
-    if (active.has(i)) i = freeCell();
-    if (i < 0) { pending.push(setTimeout(() => spawnWhenFree(-1, kind, lifeMul), 100)); return; }
-    spawnOne(i, kind, lifeMul);
+    if (i >= 0 && (active.has(i) || (reserved.has(i) && !mods.lockon))) { // 原本的格子被占走,清掉準星改放別格
+      if (mods.lockon) { reserved.delete(i); cell(i).classList.remove('target'); }
+      i = -1;
+    }
+    if (i < 0) i = freeCell();
+    if (i < 0) { pending.push(setTimeout(() => spawnWhenFree(-1, kind, lifeMul, gid), 100)); return; }
+    spawnOne(i, kind, lifeMul, gid);
   };
 
   const spawnGroup = () => {
     if (finished) return;
     if (o.stop()) { finish(); return; }
-    const free = [...Array(9).keys()].filter(i => !active.has(i));
+    const free = freeCells();
     if (!free.length) { spawnTimer = setTimeout(spawnGroup, 100); return; }
 
     const holdNow = o.hold && planned === o.hold.at; // HOLD 一定單獨出現
@@ -267,22 +433,29 @@ G.molePhase = o => new Promise(resolve => {
     }
     planned += cells.length;
 
+    // 連線 / 掃射完整出現時才算一組,全部打中有獎勵
+    const gid = (pat === 'line' || pat === 'sweep') && cells.length === 3 ? ++gidSeq : 0;
+    if (gid) groups.set(gid, { size: 3, hit: [] });
+
     // 同時出現越多,每個停留越久(3 個同時 = 1.5 倍)
     const lifeMul = gap ? 1 : 1 + 0.25 * (cells.length - 1);
+    const lead = mods.lockon || 0; // 鎖定:先亮準星,時間到才真的出現
     cells.forEach((i, n) => {
       const kind = holdNow ? 'hold' : 'normal';
-      if (n === 0) spawnOne(i, kind, lifeMul);
-      else pending.push(setTimeout(() => spawnWhenFree(i, kind, lifeMul), gap * n));
+      const delay = gap * n + lead;
+      if (lead) { reserved.add(i); pending.push(setTimeout(() => !finished && cell(i).classList.add('target'), gap * n)); }
+      if (!delay) spawnOne(i, kind, lifeMul, gid);
+      else pending.push(setTimeout(() => spawnWhenFree(i, kind, lifeMul, gid), delay));
     });
     // 陷阱另外加一個,不占用次數
-    if (o.decoyRate && Math.random() < o.decoyRate) {
+    if (roll(o.decoyRate)) {
       const d = G.pick(free.filter(i => !cells.includes(i)));
       if (d !== undefined) spawnOne(d, 'decoy');
     }
     // 多發之後多給一點喘息時間
     if (planned < o.count) {
       const rest = cells.length > 1 ? 1 + 0.55 * cells.length : 1;
-      spawnTimer = setTimeout(spawnGroup, o.interval * rest + gap * (cells.length - 1));
+      spawnTimer = setTimeout(spawnGroup, o.interval * rest + gap * (cells.length - 1) + lead * 0.5);
     }
   };
 

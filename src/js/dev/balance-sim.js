@@ -28,6 +28,13 @@ window.simRun = function (stageIdx, skill, upLv) {
     // 出現模式越複雜,真人命中率略降(後段最多 -6%)
     const patK = Math.min(1.5, w / Math.max(1, st.waves.length - 1) + stageIdx * 0.3);
     const patPenalty = 0.04 * patK;
+    // 第二階段:敵人機制讓真人命中率下降(估計值)
+    const mech = G.MECHS[e.id] || {};
+    const hasDef = !!(mech.def || mech.rotate), board = mech.board;
+    const atkPen = (mech.atk ? 0.04 : 0) + (board === 'ice' || board === 'tentacle' ? 0.04 : 0);
+    const defPen = (hasDef ? 0.05 : 0) + (board === 'ice' || board === 'tentacle' ? 0.04 : 0);
+    const bombRate = mech.atk && mech.atk.bomb != null ? mech.atk.bomb : (w >= 3 ? 0.12 : 0);
+    const lineShare = (1.2 + 2.8 * patK) / (9.2 + 3.2 * patK); // 連線+掃射占出現模式的比例
     let guard = 0;
     while (e.hp > 0 && p.hp > 0 && guard++ < 200) {
       // 玩家回合:必殺值滿就放必殺技,否則出拳
@@ -42,7 +49,12 @@ window.simRun = function (stageIdx, skill, upLv) {
         const mul = (1 + powerNext / 100) * (brokenNext ? 1.5 : 1);
         counterNext = powerNext = 0;
         brokenNext = false;
-        const r = clamp(skill + (p.moleLife - 1200) / 2000 - patPenalty);
+        const r = clamp(skill + (p.moleLife - 1200) / 2000 - patPenalty - atkPen);
+        // 炸彈:每組約 1.8 顆符號,每顆炸彈有機率被誤點
+        const bombs = Math.round(count / 1.8 * bombRate + Math.random() * 0.5);
+        for (let b = 0; b < bombs; b++) if (Math.random() < (1 - skill) * 0.6) { hurt(4 + w * 0.8 * st.scale); evMiss(); combo = 0; }
+        // 三連擊:連線組完整打中的期望次數
+        if (Math.random() < Math.min(1, 3 * lineShare * r * r * r)) e.hp -= Math.round(p.atk * 3 * fv());
         const holdAt = 1 + Math.floor(Math.random() * (count - 1));
         for (let k = 0; k < count && e.hp > 0; k++) {
           if (Math.random() < r) {
@@ -52,6 +64,8 @@ window.simRun = function (stageIdx, skill, upLv) {
             first = false;
             if (p.execute && e.hp < e.maxHp * 0.2) d *= 2;
             if (k === holdAt && Math.random() < clamp(skill)) d *= 3; // 蓄力重拳集滿
+            if (k !== holdAt && Math.random() < 0.12) d *= Math.random() < clamp(r - 0.15) / r ? 2.5 : 1; // 金拳
+            if (board === 'lava' && Math.random() < 0.22) { d *= 2; hurt(4); } // 熔岩格
             if (Math.random() < p.crit) d *= p.critMul;
             d *= fv();
             p.ult = Math.min(p.ultMax, p.ult + p.ultGain * (fv() - 1)); // FEVER 額外集氣
@@ -72,7 +86,7 @@ window.simRun = function (stageIdx, skill, upLv) {
         count += s.count || 0; life *= s.lifeMul || 1; dmg *= s.dmgMul || 1;
         fade = s.fade ? 0.1 : 0; decoy = s.decoy || 0;
       }
-      const gr = clamp(skill - (1000 - life) / 2000 - fade - patPenalty);
+      const gr = clamp(skill - (1000 - life) / 2000 - fade - patPenalty - defPen);
       let missed = 0;
       for (let k = 0; k < count && p.hp > 0; k++) {
         if (Math.random() < gr) {

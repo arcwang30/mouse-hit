@@ -38,3 +38,22 @@ G.ENEMIES = {
     skill: { name: '暗影神拳', desc: '殘影與骷髏交錯,點錯即受重創!', count: 2, decoy: 0.35, dmgMul: 2, lifeMul: 0.8 },
   },
 };
+
+// 敵人專屬機制(第二階段):讓每種敵人玩起來不一樣
+// hint:登場時的提示;atk:你的攻擊回合;def:敵人攻擊回合;board:放在格子上的狀態(ice / tentacle / lava)
+// 數值意義見 grid.js molePhase 的 mods 說明;bomb 為炸彈出現機率,bombIcon 為炸彈圖示
+// rotate:每次攻擊輪流換一種機制
+G.MECHS = {
+  agent:       { hint: '駭入:拳頭先顯示 ❓,裡面藏著 💣', atk: { hidden: 0.45, bomb: 0.35 } },
+  ninja:       { hint: '瞬移:符號會跳到別格', atk: { blink: 0.4 }, def: { blink: 0.45 } },
+  gunner:      { hint: '鎖定:紅色準星亮起後盾牌才出現', def: { lockon: 550 } },
+  drunk:       { hint: '醉影:點到半透明殘影會中斷連擊', def: { ghost: 0.55 } },
+  goblin:      { hint: '晶盾:發亮的盾牌要點兩下', def: { armor: 0.4 } },
+  lavaGolem:   { hint: '熔岩:燒紅格子的拳頭傷害 ×2,但會燙傷自己', board: 'lava' },
+  fatKing:     { hint: '重擊:「頂住」的盾牌要按住到集滿', def: { heavy: { chance: 0.35, holdMs: 450 } } },
+  mechGeneral: { hint: '鎖定:看準星預判盾牌的位置', def: { lockon: 500 } },
+  frostKnight: { hint: '冰封:結冰的格子要先敲破冰', board: 'ice' },
+  abyssCrab:   { hint: '觸手:觸手蓋住的格子,敲 3 下清掉', board: 'tentacle' },
+  poisonQueen: { hint: '毒瓶:小心混在拳頭裡的 🧪', atk: { bomb: 0.3, bombIcon: '🧪' } },
+  shadowKing:  { hint: '暗影:瞬移、殘影、鎖定輪番上陣', rotate: [{ def: { blink: 0.5 } }, { def: { ghost: 0.5 } }, { def: { lockon: 450 } }] },
+};

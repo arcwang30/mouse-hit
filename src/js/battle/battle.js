@@ -7,6 +7,11 @@ const BLOCK_PCT_CAP = 60;  // 反擊力累積上限(%)
 const FEVER_AT = 15;       // 連擊累積幾次進入 FEVER
 const FEVER_MS = 10000;    // FEVER 持續時間
 const FEVER_MUL = 1.5;     // FEVER 期間傷害 / 反擊力 / 必殺集氣倍率
+const GOLD_RATE = 0.12;    // 金拳出現機率(停留較短)
+const GOLD_MUL = 2.5;      // 金拳傷害倍率
+const BOMB_RATE = 0.12;    // 第 4 波起一般敵人攻擊回合混入炸彈的機率
+const LAVA_BURN = 4;       // 打熔岩格的燙傷
+const LINE_MUL = 3;        // 三連擊額外傷害(攻擊力倍數)
 
 function makePlayer() {
   const p = {
@@ -79,7 +84,9 @@ G.battle = {
       this.render();
       G.bgm.play(this.e.boss ? 'boss' : 'battle' + stageIdx);
       const intro = this.e.boss ? (w === total - 1 ? '魔王降臨!' : '中頭目出現!') : this.e.elite ? '精英來襲!' : '';
-      await G.banner(`WAVE ${w + 1}`, intro + this.e.name, 1200);
+      const hint = (G.MECHS[this.e.id] || {}).hint;
+      G.grid.clearBlocks();
+      await G.banner(`WAVE ${w + 1}`, intro + this.e.name + (hint ? '\n' + hint : ''), hint ? 1900 : 1200);
 
       while (!this.over()) {
         await this.playerTurn();
@@ -88,6 +95,7 @@ G.battle = {
         await this.enemyTurn();
       }
 
+      G.grid.clearBlocks(); // 敵人倒下,冰 / 觸手 / 熔岩一起消失
       if (this.p.hp <= 0) return this.finish(false);
 
       this.setEnemyState('dead');
@@ -121,15 +129,26 @@ G.battle = {
     if (counter) bonus.push(`反震 +${counter}`);
     this.phase = 'attack';
     this.setPhase(bonus.length ? `你的回合・${bonus.join('・')}` : '你的回合:點擊 👊,HOLD 要按住', 'atk');
+    this.setupBoard('attack');
     this.render();
 
+    const m = this.mech('atk');
     await G.molePhase({
       icon: '👊', cls: 'fist', count: p.attackCount, life: p.moleLife,
       interval: Math.max(250, p.moleLife * 0.45), patterns: this.patterns(),
       // 蓄力重拳:每回合其中一顆拳頭需要按住蓄力
       hold: { at: 1 + Math.floor(Math.random() * (p.attackCount - 1)), icon: '👊', label: 'HOLD', holdMs: HOLD_MS },
+      mods: { gold: GOLD_RATE, hidden: m.hidden, blink: m.blink },
+      // 炸彈:第 4 波起一般敵人也會混入;部分敵人機制會更多
+      decoyRate: m.bomb != null ? m.bomb : this.wave >= 3 ? BOMB_RATE : 0,
+      decoyIcon: m.bombIcon || '💣',
+      onDecoy: () => this.bomb(m.bombIcon || '💣'),
+      onLine: () => this.lineBonus(),
+      onChip: (i, type, cleared) => this.chip(type, cleared),
       onHit: (i, info) => {
         let d = (p.atk + combo * p.combo + counter) * mul;
+        if (info.gold) { d *= GOLD_MUL; this.float('金拳!', 'tag gold'); }
+        if (info.lava) { d *= 2; this.float('熔岩拳!', 'tag lava'); this.hurtPlayer(LAVA_BURN); }
         combo++;
         if (first && p.firstStrike) d *= 3;
         first = false;
@@ -177,20 +196,38 @@ G.battle = {
     }
     this.phase = 'defend';
     this.setPhase(s ? `必殺技來襲:${s.name}!` : '防禦:點擊 🛡️ 擋下攻擊!', 'def');
+    this.setupBoard('defend');
+    const m = this.mech('def');
     let missed = 0;
     await G.molePhase({
       icon: '🛡️', cls, count, life, interval: life * 0.5, decoyRate: s ? s.decoy : 0, patterns: this.patterns(),
+      mods: { blink: m.blink, ghost: m.ghost, armor: m.armor, lockon: m.lockon, heavy: m.heavy },
+      onGhost: () => { this.comboBreak(); this.float('殘影!', 'tag miss'); },
+      onChip: (i, type, cleared) => this.chip(type, cleared),
       // 每個盾牌對應一發飛向玩家的攻擊,盾牌消失的瞬間正好命中
       onSpawn: (i, ms) => this.enemyShot(i % 3, ms, !!s),
       onHit: (i, info) => {
-        // 越快擋下,累積的反擊力越多(下回合每拳傷害加成)
-        const pct = Math.round(BLOCK_PCT_MAX * info.ratio * (this.fever() ? FEVER_MUL : 1));
+        // 重擊沒頂滿:算被打中
+        if (info.heavy && !info.charged) {
+          missed++;
+          this.comboBreak();
+          this.float('沒頂住!', 'tag miss');
+          this.hurtPlayer(dmg * 1.3);
+          return false;
+        }
+        // 越快擋下,累積的反擊力越多(下回合每拳傷害加成);頂住成功給固定值
+        const ratio = info.heavy ? 0.7 : info.ratio;
+        const pct = Math.round(BLOCK_PCT_MAX * ratio * (this.fever() ? FEVER_MUL : 1));
         this.comboHit();
         this.counterPct = Math.min(BLOCK_PCT_CAP, (this.counterPct || 0) + pct);
         this.stats.blocks++;
         this.gainUlt(p.blockUlt);
         if (p.counter) this.counterStack = (this.counterStack || 0) + p.counter;
-        if (pct >= 8) {
+        if (info.heavy) {
+          info.grade = { cls: 'fast', text: `頂住! +${pct}%` };
+          G.audio.play('perfect');
+          this.setEnemyState('stagger', 420);
+        } else if (pct >= 8) {
           info.grade = { cls: 'fast', text: `迅擋! +${pct}%` };
           this.stats.perfects++;
           G.audio.play('perfect');
@@ -220,6 +257,7 @@ G.battle = {
     this.phase = 'break';
     this.setPhase(`破綻:連打中間的按鈕 ${hits} 下!`, 'atk');
     this.setEnemyState('stagger');
+    G.grid.removeBlock(4); // 連打按鈕固定在中間,先清掉那格的冰 / 觸手
     const broken = await G.mashPhase({
       cell: 4, icon: '👊', label: '連打', hits, life: 2500,
       onTap: (i, left) => {
@@ -251,7 +289,8 @@ G.battle = {
     this.setPhase('必殺技:依序點擊數字!', 'ult');
     await G.banner('必殺技!', `${(p.ultTime / 1000).toFixed(1)} 秒內依序點擊 1 → ${p.ultLen}`, 900);
 
-    const seq = G.shuffle([...Array(9).keys()]).slice(0, p.ultLen);
+    // 數字鍵避開被觸手 / 冰蓋住的格子
+    const seq = G.shuffle([...Array(9).keys()].filter(i => !G.grid.blocks.has(i) || G.grid.blocks.get(i).type === 'lava')).slice(0, p.ultLen);
     seq.forEach((c, n) => G.grid.set(c, String(n + 1), 'num'));
     const ok = await new Promise(res => {
       let idx = 0;
@@ -417,6 +456,59 @@ G.battle = {
       sweep: 0.6 + 1.4 * k,
       rapid: 0.8 + 1.2 * k,
     };
+  },
+
+  // ---- 敵人專屬機制 ----
+  // 目前敵人在某個階段('atk' 你的攻擊 / 'def' 敵人攻擊)的機制;暗影拳皇每次攻擊輪換
+  mech(phase) {
+    const m = G.MECHS[this.e.id] || {};
+    const cur = m.rotate ? m.rotate[this.e.turn % m.rotate.length] : m;
+    return cur[phase] || {};
+  },
+
+  // 回合開始時依敵人機制佈置格子
+  setupBoard(phase) {
+    const type = (G.MECHS[this.e.id] || {}).board;
+    if (!type) return;
+    const g = G.grid;
+    const open = () => [...Array(9).keys()].filter(i => !g.blocks.has(i));
+    if (type === 'lava' && phase === 'attack') { // 每回合換 2 格熔岩
+      g.clearBlocks('lava');
+      G.shuffle(open()).slice(0, 2).forEach(i => g.setBlock(i, 'lava'));
+    }
+    if (type === 'ice') { // 每回合凍住 2 格(必殺回合 3 格)
+      const n = this.e.turn % 3 === 2 ? 3 : 2;
+      G.shuffle(open()).slice(0, n).forEach(i => g.setBlock(i, 'ice'));
+      G.audio.play('block');
+    }
+    if (type === 'tentacle' && phase === 'defend') { // 每次攻擊長出 2 條觸手,最多 4 條
+      const have = [...g.blocks.values()].filter(b => b.type === 'tentacle').length;
+      G.shuffle(open()).slice(0, Math.min(2, 4 - have)).forEach(i => g.setBlock(i, 'tentacle', 3));
+    }
+  },
+
+  // 敲到觸手 / 冰;清掉觸手時對敵人造成一點傷害
+  chip(type, cleared) {
+    if (type === 'tentacle' && cleared) {
+      this.float('斬斷觸手!', 'tag armor');
+      this.hurtEnemy(this.p.atk, false);
+    }
+  },
+
+  // 點到炸彈
+  bomb(icon) {
+    this.comboBreak();
+    this.float(icon === '💣' ? '炸彈!' : '中毒!', 'tag miss');
+    G.audio.play('hurt');
+    this.hurtPlayer(Math.round(4 + this.wave * 0.8 * this.stage.scale));
+  },
+
+  // 連線 / 掃射的三顆全部打中
+  lineBonus() {
+    this.float('三連擊!', 'tag line');
+    G.audio.play('levelup');
+    this.punchFx(1, { crit: true, dur: 180 });
+    this.hurtEnemy(Math.round(this.p.atk * LINE_MUL * (this.fever() ? FEVER_MUL : 1)), true);
   },
 
   // ---- 連擊 & FEVER ----
@@ -603,6 +695,7 @@ G.battle = {
   },
 
   finish(win) {
+    G.grid.clearBlocks();
     this.endFever();
     const p = this.p, s = this.stats;
     let score = s.dmg + p.hp * 5 + s.waves * 300 + (win ? 1000 : 0);
