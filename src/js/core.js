@@ -22,6 +22,7 @@ G.banner = async (main, sub = '', ms = 1000) => {
   G.$('#bannerSub').textContent = sub;
   const el = G.$('#banner');
   el.classList.add('show');
+  G.audio.play('drum');
   await G.sleep(ms);
   el.classList.remove('show');
   await G.sleep(150);
@@ -33,7 +34,7 @@ G.save = {
   load() {
     let d = null;
     try { d = JSON.parse(localStorage.getItem(this.key)); } catch (e) {}
-    this.data = Object.assign({ points: 0, unlocked: 1, best: {} }, d || {});
+    this.data = Object.assign({ points: 0, unlocked: 1, best: {}, muted: false }, d || {});
     this.data.up = Object.assign({ hp: 0, atk: 0, ult: 0, react: 0 }, this.data.up);
   },
   write() {

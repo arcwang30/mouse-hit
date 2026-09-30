@@ -2,6 +2,27 @@
 G.save.load();
 G.grid.init();
 
+// ---- 音效 ----
+// 瀏覽器要求使用者互動後才能播放聲音
+['pointerdown', 'keydown'].forEach(ev => document.addEventListener(ev, () => G.audio.unlock(), true));
+
+const muteBtn = G.$('#muteBtn');
+const applyMute = () => {
+  G.audio.setMuted(G.save.data.muted);
+  muteBtn.textContent = G.save.data.muted ? '🔇' : '🔊';
+};
+muteBtn.addEventListener('click', () => {
+  G.save.data.muted = !G.save.data.muted;
+  G.save.write();
+  applyMute();
+});
+applyMute();
+
+// 一般按鈕的點擊音(技能卡另有選取音)
+document.addEventListener('pointerdown', e => {
+  if (e.target.closest('.btn:not(:disabled), .stage-card:not(:disabled), .skip, .mute')) G.audio.play('click');
+});
+
 G.$('#btnUpgrade').onclick = () => G.scenes.upgrade();
 G.$('#btnStory').onclick = () => G.scenes.story();
 G.$('#upBack').onclick = () => G.scenes.menu();
@@ -17,6 +38,9 @@ document.addEventListener('keydown', e => {
   if (!G.$('#battle').classList.contains('active') || e.repeat) return;
   if (e.code in KEYMAP) { G.grid.tap(KEYMAP[e.code]); e.preventDefault(); }
   else if (e.code === 'Space') { G.battle.requestUlt(); e.preventDefault(); }
+});
+document.addEventListener('keydown', e => {
+  if (e.code === 'KeyM' && !e.repeat) muteBtn.click();
 });
 
 let seen = false;

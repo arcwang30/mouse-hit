@@ -70,7 +70,7 @@ G.molePhase = o => new Promise(resolve => {
 
   G.grid.handler = i => {
     const a = active.get(i);
-    if (!a) { G.grid.flash(i, 'miss'); return; }
+    if (!a) { G.grid.flash(i, 'miss'); G.audio.play('tap'); return; }
     clearTimeout(a.t);
     active.delete(i);
     G.grid.clear(i);
@@ -94,6 +94,7 @@ G.molePhase = o => new Promise(resolve => {
     const decoy = !!o.decoyRate && Math.random() < o.decoyRate;
     if (!decoy) { spawned++; setCounter(o.count - spawned); }
     G.grid.set(i, decoy ? '💀' : o.icon, decoy ? 'decoy' : o.cls, o.life);
+    G.audio.play('pop');
     const t = setTimeout(() => {
       active.delete(i);
       G.grid.clear(i);

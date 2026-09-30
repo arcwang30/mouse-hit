@@ -39,6 +39,7 @@ powershell -ExecutionPolicy Bypass -File tools/serve.ps1
 |---|---|---|
 | 點擊九宮格 | 點擊格子 | 數字鍵盤 7-9 / 4-6 / 1-3,或 Q W E / A S D / Z X C |
 | 施放必殺技 | 必殺值 MAX 時點「🔥 必殺」 | 空白鍵 |
+| 靜音 | 右上角 🔊 | M |
 
 ## 原型內容
 
@@ -46,4 +47,5 @@ powershell -ExecutionPolicy Bypass -File tools/serve.ps1
 - 玩家攻擊 👊 / 敵人攻擊時防禦 🛡️ / 必殺技依序點數字 + 漫畫風演出
 - 20 個 Roguelike 技能,每擊倒一個 WAVE 三選一
 - 結算積分 → 成長點數 → 永久升級(存於瀏覽器 localStorage)
+- 音樂音效全部以 Web Audio 即時合成(`src/js/audio/`),不需音檔;配樂分主選單、三個關卡、BOSS 戰五首
 - 角色目前是 emoji 暫代圖,之後換成 `assets/images/` 裡的美術

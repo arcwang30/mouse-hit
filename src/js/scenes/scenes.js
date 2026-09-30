@@ -12,6 +12,7 @@ G.scenes = {
   // ---- 故事 ----
   story() {
     G.show('story');
+    G.bgm.play('menu');
     let line = 0, typing = null;
     const el = G.$('#storyText');
     const type = () => {
@@ -57,6 +58,7 @@ G.scenes = {
       b.onclick = () => G.battle.start(+b.dataset.i);
     });
     G.show('menu');
+    G.bgm.play('menu');
   },
 
   // ---- 成長 ----
@@ -79,6 +81,7 @@ G.scenes = {
         sv.points -= G.upgradeCost(lv);
         sv.up[b.dataset.id] = lv + 1;
         G.save.write();
+        G.audio.play('levelup');
         this.upgrade();
       };
     });
@@ -100,6 +103,7 @@ G.scenes = {
           const s = choices[+b.dataset.i];
           s.apply(p);
           p.skills.push(s.id);
+          G.audio.play('select');
           el.classList.remove('show');
           resolve();
         };
@@ -110,6 +114,8 @@ G.scenes = {
   // ---- 結算 ----
   result(win, score, points, s, p) {
     G.$('#resultTitle').textContent = win ? '🏆 過關!' : '💀 敗北…';
+    G.bgm.stop();
+    G.audio.play(win ? 'win' : 'lose');
     const skills = p.skills.map(id => G.SKILLS.find(k => k.id === id).icon).join(' ') || '—';
     G.$('#resultBox').innerHTML = `
       <div>總傷害<b>${s.dmg}</b></div>

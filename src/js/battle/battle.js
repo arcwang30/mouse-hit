@@ -45,6 +45,7 @@ G.battle = {
       G.$('#enemyName').textContent = (this.e.boss ? '【BOSS】' : '') + this.e.name;
       this.setEnemyState('idle');
       this.render();
+      G.bgm.play(this.e.boss ? 'boss' : 'battle' + stageIdx);
       await G.banner(`WAVE ${w + 1}`, (this.e.boss ? '魔王降臨!' : '') + this.e.name, 1200);
 
       while (!this.over()) {
@@ -57,6 +58,7 @@ G.battle = {
       if (this.p.hp <= 0) return this.finish(false);
 
       this.setEnemyState('dead');
+      G.audio.play('ko');
       this.stats.waves++;
       await G.sleep(900);
       if (w < 2) {
@@ -90,7 +92,7 @@ G.battle = {
         if (p.lifesteal) this.healPlayer(p.lifesteal, true);
         this.gainUlt(p.ultGain);
       },
-      onMiss: () => { combo = 0; this.setEnemyState('defend', 450); },
+      onMiss: () => { combo = 0; G.audio.play('whiff'); this.setEnemyState('defend', 450); },
       stop: () => this.over() || this.ultRequested,
     });
     this.phase = null;
@@ -104,6 +106,7 @@ G.battle = {
     let count = e.atkCount, life = e.guardLife + p.guardBonus, dmg = e.atk, cls = 'guard';
     if (s) {
       this.setEnemyState('ult');
+      G.audio.play('bossSkill');
       await G.banner(`${e.name}「${s.name}」`, s.desc, 1300);
       count += s.count || 0;
       life *= s.lifeMul || 1;
@@ -119,11 +122,12 @@ G.battle = {
       icon: '🛡️', cls, count, life, interval: life * 0.5, decoyRate: s ? s.decoy : 0,
       onHit: () => {
         this.stats.blocks++;
+        G.audio.play('block');
         this.gainUlt(p.blockUlt);
         if (p.thorns) this.hurtEnemy(p.thorns, false);
       },
       onMiss: () => this.hurtPlayer(dmg),
-      onDecoy: () => this.hurtPlayer(dmg * 1.5),
+      onDecoy: () => { G.audio.play('poison'); this.hurtPlayer(dmg * 1.5); },
       stop: () => this.over(),
     });
     this.phase = null;
@@ -144,6 +148,7 @@ G.battle = {
       const timer = this.timebar(p.ultTime, () => { G.grid.handler = null; res(false); });
       G.grid.handler = i => {
         if (i === seq[idx]) {
+          G.audio.play('note', idx);
           G.grid.clear(i);
           G.grid.flash(i, 'good');
           if (++idx === seq.length) { timer.stop(); G.grid.handler = null; res(true); }
@@ -167,6 +172,7 @@ G.battle = {
     } else {
       p.ult = Math.floor(p.ultMax / 2);
       this.render();
+      G.audio.play('fail');
       await G.banner('必殺技失敗', '氣勁散去了一半…', 900);
     }
   },
@@ -174,6 +180,7 @@ G.battle = {
   async cutIn() {
     const el = G.$('#cutin');
     el.classList.add('show');
+    G.audio.play('cutin');
     await G.sleep(1400);
     el.classList.remove('show');
   },
@@ -190,6 +197,7 @@ G.battle = {
     const e = this.e;
     e.hp = Math.max(0, e.hp - d);
     this.stats.dmg += d;
+    G.audio.play(big ? 'boom' : crit ? 'crit' : 'punch');
     this.float(d, crit ? (big ? 'dmg big' : 'dmg crit') : 'dmg');
     if (e.hp > 0) this.setEnemyState('hit', 250);
     this.render();
@@ -199,6 +207,7 @@ G.battle = {
     const p = this.p;
     d = Math.max(1, Math.round(d * (1 - p.armor)));
     p.hp = Math.max(0, p.hp - d);
+    G.audio.play('hurt');
     this.float('-' + d, 'hurt', true);
     const app = G.$('#app');
     app.classList.remove('shake');
@@ -207,6 +216,7 @@ G.battle = {
     if (p.hp <= 0 && p.revive > 0) {
       p.revive = 0;
       p.hp = Math.round(p.maxHp / 2);
+      G.audio.play('revive');
       G.banner('浴火重生!', '烈焰烙痕灼燒,炎鋼再次站起', 1000);
     }
     this.render();
@@ -220,7 +230,9 @@ G.battle = {
   },
 
   gainUlt(n) {
+    const was = this.p.ult;
     this.p.ult = Math.min(this.p.ultMax, this.p.ult + n);
+    if (was < this.p.ultMax && this.p.ult >= this.p.ultMax) G.audio.play('ready');
     this.render();
   },
 
