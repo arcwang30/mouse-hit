@@ -50,5 +50,6 @@ powershell -ExecutionPolicy Bypass -File tools/serve.ps1
 - 20 個 Roguelike 技能,每擊倒一個 WAVE 三選一
 - 結算積分 → 成長點數 → 永久升級(存於瀏覽器 localStorage)
 - 音樂音效全部以 Web Audio 即時合成(`src/js/audio/`),不需音檔;配樂分主選單、三個關卡、BOSS 戰五首
+- 開場故事:漫畫 `assets/images/story/opening.jpg` 逐格演出(7 幕,座標與特效設定在 `src/js/scenes/scenes.js` 的 STORY)
 - 標題畫面:背景 `assets/images/backgrounds/title.jpg`、LOGO `assets/images/ui/logo.webp`(含落雷、雨、火星、LOGO 砸落動畫)
 - 戰鬥角色目前是 emoji 暫代圖,之後換成 `assets/images/` 裡的美術

@@ -102,6 +102,10 @@ const SFX = {
   tap:     a => a.tone(200, 0.05, { type: 'triangle', vol: 0.08 }),
   select:  (a, t) => arp(a, t, 660, [0, 7, 12], 0.05, { type: 'triangle', vol: 0.22, dur: 0.3 }),
   levelup: (a, t) => arp(a, t, 523, [0, 4, 7, 12], 0.07, { type: 'square', vol: 0.14, dur: 0.22 }),
+  fire: (a, t) => { // 火焰劈啪聲
+    a.noise(1.2, { filter: 'bandpass', freq: 900, q: 0.8, vol: 0.25 });
+    for (let k = 0; k < 6; k++) a.noise(0.03, { filter: 'highpass', freq: 3000, vol: 0.3, when: t + Math.random() * 1.1 });
+  },
   thunder: a => {
     a.noise(0.08, { filter: 'highpass', freq: 2000, vol: 0.35 });
     a.noise(1.8, { freq: 500, to: 60, vol: 0.55 });

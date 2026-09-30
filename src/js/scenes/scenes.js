@@ -1,44 +1,122 @@
 // 非戰鬥畫面:故事開場、主選單、成長、技能三選一、結算
+
+// 開場漫畫:assets/images/story/opening.jpg(1408×768,共 8 格)
+// crop:該格在原圖上的位置;pan:寬畫面改成由左往右橫搖(view 為可視寬度)
+// fx:fire 火光 / impact 震動 / shock 紫光+震動 / rage 怒火+震動;tilt:格子傾斜角度;focus:鏡頭推近的中心
+const COMIC = { w: 1408, h: 768 };
 const STORY = [
-  '西元 2XXX 年,科技與古武學交織的混沌世代。',
-  '一場無情大火中,神拳門掌門雷震天救出了一名男嬰。燃燒的火屑,在他額頭烙下一道烈焰疤痕。',
-  '「命懸一線卻堅韌如鐵,浴火重生而不滅。從今以後,你便隨我姓,名喚『炎鋼』。」',
-  '十六年後,下山前夕。師傅倒在血泊之中——胸口的拳印焦黑,帶著侵蝕骨肉的科技毒素。',
-  '炎鋼背起師傅唯一的遺物,走向山腳下霓虹閃爍的未來都市。',
-  '用這雙鐵拳,親手砸碎幕後的陰謀!',
+  { crop: { x: 28, y: 35, w: 365, h: 337 }, fx: 'fire', tilt: -1.5, focus: '70% 40%', sfx: 'fire',
+    text: '西元 2XXX 年。\n一場無情大火中,神拳門掌門雷震天破窗而入,從火海裡救出一名男嬰。' },
+  { crop: { x: 409, y: 35, w: 269, h: 337 }, tilt: 1.5, focus: '75% 35%', speaker: '雷震天',
+    text: '「命懸一線卻堅韌如鐵,浴火重生而不滅。從今以後,你便名喚『炎鋼』。」' },
+  { crop: { x: 731, y: 35, w: 325, h: 337 }, fx: 'impact', tilt: -1, focus: '45% 60%', sfx: 'punch',
+    text: '十六年的晨霜暮雪,\n炎鋼在嚴苛的淬煉下,練就一身鋼鐵般的筋骨。' },
+  { crop: { x: 1072, y: 35, w: 310, h: 337 }, tilt: 1, focus: '50% 30%',
+    text: '十六歲,按照門規,\n正是下山入世歷練的時刻——' },
+  { crop: { x: 28, y: 408, w: 434, h: 340 }, fx: 'shock', tilt: -2, focus: '75% 55%', sfx: 'bossSkill', tone: 'shock',
+    text: '然而下山前夕,師傅倒在血泊之中。\n一道詭異的黑影,消失在夜色裡。' },
+  { crop: { x: 475, y: 408, w: 203, h: 340 }, fx: 'rage', tilt: 2, focus: '50% 30%', sfx: 'break',
+    text: '悲憤的淚水滴落在額頭的烙痕上,\n燃起滾燙的怒火。' },
+  { crop: { x: 730, y: 406, w: 652, h: 344 }, pan: { view: 320 }, tilt: 0, sfx: 'thunder',
+    text: '炎鋼走下群山,迎向霓虹閃爍的未來都市。\n「用這雙鐵拳,砸碎幕後的陰謀!」' },
 ];
+
+// 讓 el 只顯示原圖上 (x, y, w, h) 這一塊
+const showCrop = (el, x, y, w, h) => {
+  el.style.backgroundSize = `${COMIC.w / w * 100}% auto`;
+  el.style.backgroundPosition = `${x / (COMIC.w - w) * 100}% ${y / (COMIC.h - h) * 100}%`;
+};
 
 G.scenes = {
   // ---- 故事 ----
   story() {
     G.show('story');
     G.bgm.play('menu');
-    let line = 0, typing = null;
-    const el = G.$('#storyText');
-    const type = () => {
-      const text = STORY[line];
+    const root = G.$('#story'), panel = G.$('#storyPanel'), img = G.$('#panelImg');
+    const caption = G.$('#storyCaption'), text = G.$('#storyText'), speaker = G.$('#storySpeaker');
+    const hint = root.querySelector('.story-hint');
+    G.$('#storyDots').innerHTML = STORY.map(() => '<span></span>').join('');
+    const dots = [...G.$('#storyDots').children];
+    let idx = -1, typing = null, busy = false, panTimer;
+
+    const type = str => {
       let n = 0;
-      el.textContent = '';
+      text.textContent = '';
+      hint.classList.add('hide');
       clearInterval(typing);
       typing = setInterval(() => {
-        el.textContent = text.slice(0, ++n);
-        if (n >= text.length) { clearInterval(typing); typing = null; }
-      }, 45);
+        text.textContent = str.slice(0, ++n);
+        if (n >= str.length) { clearInterval(typing); typing = null; hint.classList.remove('hide'); }
+      }, 40);
     };
+
+    const show = i => {
+      const b = STORY[i];
+      clearTimeout(panTimer);
+      dots.forEach((d, k) => { d.classList.toggle('on', k < i); d.classList.toggle('now', k === i); });
+      root.classList.toggle('tone-shock', b.tone === 'shock');
+
+      // 格子尺寸:依畫格比例,限制在舞台範圍內
+      const view = b.pan ? { w: b.pan.view, h: b.crop.h } : b.crop;
+      const aspect = view.w / view.h;
+      panel.style.aspectRatio = `${view.w} / ${view.h}`;
+      panel.style.width = `min(86cqw, ${52 * aspect}cqh)`;
+      panel.style.setProperty('--tilt', (b.tilt || 0) + 'deg');
+      img.style.setProperty('--focus', b.focus || '50% 50%');
+      panel.className = 'story-panel' + (b.fx ? ' fx-' + b.fx : '');
+
+      img.classList.toggle('pan', !!b.pan);
+      img.style.transition = 'none';
+      showCrop(img, b.crop.x, b.crop.y, view.w, view.h);
+      void img.offsetWidth;
+      if (b.pan) { // 寬畫面:從左邊橫搖到右邊的主角
+        img.style.transition = '';
+        panTimer = setTimeout(() => showCrop(img, b.crop.x + b.crop.w - view.w, b.crop.y, view.w, view.h), 500);
+      } else {
+        img.style.animation = 'none';
+        void img.offsetWidth;
+        img.style.animation = '';
+      }
+      void panel.offsetWidth;
+      panel.classList.add('in');
+      G.audio.play('drum');
+      if (b.sfx) setTimeout(() => G.audio.play(b.sfx), 200);
+
+      caption.className = 'story-caption' + (b.speaker ? ' say' : '');
+      void caption.offsetWidth;
+      caption.classList.add('pop');
+      speaker.textContent = b.speaker || '';
+      type(b.text);
+    };
+
     const next = () => {
-      if (typing) { clearInterval(typing); typing = null; el.textContent = STORY[line]; return; }
-      if (++line >= STORY.length) return done();
-      type();
+      if (busy) return;
+      if (typing) { // 還在打字:先把整段顯示出來
+        clearInterval(typing);
+        typing = null;
+        text.textContent = STORY[idx].text;
+        hint.classList.remove('hide');
+        return;
+      }
+      if (idx + 1 >= STORY.length) return done();
+      if (idx < 0) { show(++idx); return; }
+      busy = true;
+      panel.classList.remove('in');
+      panel.classList.add('out');
+      setTimeout(() => { busy = false; show(++idx); }, 260);
     };
+
     const done = () => {
       clearInterval(typing);
-      G.$('#story').onclick = null;
+      clearTimeout(panTimer);
+      root.onclick = null;
       try { localStorage.setItem('gangquan_seen_story', '1'); } catch (e) {}
       this.title();
     };
-    G.$('#story').onclick = next;
+
+    root.onclick = next;
     G.$('#storySkip').onclick = e => { e.stopPropagation(); done(); };
-    type();
+    next();
   },
 
   // ---- 標題畫面 ----
