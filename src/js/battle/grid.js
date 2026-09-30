@@ -153,6 +153,8 @@ G.grid = {
 //   onSpawn(i, ms) 回傳特效物件 { block, hit, cancel },在點中/錯過/提前結束時呼叫
 //   onLine(cells)  連線 / 掃射出現的一整條全部打中
 //   onGhost(i)     點到殘影;onChip(i, type, cleared) 敲到觸手 / 冰
+//   onReady(api)   取得 { autoHit(i), targets() },給技法自動打中符號用
+//   slowFirst      { ms, mul } 階段開始 ms 毫秒內出現的符號停留時間 ×mul;decoySafe 陷阱改成正面特效
 //   mods           敵人機制與特殊符號(機率 0~1):
 //     gold   金拳:停留較短、傷害高       armor  晶盾:要點兩下
 //     blink  瞬移:存活一半時跳到別格     ghost  醉影:旁邊多一個假的殘影
@@ -164,7 +166,7 @@ G.molePhase = o => new Promise(resolve => {
   const active = new Map();     // 格子 → 目前的符號
   const reserved = new Set();   // 已被鎖定準星預約的格子
   let spawned = 0, settled = 0, finished = false, spawnTimer;
-  const setCounter = n => { G.$('#counter').textContent = n; };
+  const setCounter = n => { if (!o.noCounter) G.$('#counter').textContent = n; }; // noCounter:由呼叫端自己顯示(例如獎勵關的擊中數)
   setCounter(o.count);
 
   const kill = a => { a.ts.forEach(clearTimeout); a.ts = []; };
@@ -250,7 +252,7 @@ G.molePhase = o => new Promise(resolve => {
       kill(a); active.delete(i);
       G.grid.clear(i, 'press');
       G.grid.flash(i, 'bad');
-      G.grid.impact(i, 'bad', true);
+      G.grid.impact(i, o.decoySafe ? 'fist' : 'bad', true); // 拆彈專家:炸彈變成打向敵人
       o.onDecoy && o.onDecoy(i);
       if (o.stop()) finish();
       return;
@@ -281,17 +283,30 @@ G.molePhase = o => new Promise(resolve => {
     }
 
     // 一般符號
-    G.grid.impact(i, o.cls.includes('guard') ? 'guard' : a.gold ? 'num' : 'fist', a.gold);
+    doHit(i, a, false);
+  };
+
+  // 結算一次命中。auto = 由技法自動打中(連鎖、爆裂、蓄力大師)
+  const doHit = (i, a, auto) => {
+    G.grid.impact(i, o.cls.includes('guard') ? 'guard' : a.gold ? 'num' : 'fist', a.gold || auto);
     const ratio = Math.max(0, a.life - (performance.now() - a.born)) / a.life;
     kill(a); active.delete(i);
     G.grid.clear(i, 'press');
     G.grid.flash(i, 'good');
-    const info = { ratio, gold: a.gold, lava: !!(blockAt(i) && blockAt(i).type === 'lava') };
+    const info = { ratio, gold: a.gold, auto, lava: !!(blockAt(i) && blockAt(i).type === 'lava') };
     o.onHit(i, info); // onHit 可在 info 填入 grade,交給特效顯示
     a.fx && a.fx.block(info.grade);
     groupHit(a);
     settle();
   };
+
+  // 給技法用的介面:autoHit 自動打中某格的一般符號;targets 列出目前能被自動打中的格子
+  const hittable = i => { const a = active.get(i); return a && a.kind === 'normal' && !a.armor && !(blockAt(i) && blockAt(i).type === 'ice'); };
+  o.onReady && o.onReady({
+    autoHit: i => { if (finished || !hittable(i)) return false; doHit(i, active.get(i), true); return true; },
+    targets: () => [...active.keys()].filter(hittable),
+  });
+  const phaseStart = performance.now();
 
   G.grid.releaseHandler = i => {
     const a = active.get(i);
@@ -334,6 +349,7 @@ G.molePhase = o => new Promise(resolve => {
       else if (roll(mods.armor)) { a.armor = 1; cls += ' crystal'; }
     }
     if (mods.lockon && kind !== 'decoy') life *= 0.8;
+    if (o.slowFirst && performance.now() - phaseStart < o.slowFirst.ms) life *= o.slowFirst.mul; // 時之呼吸
     a.life = life = Math.round(life);
     a.icon = icon;
     a.born = performance.now();

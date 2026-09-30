@@ -23,8 +23,23 @@ window.simRun = function (stageIdx, skill, upLv) {
     if (p.hp <= 0 && p.revive) { p.revive = 0; p.hp = Math.round(p.maxHp / 2); }
   };
 
+  // 第三階段:技法在模擬中用近似效果表示
+  const RULE_SIM = { chain: { dmg: 1.15 }, burst: { dmg: 1.1 }, slowmo: { hit: 0.03 }, wall: { freeBlock: 1 }, defuse: { noBomb: 1 },
+    holdking: { dmg: 1.08 }, soul: { dmg: 1.03 }, midas: { dmg: 1.12 }, feverish: { dmg: 1.08 }, liner: { dmg: 1.08 } };
+  const sim = { dmg: 1, hit: 0, freeBlock: 0, noBomb: 0 };
+  const learn = s => { s.apply(p); p.skills.push(s.id); const r = RULE_SIM[s.id]; if (r) { sim.dmg *= r.dmg || 1; sim.hit += r.hit || 0; sim.freeBlock += r.freeBlock || 0; sim.noBomb += r.noBomb || 0; } };
+  const pickSkill = rulesOnly => { // 和遊戲相同:保證至少一個技法,從三個裡隨機選
+    const pool = G.SKILLS.filter(s => !((s.unique || s.rule) && p.skills.includes(s.id)));
+    const rules = G.shuffle(pool.filter(s => s.rule));
+    const choices = rulesOnly && rules.length ? rules.slice(0, 3) : G.shuffle(pool.filter(s => !s.rule)).slice(0, rules.length ? 2 : 3).concat(rules.slice(0, 1));
+    if (choices.length) learn(G.pick(choices));
+  };
+  let eliteNext = false, eliteReward = false;
   for (let w = 0; w < st.waves.length; w++) {
-    const e = makeEnemy(st.waves[w], st.scale, w);
+    let spec = st.waves[w];
+    if (eliteNext && !spec.endsWith('+') && !G.ENEMIES[spec].boss) { spec += '+'; eliteReward = true; }
+    eliteNext = false;
+    const e = makeEnemy(spec, st.scale, w);
     // 出現模式越複雜,真人命中率略降(後段最多 -6%)
     const patK = Math.min(1.5, w / Math.max(1, st.waves.length - 1) + stageIdx * 0.3);
     const patPenalty = 0.04 * patK;
@@ -49,9 +64,9 @@ window.simRun = function (stageIdx, skill, upLv) {
         const mul = (1 + powerNext / 100) * (brokenNext ? 1.5 : 1);
         counterNext = powerNext = 0;
         brokenNext = false;
-        const r = clamp(skill + (p.moleLife - 1200) / 2000 - patPenalty - atkPen);
+        const r = clamp(skill + (p.moleLife - 1200) / 2000 - patPenalty - atkPen + sim.hit);
         // 炸彈:每組約 1.8 顆符號,每顆炸彈有機率被誤點
-        const bombs = Math.round(count / 1.8 * bombRate + Math.random() * 0.5);
+        const bombs = sim.noBomb ? 0 : Math.round(count / 1.8 * bombRate + Math.random() * 0.5);
         for (let b = 0; b < bombs; b++) if (Math.random() < (1 - skill) * 0.6) { hurt(4 + w * 0.8 * st.scale); evMiss(); combo = 0; }
         // 三連擊:連線組完整打中的期望次數
         if (Math.random() < Math.min(1, 3 * lineShare * r * r * r)) e.hp -= Math.round(p.atk * 3 * fv());
@@ -67,7 +82,7 @@ window.simRun = function (stageIdx, skill, upLv) {
             if (k !== holdAt && Math.random() < 0.12) d *= Math.random() < clamp(r - 0.15) / r ? 2.5 : 1; // 金拳
             if (board === 'lava' && Math.random() < 0.22) { d *= 2; hurt(4); } // 熔岩格
             if (Math.random() < p.crit) d *= p.critMul;
-            d *= fv();
+            d *= fv() * sim.dmg;
             p.ult = Math.min(p.ultMax, p.ult + p.ultGain * (fv() - 1)); // FEVER 額外集氣
             evHit();
             e.hp -= Math.round(d);
@@ -86,7 +101,8 @@ window.simRun = function (stageIdx, skill, upLv) {
         count += s.count || 0; life *= s.lifeMul || 1; dmg *= s.dmgMul || 1;
         fade = s.fade ? 0.1 : 0; decoy = s.decoy || 0;
       }
-      const gr = clamp(skill - (1000 - life) / 2000 - fade - patPenalty - defPen);
+      const gr = clamp(skill - (1000 - life) / 2000 - fade - patPenalty - defPen + sim.hit);
+      count = Math.max(0, count - sim.freeBlock); // 鐵壁自動擋一個
       let missed = 0;
       for (let k = 0; k < count && p.hp > 0; k++) {
         if (Math.random() < gr) {
@@ -108,10 +124,22 @@ window.simRun = function (stageIdx, skill, upLv) {
     if (p.hp <= 0) return w;
     if (w < st.waves.length - 1) {
       p.hp = Math.min(p.maxHp, p.hp + Math.round(p.maxHp * 0.1) + p.regen);
-      const pool = G.SKILLS.filter(k => !(k.unique && p.skills.includes(k.id)));
-      const pick = G.pick(G.shuffle(pool).slice(0, 3));
-      pick.apply(p);
-      p.skills.push(pick.id);
+      pickSkill(false);
+      if (eliteReward) { pickSkill(true); eliteReward = false; }
+      // 分歧:從兩個隨機選項中隨機選一個(真人會挑對自己有利的,所以模擬偏保守)
+      if ((st.events || []).includes(w)) {
+        const next = st.waves[w + 1];
+        const ok = b => b.id !== 'elite' || (next && !next.endsWith('+') && !G.ENEMIES[next].boss);
+        const b = G.pick(G.shuffle(G.BRANCHES.filter(ok)).slice(0, 2));
+        if (b.id === 'rest') p.hp = Math.min(p.maxHp, p.hp + Math.round(p.maxHp * 0.4));
+        if (b.id === 'train') pickSkill(true);
+        if (b.id === 'elite') eliteNext = true;
+        if (b.id === 'bonus') { // 真人 12 秒約 45 擊 × 命中率
+          const hits = Math.round(55 * skill);
+          p.hp = Math.min(p.maxHp, p.hp + Math.min(Math.round(hits * 0.8), Math.round(p.maxHp * 0.45)));
+          p.ult = Math.min(p.ultMax, p.ult + hits * 1.5);
+        }
+      }
     }
   }
   return st.waves.length;

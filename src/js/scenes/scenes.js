@@ -214,13 +214,43 @@ G.scenes = {
   },
 
   // ---- 技能三選一 ----
-  pickSkill(p) {
+  // ---- 分歧:options 為 G.BRANCHES 中的兩項,回傳選到的 id ----
+  pickBranch(options) {
     return new Promise(resolve => {
-      const pool = G.SKILLS.filter(s => !(s.unique && p.skills.includes(s.id)));
-      const choices = G.shuffle(pool).slice(0, 3);
+      const box = G.$('#branchCards');
+      box.innerHTML = options.map((b, i) =>
+        `<button class="branch-card ${b.id}" data-i="${i}"><div class="br-icon">${b.icon}</div><b>${b.name}</b><div>${b.desc}</div></button>`).join('');
+      const el = G.$('#branch');
+      el.classList.add('show');
+      box.querySelectorAll('.branch-card').forEach(btn => {
+        btn.onclick = () => {
+          G.audio.play('select');
+          el.classList.remove('show');
+          resolve(options[+btn.dataset.i].id);
+        };
+      });
+    });
+  },
+
+  // rulesOnly:只出技法(修行、精英挑戰的獎勵)
+  pickSkill(p, rulesOnly = false) {
+    return new Promise(resolve => {
+      // 技法和 unique 技能只能拿一次
+      const pool = G.SKILLS.filter(s => !((s.unique || s.rule) && p.skills.includes(s.id)));
+      const rules = G.shuffle(pool.filter(s => s.rule));
+      let choices;
+      if (rulesOnly && rules.length) {
+        choices = rules.slice(0, 3);
+      } else {
+        // 保證至少一個技法(還有的話)
+        choices = G.shuffle(pool.filter(s => !s.rule)).slice(0, rules.length ? 2 : 3);
+        if (rules.length) choices.splice(Math.floor(Math.random() * 3), 0, rules[0]);
+      }
+      G.$('#skillPick h2').textContent = rulesOnly ? '修得一項技法' : '選擇一項技能';
       const box = G.$('#skillCards');
       box.innerHTML = choices.map((s, i) =>
-        `<button class="skill-card" data-i="${i}"><div class="sk-icon">${s.icon}</div><b>${s.name}</b><div>${s.desc}</div></button>`).join('');
+        `<button class="skill-card${s.rule ? ' rule' : ''}" data-i="${i}"><div class="sk-icon">${s.icon}</div>` +
+        `<b>${s.rule ? '<span class="rule-tag">技法</span>' : ''}${s.name}</b><div>${s.desc}</div></button>`).join('');
       const el = G.$('#skillPick');
       el.classList.add('show');
       box.querySelectorAll('.skill-card').forEach(b => {

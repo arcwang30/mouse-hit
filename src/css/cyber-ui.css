@@ -264,6 +264,31 @@
   -webkit-text-stroke: .5cqw #000; text-shadow: -.8cqw 0 var(--neon-m), .8cqw 0 var(--neon-c);
 }
 
+/* ---------- 第三階段:分歧選擇 ---------- */
+#branch {
+  flex-direction: column; align-items: center; justify-content: center; gap: 3cqw; padding: 6cqw;
+  background: repeating-linear-gradient(0deg, #0000 0 2px, #0003 2px 3px), #05080bf0;
+}
+#branch h2 { font-family: var(--tech), sans-serif; color: var(--neon-c); text-shadow: 0 0 2cqw var(--neon-c); letter-spacing: .1em; }
+.branch-sub { color: var(--steel-hi); font-size: 3.4cqw; margin-top: -2cqw; }
+.branch-cards { display: flex; gap: 3cqw; width: 100%; }
+.branch-card {
+  flex: 1; display: flex; flex-direction: column; align-items: center; gap: 1.6cqw; padding: 5cqw 3cqw; text-align: center;
+  border: 0; clip-path: var(--chamfer); color: #fff;
+  background: repeating-linear-gradient(0deg, #ffffff05 0 1px, transparent 1px 3px), linear-gradient(160deg, var(--steel-2), var(--steel-0));
+  box-shadow: inset 0 0 0 .5cqw var(--c, var(--neon-c));
+  animation: pop .3s ease-out backwards;
+}
+.branch-card:nth-child(2) { animation-delay: .1s; }
+.branch-card:active { transform: scale(.96); }
+.branch-card .br-icon { font-size: 13cqw; filter: drop-shadow(0 0 2cqw var(--c, var(--neon-c))); }
+.branch-card b { font-size: 5cqw; color: var(--c, var(--neon-c)); }
+.branch-card div:last-child { font-size: 3.3cqw; color: var(--steel-hi); line-height: 1.5; }
+.branch-card.rest  { --c: #3ddc84; }
+.branch-card.bonus { --c: var(--neon-y); }
+.branch-card.elite { --c: var(--neon-r); }
+.branch-card.train { --c: var(--neon-m); }
+
 /* ---------- 第二階段:特殊符號 ---------- */
 /* 金拳:短暫出現的高傷害拳 */
 .cell.gold .cap { background: linear-gradient(180deg, #fffbe0, #ffd400 45%, #d98a00); --edge: #6b4100; color: #fff; }
@@ -391,6 +416,20 @@
 }
 .skill-card:hover, .skill-card:active { box-shadow: inset 0 0 0 .5cqw var(--neon-c), inset .8cqw 0 0 var(--neon-m); }
 .skill-card b { color: var(--neon-y); }
+/* 技法卡:洋紅外框 + 流光,和一般數值技能區分 */
+.skill-card.rule {
+  background:
+    linear-gradient(110deg, transparent 30%, #ff2bd630 45%, transparent 60%) 0 0 / 250% 100%,
+    var(--brushed), linear-gradient(135deg, #3a1a45, var(--steel-0));
+  box-shadow: inset 0 0 0 .5cqw var(--neon-m), inset .8cqw 0 0 var(--neon-m);
+  animation: pop .25s ease-out backwards, ruleShine 2.4s linear infinite;
+}
+.skill-card.rule b { color: #fff; }
+.rule-tag {
+  display: inline-block; margin-right: 1.6cqw; padding: 0 1.6cqw; font-size: 2.8cqw; vertical-align: middle;
+  background: var(--neon-m); color: #000; clip-path: polygon(8% 0, 100% 0, 92% 100%, 0 100%);
+}
+@keyframes ruleShine { to { background-position: -250% 0, 0 0, 0 0; } }
 
 /* 右上角靜音鈕在戰鬥中也換成鋼製 */
 #app:has(#battle.active) .mute {

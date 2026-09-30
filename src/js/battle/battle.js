@@ -12,6 +12,8 @@ const GOLD_MUL = 2.5;      // 金拳傷害倍率
 const BOMB_RATE = 0.12;    // 第 4 波起一般敵人攻擊回合混入炸彈的機率
 const LAVA_BURN = 4;       // 打熔岩格的燙傷
 const LINE_MUL = 3;        // 三連擊額外傷害(攻擊力倍數)
+const SLOWMO = { ms: 2500, mul: 1.6 }; // 時之呼吸:每回合前 2.5 秒符號停留 ×1.6
+const BONUS_MS = 12000;    // 狂打獎勵關長度
 
 function makePlayer() {
   const p = {
@@ -20,6 +22,9 @@ function makePlayer() {
     ult: 0, ultMax: 100, ultGain: 4, blockUlt: 1, ultMult: 6, ultLen: 4, ultTime: 4500,
     armor: 0, lifesteal: 0, counter: 0, combo: 0, regen: 0, revive: 0,
     firstStrike: false, execute: false, scoreMul: 1, skills: [],
+    // 技法(改變規則),見 skills.js
+    chain: false, burstEvery: 0, slowmo: false, autoGuard: false, defuse: false, holdMaster: false,
+    comboSoul: false, goldMul: 1, feverAt: FEVER_AT, feverMs: FEVER_MS, lineMaster: false,
   };
   G.UPGRADES.forEach(u => u.apply(p, G.save.data.up[u.id]));
   p.hp = p.maxHp;
@@ -52,9 +57,11 @@ G.battle = {
     this.p = makePlayer();
     this.stats = { dmg: 0, hits: 0, blocks: 0, perfects: 0, breaks: 0, waves: 0, ults: 0, maxCombo: 0, fevers: 0 };
     this.comboN = 0;
+    this.burstCount = 0;
     this.feverCharge = 0;
     this.endFever();
     this.ultRequested = false;
+    this.eliteNext = false;
     this.counterStack = 0;
     this.counterPct = 0;
     this.brokenNext = false;
@@ -76,7 +83,12 @@ G.battle = {
     const total = this.stage.waves.length;
     for (let w = 0; w < total; w++) {
       this.wave = w;
-      this.e = makeEnemy(this.stage.waves[w], this.stage.scale, w);
+      // 精英挑戰:下一波改成精英(BOSS 或本來就是精英則不變)
+      let spec = this.stage.waves[w];
+      const challenged = this.eliteNext && !spec.endsWith('+') && !G.ENEMIES[spec].boss;
+      if (challenged) spec += '+';
+      this.eliteNext = false;
+      this.e = makeEnemy(spec, this.stage.scale, w);
       G.$('#waveTag').textContent = `WAVE ${w + 1}/${total}`;
       this.showSprite(this.e);
       G.$('#enemyName').textContent = (this.e.boss ? '【BOSS】' : '') + this.e.name;
@@ -106,7 +118,9 @@ G.battle = {
         // 每個 WAVE 之間基礎回復 10% 最大 HP,再加上技能的回復量
         this.healPlayer(Math.round(this.p.maxHp * 0.1) + this.p.regen);
         await G.scenes.pickSkill(this.p);
+        if (challenged) await G.scenes.pickSkill(this.p, true); // 精英挑戰的獎勵:技法三選一
         this.render();
+        if ((this.stage.events || []).includes(w)) await this.branch();
       }
     }
     this.finish(true);
@@ -133,16 +147,21 @@ G.battle = {
     this.render();
 
     const m = this.mech('atk');
+    this.soulReady = p.comboSoul; // 連擊之魂:每回合擋一次失誤
+    let api = null;
     await G.molePhase({
       icon: '👊', cls: 'fist', count: p.attackCount, life: p.moleLife,
       interval: Math.max(250, p.moleLife * 0.45), patterns: this.patterns(),
       // 蓄力重拳:每回合其中一顆拳頭需要按住蓄力
-      hold: { at: 1 + Math.floor(Math.random() * (p.attackCount - 1)), icon: '👊', label: 'HOLD', holdMs: HOLD_MS },
-      mods: { gold: GOLD_RATE, hidden: m.hidden, blink: m.blink },
+      hold: { at: 1 + Math.floor(Math.random() * (p.attackCount - 1)), icon: '👊', label: 'HOLD', holdMs: HOLD_MS * (p.holdMaster ? 0.6 : 1) },
+      mods: { gold: GOLD_RATE * p.goldMul, hidden: m.hidden, blink: m.blink },
+      slowFirst: p.slowmo ? SLOWMO : null,
+      onReady: a => { api = a; },
       // 炸彈:第 4 波起一般敵人也會混入;部分敵人機制會更多
       decoyRate: m.bomb != null ? m.bomb : this.wave >= 3 ? BOMB_RATE : 0,
       decoyIcon: m.bombIcon || '💣',
-      onDecoy: () => this.bomb(m.bombIcon || '💣'),
+      decoySafe: p.defuse,
+      onDecoy: () => p.defuse ? this.defuseBomb() : this.bomb(m.bombIcon || '💣'),
       onLine: () => this.lineBonus(),
       onChip: (i, type, cleared) => this.chip(type, cleared),
       onHit: (i, info) => {
@@ -169,6 +188,7 @@ G.battle = {
         this.hurtEnemy(Math.round(d), crit || charged, charged);
         if (p.lifesteal) this.healPlayer(p.lifesteal, true);
         this.gainUlt(p.ultGain);
+        if (!info.auto && api) this.techniques(i, charged, api); // 技法觸發的自動命中不會再連鎖
       },
       onMiss: () => { combo = 0; this.comboBreak(); G.audio.play('whiff'); this.setEnemyState('defend', 450); },
       stop: () => this.over() || this.ultRequested,
@@ -198,14 +218,25 @@ G.battle = {
     this.setPhase(s ? `必殺技來襲:${s.name}!` : '防禦:點擊 🛡️ 擋下攻擊!', 'def');
     this.setupBoard('defend');
     const m = this.mech('def');
-    let missed = 0;
+    this.soulReady = p.comboSoul;
+    let missed = 0, api = null, walled = !p.autoGuard;
     await G.molePhase({
       icon: '🛡️', cls, count, life, interval: life * 0.5, decoyRate: s ? s.decoy : 0, patterns: this.patterns(),
+      slowFirst: p.slowmo ? SLOWMO : null,
+      onReady: a => { api = a; },
       mods: { blink: m.blink, ghost: m.ghost, armor: m.armor, lockon: m.lockon, heavy: m.heavy },
       onGhost: () => { this.comboBreak(); this.float('殘影!', 'tag miss'); },
       onChip: (i, type, cleared) => this.chip(type, cleared),
       // 每個盾牌對應一發飛向玩家的攻擊,盾牌消失的瞬間正好命中
-      onSpawn: (i, ms) => this.enemyShot(i % 3, ms, !!s),
+      onSpawn: (i, ms) => {
+        // 鐵壁:每次攻擊的第一個盾牌自動擋下
+        // (擋不了的盾牌,例如「頂住」或已被你點掉,就留給下一個)
+        if (!walled) {
+          walled = true;
+          setTimeout(() => { if (api && api.autoHit(i)) this.float('鐵壁!', 'tag armor'); else walled = false; }, 220);
+        }
+        return this.enemyShot(i % 3, ms, !!s);
+      },
       onHit: (i, info) => {
         // 重擊沒頂滿:算被打中
         if (info.heavy && !info.charged) {
@@ -448,12 +479,13 @@ G.battle = {
   patterns() {
     const t = this.wave / Math.max(1, this.stage.waves.length - 1);   // 本關進度 0 → 1
     const k = Math.min(1.5, t + this.stageIdx * 0.3);                // 第二、三關起點較高
+    const ln = this.p.lineMaster ? 2 : 1;                            // 連線大師:連線 / 掃射加倍出現
     return {
       single: 6 - 3 * k,
       pair: 1 + 1.4 * k,
       triple: 0.3 + 1.2 * k,
-      line: 0.6 + 1.4 * k,
-      sweep: 0.6 + 1.4 * k,
+      line: (0.6 + 1.4 * k) * ln,
+      sweep: (0.6 + 1.4 * k) * ln,
       rapid: 0.8 + 1.2 * k,
     };
   },
@@ -495,6 +527,103 @@ G.battle = {
     }
   },
 
+  // ---- 分歧:兩個選項選一個 ----
+  async branch() {
+    const next = this.stage.waves[this.wave + 1];
+    const eliteOk = next && !next.endsWith('+') && !G.ENEMIES[next].boss;
+    const rulesLeft = G.SKILLS.some(s => s.rule && !this.p.skills.includes(s.id));
+    const pool = G.BRANCHES.filter(b => (b.id !== 'elite' || eliteOk) && (b.id !== 'train' || rulesLeft));
+    const pick = await G.scenes.pickBranch(G.shuffle(pool).slice(0, 2));
+    const p = this.p;
+    if (pick === 'rest') {
+      this.healPlayer(Math.round(p.maxHp * 0.4));
+      G.audio.play('revive');
+    } else if (pick === 'train') {
+      await G.scenes.pickSkill(p, true);
+    } else if (pick === 'elite') {
+      this.eliteNext = true;
+    } else if (pick === 'bonus') {
+      await this.bonusRound();
+    }
+    this.render();
+  },
+
+  // 狂打獎勵關:12 秒內拳頭狂冒,沒有敵人攻擊
+  async bonusRound() {
+    const p = this.p, realEnemy = this.e;
+    this.e = { name: '訓練木樁', icon: '🎯', hp: 1, maxHp: 1, turn: 0 };
+    this.showSprite(this.e);
+    G.$('#enemyName').textContent = '狂打獎勵關';
+    this.setEnemyState('idle');
+    this.render();
+    G.$('#enemyHpText').textContent = 'BONUS';
+    await G.banner('狂打獎勵關!', '12 秒內盡量打!', 1100);
+    this.phase = 'bonus';
+    this.setPhase('狂打!12 秒內盡量打!', 'atk');
+    let hits = 0, timeUp = false;
+    // 結束用真正的計時器;倒數條只是畫面(頁面切到背景時動畫會暫停)
+    const timer = this.timebar(BONUS_MS, () => {});
+    const endT = setTimeout(() => { timeUp = true; }, BONUS_MS);
+    await G.molePhase({
+      icon: '👊', cls: 'fist', count: 999, life: 800, interval: 150, noCounter: true, // 次數給很大,由 12 秒倒數決定結束
+      patterns: { single: 2, pair: 3, triple: 3, rapid: 3, line: 2 },
+      mods: { gold: 0.15 },
+      onHit: (i, info) => {
+        hits += info.gold ? 3 : 1;
+        G.$('#counter').textContent = hits;
+        this.comboHit();
+        this.punchFx(i % 3, { small: true, dur: 120 });
+        G.audio.play('punch');
+      },
+      onMiss: () => {},
+      stop: () => timeUp,
+    });
+    timer.stop();
+    clearTimeout(endT);
+    this.phase = null;
+    // 獎勵:每擊 0.8 HP(上限 45% 最大 HP)、1.5 必殺值;打得好的話和「休息」差不多,再多一點必殺
+    const heal = Math.min(Math.round(hits * 0.8), Math.round(p.maxHp * 0.45)), ult = hits * 1.5;
+    this.healPlayer(heal);
+    this.gainUlt(ult);
+    this.stats.dmg += hits * 10; // 算進結算積分
+    await G.banner(`${hits} HIT!`, `回復 ${heal} HP・必殺 +${Math.round(ult)}`, 1400);
+    this.e = realEnemy;
+  },
+
+  // ---- 技法 ----
+  // 每次手動打中拳頭後檢查:連鎖拳、爆裂拳、蓄力大師
+  techniques(i, charged, api) {
+    const p = this.p;
+    const later = (fn, ms) => setTimeout(fn, ms);
+    // 蓄力大師:集滿的重拳震掉場上所有拳頭
+    if (p.holdMaster && charged) {
+      const all = api.targets();
+      if (all.length) { this.float('震波!', 'tag charge'); all.forEach((j, n) => later(() => api.autoHit(j), 60 + n * 40)); }
+    }
+    // 連鎖拳:相鄰的一顆拳頭跟著被打中
+    if (p.chain) {
+      const r = Math.floor(i / 3), c = i % 3;
+      const near = api.targets().filter(j => j !== i && Math.abs(Math.floor(j / 3) - r) + Math.abs(j % 3 - c) === 1);
+      if (near.length) later(() => api.autoHit(G.pick(near)) && this.float('連鎖!', 'tag line'), 90);
+    }
+    // 爆裂拳:每 N 拳引爆一次,清掉同一排
+    if (p.burstEvery && ++this.burstCount >= p.burstEvery) {
+      this.burstCount = 0;
+      const row = api.targets().filter(j => Math.floor(j / 3) === Math.floor(i / 3));
+      this.float('爆裂拳!', 'tag lava');
+      G.audio.play('break');
+      row.forEach((j, n) => later(() => api.autoHit(j), 80 + n * 50));
+      if (!row.length) this.hurtEnemy(p.atk * 2, true); // 同排沒拳頭就直接炸敵人
+    }
+  },
+
+  // 拆彈專家:炸彈改成炸向敵人
+  defuseBomb() {
+    this.float('拆彈反擊!', 'tag charge');
+    this.punchFx(1, { crit: true });
+    this.hurtEnemy(this.p.atk * 3, true);
+  },
+
   // 點到炸彈
   bomb(icon) {
     this.comboBreak();
@@ -508,7 +637,7 @@ G.battle = {
     this.float('三連擊!', 'tag line');
     G.audio.play('levelup');
     this.punchFx(1, { crit: true, dur: 180 });
-    this.hurtEnemy(Math.round(this.p.atk * LINE_MUL * (this.fever() ? FEVER_MUL : 1)), true);
+    this.hurtEnemy(Math.round(this.p.atk * LINE_MUL * (this.p.lineMaster ? 2 : 1) * (this.fever() ? FEVER_MUL : 1)), true);
   },
 
   // ---- 連擊 & FEVER ----
@@ -518,11 +647,17 @@ G.battle = {
     this.comboN++;
     this.stats.maxCombo = Math.max(this.stats.maxCombo, this.comboN);
     if (this.comboN % 10 === 0) G.audio.play('combo', this.comboN);
-    if (!this.fever() && ++this.feverCharge >= FEVER_AT) this.startFever();
+    if (!this.fever() && ++this.feverCharge >= this.p.feverAt) this.startFever();
     this.renderCombo();
   },
 
   comboBreak() {
+    // 連擊之魂:每回合第一次失誤不中斷
+    if (this.soulReady && this.comboN > 0) {
+      this.soulReady = false;
+      this.float('連擊守護!', 'tag line');
+      return;
+    }
     if (this.comboN >= 5) {
       const el = G.$('#combo');
       el.classList.remove('broke');
@@ -536,7 +671,7 @@ G.battle = {
 
   startFever() {
     this.feverCharge = 0;
-    this.feverUntil = performance.now() + FEVER_MS;
+    this.feverUntil = performance.now() + this.p.feverMs;
     this.stats.fevers++;
     G.$('#app').classList.add('fever');
     G.audio.play('fever');
@@ -558,12 +693,13 @@ G.battle = {
   },
 
   renderCombo() {
+    if (!this.p) return;
     const el = G.$('#combo');
     const on = this.fever();
     el.classList.toggle('show', on || this.comboN >= 3);
     el.classList.toggle('fever', on);
     G.$('#comboNum').textContent = this.comboN;
-    const r = on ? (this.feverUntil - performance.now()) / FEVER_MS : this.feverCharge / FEVER_AT;
+    const r = on ? (this.feverUntil - performance.now()) / this.p.feverMs : this.feverCharge / this.p.feverAt;
     G.$('#feverFill').style.width = Math.max(0, Math.min(1, r)) * 100 + '%';
     G.$('#comboNum').classList.remove('pop');
     void G.$('#comboNum').offsetWidth;

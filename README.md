@@ -45,7 +45,8 @@ powershell -ExecutionPolicy Bypass -File tools/serve.ps1
 
 ## 原型內容
 
-- 3 個關卡(街角公園、海港小鎮、未來鐘塔廣場)× 10 WAVE,WAVE 10 為 BOSS,另有中頭目與精英敵人;一般敵人 7 種、BOSS/中頭目 6 名(各有必殺技)
+- 3 個關卡(街角公園、海港小鎮、未來鐘塔廣場)× 7 WAVE,最後一波為 BOSS,另有中頭目與精英敵人;一般敵人 7 種、BOSS/中頭目 6 名(各有必殺技)
+- 分歧路線:第 3、5 波後從兩個選項選一個(休息 / 狂打獎勵關 / 精英挑戰 / 修行)
 - 難度參數在 `src/js/data/stages.js`(`WAVE_GROWTH`、各關 `scale`),可用 `src/js/dev/balance-sim.js` 模擬通關率
 - 玩家攻擊 👊 / 敵人攻擊時防禦 🛡️ / 必殺技依序點數字 + 漫畫風演出
 - 出現模式:單發、雙發、三發、連線、掃射、連閃,越後段越常出現複雜模式
@@ -53,7 +54,7 @@ powershell -ExecutionPolicy Bypass -File tools/serve.ps1
 - 特殊符號:金拳(短暫、×2.5)、💣 炸彈(別點)、連線/掃射三顆全中觸發「三連擊」
 - 敵人專屬機制(`src/js/data/enemies.js` 的 `G.MECHS`):駭入、瞬移、鎖定、醉影、晶盾、熔岩、重擊頂住、冰封、觸手等
 - 進階按法:「HOLD」拳頭要按住蓄力再放開(×3);盾牌越快擋累積越多反擊力(金→藍→暗,下回合每拳 +%);全部擋下觸發「破綻」,中間按鈕連打破甲
-- 20 個 Roguelike 技能,每擊倒一個 WAVE 三選一
+- 20 個數值技能 + 10 個改變規則的「技法」,每擊倒一個 WAVE 三選一(保證至少一個技法)
 - 結算積分 → 成長點數 → 永久升級(存於瀏覽器 localStorage)
 - 音樂音效全部以 Web Audio 即時合成(`src/js/audio/`),不需音檔;配樂分主選單、三個關卡、BOSS 戰五首
 - 開場故事:漫畫 `assets/images/story/opening.jpg` 逐格演出(7 幕,座標與特效設定在 `src/js/scenes/scenes.js` 的 STORY)

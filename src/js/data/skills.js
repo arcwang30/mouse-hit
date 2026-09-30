@@ -1,4 +1,5 @@
 // Roguelike 技能(每擊倒一個 WAVE 三選一)
+// 一般技能調整數值;rule: true 的「技法」會改變玩法規則(每次三選一保證至少出現一個,每種只能拿一次)
 G.SKILLS = [
   { id: 'iron',     icon: '👊', name: '鐵拳淬煉', desc: '每次出拳傷害 +3',                   apply: p => { p.atk += 3; } },
   { id: 'flurry',   icon: '💥', name: '烈火連打', desc: '攻擊回合拳頭數量 +2',               apply: p => { p.attackCount += 2; } },
@@ -20,4 +21,16 @@ G.SKILLS = [
   { id: 'execute',  icon: '💀', name: '斬殺',     desc: '敵人 HP 低於 20% 時傷害 x2',        unique: true, apply: p => { p.execute = true; } },
   { id: 'absorb',   icon: '🌀', name: '格擋蓄氣', desc: '成功防禦時必殺值 +3',               apply: p => { p.blockUlt += 3; } },
   { id: 'bounty',   icon: '💰', name: '賞金獵人', desc: '結算積分 +50%',                     apply: p => { p.scoreMul += 0.5; } },
+
+  // ---- 技法:改變規則 ----
+  { id: 'chain',    rule: true, icon: '🔗', name: '連鎖拳',   desc: '打中拳頭時,相鄰的一顆拳頭也會被打中',       apply: p => { p.chain = true; } },
+  { id: 'burst',    rule: true, icon: '💥', name: '爆裂拳',   desc: '每打中 6 拳引爆一次,清掉同一排的拳頭',       apply: p => { p.burstEvery = 6; } },
+  { id: 'slowmo',   rule: true, icon: '⏳', name: '時之呼吸', desc: '每回合前 2.5 秒,符號停留時間 ×1.6',          apply: p => { p.slowmo = true; } },
+  { id: 'wall',     rule: true, icon: '🏯', name: '鐵壁',     desc: '敵人每次攻擊的第一個盾牌自動擋下',           apply: p => { p.autoGuard = true; } },
+  { id: 'defuse',   rule: true, icon: '✂️', name: '拆彈專家', desc: '點到炸彈不會受傷,反而炸向敵人',             apply: p => { p.defuse = true; } },
+  { id: 'holdking', rule: true, icon: '🌋', name: '蓄力大師', desc: 'HOLD 蓄力 -40%,集滿時連帶打掉場上所有拳頭', apply: p => { p.holdMaster = true; } },
+  { id: 'soul',     rule: true, icon: '🛡️', name: '連擊之魂', desc: '每回合第一次失誤不會中斷連擊',               apply: p => { p.comboSoul = true; } },
+  { id: 'midas',    rule: true, icon: '🌟', name: '金手指',   desc: '金拳出現率 ×3',                              apply: p => { p.goldMul = 3; } },
+  { id: 'feverish', rule: true, icon: '🌈', name: '狂熱體質', desc: '連擊 10 次就進入 FEVER,持續 14 秒',          apply: p => { p.feverAt = 10; p.feverMs = 14000; } },
+  { id: 'liner',    rule: true, icon: '📏', name: '連線大師', desc: '連線 / 掃射更常出現,三連擊傷害 ×2',          apply: p => { p.lineMaster = true; } },
 ];
