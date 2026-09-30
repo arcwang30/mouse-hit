@@ -1,12 +1,12 @@
 // 戰鬥流程:WAVE → 玩家攻擊 → 敵人攻擊/玩家防禦 → ... → 技能三選一 → 下一 WAVE
-const STATE_LABEL = { idle: '待機', attack: '攻擊', defend: '防禦', ult: '必殺技', hit: '受擊', dead: '擊倒' };
+const STATE_LABEL = { idle: '待機', attack: '攻擊', defend: '防禦', ult: '必殺技', hit: '受擊', recoil: '被格擋', dead: '擊倒' };
 
 function makePlayer() {
   const p = {
     maxHp: 100, atk: 8, crit: 0.05, critMul: 1.8,
     attackCount: 6, moleLife: 1200, guardBonus: 0,
     ult: 0, ultMax: 100, ultGain: 4, blockUlt: 1, ultMult: 6, ultLen: 4, ultTime: 4500,
-    armor: 0, lifesteal: 0, thorns: 0, combo: 0, regen: 0, revive: 0,
+    armor: 0, lifesteal: 0, counter: 0, combo: 0, regen: 0, revive: 0,
     firstStrike: false, execute: false, scoreMul: 1, skills: [],
   };
   G.UPGRADES.forEach(u => u.apply(p, G.save.data.up[u.id]));
@@ -40,6 +40,7 @@ G.battle = {
     this.p = makePlayer();
     this.stats = { dmg: 0, hits: 0, blocks: 0, waves: 0, ults: 0 };
     this.ultRequested = false;
+    this.counterStack = 0;
 
     G.$('#stageView').className = 'stage bg-' + this.stage.bg;
     G.$('#deco').innerHTML = this.stage.deco.map((d, i) =>
@@ -85,14 +86,16 @@ G.battle = {
   async playerTurn() {
     const p = this.p, e = this.e;
     let first = true, combo = 0;
+    const counter = this.counterStack || 0; // 反震掌:上回合格擋累積的加成
+    this.counterStack = 0;
     this.phase = 'attack';
-    this.setPhase('你的回合:點擊 👊 出拳!', 'atk');
+    this.setPhase(counter ? `你的回合:反震掌 每拳 +${counter}!` : '你的回合:點擊 👊 出拳!', 'atk');
     this.render();
     await G.molePhase({
       icon: '👊', cls: 'fist', count: p.attackCount, life: p.moleLife,
       interval: Math.max(250, p.moleLife * 0.45),
       onHit: i => {
-        let d = p.atk + combo * p.combo;
+        let d = p.atk + combo * p.combo + counter;
         combo++;
         if (first && p.firstStrike) d *= 3;
         first = false;
@@ -133,11 +136,14 @@ G.battle = {
     this.setPhase(s ? `必殺技來襲:${s.name}!` : '防禦:點擊 🛡️ 擋下攻擊!', 'def');
     await G.molePhase({
       icon: '🛡️', cls, count, life, interval: life * 0.5, decoyRate: s ? s.decoy : 0,
+      // 每個盾牌對應一發飛向玩家的攻擊,盾牌消失的瞬間正好命中
+      onSpawn: (i, ms) => this.enemyShot(i % 3, ms, !!s),
       onHit: () => {
         this.stats.blocks++;
         G.audio.play('block');
         this.gainUlt(p.blockUlt);
-        if (p.thorns) this.hurtEnemy(p.thorns, false);
+        if (p.counter) this.counterStack = (this.counterStack || 0) + p.counter;
+        this.setEnemyState('recoil', 260);
       },
       onMiss: () => this.hurtPlayer(dmg),
       onDecoy: () => { G.audio.play('poison'); this.hurtPlayer(dmg * 1.5); },
@@ -246,6 +252,58 @@ G.battle = {
       b.style.top = ey + 'px';
       stage.appendChild(b);
       setTimeout(() => b.remove(), o.final ? 600 : 320);
+    };
+  },
+
+  // 敵人的攻擊從敵人身上飛向鏡頭,越近越大;回傳 block()/hit() 讓九宮格結算時呼叫
+  enemyShot(col, ms, special) {
+    const stage = G.$('#stageView');
+    const W = stage.clientWidth, H = stage.clientHeight;
+    const none = { block() {}, hit() {}, cancel() {} };
+    if (!W) return none;
+    const sx = W * 0.5 + (Math.random() - 0.5) * W * 0.1, sy = H * 0.45;
+    const ex = W * (0.2 + col * 0.3), ey = H * 0.95;
+
+    const f = document.createElement('div');
+    f.className = 'fx-shot' + (special ? ' special' : '');
+    f.textContent = this.e.shot || '👊';
+    stage.appendChild(f);
+    const anim = f.animate([
+      { transform: `translate(${sx}px, ${sy}px) translate(-50%, -50%) scale(.35)`, opacity: 0.6 },
+      { transform: `translate(${ex}px, ${ey}px) translate(-50%, -50%) scale(2.6)`, opacity: 1 },
+    ], { duration: ms, easing: 'cubic-bezier(.55, 0, .9, .6)', fill: 'forwards' });
+
+    const burst = (cls, text, x, y) => {
+      const b = document.createElement('div');
+      b.className = cls;
+      b.textContent = text;
+      b.style.left = x + 'px';
+      b.style.top = y + 'px';
+      stage.appendChild(b);
+      setTimeout(() => b.remove(), 500);
+    };
+    return {
+      // 擋下:在攻擊目前的位置彈開
+      block: () => {
+        const r = f.getBoundingClientRect(), sr = stage.getBoundingClientRect();
+        const x = r.left + r.width / 2 - sr.left, y = r.top + r.height / 2 - sr.top;
+        anim.cancel();
+        f.remove();
+        burst('fx-block', '🛡️', x, y);
+        burst('fx-block-text', 'BLOCK!', x, y);
+      },
+      // 沒擋:正面命中鏡頭
+      hit: () => {
+        anim.cancel();
+        f.remove();
+        burst('fx-impact big', '💥', ex, ey);
+        const flash = G.$('#hurtFlash');
+        flash.classList.remove('show');
+        void flash.offsetWidth;
+        flash.classList.add('show');
+      },
+      // 階段提前結束(敵人倒下等)時收掉
+      cancel: () => { anim.cancel(); f.remove(); },
     };
   },
 

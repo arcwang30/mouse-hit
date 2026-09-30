@@ -10,6 +10,7 @@ window.simRun = function (stageIdx, skill, upLv) {
   G.save.data.up = saveUp;
 
   const st = G.STAGES[stageIdx];
+  let counterNext = 0; // 反震掌累積
   const clamp = x => Math.max(0.05, Math.min(0.99, x));
   const hurt = d => {
     p.hp -= Math.max(1, Math.round(d * (1 - p.armor)));
@@ -28,10 +29,12 @@ window.simRun = function (stageIdx, skill, upLv) {
         else p.ult = p.ultMax / 2;
       } else {
         let combo = 0, first = true;
+        const counter = counterNext;
+        counterNext = 0;
         const r = clamp(skill + (p.moleLife - 1200) / 2000);
         for (let k = 0; k < p.attackCount && e.hp > 0; k++) {
           if (Math.random() < r) {
-            let d = p.atk + combo * p.combo;
+            let d = p.atk + combo * p.combo + counter;
             combo++;
             if (first && p.firstStrike) d *= 3;
             first = false;
@@ -57,7 +60,7 @@ window.simRun = function (stageIdx, skill, upLv) {
       for (let k = 0; k < count && p.hp > 0; k++) {
         if (Math.random() < gr) {
           p.ult = Math.min(p.ultMax, p.ult + p.blockUlt);
-          if (p.thorns) e.hp -= p.thorns;
+          counterNext += p.counter;
         } else hurt(dmg);
         if (decoy && Math.random() < decoy / (1 - decoy) * 0.2) hurt(dmg * 1.5);
       }

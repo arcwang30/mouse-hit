@@ -61,6 +61,7 @@ G.grid = {
 
 // 打地鼠階段:依序在空格冒出符號,點中為 hit,時間到為 miss。
 // decoyRate > 0 時會混入 💀 陷阱(不計入次數,點到觸發 onDecoy)。
+// onSpawn(i, life) 可回傳特效物件 { block, hit, cancel },在點中/錯過/提前結束時呼叫。
 G.molePhase = o => new Promise(resolve => {
   const active = new Map();
   let spawned = 0, settled = 0, finished = false, spawnTimer;
@@ -71,7 +72,7 @@ G.molePhase = o => new Promise(resolve => {
     if (finished) return;
     finished = true;
     clearTimeout(spawnTimer);
-    active.forEach(a => clearTimeout(a.t));
+    active.forEach(a => { clearTimeout(a.t); a.fx && a.fx.cancel(); });
     active.clear();
     G.grid.clearAll();
     G.grid.handler = null;
@@ -95,6 +96,7 @@ G.molePhase = o => new Promise(resolve => {
       return;
     }
     G.grid.flash(i, 'good');
+    a.fx && a.fx.block();
     o.onHit(i);
     settle();
   };
@@ -109,12 +111,13 @@ G.molePhase = o => new Promise(resolve => {
     if (!decoy) { spawned++; setCounter(o.count - spawned); }
     G.grid.set(i, decoy ? '💀' : o.icon, decoy ? 'decoy' : o.cls, o.life);
     G.audio.play('pop');
+    const fx = !decoy && o.onSpawn ? o.onSpawn(i, o.life) : null;
     const t = setTimeout(() => {
       active.delete(i);
       G.grid.clear(i, 'sink');
-      if (!decoy) { G.grid.flash(i, 'bad'); o.onMiss(i); settle(); }
+      if (!decoy) { G.grid.flash(i, 'bad'); fx && fx.hit(); o.onMiss(i); settle(); }
     }, o.life);
-    active.set(i, { t, decoy });
+    active.set(i, { t, decoy, fx });
     if (spawned < o.count) spawnTimer = setTimeout(spawn, o.interval);
   };
 

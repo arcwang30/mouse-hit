@@ -295,3 +295,51 @@ h2 { margin: 0; }
 /* 空間不足時改為捲動,不擠壓選項 */
 .stage-list, .up-list, .result-box, #menu .btn, #upgrade .btn, #result .btn { flex-shrink: 0; }
 .screen, .overlay { font-size: 4cqw; }
+
+/* 敵人攻擊:飛向鏡頭的物件 */
+.fx-shot {
+  position: absolute; left: 0; top: 0; z-index: 4; pointer-events: none;
+  font-size: 10cqw; line-height: 1; filter: drop-shadow(0 0 1.5cqw #ff2d4a);
+}
+.fx-shot.special { filter: drop-shadow(0 0 2.5cqw var(--ult)) drop-shadow(0 0 1cqw #fff); }
+
+/* 格擋成功:盾牌火花 + BLOCK 字樣 */
+.fx-block {
+  position: absolute; z-index: 5; pointer-events: none; font-size: 16cqw; line-height: 1;
+  transform: translate(-50%, -50%); filter: drop-shadow(0 0 3cqw #3da9ff) drop-shadow(0 0 1cqw #fff);
+  animation: blockBurst .45s ease-out forwards;
+}
+.fx-block::after { /* 擴散的衝擊環 */
+  content: ""; position: absolute; left: 50%; top: 50%; width: 100%; height: 100%;
+  border: 1cqw solid #bfe4ff; border-radius: 50%; transform: translate(-50%, -50%);
+  animation: ring .45s ease-out forwards;
+}
+.fx-block-text {
+  position: absolute; z-index: 6; pointer-events: none; font-size: 6cqw; font-weight: 900; color: #fff;
+  -webkit-text-stroke: .5cqw #1666b0; paint-order: stroke fill; transform: translate(-50%, -150%) skewX(-10deg);
+  animation: blockText .5s ease-out forwards;
+}
+@keyframes blockBurst {
+  0%   { transform: translate(-50%, -50%) scale(1.6); opacity: 1; }
+  30%  { transform: translate(-50%, -50%) scale(1); }
+  100% { transform: translate(-50%, -50%) scale(.9); opacity: 0; }
+}
+@keyframes ring { from { width: 30%; height: 30%; opacity: 1; } to { width: 220%; height: 220%; opacity: 0; } }
+@keyframes blockText {
+  from { transform: translate(-50%, -80%) skewX(-10deg) scale(1.6); opacity: 0; }
+  25%  { opacity: 1; transform: translate(-50%, -150%) skewX(-10deg) scale(1); }
+  to   { transform: translate(-50%, -220%) skewX(-10deg); opacity: 0; }
+}
+
+/* 被格擋:敵人往後仰 */
+.enemy.recoil .sprite { animation: recoil .26s ease-out; filter: drop-shadow(0 0 2.5cqw #3da9ff); }
+.enemy.recoil .state-tag { background: #1666b0; }
+@keyframes recoil { 40% { transform: translateY(-6%) scale(.88) rotate(-6deg); } }
+
+/* 被打中:整個畫面邊緣閃紅 */
+#hurtFlash {
+  position: absolute; inset: 0; z-index: 9; pointer-events: none; opacity: 0;
+  box-shadow: inset 0 0 12cqw 4cqw #ff1a3c; background: radial-gradient(circle, transparent 50%, #ff1a3c55);
+}
+#hurtFlash.show { animation: hurtFlash .4s ease-out; }
+@keyframes hurtFlash { from { opacity: 1; } to { opacity: 0; } }

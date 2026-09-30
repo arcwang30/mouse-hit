@@ -11,7 +11,7 @@ G.SKILLS = [
   { id: 'burn',     icon: '🔥', name: '焚心',     desc: '每次命中的必殺值 +2',               apply: p => { p.ultGain += 2; } },
   { id: 'art',      icon: '📜', name: '神拳心法', desc: '必殺技傷害倍率 +3',                 apply: p => { p.ultMult += 3; } },
   { id: 'leech',    icon: '🩸', name: '吸血拳',   desc: '每次命中回復 2 HP',                 apply: p => { p.lifesteal += 2; } },
-  { id: 'thorns',   icon: '🌵', name: '反震掌',   desc: '成功防禦時反彈 6 點傷害',           apply: p => { p.thorns += 6; } },
+  { id: 'thorns',   icon: '🌵', name: '反震掌',   desc: '每次格擋,下回合每拳傷害 +1(可累積)', apply: p => { p.counter += 1; } },
   { id: 'calm',     icon: '🧘', name: '氣定神閒', desc: '防禦符號停留時間 +250ms',           apply: p => { p.guardBonus += 250; } },
   { id: 'combo',    icon: '⚡', name: '連擊氣勢', desc: '連續命中時每段額外 +1 傷害',        apply: p => { p.combo += 1; } },
   { id: 'regen',    icon: '🍵', name: '養精蓄銳', desc: '每擊倒一個 WAVE 回復 15 HP',        apply: p => { p.regen += 15; } },
