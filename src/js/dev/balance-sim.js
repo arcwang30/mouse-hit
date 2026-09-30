@@ -21,7 +21,9 @@ window.simRun = function (stageIdx, skill, upLv) {
     let guard = 0;
     while (e.hp > 0 && p.hp > 0 && guard++ < 200) {
       // 玩家回合:必殺值滿就放必殺技,否則出拳
+      simStats.turns++;
       if (p.ult >= p.ultMax) {
+        simStats.ults++;
         if (Math.random() < clamp(skill + 0.05)) { e.hp -= Math.round(p.atk * p.ultMult); p.ult = 0; }
         else p.ult = p.ultMax / 2;
       } else {
@@ -91,6 +93,14 @@ window.simTable = function (N = 400) {
     }
   }
   return out.join('\n');
+};
+
+// 平均每幾個玩家回合放一次必殺技
+window.simStats = { turns: 0, ults: 0 };
+window.simUltRate = function (stageIdx, skill, upLv, N = 400) {
+  simStats.turns = simStats.ults = 0;
+  for (let i = 0; i < N; i++) simRun(stageIdx, skill, upLv);
+  return (simStats.turns / Math.max(1, simStats.ults)).toFixed(1) + ' 回合/次';
 };
 
 // 死在哪個 WAVE 的分布,找出難度尖峰

@@ -5,7 +5,7 @@ function makePlayer() {
   const p = {
     maxHp: 100, atk: 8, crit: 0.05, critMul: 1.8,
     attackCount: 6, moleLife: 1200, guardBonus: 0,
-    ult: 0, ultMax: 100, ultGain: 12, blockUlt: 4, ultMult: 6, ultLen: 4, ultTime: 4500,
+    ult: 0, ultMax: 100, ultGain: 4, blockUlt: 1, ultMult: 6, ultLen: 4, ultTime: 4500,
     armor: 0, lifesteal: 0, thorns: 0, combo: 0, regen: 0, revive: 0,
     firstStrike: false, execute: false, scoreMul: 1, skills: [],
   };

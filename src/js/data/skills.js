@@ -8,7 +8,7 @@ G.SKILLS = [
   { id: 'pill',     icon: '💊', name: '回氣丹',   desc: '立即回復 50% 最大 HP',              apply: p => { p.hp = Math.min(p.maxHp, p.hp + Math.round(p.maxHp / 2)); } },
   { id: 'crit',     icon: '🎯', name: '會心一擊', desc: '暴擊率 +15%',                       apply: p => { p.crit += 0.15; } },
   { id: 'pierce',   icon: '🔨', name: '破甲重拳', desc: '暴擊傷害倍率 +0.7',                 apply: p => { p.critMul += 0.7; } },
-  { id: 'burn',     icon: '🔥', name: '焚心',     desc: '每次命中的必殺值 +6',               apply: p => { p.ultGain += 6; } },
+  { id: 'burn',     icon: '🔥', name: '焚心',     desc: '每次命中的必殺值 +2',               apply: p => { p.ultGain += 2; } },
   { id: 'art',      icon: '📜', name: '神拳心法', desc: '必殺技傷害倍率 +3',                 apply: p => { p.ultMult += 3; } },
   { id: 'leech',    icon: '🩸', name: '吸血拳',   desc: '每次命中回復 2 HP',                 apply: p => { p.lifesteal += 2; } },
   { id: 'thorns',   icon: '🌵', name: '反震掌',   desc: '成功防禦時反彈 6 點傷害',           apply: p => { p.thorns += 6; } },
@@ -18,6 +18,6 @@ G.SKILLS = [
   { id: 'phoenix',  icon: '🌅', name: '浴火重生', desc: '倒下時以 50% HP 復活一次(限一次)', unique: true, apply: p => { p.revive = 1; } },
   { id: 'first',    icon: '🥇', name: '先發制人', desc: '每回合第一拳傷害 x3',               unique: true, apply: p => { p.firstStrike = true; } },
   { id: 'execute',  icon: '💀', name: '斬殺',     desc: '敵人 HP 低於 20% 時傷害 x2',        unique: true, apply: p => { p.execute = true; } },
-  { id: 'absorb',   icon: '🌀', name: '格擋蓄氣', desc: '成功防禦時必殺值 +8',               apply: p => { p.blockUlt += 8; } },
+  { id: 'absorb',   icon: '🌀', name: '格擋蓄氣', desc: '成功防禦時必殺值 +3',               apply: p => { p.blockUlt += 3; } },
   { id: 'bounty',   icon: '💰', name: '賞金獵人', desc: '結算積分 +50%',                     apply: p => { p.scoreMul += 0.5; } },
 ];
