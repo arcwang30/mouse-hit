@@ -33,6 +33,8 @@ powershell -ExecutionPolicy Bypass -File tools/serve.ps1
 
 然後開啟 http://localhost:8080/(會自動導向 /src/index.html;可用 `-Port` 換埠號)
 
+線上版(GitHub Pages):https://arcwang30.github.io/mouse-hit/
+
 ## 操作
 
 | 動作 | 滑鼠 / 觸控 | 鍵盤 |
