@@ -22,3 +22,28 @@ assets/
     bgm/ sfx/
 build/                建構輸出(不進版控)
 ```
+
+## 如何執行
+
+直接雙擊 `src/index.html` 就能玩;或啟動本機伺服器(不需安裝 Node/Python):
+
+```
+powershell -ExecutionPolicy Bypass -File tools/serve.ps1
+```
+
+然後開啟 http://localhost:8080/
+
+## 操作
+
+| 動作 | 滑鼠 / 觸控 | 鍵盤 |
+|---|---|---|
+| 點擊九宮格 | 點擊格子 | 數字鍵盤 7-9 / 4-6 / 1-3,或 Q W E / A S D / Z X C |
+| 施放必殺技 | 必殺值 MAX 時點「🔥 必殺」 | 空白鍵 |
+
+## 原型內容
+
+- 3 個關卡 × 3 WAVE(WAVE 3 為 BOSS),敵人 5 種、BOSS 4 名(含 BOSS 必殺技)
+- 玩家攻擊 👊 / 敵人攻擊時防禦 🛡️ / 必殺技依序點數字 + 漫畫風演出
+- 20 個 Roguelike 技能,每擊倒一個 WAVE 三選一
+- 結算積分 → 成長點數 → 永久升級(存於瀏覽器 localStorage)
+- 角色目前是 emoji 暫代圖,之後換成 `assets/images/` 裡的美術
