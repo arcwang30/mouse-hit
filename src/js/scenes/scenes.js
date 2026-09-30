@@ -27,6 +27,31 @@ const showCrop = (el, x, y, w, h) => {
   el.style.backgroundPosition = `${x / (COMIC.w - w) * 100}% ${y / (COMIC.h - h) * 100}%`;
 };
 
+// 產生一道由上往下、鋸齒狀的閃電(含兩條分岔),每次形狀都不同
+const lightningSvg = () => {
+  const rnd = (a, b) => a + Math.random() * (b - a);
+  const main = [];
+  let x = rnd(40, 60);
+  for (let y = 0; y <= 100; y += rnd(6, 11)) {
+    main.push([x, y]);
+    x = Math.max(18, Math.min(82, x + rnd(-10, 10)));
+  }
+  main.push([x, 100]);
+  const branch = (from, dir) => {
+    let [bx, by] = main[from];
+    const pts = [[bx, by]];
+    for (let k = 0; k < 4; k++) { bx += dir * rnd(4, 9); by += rnd(4, 9); pts.push([bx, by]); }
+    return pts;
+  };
+  const toStr = pts => pts.map(p => p.join(',')).join(' ');
+  const lines = [main, branch(2 + Math.floor(Math.random() * 2), -1), branch(5 + Math.floor(Math.random() * 3), 1)];
+  return '<svg class="strike-bolt" viewBox="0 0 100 100" preserveAspectRatio="none">' +
+    lines.map((pts, i) =>
+      `<polyline class="glow${i ? ' br' : ''}" pathLength="1" points="${toStr(pts)}"/>` +
+      `<polyline class="core${i ? ' br' : ''}" pathLength="1" points="${toStr(pts)}"/>`).join('') +
+    '</svg>';
+};
+
 G.scenes = {
   // ---- 故事 ----
   story() {
@@ -131,7 +156,8 @@ G.scenes = {
           `animation-delay:-${Math.random() * 10}s"></span>`;
       }).join('');
     }
-    el.classList.remove('leaving');
+    el.classList.remove('leaving', 'fadeout');
+    el.querySelectorAll('.strike-bolt').forEach(b => b.remove());
     const logo = el.querySelector('.title-logo');
     logo.classList.remove('enter');
     void logo.offsetWidth; // 重新播放 LOGO 砸下來的動畫
@@ -155,12 +181,22 @@ G.scenes = {
     this._bolt = setTimeout(strike, 2200);
 
     // 點一下(或按 Enter / 空白鍵)開始
+    // 轉場:一道閃電劈下 → 閃白兩下、震動 → 淡出進主選單
     el.onclick = () => {
       if (el.classList.contains('leaving')) return;
       el.classList.add('leaving');
       clearTimeout(this._bolt);
+      el.insertAdjacentHTML('beforeend', lightningSvg());
+      G.audio.play('thunder');
       G.audio.play('drum');
-      setTimeout(() => this.menu(), 480);
+      setTimeout(() => el.classList.add('fadeout'), 650);
+      setTimeout(() => {
+        const m = G.$('#menu');
+        this.menu();
+        m.classList.remove('fadein');
+        void m.offsetWidth;
+        m.classList.add('fadein');
+      }, 1000);
     };
   },
 

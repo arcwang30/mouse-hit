@@ -570,10 +570,40 @@ h2 { margin: 0; }
 @keyframes fadeIn { to { opacity: 1; } }
 
 /* 點下開始:整個畫面往前衝並閃白 */
-#title.leaving .title-logo { animation: logoOut .45s ease-in forwards; }
-#title.leaving .bolt { animation: strike .45s ease-out; }
-#title.leaving .title-bg { animation: none; transform: scale(1.15); transition: transform .45s ease-in; }
-@keyframes logoOut { to { opacity: 0; transform: translateX(-50%) scale(1.4); } }
+/* 點下開始:一道閃電劈下 → 閃白兩下、畫面震動、LOGO 被電到 → 淡出 */
+/* 閃電由上往下劈:用裁切範圍從上往下展開(虛線位移和不縮放線寬會衝突,所以不用) */
+.strike-bolt {
+  position: absolute; inset: 0; width: 100%; height: 100%; z-index: 5; pointer-events: none;
+  filter: drop-shadow(0 0 1.5cqw #cfeeff) drop-shadow(0 0 5cqw #6ab8ff);
+  clip-path: inset(0 0 100% 0);
+  animation: boltDraw .14s ease-out forwards, boltFlicker .7s .16s linear forwards;
+}
+.strike-bolt polyline { fill: none; stroke-linejoin: round; stroke-linecap: round; vector-effect: non-scaling-stroke; }
+.strike-bolt .glow { stroke: #8fd0ff; stroke-width: 4.4cqw; opacity: .55; }
+.strike-bolt .core { stroke: #fff; stroke-width: 1.5cqw; }
+.strike-bolt .glow.br { stroke-width: 2.4cqw; }
+.strike-bolt .core.br { stroke-width: .8cqw; }
+@keyframes boltDraw { to { clip-path: inset(0 0 0 0); } }
+@keyframes boltFlicker { 0%, 20% { opacity: 1; } 28% { opacity: .15; } 38% { opacity: 1; } 55% { opacity: .9; } 100% { opacity: 0; } }
+
+#title.leaving .bolt { animation: strikeFlash .7s ease-out; }
+@keyframes strikeFlash { 0% { opacity: 0; } 12% { opacity: .85; } 22% { opacity: .1; } 32% { opacity: .65; } 100% { opacity: 0; } }
+#title.leaving .title-bg { filter: brightness(1.35) contrast(1.1); transition: filter .1s; }
+#title.leaving .title-logo img { animation: logoZap .5s steps(1) .12s; }
+@keyframes logoZap {
+  0%   { filter: brightness(2.2) drop-shadow(0 0 3cqw #bfe8ff); transform: translate(1%, 0); }
+  25%  { filter: brightness(1) hue-rotate(160deg); transform: translate(-1%, .5%); }
+  50%  { filter: brightness(2) drop-shadow(0 0 4cqw #fff); transform: none; }
+  75%  { filter: brightness(1.2); }
+}
+#title.leaving { animation: titleShake .35s .14s; }
+@keyframes titleShake {
+  20% { transform: translate(-1.6%, .8%); } 40% { transform: translate(1.4%, -.8%); }
+  60% { transform: translate(-.8%, .4%); } 80% { transform: translate(.5%, -.3%); }
+}
+#title.fadeout { transition: opacity .35s ease-in; opacity: 0; }
+.screen.fadein { animation: screenIn .4s ease-out; }
+@keyframes screenIn { from { opacity: 0; } }
 
 /* 戰鬥背景圖:放在敵人背後,略壓暗與柔焦讓敵人跳出來,並緩慢飄移增加景深 */
 .stage { isolation: isolate; } /* 讓背景層可用負 z-index 墊在最底 */

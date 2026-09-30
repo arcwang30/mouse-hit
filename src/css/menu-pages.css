@@ -176,6 +176,8 @@
 
 /* 開始遊戲:最醒目的主按鈕 */
 .btn.start {
+  /* 固定在畫面正中央(不佔排版位置) */
+  position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%);
   width: 78%; padding: 3.6cqw 0 3cqw; flex-shrink: 0;
   display: flex; flex-direction: column; align-items: center; line-height: 1.15;
   background:
@@ -186,6 +188,7 @@
 }
 .btn.start span { font-size: 7cqw; letter-spacing: .3em; padding-left: .3em; text-shadow: 0 .4cqw 0 #5a1000, 0 0 2.4cqw #ffd400; }
 .btn.start small { font-family: var(--tech); font-size: 2.6cqw; letter-spacing: .6em; padding-left: .6em; color: #ffe8b0; }
+.btn.start:active { transform: translate(-50%, -48%) scale(.98); }
 @keyframes startPulse { 50% { filter: brightness(1.25) drop-shadow(0 0 3cqw #ff5a1f); } }
 
 /* 關卡卡片也改成斜切角 + 霓虹邊 */
