@@ -298,24 +298,37 @@ button { font: inherit; color: inherit; cursor: pointer; }
 .skill-card b { font-size: 4.6cqw; color: var(--fire-2); }
 .skill-card div:last-child { font-size: 3.5cqw; color: var(--muted); }
 
-/* 漫畫風必殺技演出 */
-.cutin { align-items: center; justify-content: center; flex-direction: column; background: #fff; overflow: hidden; }
-.cutin.show { animation: cutFlash 1.4s; }
+/* 漫畫風必殺技演出:閃光 → 主角帶火焰從左下衝入 → 定格震動 → 招式名砸下 */
+.cutin { align-items: center; justify-content: flex-end; flex-direction: column; padding-bottom: 9cqh; background: #fff; overflow: hidden; }
+.cutin.show { animation: cutFlash 1.7s; }
 .speed-lines {
   position: absolute; inset: -50%;
-  background: repeating-conic-gradient(from 0deg, #000 0deg 2deg, transparent 2deg 9deg);
-  -webkit-mask: radial-gradient(circle, transparent 18%, #000 45%); mask: radial-gradient(circle, transparent 18%, #000 45%);
-  animation: spin 1.4s linear;
+  background: repeating-conic-gradient(from 0deg at 50% 42%, #000 0deg 2deg, transparent 2deg 9deg);
+  -webkit-mask: radial-gradient(circle at 50% 42%, transparent 20%, #000 42%); mask: radial-gradient(circle at 50% 42%, transparent 20%, #000 42%);
+  animation: spin 1.7s linear;
 }
-.cutin-face { position: relative; font-size: 34cqw; animation: zoomIn .4s ease-out; filter: drop-shadow(0 0 4cqw var(--fire)); }
+.cutin::before { /* 主角身後的火光 */
+  content: ""; position: absolute; left: 50%; top: 40%; width: 110cqw; height: 110cqw; transform: translate(-50%, -50%);
+  background: radial-gradient(circle, #ffd96a 0%, #ff8a1f80 35%, transparent 65%);
+}
+.cutin-art {
+  /* 原圖左側火焰貼齊圖邊,放大到比畫面寬,讓圖邊落在畫面外 */
+  position: absolute; left: 50%; top: -1cqh; height: max(81cqh, 112cqw * 1200 / 894); width: auto; transform: translateX(-50%);
+  filter: drop-shadow(0 0 3cqw #ff5a1fa0);
+}
+.cutin.show .cutin-art { animation: artIn .42s cubic-bezier(.15, .85, .3, 1.15), artHold .1s .45s 4; }
 .cutin-title {
   position: relative; font-size: 11cqw; font-weight: 900; color: var(--fire); transform: skewX(-12deg);
-  -webkit-text-stroke: .8cqw #000; paint-order: stroke fill; animation: slam .4s .2s ease-out backwards;
+  -webkit-text-stroke: .8cqw #000; paint-order: stroke fill; animation: slam .4s .45s ease-out backwards;
 }
-.cutin-sub { position: relative; font-weight: 800; color: #000; background: var(--fire-2); padding: 1cqw 4cqw; transform: skewX(-12deg); margin-top: 2cqw; }
+.cutin-sub { position: relative; font-weight: 800; color: #000; background: var(--fire-2); padding: 1cqw 4cqw; transform: skewX(-12deg); margin-top: 2cqw; animation: slam .3s .6s ease-out backwards; }
+@keyframes artIn {
+  from { transform: translate(-120%, 30%) scale(.6) rotate(-18deg); opacity: 0; filter: brightness(3) blur(1cqw); }
+  70%  { opacity: 1; filter: none; }
+}
+@keyframes artHold { 50% { transform: translate(calc(-50% + 1.2cqw), -.8cqw); } }
 @keyframes spin    { to { transform: rotate(20deg) scale(1.2); } }
-@keyframes zoomIn  { from { transform: scale(3); opacity: 0; } }
-@keyframes cutFlash { 0% { background: #fff; } 10% { background: var(--fire-2); } 20%, 100% { background: #fff; } }
+@keyframes cutFlash { 0% { background: #fff; } 8% { background: var(--fire-2); } 18%, 100% { background: #fff; } }
 
 /* ---- 結算 ---- */
 .result-box { width: 100%; background: var(--panel); border-radius: 3cqw; padding: 3.5cqw 5cqw; display: flex; flex-direction: column; gap: min(2.2cqw, 1.4cqh); }

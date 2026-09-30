@@ -280,7 +280,7 @@ G.battle = {
     const el = G.$('#cutin');
     el.classList.add('show');
     G.audio.play('cutin');
-    await G.sleep(1400);
+    await G.sleep(1700);
     el.classList.remove('show');
   },
 
