@@ -43,7 +43,8 @@ powershell -ExecutionPolicy Bypass -File tools/serve.ps1
 
 ## 原型內容
 
-- 3 個關卡 × 3 WAVE(WAVE 3 為 BOSS),敵人 5 種、BOSS 4 名(含 BOSS 必殺技)
+- 3 個關卡 × 10 WAVE(WAVE 10 為 BOSS,第三關 WAVE 5 有中頭目),含精英敵人;敵人 5 種、BOSS 4 名(含 BOSS 必殺技)
+- 難度參數在 `src/js/data/stages.js`(`WAVE_GROWTH`、各關 `scale`),可用 `src/js/dev/balance-sim.js` 模擬通關率
 - 玩家攻擊 👊 / 敵人攻擊時防禦 🛡️ / 必殺技依序點數字 + 漫畫風演出
 - 20 個 Roguelike 技能,每擊倒一個 WAVE 三選一
 - 結算積分 → 成長點數 → 永久升級(存於瀏覽器 localStorage)

@@ -14,10 +14,19 @@ function makePlayer() {
   return p;
 }
 
-function makeEnemy(id, scale) {
-  const d = G.ENEMIES[id];
-  const hp = Math.round(d.hp * scale);
-  return Object.assign({}, d, { id, hp, maxHp: hp, atk: Math.round(d.atk * (1 + (scale - 1) / 2)), turn: 0 });
+// spec:敵人 id,結尾 '+' 為精英;w:WAVE 索引(0 起算),越後面越強
+function makeEnemy(spec, scale, w) {
+  const elite = spec.endsWith('+');
+  const id = elite ? spec.slice(0, -1) : spec;
+  const d = G.ENEMIES[id], g = G.WAVE_GROWTH;
+  const hp = Math.round(d.hp * scale * (1 + w * g.hp) * (elite ? 1.5 : 1));
+  return Object.assign({}, d, {
+    id, elite, hp, maxHp: hp, turn: 0,
+    name: (elite ? '精英・' : '') + d.name,
+    atk: Math.round(d.atk * (1 + (scale - 1) / 2) * (1 + w * g.atk) * (elite ? 1.2 : 1)),
+    atkCount: d.atkCount + Math.floor(w / g.countEvery) + (elite ? 1 : 0),
+    guardLife: Math.round(d.guardLife * (1 - w * g.life) * (elite ? 0.92 : 1)),
+  });
 }
 
 G.battle = {
@@ -38,15 +47,17 @@ G.battle = {
     G.grid.clearAll();
     G.show('battle');
 
-    for (let w = 0; w < 3; w++) {
-      this.e = makeEnemy(this.stage.waves[w], this.stage.scale);
-      G.$('#waveTag').textContent = `WAVE ${w + 1}/3`;
+    const total = this.stage.waves.length;
+    for (let w = 0; w < total; w++) {
+      this.e = makeEnemy(this.stage.waves[w], this.stage.scale, w);
+      G.$('#waveTag').textContent = `WAVE ${w + 1}/${total}`;
       G.$('#enemySprite').textContent = this.e.icon;
       G.$('#enemyName').textContent = (this.e.boss ? '【BOSS】' : '') + this.e.name;
       this.setEnemyState('idle');
       this.render();
       G.bgm.play(this.e.boss ? 'boss' : 'battle' + stageIdx);
-      await G.banner(`WAVE ${w + 1}`, (this.e.boss ? '魔王降臨!' : '') + this.e.name, 1200);
+      const intro = this.e.boss ? (w === total - 1 ? '魔王降臨!' : '中頭目出現!') : this.e.elite ? '精英來襲!' : '';
+      await G.banner(`WAVE ${w + 1}`, intro + this.e.name, 1200);
 
       while (!this.over()) {
         await this.playerTurn();
@@ -61,8 +72,9 @@ G.battle = {
       G.audio.play('ko');
       this.stats.waves++;
       await G.sleep(900);
-      if (w < 2) {
-        if (this.p.regen) this.healPlayer(this.p.regen);
+      if (w < total - 1) {
+        // 每個 WAVE 之間基礎回復 10% 最大 HP,再加上技能的回復量
+        this.healPlayer(Math.round(this.p.maxHp * 0.1) + this.p.regen);
         await G.scenes.pickSkill(this.p);
         this.render();
       }
@@ -262,7 +274,7 @@ G.battle = {
   setEnemyState(s, ms) {
     const el = G.$('#enemy');
     clearTimeout(this._stateTimer);
-    el.className = 'enemy ' + s + (this.e && this.e.boss ? ' boss' : '');
+    el.className = 'enemy ' + s + (this.e && this.e.boss ? ' boss' : '') + (this.e && this.e.elite ? ' elite' : '');
     G.$('#enemyState').textContent = STATE_LABEL[s];
     if (ms) this._stateTimer = setTimeout(() => { if (this.e.hp > 0) this.setEnemyState(this.phase === 'defend' ? 'attack' : 'idle'); }, ms);
   },

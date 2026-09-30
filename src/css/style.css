@@ -232,3 +232,7 @@ button { font: inherit; color: inherit; cursor: pointer; }
 #resultTitle { font-size: 10cqw; margin: 6cqh 0 0; }
 #result .btn { margin-top: auto; }
 h2 { margin: 0; }
+
+/* 精英敵人與難度星等 */
+.enemy.elite .sprite { filter: drop-shadow(0 0 2.5cqw #ffb300) drop-shadow(0 2cqw 1cqw #0008); }
+.sc-stars { color: var(--fire-2); font-size: 3.6cqw; letter-spacing: .1em; }

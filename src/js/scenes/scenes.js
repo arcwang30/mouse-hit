@@ -49,7 +49,7 @@ G.scenes = {
       const locked = i >= sv.unlocked;
       const best = sv.best[i] ? `最高分 ${sv.best[i]}` : '';
       return `<button class="stage-card bg-${s.bg}" data-i="${i}" ${locked ? 'disabled' : ''}>
-        <div class="sc-name">${locked ? '🔒 ' : ''}${s.name}</div>
+        <div class="sc-name">${locked ? '🔒 ' : ''}${s.name} <span class="sc-stars">${'★'.repeat(s.stars)}${'☆'.repeat(3 - s.stars)}</span></div>
         <div class="sc-desc">${locked ? '通過上一關後解鎖' : s.desc}</div>
         <div class="sc-best">${best}</div>
       </button>`;
@@ -121,7 +121,7 @@ G.scenes = {
       <div>總傷害<b>${s.dmg}</b></div>
       <div>命中 / 格擋<b>${s.hits} / ${s.blocks}</b></div>
       <div>必殺技次數<b>${s.ults}</b></div>
-      <div>擊倒 WAVE<b>${s.waves} / 3</b></div>
+      <div>擊倒 WAVE<b>${s.waves} / ${G.battle.stage.waves.length}</b></div>
       <div>取得技能<b>${skills}</b></div>
       <div class="score">積分<b>${score}</b></div>
       <div class="score">獲得成長點數<b>+${points}</b></div>`;
