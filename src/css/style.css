@@ -149,27 +149,51 @@ button { font: inherit; color: inherit; cursor: pointer; }
 
 .grid-wrap { flex: 1; min-height: 0; display: flex; align-items: center; justify-content: center; padding: 3cqw; background: #120f1c; }
 .grid { height: 100%; max-width: 100%; aspect-ratio: 1; display: grid; grid-template: repeat(3, 1fr) / repeat(3, 1fr); gap: 2.5cqw; }
+/* 格子本身是凹下去的洞,.cap 是從洞裡浮起來的按鈕 */
 .cell {
   position: relative; border: 0; border-radius: 4cqw; padding: 0;
-  background: radial-gradient(circle at 50% 70%, #2b2540, #1a1628); box-shadow: inset 0 -1.5cqw 0 #0008;
-  display: flex; align-items: center; justify-content: center; overflow: hidden;
+  background: radial-gradient(ellipse at 50% 60%, #07050d 35%, #221c33);
+  box-shadow: inset 0 1.8cqw 2.2cqw #000d, 0 .5cqw 0 #ffffff12;
 }
-.cell .icon { font-size: 13cqw; line-height: 1; }
-.cell.on .icon { animation: pop .15s ease-out; }
-.cell.on::after { /* 剩餘時間環 */
-  content: ""; position: absolute; left: 10%; right: 10%; bottom: 6%; height: 1.2cqw; border-radius: 99px;
-  background: currentColor; transform-origin: left; animation: drain var(--life) linear forwards;
+.cap {
+  --edge: #000; position: absolute; left: 7%; right: 7%; top: 5%; bottom: 13%;
+  border-radius: 3.5cqw; display: flex; align-items: center; justify-content: center; overflow: hidden;
+  opacity: 0; transform: translateY(45%) scale(.7);
+  transition: transform .07s ease-out, box-shadow .07s ease-out, filter .07s;
 }
-.cell.fist  { background: radial-gradient(circle, #ff8a3d, #b52a05); color: var(--fire-2); }
-.cell.guard { background: radial-gradient(circle, #7cc8ff, #104f8a); color: #bfe4ff; }
+.cell .icon { font-size: 12cqw; line-height: 1; filter: drop-shadow(0 .6cqw 0 #0006); }
+.cell.on .cap {
+  opacity: 1; transform: translateY(-4%);
+  box-shadow: inset 0 .9cqw 0 #ffffff70, inset 0 -.8cqw 0 #0003, 0 2.2cqw 0 var(--edge), 0 4.5cqw 3cqw #000c;
+  animation: rise .2s cubic-bezier(.3, 1.7, .5, 1);
+}
+/* 點中:按鈕被壓下去 */
+.cell.press .cap {
+  transform: translateY(14%);
+  box-shadow: inset 0 .9cqw 0 #ffffff70, 0 .4cqw 0 var(--edge), 0 1cqw 1cqw #0008;
+  filter: brightness(1.4);
+  animation: none;
+}
+/* 時間到:按鈕沉回洞裡 */
+.cell.sink .cap { animation: sink .14s ease-in forwards; }
+@keyframes rise { from { opacity: 0; transform: translateY(45%) scale(.7); box-shadow: 0 0 0 var(--edge); } }
+@keyframes sink { to { opacity: 0; transform: translateY(45%) scale(.7); box-shadow: 0 0 0 var(--edge); } }
+
+.cell.on .cap::after { /* 剩餘時間條 */
+  content: ""; position: absolute; left: 12%; right: 12%; bottom: 7%; height: 1.1cqw; border-radius: 99px;
+  background: currentColor; opacity: .85; transform-origin: left; animation: drain var(--life) linear forwards;
+}
+.cell.press .cap::after, .cell.sink .cap::after { display: none; }
+.cell.fist  .cap { background: linear-gradient(180deg, #ffb36b, #ff5a1f 55%, #c2300a); --edge: #7a1c04; color: #ffe08a; }
+.cell.guard .cap { background: linear-gradient(180deg, #c4e8ff, #3da9ff 55%, #1666b0); --edge: #0b3a66; color: #e4f4ff; }
 .cell.guard.fade .icon { animation: fog 1s ease-in-out infinite alternate; }
-.cell.decoy { background: radial-gradient(circle, #6b2a7a, #1d0a24); color: #d05cff; }
-.cell.num   { background: radial-gradient(circle, #e8a9ff, #6a1c9e); }
-.cell.num .icon { font-size: 15cqw; font-weight: 900; color: #fff; text-shadow: 0 0 3cqw var(--ult); }
-.cell.num::after { display: none; }
-.cell.good { box-shadow: 0 0 0 1cqw #fff inset, 0 0 4cqw var(--fire-2); }
-.cell.bad  { box-shadow: 0 0 0 1cqw #ff3d5a inset; }
-.cell.miss { background: #2e2840; }
+.cell.decoy .cap { background: linear-gradient(180deg, #c07ad8, #7a2a96 55%, #4a1060); --edge: #26062f; color: #e59cff; }
+.cell.num   .cap { background: linear-gradient(180deg, #f5d6ff, #c04dff 55%, #6a1c9e); --edge: #3d0d5c; }
+.cell.num .icon { font-size: 14cqw; font-weight: 900; color: #fff; text-shadow: 0 0 3cqw var(--ult), 0 .6cqw 0 #3d0d5c; }
+.cell.num .cap::after { display: none; }
+.cell.good { box-shadow: inset 0 1.8cqw 2.2cqw #000d, 0 0 0 .8cqw #fff, 0 0 4cqw var(--fire-2); }
+.cell.bad  { box-shadow: inset 0 1.8cqw 2.2cqw #000d, 0 0 0 .8cqw #ff3d5a; }
+.cell.miss { box-shadow: inset 0 1.8cqw 2.2cqw #000d, 0 0 0 .5cqw #ffffff30; }
 @keyframes pop   { from { transform: scale(.2); } }
 @keyframes drain { to { transform: scaleX(0); } }
 @keyframes fog   { to { opacity: .12; } }
@@ -236,3 +260,32 @@ h2 { margin: 0; }
 /* 精英敵人與難度星等 */
 .enemy.elite .sprite { filter: drop-shadow(0 0 2.5cqw #ffb300) drop-shadow(0 2cqw 1cqw #0008); }
 .sc-stars { color: var(--fire-2); font-size: 3.6cqw; letter-spacing: .1em; }
+
+/* 出拳特效:拳頭從玩家視角飛向敵人 */
+.fx-fist {
+  position: absolute; left: 0; top: 0; z-index: 4; pointer-events: none;
+  font-size: 12cqw; line-height: 1; filter: drop-shadow(0 0 1.5cqw #ff8a00);
+}
+.fx-fist.crit { filter: drop-shadow(0 0 3cqw #ffc23d) drop-shadow(0 0 1cqw #fff); }
+.fx-impact {
+  position: absolute; z-index: 5; pointer-events: none; font-size: 14cqw; line-height: 1;
+  transform: translate(-50%, -50%); animation: impact .32s ease-out forwards;
+}
+.fx-impact.small { font-size: 9cqw; }
+.fx-impact.big   { font-size: 20cqw; }
+.fx-impact.final { font-size: 40cqw; animation-duration: .6s; filter: drop-shadow(0 0 5cqw #ff5a1f); }
+@keyframes impact {
+  from { transform: translate(-50%, -50%) scale(.3) rotate(-20deg); opacity: 1; }
+  60%  { opacity: 1; }
+  to   { transform: translate(-50%, -50%) scale(1.5) rotate(10deg); opacity: 0; }
+}
+
+/* 百烈拳:集中線 + 畫面震動 */
+.stage.rush::after {
+  content: ""; position: absolute; inset: -30%; z-index: 3; pointer-events: none;
+  background: repeating-conic-gradient(from 0deg at 50% 60%, #fff9 0deg 1.5deg, transparent 1.5deg 8deg);
+  -webkit-mask: radial-gradient(circle at 50% 60%, transparent 22%, #000 55%); mask: radial-gradient(circle at 50% 60%, transparent 22%, #000 55%);
+  animation: rushLines .12s steps(2) infinite;
+}
+.stage.rush .enemy .sprite { animation: quake .08s infinite; }
+@keyframes rushLines { to { transform: rotate(6deg); } }

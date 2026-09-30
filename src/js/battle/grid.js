@@ -1,6 +1,7 @@
 // 九宮格:只負責顯示與點擊,玩法邏輯由 battle.js 透過 handler 注入
 G.grid = {
   cells: [],
+  timers: [],
   handler: null,
 
   init() {
@@ -8,7 +9,7 @@ G.grid = {
     for (let i = 0; i < 9; i++) {
       const c = document.createElement('button');
       c.className = 'cell';
-      c.innerHTML = '<span class="icon"></span>';
+      c.innerHTML = '<span class="cap"><span class="icon"></span></span>';
       c.addEventListener('pointerdown', e => { e.preventDefault(); this.tap(i); });
       el.appendChild(c);
       this.cells.push(c);
@@ -21,19 +22,32 @@ G.grid = {
 
   set(i, icon, cls = '', life = 0) {
     const c = this.cells[i];
-    c.className = 'cell on ' + cls;
+    clearTimeout(this.timers[i]);
+    c.className = 'cell ' + cls;
+    void c.offsetWidth; // 重新觸發浮起動畫
+    c.classList.add('on');
     c.style.setProperty('--life', life + 'ms');
     c.querySelector('.icon').textContent = icon;
   },
 
-  clear(i) {
+  // anim:'press' 按下去 / 'sink' 沉回洞裡,播完才真正清空
+  clear(i, anim) {
     const c = this.cells[i];
-    c.className = 'cell';
-    c.querySelector('.icon').textContent = '';
+    clearTimeout(this.timers[i]);
+    const reset = () => {
+      c.className = 'cell';
+      c.querySelector('.icon').textContent = '';
+    };
+    if (!anim) return reset();
+    c.classList.add(anim);
+    this.timers[i] = setTimeout(reset, anim === 'press' ? 130 : 150);
   },
 
   clearAll() {
-    for (let i = 0; i < 9; i++) this.clear(i);
+    for (let i = 0; i < 9; i++) {
+      const c = this.cells[i];
+      if (!c.classList.contains('press') && !c.classList.contains('sink')) this.clear(i);
+    }
   },
 
   flash(i, kind) {
@@ -73,7 +87,7 @@ G.molePhase = o => new Promise(resolve => {
     if (!a) { G.grid.flash(i, 'miss'); G.audio.play('tap'); return; }
     clearTimeout(a.t);
     active.delete(i);
-    G.grid.clear(i);
+    G.grid.clear(i, 'press');
     if (a.decoy) {
       G.grid.flash(i, 'bad');
       o.onDecoy && o.onDecoy(i);
@@ -97,7 +111,7 @@ G.molePhase = o => new Promise(resolve => {
     G.audio.play('pop');
     const t = setTimeout(() => {
       active.delete(i);
-      G.grid.clear(i);
+      G.grid.clear(i, 'sink');
       if (!decoy) { G.grid.flash(i, 'bad'); o.onMiss(i); settle(); }
     }, o.life);
     active.set(i, { t, decoy });

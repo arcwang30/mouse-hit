@@ -91,7 +91,7 @@ G.battle = {
     await G.molePhase({
       icon: '👊', cls: 'fist', count: p.attackCount, life: p.moleLife,
       interval: Math.max(250, p.moleLife * 0.45),
-      onHit: () => {
+      onHit: i => {
         let d = p.atk + combo * p.combo;
         combo++;
         if (first && p.firstStrike) d *= 3;
@@ -100,6 +100,7 @@ G.battle = {
         const crit = Math.random() < p.crit;
         if (crit) d *= p.critMul;
         this.stats.hits++;
+        this.punchFx(i % 3, { crit });
         this.hurtEnemy(Math.round(d), crit);
         if (p.lifesteal) this.healPlayer(p.lifesteal, true);
         this.gainUlt(p.ultGain);
@@ -161,7 +162,7 @@ G.battle = {
       G.grid.handler = i => {
         if (i === seq[idx]) {
           G.audio.play('note', idx);
-          G.grid.clear(i);
+          G.grid.clear(i, 'press');
           G.grid.flash(i, 'good');
           if (++idx === seq.length) { timer.stop(); G.grid.handler = null; res(true); }
         } else {
@@ -179,7 +180,7 @@ G.battle = {
       this.stats.ults++;
       this.render();
       await this.cutIn();
-      this.hurtEnemy(Math.round(p.atk * p.ultMult), true, true);
+      await this.barrage(Math.round(p.atk * p.ultMult));
       await G.sleep(700);
     } else {
       p.ult = Math.floor(p.ultMax / 2);
@@ -195,6 +196,57 @@ G.battle = {
     G.audio.play('cutin');
     await G.sleep(1400);
     el.classList.remove('show');
+  },
+
+  // 必殺技後的百烈拳:36 拳連打分段造成約 60% 傷害,最後一擊打出其餘傷害
+  async barrage(total) {
+    const stage = G.$('#stageView');
+    const RUSH = 36, EVERY = 3, GAP = 38; // 36 拳,每 3 拳結算一次傷害
+    const tick = Math.max(1, Math.floor(total * 0.6 / (RUSH / EVERY)));
+    let dealt = 0;
+    stage.classList.add('rush');
+    for (let k = 0; k < RUSH; k++) {
+      this.punchFx(Math.floor(Math.random() * 3), { spread: 0.45, dur: 130, small: true });
+      if (k % EVERY === 0) { this.hurtEnemy(tick, false); dealt += tick; }
+      await G.sleep(GAP);
+    }
+    await G.sleep(150);
+    this.punchFx(1, { crit: true, final: true, dur: 260 });
+    await G.sleep(260);
+    stage.classList.remove('rush');
+    this.hurtEnemy(Math.max(1, total - dealt), true, true);
+  },
+
+  // 拳頭從畫面下方(玩家視角)飛向敵人,越遠越小;col 0/1/2 對應九宮格的左/中/右欄
+  punchFx(col, o = {}) {
+    const stage = G.$('#stageView');
+    const W = stage.clientWidth, H = stage.clientHeight;
+    if (!W) return; // 戰鬥畫面沒顯示時不產生特效
+    const sx = W * (0.2 + col * 0.3) + (Math.random() - 0.5) * W * 0.1;
+    const sy = H * 1.1;
+    const spread = o.spread || 0.12;
+    const ex = W * 0.5 + (Math.random() - 0.5) * W * spread;
+    const ey = H * 0.48 + (Math.random() - 0.5) * H * spread * 1.1;
+    const s0 = o.final ? 5 : o.crit ? 2.8 : o.small ? 1.8 : 2.2;
+    const s1 = o.final ? 1.8 : o.crit ? 1.2 : o.small ? 0.6 : 0.8;
+
+    const f = document.createElement('div');
+    f.className = 'fx-fist' + (o.crit ? ' crit' : '');
+    f.textContent = '👊';
+    stage.appendChild(f);
+    f.animate([
+      { transform: `translate(${sx}px, ${sy}px) translate(-50%, -50%) scale(${s0}) rotate(${(col - 1) * 12}deg)`, opacity: 0.85 },
+      { transform: `translate(${ex}px, ${ey}px) translate(-50%, -50%) scale(${s1}) rotate(0deg)`, opacity: 1 },
+    ], { duration: o.dur || 150, easing: 'cubic-bezier(.4, .1, .6, 1)' }).onfinish = () => {
+      f.remove();
+      const b = document.createElement('div');
+      b.className = 'fx-impact' + (o.final ? ' final' : o.crit ? ' big' : o.small ? ' small' : '');
+      b.textContent = '💥';
+      b.style.left = ex + 'px';
+      b.style.top = ey + 'px';
+      stage.appendChild(b);
+      setTimeout(() => b.remove(), o.final ? 600 : 320);
+    };
   },
 
   requestUlt() {
@@ -283,7 +335,8 @@ G.battle = {
     const f = document.createElement('div');
     f.className = 'float ' + cls;
     f.textContent = text;
-    f.style.left = (35 + Math.random() * 30) + '%';
+    f.style.left = (30 + Math.random() * 40) + '%';
+    if (!onPlayer && !cls.includes('big')) f.style.top = (12 + Math.random() * 38) + '%'; // 連打時數字散開不重疊
     (onPlayer ? G.$('.hud') : G.$('#stageView')).appendChild(f);
     setTimeout(() => f.remove(), 900);
   },
