@@ -1,0 +1,122 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+  <title>鋼拳風雲錄</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Orbitron:wght@600;800&display=swap">
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="css/cyber-ui.css">
+</head>
+<body>
+<div id="app">
+
+  <!-- 故事開場 -->
+  <section id="story" class="screen">
+    <div class="story-dots" id="storyDots"></div>
+    <div class="story-stage">
+      <div class="story-panel" id="storyPanel"><div class="panel-img" id="panelImg"></div><div class="panel-fx"></div></div>
+    </div>
+    <div class="story-caption" id="storyCaption"><span class="speaker" id="storySpeaker"></span><p id="storyText"></p></div>
+    <div class="story-hint">點擊畫面繼續</div>
+    <button class="skip" id="storySkip">跳過 ▶▶</button>
+  </section>
+
+  <!-- 標題畫面 -->
+  <section id="title" class="screen">
+    <div class="title-bg"></div>
+    <div class="rain"></div>
+    <div class="embers" id="embers"></div>
+    <div class="bolt"></div>
+    <div class="title-logo"><img src="../assets/images/ui/logo.webp" alt="鋼拳風雲錄"></div>
+    <div class="title-start">點擊畫面開始<small>TAP TO START</small></div>
+  </section>
+
+  <!-- 主選單 -->
+  <section id="menu" class="screen art">
+    <div class="menu-logo"><img src="../assets/images/ui/logo.webp" alt="鋼拳風雲錄"></div>
+    <div class="menu-points">成長點數:<b id="menuPoints">0</b></div>
+    <div id="stageList" class="stage-list"></div>
+    <div class="menu-row">
+      <button class="btn" id="btnUpgrade">💪 成長</button>
+      <button class="btn" id="btnStory">📜 故事</button>
+    </div>
+  </section>
+
+  <!-- 成長升級 -->
+  <section id="upgrade" class="screen art">
+    <h2>永久成長</h2>
+    <div class="menu-points">成長點數:<b id="upPoints">0</b></div>
+    <div id="upList" class="up-list"></div>
+    <button class="btn" id="upBack">返回</button>
+  </section>
+
+  <!-- 戰鬥 -->
+  <section id="battle" class="screen">
+    <div class="stage" id="stageView">
+      <div class="stage-bg" id="stageBg"></div>
+      <div class="deco" id="deco"></div>
+      <div class="wave-tag" id="waveTag">WAVE 1/3</div>
+      <div class="enemy idle" id="enemy">
+        <div class="sprite" id="enemySprite">🧘</div>
+        <div class="state-tag" id="enemyState">待機</div>
+      </div>
+      <div class="enemy-info">
+        <div class="enemy-name" id="enemyName">武僧</div>
+        <div class="bar enemy-bar"><div class="fill" id="enemyHpFill"></div><span id="enemyHpText"></span></div>
+      </div>
+    </div>
+
+    <div class="hud">
+      <div class="hud-row">
+        <div class="bar player-bar"><div class="fill" id="playerHpFill"></div><span id="playerHpText"></span></div>
+        <div class="counter" title="反應次數倒數">剩餘 <b id="counter">-</b></div>
+      </div>
+      <div class="hud-row">
+        <div class="bar ult-bar"><div class="fill" id="ultFill"></div><span id="ultText"></span></div>
+        <button class="ult-btn" id="ultBtn" disabled>🔥 必殺</button>
+      </div>
+      <div class="phase" id="phase">準備</div>
+      <div class="timebar"><div class="fill" id="timeFill"></div></div>
+    </div>
+
+    <div class="grid-wrap"><div class="grid" id="grid"></div></div>
+  </section>
+
+  <!-- 結算 -->
+  <section id="result" class="screen art">
+    <h2 id="resultTitle">過關!</h2>
+    <div class="result-box" id="resultBox"></div>
+    <button class="btn" id="resultBack">返回主選單</button>
+  </section>
+
+  <!-- 覆蓋層 -->
+  <div id="skillPick" class="overlay">
+    <h2>選擇一項技能</h2>
+    <div id="skillCards" class="skill-cards"></div>
+  </div>
+  <div id="banner" class="overlay banner"><div class="banner-main" id="bannerMain"></div><div class="banner-sub" id="bannerSub"></div></div>
+  <div id="cutin" class="overlay cutin">
+    <div class="speed-lines"></div>
+    <div class="cutin-face">🔥👊</div>
+    <div class="cutin-title">烈焰鋼拳・焚天</div>
+    <div class="cutin-sub">額上烈焰烙痕,燃盡一切!</div>
+  </div>
+  <div id="hurtFlash"></div>
+  <button class="mute" id="muteBtn" title="靜音(M)">🔊</button>
+</div>
+
+<script src="js/core.js"></script>
+<script src="js/audio/engine.js"></script>
+<script src="js/audio/bgm.js"></script>
+<script src="js/data/skills.js"></script>
+<script src="js/data/enemies.js"></script>
+<script src="js/data/stages.js"></script>
+<script src="js/data/upgrades.js"></script>
+<script src="js/battle/grid.js"></script>
+<script src="js/battle/battle.js"></script>
+<script src="js/scenes/scenes.js"></script>
+<script src="js/main.js"></script>
+</body>
+</html>

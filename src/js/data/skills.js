@@ -1,0 +1,23 @@
+// Roguelike 技能(每擊倒一個 WAVE 三選一)
+G.SKILLS = [
+  { id: 'iron',     icon: '👊', name: '鐵拳淬煉', desc: '每次出拳傷害 +3',                   apply: p => { p.atk += 3; } },
+  { id: 'flurry',   icon: '💥', name: '烈火連打', desc: '攻擊回合拳頭數量 +2',               apply: p => { p.attackCount += 2; } },
+  { id: 'eagle',    icon: '🦅', name: '鷹眼',     desc: '拳頭停留時間 +250ms',               apply: p => { p.moleLife += 250; } },
+  { id: 'bell',     icon: '🔔', name: '金鐘罩',   desc: '受到的傷害 -15%(上限 60%)',       apply: p => { p.armor = Math.min(0.6, p.armor + 0.15); } },
+  { id: 'steel',    icon: '🦾', name: '鋼筋鐵骨', desc: '最大 HP +30,並回復 30',             apply: p => { p.maxHp += 30; p.hp += 30; } },
+  { id: 'pill',     icon: '💊', name: '回氣丹',   desc: '立即回復 50% 最大 HP',              apply: p => { p.hp = Math.min(p.maxHp, p.hp + Math.round(p.maxHp / 2)); } },
+  { id: 'crit',     icon: '🎯', name: '會心一擊', desc: '暴擊率 +15%',                       apply: p => { p.crit += 0.15; } },
+  { id: 'pierce',   icon: '🔨', name: '破甲重拳', desc: '暴擊傷害倍率 +0.7',                 apply: p => { p.critMul += 0.7; } },
+  { id: 'burn',     icon: '🔥', name: '焚心',     desc: '每次命中的必殺值 +2',               apply: p => { p.ultGain += 2; } },
+  { id: 'art',      icon: '📜', name: '神拳心法', desc: '必殺技傷害倍率 +3',                 apply: p => { p.ultMult += 3; } },
+  { id: 'leech',    icon: '🩸', name: '吸血拳',   desc: '每次命中回復 2 HP',                 apply: p => { p.lifesteal += 2; } },
+  { id: 'thorns',   icon: '🌵', name: '反震掌',   desc: '每次格擋,下回合每拳傷害 +1(可累積)', apply: p => { p.counter += 1; } },
+  { id: 'calm',     icon: '🧘', name: '氣定神閒', desc: '防禦符號停留時間 +250ms',           apply: p => { p.guardBonus += 250; } },
+  { id: 'combo',    icon: '⚡', name: '連擊氣勢', desc: '連續命中時每段額外 +1 傷害',        apply: p => { p.combo += 1; } },
+  { id: 'regen',    icon: '🍵', name: '養精蓄銳', desc: '每擊倒一個 WAVE 回復 15 HP',        apply: p => { p.regen += 15; } },
+  { id: 'phoenix',  icon: '🌅', name: '浴火重生', desc: '倒下時以 50% HP 復活一次(限一次)', unique: true, apply: p => { p.revive = 1; } },
+  { id: 'first',    icon: '🥇', name: '先發制人', desc: '每回合第一拳傷害 x3',               unique: true, apply: p => { p.firstStrike = true; } },
+  { id: 'execute',  icon: '💀', name: '斬殺',     desc: '敵人 HP 低於 20% 時傷害 x2',        unique: true, apply: p => { p.execute = true; } },
+  { id: 'absorb',   icon: '🌀', name: '格擋蓄氣', desc: '成功防禦時必殺值 +3',               apply: p => { p.blockUlt += 3; } },
+  { id: 'bounty',   icon: '💰', name: '賞金獵人', desc: '結算積分 +50%',                     apply: p => { p.scoreMul += 0.5; } },
+];

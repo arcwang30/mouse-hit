@@ -1,0 +1,211 @@
+/* ==========================================================
+   戰鬥 UI 主題:賽博龐克 × 鋼鐵
+   拉絲鋼板、鉚釘、斜切角、警示斜紋 + 霓虹青/洋紅光
+   (載入順序在 style.css 之後,覆蓋戰鬥畫面的預設樣式)
+   ========================================================== */
+:root {
+  --steel-0: #14181d;
+  --steel-1: #22282f;
+  --steel-2: #353d46;
+  --steel-3: #56616d;
+  --steel-hi: #9aa7b4;
+  --neon-c: #19f0ff;   /* 主色:青 */
+  --neon-m: #ff2bd6;   /* 強調:洋紅 */
+  --neon-r: #ff2d55;   /* 敵方 / 危險 */
+  --neon-y: #ffd400;   /* 警示 / 必殺 */
+  --tech: 'Orbitron', 'Noto Sans TC', 'Microsoft JhengHei', sans-serif;
+  --chamfer: polygon(1.6cqw 0, 100% 0, 100% calc(100% - 1.6cqw), calc(100% - 1.6cqw) 100%, 0 100%, 0 1.6cqw);
+}
+
+/* 拉絲鋼板材質(細橫紋 + 上亮下暗) */
+.hud, .counter, .ult-btn, .wave-tag, .enemy-name, .skill-card {
+  --brushed: repeating-linear-gradient(0deg, #ffffff05 0 1px, transparent 1px 3px);
+}
+
+/* 整個戰鬥畫面疊一層淡掃描線 */
+#battle::after {
+  content: ""; position: absolute; inset: 0; z-index: 8; pointer-events: none;
+  background: repeating-linear-gradient(0deg, #0000 0 2px, #0000001f 2px 3px);
+  mix-blend-mode: multiply;
+}
+
+/* ---------- 上方敵人區 ---------- */
+.stage { border-bottom: 0; }
+
+.wave-tag {
+  font-family: var(--tech); font-weight: 800; font-size: 3cqw; letter-spacing: .12em;
+  color: var(--neon-c); text-shadow: 0 0 1.5cqw var(--neon-c);
+  background: var(--brushed), linear-gradient(180deg, #2c333bee, #12161bee);
+  border-radius: 0; clip-path: var(--chamfer); padding: 1cqw 3.4cqw;
+  box-shadow: inset 0 0 0 .35cqw #19f0ff66;
+}
+
+.enemy-name {
+  display: inline-flex; align-items: center; gap: 1.6cqw; margin-bottom: .8cqw;
+  padding: .5cqw 3cqw .5cqw 1.2cqw; font-size: 3.6cqw; text-shadow: 0 0 1cqw #000;
+  background: var(--brushed), linear-gradient(90deg, #1b2027f0, #1b202790 80%, transparent);
+  clip-path: polygon(0 0, 100% 0, calc(100% - 2cqw) 100%, 0 100%);
+  border-left: .8cqw solid var(--neon-r);
+}
+.enemy-name::before {
+  content: "TARGET"; font-family: var(--tech); font-size: 2.2cqw; font-weight: 700; letter-spacing: .15em;
+  color: #000; background: var(--neon-r); padding: .2cqw 1.2cqw;
+}
+#battle:has(.enemy.boss) .enemy-name::before { content: "BOSS"; background: var(--neon-y); }
+
+/* 敵人狀態標籤(待機/攻擊/防禦…) */
+.state-tag {
+  font-family: var(--tech); font-size: 2.4cqw; letter-spacing: .08em; border-radius: 0;
+  clip-path: polygon(8% 0, 100% 0, 92% 100%, 0 100%); padding: .2cqw 2.4cqw;
+  background: #05080bd0; color: var(--neon-c); box-shadow: inset 0 0 0 .25cqw #19f0ff66;
+}
+.enemy.attack .state-tag, .enemy.ult .state-tag { color: #fff; }
+
+/* ---------- 能量槽(血條 / 必殺條) ---------- */
+.bar {
+  height: 4.4cqw; border: 0; border-radius: 0; clip-path: var(--chamfer);
+  background: linear-gradient(180deg, #05080b, #111820);
+  box-shadow: inset 0 0 0 .35cqw #ffffff22;
+}
+.bar::after { /* 分格刻度 */
+  content: ""; position: absolute; inset: 0; pointer-events: none;
+  background: repeating-linear-gradient(90deg, transparent 0 calc(10% - 1px), #000a calc(10% - 1px) 10%);
+}
+.bar .fill { position: relative; }
+.bar .fill::after { /* 上緣高光 */
+  content: ""; position: absolute; left: 0; right: 0; top: 0; height: 40%; background: #ffffff40;
+}
+.bar span { font-family: var(--tech); font-size: 2.7cqw; letter-spacing: .06em; z-index: 1; text-shadow: 0 0 .6cqw #000, 0 0 .6cqw #000; }
+.enemy-bar .fill  { background: linear-gradient(90deg, #7a0020, var(--neon-r)); box-shadow: 0 0 2cqw var(--neon-r); }
+.player-bar .fill { background: linear-gradient(90deg, #006b77, var(--neon-c)); box-shadow: 0 0 2cqw var(--neon-c); }
+.ult-bar .fill    { background: linear-gradient(90deg, #8a3a00, #ff8a00 60%, var(--neon-y)); }
+.ult-bar.full     { border: 0; box-shadow: inset 0 0 0 .45cqw var(--neon-y); animation: ultFull .5s steps(2) infinite; }
+@keyframes ultFull { 50% { box-shadow: inset 0 0 0 .45cqw #fff; } }
+
+/* ---------- HUD 面板:拉絲鋼板 + 鉚釘 + 警示斜紋鋼樑 ---------- */
+.hud {
+  padding: 3.4cqw 3.4cqw 2.2cqw; gap: 1.8cqw;
+  background:
+    radial-gradient(circle at 1.8cqw 3.6cqw, var(--steel-hi) 0 .5cqw, #0008 .55cqw, transparent .9cqw),
+    radial-gradient(circle at calc(100% - 1.8cqw) 3.6cqw, var(--steel-hi) 0 .5cqw, #0008 .55cqw, transparent .9cqw),
+    radial-gradient(circle at 1.8cqw calc(100% - 1.6cqw), var(--steel-hi) 0 .5cqw, #0008 .55cqw, transparent .9cqw),
+    radial-gradient(circle at calc(100% - 1.8cqw) calc(100% - 1.6cqw), var(--steel-hi) 0 .5cqw, #0008 .55cqw, transparent .9cqw),
+    var(--brushed),
+    linear-gradient(180deg, var(--steel-2), var(--steel-1) 60%, var(--steel-0));
+  box-shadow: inset 0 -.4cqw 0 #19f0ff55, 0 1cqw 2cqw #000a;
+}
+.hud::before { /* 敵人區與操作區之間的警示斜紋鋼樑 */
+  content: ""; position: absolute; left: 0; right: 0; top: 0; height: 1.6cqw;
+  background:
+    linear-gradient(180deg, #ffffff30, transparent 40%, #0006),
+    repeating-linear-gradient(-45deg, var(--neon-y) 0 2cqw, #111 2cqw 4cqw);
+  box-shadow: 0 .3cqw 0 #000, 0 -.3cqw 0 #000;
+}
+
+.counter {
+  font-size: 2.8cqw; color: var(--steel-hi); border-radius: 0; clip-path: var(--chamfer);
+  padding: .5cqw 2.6cqw; background: #05080b; box-shadow: inset 0 0 0 .35cqw #19f0ff55;
+}
+.counter b { font-family: var(--tech); color: var(--neon-c); font-size: 4.8cqw; text-shadow: 0 0 1.5cqw var(--neon-c); margin-left: .6cqw; }
+
+.ult-btn {
+  font-family: var(--tech); font-size: 3.2cqw; letter-spacing: .06em; border-radius: 0; clip-path: var(--chamfer);
+  padding: 1.1cqw 3cqw; color: #6c7682;
+  background: var(--brushed), linear-gradient(180deg, var(--steel-3), var(--steel-1));
+  box-shadow: inset 0 .35cqw 0 #ffffff30, inset 0 -.35cqw 0 #0008;
+}
+.ult-btn.ready {
+  color: #000; text-shadow: 0 0 .6cqw #fff;
+  background:
+    repeating-linear-gradient(-45deg, #0000 0 1.6cqw, #0003 1.6cqw 3.2cqw),
+    linear-gradient(180deg, #fff27a, var(--neon-y) 50%, #ff9500);
+  animation: ultReady .5s ease-in-out infinite alternate;
+}
+@keyframes ultReady { to { filter: brightness(1.35) drop-shadow(0 0 2cqw var(--neon-y)); transform: scale(1.06); } }
+
+/* 回合提示:終端機輸出 */
+.phase {
+  font-size: 3.4cqw; letter-spacing: .04em; text-align: left; padding: .6cqw 2cqw;
+  background: #05080bcc; border-left: .6cqw solid currentColor;
+  text-shadow: 0 0 1.2cqw currentColor;
+}
+.phase::before { content: "▶ "; opacity: .8; }
+.phase.atk { color: var(--neon-y); }
+.phase.def { color: var(--neon-c); }
+.phase.ult { color: var(--neon-m); }
+.timebar { height: .8cqw; border-radius: 0; background: #05080b; }
+.timebar .fill { background: var(--neon-m); box-shadow: 0 0 1.5cqw var(--neon-m); }
+
+/* ---------- 九宮格:金屬地板 + 鋼製插座 ---------- */
+.grid-wrap {
+  background:
+    repeating-linear-gradient(0deg, #19f0ff0c 0 1px, transparent 1px 5cqw),
+    repeating-linear-gradient(90deg, #19f0ff0c 0 1px, transparent 1px 5cqw),
+    radial-gradient(ellipse at 50% 0%, #19f0ff14, transparent 60%),
+    linear-gradient(180deg, #0c1016, #06080b);
+}
+.cell {
+  border-radius: 2.4cqw;
+  background: linear-gradient(145deg, #6b7784, #2a3038 38%, #1a1f25 62%, #4a535d);
+  box-shadow: inset 0 0 0 .3cqw #00000080, 0 .6cqw 0 #000a, 0 0 0 .25cqw #ffffff10;
+}
+.cell::before { /* 插座內圈 */
+  content: ""; position: absolute; inset: 8%; border-radius: 1.6cqw;
+  background: radial-gradient(ellipse at 50% 60%, #020304 45%, #0b1016);
+  box-shadow: inset 0 1.6cqw 2cqw #000, inset 0 0 0 .3cqw #19f0ff2a;
+}
+.cell::after { /* 四角螺栓 */
+  content: ""; position: absolute; inset: 0; pointer-events: none; border-radius: inherit;
+  background:
+    radial-gradient(circle at 7% 7%, #c2ccd6 0 .45cqw, #000 .55cqw, transparent .75cqw),
+    radial-gradient(circle at 93% 7%, #c2ccd6 0 .45cqw, #000 .55cqw, transparent .75cqw),
+    radial-gradient(circle at 7% 93%, #c2ccd6 0 .45cqw, #000 .55cqw, transparent .75cqw),
+    radial-gradient(circle at 93% 93%, #c2ccd6 0 .45cqw, #000 .55cqw, transparent .75cqw);
+}
+.cap { z-index: 1; border-radius: 1.8cqw; }
+.cell.on .cap::before { /* 按鈕的金屬光澤斜線(一般按鈕;盾牌另有金色層) */
+  content: ""; position: absolute; inset: 0; border-radius: inherit; pointer-events: none;
+  background: linear-gradient(120deg, transparent 30%, #ffffff30 42%, transparent 55%);
+}
+.cell.good { box-shadow: 0 0 0 .5cqw var(--neon-c), 0 0 4cqw var(--neon-c); }
+.cell.bad  { box-shadow: 0 0 0 .5cqw var(--neon-r), 0 0 4cqw var(--neon-r); }
+.cell.miss { box-shadow: 0 0 0 .4cqw #ffffff40; }
+.label { font-family: var(--tech), sans-serif; border-radius: 0; clip-path: polygon(8% 0, 100% 0, 92% 100%, 0 100%); padding: .2cqw 2.4cqw; }
+.badge { font-family: var(--tech); }
+
+/* ---------- 大字橫幅:故障風 ---------- */
+.banner {
+  background:
+    linear-gradient(180deg, transparent 34%, #19f0ff 34% 34.4%, #05080bee 34.4% 65.6%, #ff2bd6 65.6% 66%, transparent 66%),
+    #0008;
+}
+.banner-main {
+  font-family: var(--tech); color: #fff; letter-spacing: .04em;
+  font-size: 8.5cqw; max-width: 94%; line-height: 1.25; overflow-wrap: anywhere; /* Orbitron 字很寬,縮小避免超出畫面 */
+  text-shadow: -.7cqw 0 var(--neon-m), .7cqw 0 var(--neon-c), 0 0 3cqw #fff8;
+  animation: slam .35s ease-out, glitch 1.2s steps(1) .35s infinite;
+}
+.banner-sub { color: var(--neon-c); text-shadow: 0 0 1.2cqw var(--neon-c); letter-spacing: .08em; }
+@keyframes glitch {
+  0%, 86%, 100% { transform: none; clip-path: none; }
+  88% { transform: translateX(-1.2cqw); clip-path: inset(10% 0 55% 0); }
+  91% { transform: translateX(1cqw);   clip-path: inset(55% 0 12% 0); }
+  94% { transform: translateX(-.5cqw); clip-path: none; }
+}
+
+/* ---------- 技能三選一:鋼板卡片 ---------- */
+#skillPick { background: repeating-linear-gradient(0deg, #0000 0 2px, #0003 2px 3px), #05080bf0; }
+#skillPick h2 { font-family: var(--tech); color: var(--neon-c); text-shadow: 0 0 2cqw var(--neon-c); letter-spacing: .1em; }
+.skill-card {
+  border: 0; border-radius: 0; clip-path: var(--chamfer);
+  background: var(--brushed), linear-gradient(135deg, var(--steel-2), var(--steel-0));
+  box-shadow: inset 0 0 0 .4cqw #19f0ff66, inset .8cqw 0 0 var(--neon-c);
+}
+.skill-card:hover, .skill-card:active { box-shadow: inset 0 0 0 .5cqw var(--neon-c), inset .8cqw 0 0 var(--neon-m); }
+.skill-card b { color: var(--neon-y); }
+
+/* 右上角靜音鈕在戰鬥中也換成鋼製 */
+#app:has(#battle.active) .mute {
+  border-radius: 0; clip-path: polygon(25% 0, 75% 0, 100% 50%, 75% 100%, 25% 100%, 0 50%);
+  background: linear-gradient(180deg, var(--steel-3), var(--steel-1));
+}

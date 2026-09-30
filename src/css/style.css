@@ -1,0 +1,595 @@
+:root {
+  --bg: #0d0b14;
+  --panel: #1c1828;
+  --panel-2: #2a2440;
+  --text: #f4ecff;
+  --muted: #a99cc4;
+  --fire: #ff5a1f;
+  --fire-2: #ffc23d;
+  --hp: #3ddc84;
+  --enemy-hp: #ff3d5a;
+  --guard: #3da9ff;
+  --ult: #c04dff;
+}
+
+* { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+html, body { margin: 0; height: 100%; background: #000; color: var(--text); overflow: hidden; }
+body {
+  display: flex; align-items: center; justify-content: center;
+  font-family: "Noto Sans TC", "Microsoft JhengHei", system-ui, sans-serif;
+  user-select: none; touch-action: manipulation;
+}
+button { font: inherit; color: inherit; cursor: pointer; }
+
+/* 9:16 直式框 */
+#app {
+  position: relative;
+  width: min(100vw, calc(100vh * 9 / 16)); /* 舊瀏覽器不支援 dvh 時的後備 */
+  height: min(100vh, calc(100vw * 16 / 9));
+  width: min(100vw, calc(100dvh * 9 / 16));
+  height: min(100dvh, calc(100vw * 16 / 9));
+  background: var(--bg);
+  overflow: hidden;
+  container-type: size;
+  /* 基準字級不能寫在容器本身(cqw 會改用瀏覽器視窗寬度計算),改設在子層 */
+}
+#app.shake { animation: shake .3s; }
+@keyframes shake {
+  20% { transform: translate(-2%, 1%); } 40% { transform: translate(2%, -1%); }
+  60% { transform: translate(-1%, 0); } 80% { transform: translate(1%, 1%); }
+}
+
+.screen { position: absolute; inset: 0; display: none; flex-direction: column; }
+.screen.active { display: flex; }
+
+.btn {
+  background: linear-gradient(180deg, var(--fire), #c2300a);
+  border: 0; border-radius: 3cqw; padding: 3cqw 6cqw;
+  font-weight: 700; font-size: 4.5cqw; box-shadow: 0 1cqw 0 #7a1c04;
+}
+.btn:active { transform: translateY(1cqw); box-shadow: none; }
+.btn:disabled { filter: grayscale(1) brightness(.6); cursor: default; }
+.btn.small { font-size: 3.6cqw; padding: 2cqw 3.5cqw; }
+
+/* ---- 故事 ---- */
+#story {
+  align-items: center; padding: 12cqw 6cqw 0; gap: 4cqh; cursor: pointer; overflow: hidden;
+  background:
+    radial-gradient(circle at 50% 40%, transparent 30%, #000 85%),
+    radial-gradient(circle, #ffffff10 1px, transparent 1.5px) 0 0 / 2.4cqw 2.4cqw, /* 漫畫網點 */
+    radial-gradient(circle at 50% 35%, #3a1a10, #0b0608 70%);
+}
+#story.tone-shock { background-color: #1a0826; }
+.story-hint { position: absolute; bottom: 4cqh; left: 0; right: 0; text-align: center; color: var(--muted); font-size: 3.4cqw; animation: blink 1.4s infinite; }
+.story-hint.hide { visibility: hidden; }
+
+/* 進度點 */
+.story-dots { position: absolute; top: 4.5cqw; left: 6cqw; display: flex; gap: 1.6cqw; }
+.story-dots span { width: 2cqw; height: 2cqw; border-radius: 50%; background: #ffffff30; transition: background .3s, transform .3s; }
+.story-dots span.on { background: var(--fire-2); }
+.story-dots span.now { background: var(--fire); transform: scale(1.4); box-shadow: 0 0 2cqw var(--fire); }
+
+/* 漫畫格:整張漫畫圖只露出其中一格(位置與尺寸由 JS 設定) */
+.story-stage { width: 100%; height: 56cqh; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+.story-panel {
+  position: relative; overflow: hidden; background: #000;
+  border: 1.2cqw solid #fff; outline: .5cqw solid #000; box-shadow: 0 2cqw 5cqw #000c;
+  transform: rotate(var(--tilt, 0deg));
+}
+.panel-img {
+  position: absolute; inset: 0;
+  background-image: url('../../assets/images/story/opening.jpg'); background-repeat: no-repeat;
+  animation: kenburns 7s ease-out forwards; transform-origin: var(--focus, 50% 50%);
+}
+.panel-img.pan { animation: none; transition: background-position 5.5s cubic-bezier(.45, 0, .4, 1); }
+@keyframes kenburns { from { transform: scale(1); } to { transform: scale(1.08); } }
+
+/* 進場:由大砸下;退場:往左甩出 */
+.story-panel.in  { animation: panelIn .45s cubic-bezier(.2, .9, .3, 1.25); }
+.story-panel.out { animation: panelOut .28s ease-in forwards; }
+@keyframes panelIn  { from { transform: rotate(calc(var(--tilt, 0deg) + 8deg)) scale(1.35); opacity: 0; } }
+@keyframes panelOut { to   { transform: translateX(-130%) rotate(-14deg); opacity: 0; } }
+
+/* 各格特效 */
+.panel-fx { position: absolute; inset: 0; pointer-events: none; }
+.fx-fire  .panel-fx { background: radial-gradient(circle at 30% 90%, #ff5a1f70, transparent 60%); mix-blend-mode: screen; animation: fireFlicker .18s steps(2) infinite; }
+.fx-shock .panel-fx { background: #b04dff; mix-blend-mode: screen; animation: shockFlash .9s ease-out forwards; }
+.fx-rage  .panel-fx { box-shadow: inset 0 0 8cqw 2cqw #ff5a1f; animation: ragePulse .5s ease-in-out infinite alternate; }
+.fx-rage.story-panel, .fx-impact.story-panel, .fx-shock.story-panel { animation: panelIn .45s cubic-bezier(.2, .9, .3, 1.25), panelShake .35s .4s 2; }
+@keyframes fireFlicker { 50% { opacity: .55; } }
+@keyframes shockFlash  { 0% { opacity: .8; } 15% { opacity: 0; } 25% { opacity: .5; } 100% { opacity: 0; } }
+@keyframes ragePulse   { to { box-shadow: inset 0 0 14cqw 4cqw #ffc23d; } }
+@keyframes panelShake {
+  25% { transform: rotate(var(--tilt, 0deg)) translate(-2.5%, 1.5%); }
+  50% { transform: rotate(var(--tilt, 0deg)) translate(2%, -1.5%); }
+  75% { transform: rotate(var(--tilt, 0deg)) translate(-1%, 1%); }
+}
+
+/* 旁白框(漫畫風);對白改成圓角對話框 */
+.story-caption {
+  position: relative; width: 100%; min-height: 20cqh; padding: 3.5cqw 4.5cqw;
+  background: #fffdf5; color: #1a1210; border: .7cqw solid #1a1210; box-shadow: 1.2cqw 1.2cqw 0 #000a;
+  transform: skewX(-3deg);
+}
+.story-caption.say { border-radius: 5cqw; transform: none; }
+.story-caption.say::after { /* 對話框的尾巴 */
+  content: ""; position: absolute; top: -3.4cqw; left: 18%; border: 3cqw solid transparent;
+  border-bottom-color: #1a1210; border-top: 0;
+}
+.speaker { display: inline-block; background: #1a1210; color: #ffc23d; font-weight: 900; font-size: 3.4cqw; padding: .4cqw 2.4cqw; margin-bottom: 1.2cqw; transform: skewX(-8deg); }
+.speaker:empty { display: none; }
+#storyText { margin: 0; font-size: 4.8cqw; line-height: 1.75; font-weight: 700; letter-spacing: .04em; white-space: pre-line; }
+.story-caption.pop { animation: captionPop .3s ease-out; }
+@keyframes captionPop { from { transform: translateY(20%) skewX(-3deg); opacity: 0; } }
+.mute {
+  position: absolute; top: 2cqw; right: 2cqw; z-index: 20;
+  width: 9cqw; height: 9cqw; border: 0; border-radius: 50%; background: #0008; font-size: 4.5cqw; line-height: 1;
+}
+.skip { position: absolute; top: 3cqw; right: 14cqw; background: #0008; border: 1px solid #fff4; border-radius: 99px; padding: 1.5cqw 4cqw; }
+@keyframes blink { 50% { opacity: .3; } }
+
+/* ---- 主選單 ---- */
+#menu, #upgrade, #result { align-items: center; gap: min(3cqw, 2cqh); padding: min(6cqw, 4cqh) 6cqw; overflow-y: auto; }
+/* 選單類畫面:沿用標題背景圖,壓暗以便閱讀 */
+.screen.art {
+  background:
+    linear-gradient(180deg, #0d0b14b0 0%, #0d0b14d8 45%, #0d0b14f0 100%),
+    url('../../assets/images/backgrounds/title.jpg') center / cover;
+}
+/* LOGO 只取上半部(拳頭 + 中文標題),英文卷軸由背景圖本身提供 */
+.menu-logo { width: 74%; aspect-ratio: 896 / 600; overflow: hidden; flex-shrink: 0; margin-top: -1cqh; }
+.menu-logo img, .title-logo img { width: 100%; display: block; filter: drop-shadow(0 0 3cqw #ff5a1f80); }
+@keyframes flame { to { transform: scale(1.12) rotate(4deg); } }
+.menu-points { color: var(--fire-2); }
+.stage-list { display: flex; flex-direction: column; gap: 3cqw; width: 100%; }
+.stage-card {
+  text-align: left; border: 2px solid #fff3; border-radius: 3cqw; padding: 3.5cqw 4cqw; position: relative; overflow: hidden;
+}
+.stage-card:disabled { filter: grayscale(1) brightness(.5); cursor: default; }
+.stage-card:not(:disabled):active { transform: scale(.98); }
+.sc-name { font-weight: 800; font-size: 4.8cqw; text-shadow: 0 2px 4px #000; }
+.sc-desc { font-size: 3.3cqw; opacity: .9; text-shadow: 0 1px 3px #000; }
+.sc-best { font-size: 3cqw; color: var(--fire-2); }
+.menu-row { display: flex; gap: 4cqw; margin-top: auto; flex-shrink: 0; }
+
+/* ---- 成長 ---- */
+.up-list { display: flex; flex-direction: column; gap: 3cqw; width: 100%; }
+.up-item { display: flex; align-items: center; gap: 3cqw; background: var(--panel); border-radius: 3cqw; padding: 3cqw; }
+.up-icon { font-size: 8cqw; }
+.up-body { flex: 1; }
+.up-desc { color: var(--muted); font-size: 3.3cqw; }
+#upgrade .btn:last-child { margin-top: auto; }
+
+/* ---- 場景背景 ---- */
+.bg-garden { background: linear-gradient(180deg, #9fd8c4 0%, #4f9a6a 55%, #2d5f45 75%, #3d7fa8 100%); }
+.bg-city   { background: linear-gradient(180deg, #120828 0%, #3b0f5c 50%, #ff2e88 90%, #1a0a2e 100%); }
+.bg-tower  { background: linear-gradient(180deg, #05060f 0%, #1b1f4a 60%, #4a5cff 100%); }
+
+/* ---- 戰鬥 ---- */
+.stage { position: relative; flex: 0 0 34%; overflow: hidden; border-bottom: .8cqw solid #000; }
+.deco span { position: absolute; bottom: 4%; font-size: 12cqw; opacity: .55; animation: sway 3s ease-in-out infinite alternate; }
+@keyframes sway { to { transform: translateY(-4%) rotate(4deg); } }
+.wave-tag { position: absolute; top: 2cqw; left: 3cqw; background: #000a; padding: .8cqw 3cqw; border-radius: 99px; font-weight: 800; font-size: 3.4cqw; }
+
+.enemy { position: absolute; left: 50%; top: 52%; transform: translate(-50%, -50%); text-align: center; }
+.sprite { font-size: 26cqw; line-height: 1; filter: drop-shadow(0 2cqw 1cqw #0008); }
+.enemy.boss .sprite { font-size: 32cqw; }
+.state-tag { font-size: 2.8cqw; background: #000a; border-radius: 99px; padding: .3cqw 2cqw; display: inline-block; }
+.enemy.idle .sprite   { animation: bob 1.6s ease-in-out infinite; }
+.enemy.attack .sprite { animation: lunge .5s ease-in-out infinite alternate; filter: drop-shadow(0 0 3cqw #f00); }
+.enemy.defend .sprite { transform: scale(.85); filter: drop-shadow(0 0 3cqw var(--guard)); }
+.enemy.ult .sprite    { animation: quake .12s infinite; filter: drop-shadow(0 0 5cqw var(--ult)) drop-shadow(0 0 2cqw #fff); }
+.enemy.hit .sprite    { animation: hit .25s; }
+.enemy.dead .sprite   { animation: die .8s forwards; }
+.enemy.attack .state-tag { background: #c0142c; }
+.enemy.defend .state-tag { background: #1666b0; }
+.enemy.ult .state-tag    { background: var(--ult); }
+@keyframes bob   { 50% { transform: translateY(-4%); } }
+@keyframes lunge { to { transform: scale(1.18) translateY(6%); } }
+@keyframes quake { 50% { transform: translate(3%, -2%) scale(1.1); } }
+@keyframes hit   { 30% { transform: translateX(8%) rotate(8deg); filter: brightness(3); } }
+@keyframes die   { to { transform: translateY(40%) rotate(-30deg) scale(.4); opacity: 0; } }
+
+.enemy-info { position: absolute; left: 3cqw; right: 3cqw; bottom: 2cqw; }
+.enemy-name { font-weight: 800; text-shadow: 0 2px 3px #000; font-size: 3.8cqw; }
+
+.bar { position: relative; height: 4.6cqw; background: #000b; border: 2px solid #fff6; border-radius: 99px; overflow: hidden; flex: 1; }
+.bar .fill { height: 100%; transition: width .25s; }
+.bar span { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; font-size: 3cqw; font-weight: 700; text-shadow: 0 1px 2px #000; }
+.enemy-bar .fill  { background: linear-gradient(90deg, #a0102a, var(--enemy-hp)); }
+.player-bar .fill { background: linear-gradient(90deg, #178a4c, var(--hp)); }
+.ult-bar .fill    { background: linear-gradient(90deg, var(--fire), var(--fire-2)); }
+.ult-bar.full     { box-shadow: 0 0 3cqw var(--fire); border-color: var(--fire-2); }
+
+.hud { position: relative; padding: 2cqw 3cqw; display: flex; flex-direction: column; gap: 1.6cqw; background: var(--panel); }
+.hud-row { display: flex; align-items: center; gap: 2cqw; }
+.counter { font-size: 3.4cqw; white-space: nowrap; background: var(--panel-2); border-radius: 2cqw; padding: .6cqw 2.4cqw; }
+.counter b { color: var(--fire-2); font-size: 4.6cqw; }
+.ult-btn { border: 0; border-radius: 2cqw; padding: 1cqw 3cqw; font-weight: 800; background: #443; color: #998; }
+.ult-btn.ready { background: linear-gradient(180deg, var(--fire-2), var(--fire)); color: #fff; animation: pulse .6s infinite alternate; }
+@keyframes pulse { to { transform: scale(1.1); box-shadow: 0 0 4cqw var(--fire); } }
+.phase { text-align: center; font-weight: 800; font-size: 3.6cqw; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.phase.atk { color: var(--fire-2); }
+.phase.def { color: var(--guard); }
+.phase.ult { color: #e8a9ff; }
+.timebar { height: 1cqw; background: #0006; border-radius: 99px; overflow: hidden; }
+.timebar .fill { height: 100%; width: 0; background: #e8a9ff; }
+
+.grid-wrap { flex: 1; min-height: 0; display: flex; align-items: center; justify-content: center; padding: 3cqw; background: #120f1c; }
+.grid { height: 100%; max-width: 100%; aspect-ratio: 1; display: grid; grid-template: repeat(3, 1fr) / repeat(3, 1fr); gap: 2.5cqw; }
+/* 格子本身是凹下去的洞,.cap 是從洞裡浮起來的按鈕 */
+.cell {
+  position: relative; border: 0; border-radius: 4cqw; padding: 0;
+  background: radial-gradient(ellipse at 50% 60%, #07050d 35%, #221c33);
+  box-shadow: inset 0 1.8cqw 2.2cqw #000d, 0 .5cqw 0 #ffffff12;
+}
+.cap {
+  --edge: #000; position: absolute; left: 7%; right: 7%; top: 5%; bottom: 13%;
+  border-radius: 3.5cqw; display: flex; align-items: center; justify-content: center; overflow: hidden;
+  opacity: 0; transform: translateY(45%) scale(.7);
+  transition: transform .07s ease-out, box-shadow .07s ease-out, filter .07s;
+}
+.cell .icon { font-size: 12cqw; line-height: 1; filter: drop-shadow(0 .6cqw 0 #0006); }
+.cell.on .cap {
+  opacity: 1; transform: translateY(-4%);
+  box-shadow: inset 0 .9cqw 0 #ffffff70, inset 0 -.8cqw 0 #0003, 0 2.2cqw 0 var(--edge), 0 4.5cqw 3cqw #000c;
+  animation: rise .2s cubic-bezier(.3, 1.7, .5, 1);
+}
+/* 點中:按鈕被壓下去 */
+.cell.press .cap {
+  transform: translateY(14%);
+  box-shadow: inset 0 .9cqw 0 #ffffff70, 0 .4cqw 0 var(--edge), 0 1cqw 1cqw #0008;
+  filter: brightness(1.4);
+  animation: none;
+}
+/* 時間到:按鈕沉回洞裡 */
+.cell.sink .cap { animation: sink .14s ease-in forwards; }
+@keyframes rise { from { opacity: 0; transform: translateY(45%) scale(.7); box-shadow: 0 0 0 var(--edge); } }
+@keyframes sink { to { opacity: 0; transform: translateY(45%) scale(.7); box-shadow: 0 0 0 var(--edge); } }
+
+.cell.on .cap::after { /* 剩餘時間條 */
+  content: ""; position: absolute; left: 12%; right: 12%; bottom: 7%; height: 1.1cqw; border-radius: 99px;
+  background: currentColor; opacity: .85; transform-origin: left; animation: drain var(--life) linear forwards;
+}
+.cell.press .cap::after, .cell.sink .cap::after { display: none; }
+.cell.fist  .cap { background: linear-gradient(180deg, #ffb36b, #ff5a1f 55%, #c2300a); --edge: #7a1c04; color: #ffe08a; }
+.cell.guard .cap { background: linear-gradient(180deg, #c4e8ff, #3da9ff 55%, #1666b0); --edge: #0b3a66; color: #e4f4ff; }
+.cell.guard.fade .icon { animation: fog 1s ease-in-out infinite alternate; }
+.cell.decoy .cap { background: linear-gradient(180deg, #c07ad8, #7a2a96 55%, #4a1060); --edge: #26062f; color: #e59cff; }
+.cell.num   .cap { background: linear-gradient(180deg, #f5d6ff, #c04dff 55%, #6a1c9e); --edge: #3d0d5c; }
+.cell.num .icon { font-size: 14cqw; font-weight: 900; color: #fff; text-shadow: 0 0 3cqw var(--ult), 0 .6cqw 0 #3d0d5c; }
+.cell.num .cap::after { display: none; }
+.cell.good { box-shadow: inset 0 1.8cqw 2.2cqw #000d, 0 0 0 .8cqw #fff, 0 0 4cqw var(--fire-2); }
+.cell.bad  { box-shadow: inset 0 1.8cqw 2.2cqw #000d, 0 0 0 .8cqw #ff3d5a; }
+.cell.miss { box-shadow: inset 0 1.8cqw 2.2cqw #000d, 0 0 0 .5cqw #ffffff30; }
+@keyframes pop   { from { transform: scale(.2); } }
+@keyframes drain { to { transform: scaleX(0); } }
+@keyframes fog   { to { opacity: .12; } }
+
+/* 飄字 */
+.float { position: absolute; top: 30%; font-weight: 900; pointer-events: none; animation: floatUp .9s ease-out forwards; text-shadow: 0 2px 0 #000, 0 0 2cqw #000; z-index: 5; }
+.float.dmg  { font-size: 7cqw; color: #fff; }
+.float.crit { font-size: 9cqw; color: var(--fire-2); }
+.float.big  { font-size: 16cqw; color: var(--fire); top: 20%; }
+.float.hurt { font-size: 6cqw; color: var(--enemy-hp); top: 0; }
+.float.heal { font-size: 6cqw; color: var(--hp); top: 0; }
+@keyframes floatUp { to { transform: translateY(-120%); opacity: 0; } }
+
+/* ---- 覆蓋層 ---- */
+.overlay { position: absolute; inset: 0; display: none; z-index: 10; }
+.overlay.show { display: flex; }
+
+.banner { flex-direction: column; align-items: center; justify-content: center; background: #000a; pointer-events: none; }
+.banner-main { font-size: 11cqw; font-weight: 900; color: var(--fire-2); text-shadow: 0 .8cqw 0 #7a1c04; animation: slam .35s ease-out; text-align: center; }
+.banner-sub { margin-top: 2cqw; font-size: 4.2cqw; text-align: center; padding: 0 6cqw; }
+@keyframes slam { from { transform: scale(2.5); opacity: 0; } }
+
+#skillPick { flex-direction: column; align-items: center; justify-content: center; gap: 4cqw; background: #000d; padding: 6cqw; }
+.skill-cards { display: flex; flex-direction: column; gap: 3cqw; width: 100%; }
+.skill-card {
+  display: grid; grid-template-columns: 14cqw 1fr; grid-template-rows: auto auto; column-gap: 3cqw; text-align: left; align-items: center;
+  background: linear-gradient(135deg, var(--panel-2), var(--panel)); border: 2px solid var(--fire-2); border-radius: 3cqw; padding: 3.5cqw;
+  animation: pop .25s ease-out backwards;
+}
+.skill-card:nth-child(2) { animation-delay: .08s; }
+.skill-card:nth-child(3) { animation-delay: .16s; }
+.skill-card:active { transform: scale(.97); }
+.sk-icon { grid-row: span 2; font-size: 11cqw; text-align: center; }
+.skill-card b { font-size: 4.6cqw; color: var(--fire-2); }
+.skill-card div:last-child { font-size: 3.5cqw; color: var(--muted); }
+
+/* 漫畫風必殺技演出 */
+.cutin { align-items: center; justify-content: center; flex-direction: column; background: #fff; overflow: hidden; }
+.cutin.show { animation: cutFlash 1.4s; }
+.speed-lines {
+  position: absolute; inset: -50%;
+  background: repeating-conic-gradient(from 0deg, #000 0deg 2deg, transparent 2deg 9deg);
+  -webkit-mask: radial-gradient(circle, transparent 18%, #000 45%); mask: radial-gradient(circle, transparent 18%, #000 45%);
+  animation: spin 1.4s linear;
+}
+.cutin-face { position: relative; font-size: 34cqw; animation: zoomIn .4s ease-out; filter: drop-shadow(0 0 4cqw var(--fire)); }
+.cutin-title {
+  position: relative; font-size: 11cqw; font-weight: 900; color: var(--fire); transform: skewX(-12deg);
+  -webkit-text-stroke: .8cqw #000; paint-order: stroke fill; animation: slam .4s .2s ease-out backwards;
+}
+.cutin-sub { position: relative; font-weight: 800; color: #000; background: var(--fire-2); padding: 1cqw 4cqw; transform: skewX(-12deg); margin-top: 2cqw; }
+@keyframes spin    { to { transform: rotate(20deg) scale(1.2); } }
+@keyframes zoomIn  { from { transform: scale(3); opacity: 0; } }
+@keyframes cutFlash { 0% { background: #fff; } 10% { background: var(--fire-2); } 20%, 100% { background: #fff; } }
+
+/* ---- 結算 ---- */
+.result-box { width: 100%; background: var(--panel); border-radius: 3cqw; padding: 3.5cqw 5cqw; display: flex; flex-direction: column; gap: min(2.2cqw, 1.4cqh); }
+.result-box div { display: flex; justify-content: space-between; gap: 4cqw; }
+.result-box .score { font-size: 4.4cqw; color: var(--fire-2); }
+#resultTitle { font-size: min(7.5cqw, 5cqh); margin: 2cqh 0 0; flex-shrink: 0; }
+#result .btn { margin-top: auto; }
+h2 { margin: 0; }
+
+/* 精英敵人與難度星等 */
+.enemy.elite .sprite { filter: drop-shadow(0 0 2.5cqw #ffb300) drop-shadow(0 2cqw 1cqw #0008); }
+.sc-stars { color: var(--fire-2); font-size: 3.6cqw; letter-spacing: .1em; }
+
+/* 出拳特效:拳頭從玩家視角飛向敵人 */
+.fx-fist {
+  position: absolute; left: 0; top: 0; z-index: 4; pointer-events: none;
+  font-size: 12cqw; line-height: 1; filter: drop-shadow(0 0 1.5cqw #ff8a00);
+}
+.fx-fist.crit { filter: drop-shadow(0 0 3cqw #ffc23d) drop-shadow(0 0 1cqw #fff); }
+.fx-impact {
+  position: absolute; z-index: 5; pointer-events: none; font-size: 14cqw; line-height: 1;
+  transform: translate(-50%, -50%); animation: impact .32s ease-out forwards;
+}
+.fx-impact.small { font-size: 9cqw; }
+.fx-impact.big   { font-size: 20cqw; }
+.fx-impact.final { font-size: 40cqw; animation-duration: .6s; filter: drop-shadow(0 0 5cqw #ff5a1f); }
+@keyframes impact {
+  from { transform: translate(-50%, -50%) scale(.3) rotate(-20deg); opacity: 1; }
+  60%  { opacity: 1; }
+  to   { transform: translate(-50%, -50%) scale(1.5) rotate(10deg); opacity: 0; }
+}
+
+/* 百烈拳:集中線 + 畫面震動 */
+.stage.rush::after {
+  content: ""; position: absolute; inset: -30%; z-index: 3; pointer-events: none;
+  background: repeating-conic-gradient(from 0deg at 50% 60%, #fff9 0deg 1.5deg, transparent 1.5deg 8deg);
+  -webkit-mask: radial-gradient(circle at 50% 60%, transparent 22%, #000 55%); mask: radial-gradient(circle at 50% 60%, transparent 22%, #000 55%);
+  animation: rushLines .12s steps(2) infinite;
+}
+.stage.rush .enemy .sprite { animation: quake .08s infinite; }
+@keyframes rushLines { to { transform: rotate(6deg); } }
+
+/* 空間不足時改為捲動,不擠壓選項 */
+.stage-list, .up-list, .result-box, #menu .btn, #upgrade .btn, #result .btn { flex-shrink: 0; }
+.screen, .overlay { font-size: 4cqw; }
+
+/* 敵人攻擊:飛向鏡頭的物件 */
+.fx-shot {
+  position: absolute; left: 0; top: 0; z-index: 4; pointer-events: none;
+  font-size: 10cqw; line-height: 1; filter: drop-shadow(0 0 1.5cqw #ff2d4a);
+}
+.fx-shot.special { filter: drop-shadow(0 0 2.5cqw var(--ult)) drop-shadow(0 0 1cqw #fff); }
+
+/* 格擋成功:盾牌火花 + BLOCK 字樣 */
+.fx-block {
+  position: absolute; z-index: 5; pointer-events: none; font-size: 16cqw; line-height: 1;
+  transform: translate(-50%, -50%); filter: drop-shadow(0 0 3cqw #3da9ff) drop-shadow(0 0 1cqw #fff);
+  animation: blockBurst .45s ease-out forwards;
+}
+.fx-block::after { /* 擴散的衝擊環 */
+  content: ""; position: absolute; left: 50%; top: 50%; width: 100%; height: 100%;
+  border: 1cqw solid #bfe4ff; border-radius: 50%; transform: translate(-50%, -50%);
+  animation: ring .45s ease-out forwards;
+}
+.fx-block-text {
+  position: absolute; z-index: 6; pointer-events: none; font-size: 6cqw; font-weight: 900; color: #fff;
+  -webkit-text-stroke: .5cqw #1666b0; paint-order: stroke fill; transform: translate(-50%, -150%) skewX(-10deg);
+  animation: blockText .5s ease-out forwards;
+}
+@keyframes blockBurst {
+  0%   { transform: translate(-50%, -50%) scale(1.6); opacity: 1; }
+  30%  { transform: translate(-50%, -50%) scale(1); }
+  100% { transform: translate(-50%, -50%) scale(.9); opacity: 0; }
+}
+@keyframes ring { from { width: 30%; height: 30%; opacity: 1; } to { width: 220%; height: 220%; opacity: 0; } }
+@keyframes blockText {
+  from { transform: translate(-50%, -80%) skewX(-10deg) scale(1.6); opacity: 0; }
+  25%  { opacity: 1; transform: translate(-50%, -150%) skewX(-10deg) scale(1); }
+  to   { transform: translate(-50%, -220%) skewX(-10deg); opacity: 0; }
+}
+
+/* 被格擋:敵人往後仰 */
+.enemy.recoil .sprite { animation: recoil .26s ease-out; filter: drop-shadow(0 0 2.5cqw #3da9ff); }
+.enemy.recoil .state-tag { background: #1666b0; }
+@keyframes recoil { 40% { transform: translateY(-6%) scale(.88) rotate(-6deg); } }
+
+/* 被打中:整個畫面邊緣閃紅 */
+#hurtFlash {
+  position: absolute; inset: 0; z-index: 9; pointer-events: none; opacity: 0;
+  box-shadow: inset 0 0 12cqw 4cqw #ff1a3c; background: radial-gradient(circle, transparent 50%, #ff1a3c55);
+}
+#hurtFlash.show { animation: hurtFlash .4s ease-out; }
+@keyframes hurtFlash { from { opacity: 1; } to { opacity: 0; } }
+
+/* ---- 進階符號 ---- */
+.badge {
+  position: absolute; right: 6%; top: 4%; font-size: 4.2cqw; font-weight: 900; color: #fff;
+  -webkit-text-stroke: .4cqw #000; paint-order: stroke fill;
+}
+
+/* 按鈕上方的小標籤(HOLD、連打) */
+.label {
+  position: absolute; top: 5%; left: 50%; transform: translateX(-50%); z-index: 2;
+  font-size: 3.2cqw; font-weight: 900; letter-spacing: .08em; color: #fff; white-space: nowrap;
+  background: #000a; border-radius: 99px; padding: .2cqw 1.8cqw;
+}
+.label:empty { display: none; }
+.cell .icon, .badge { position: relative; z-index: 1; }
+.badge { position: absolute; }
+
+/* 格擋越快越好:盾牌分三段變色,對應三種判定(與 battle.js 的 BLOCK_PCT_MAX 換算一致)
+   金色(前 37%)= 迅擋、藍色 = 格擋、最後 30% 變暗 = 險擋 */
+.cell.guard.on .cap::before {
+  content: ""; position: absolute; inset: 0; border-radius: inherit;
+  background: linear-gradient(180deg, #fff6c8, #ffc23d 55%, #d98a00);
+  animation: guardGold var(--life) linear forwards;
+}
+.cell.guard.on .cap { animation: rise .2s cubic-bezier(.3, 1.7, .5, 1), guardLate var(--life) linear forwards; }
+.cell.guard.on.press .cap { animation: none; }
+.cell.guard.on.sink .cap { animation: sink .14s ease-in forwards; }
+.cell.guard.on.press .cap::before, .cell.guard.on.sink .cap::before { animation-play-state: paused; }
+@keyframes guardGold { 0%, 35% { opacity: 1; } 38%, 100% { opacity: 0; } }
+@keyframes guardLate { 0%, 69% { filter: none; } 72%, 100% { filter: saturate(.35) brightness(.72); } }
+
+.fx-block.fast { filter: drop-shadow(0 0 4cqw #ffc23d) drop-shadow(0 0 1cqw #fff); font-size: 20cqw; }
+.fx-block.fast::after { border-color: #ffe08a; }
+.fx-block-text.fast { -webkit-text-stroke-color: #b36b00; color: #fff6c8; font-size: 7cqw; }
+.fx-block.late { filter: grayscale(.5) drop-shadow(0 0 2cqw #3da9ff); font-size: 12cqw; }
+.fx-block-text.late { -webkit-text-stroke-color: #555; color: #ccc; font-size: 5cqw; }
+.enemy.stagger .sprite { animation: stagger .42s ease-out; filter: drop-shadow(0 0 3cqw #ffc23d) grayscale(.4); }
+.enemy.stagger .state-tag { background: #d98a00; }
+@keyframes stagger {
+  20% { transform: translate(-6%, -4%) rotate(-10deg) scale(.9); }
+  45% { transform: translate(5%, -2%) rotate(8deg) scale(.92); }
+  70% { transform: translate(-2%, 0) rotate(-3deg); }
+}
+
+/* 破綻連打:鋼鐵色拳頭 + 「連打」+ 剩餘次數,每點一下彈一下 */
+.cell.mash .cap { background: linear-gradient(180deg, #eef3f8, #9fb2c6 55%, #56687c); --edge: #26313d; color: #fff; }
+.cell.mash .icon { font-size: 11cqw; margin-top: 3cqw; }
+.cell.mash .badge { font-size: 5.5cqw; right: 5%; top: auto; bottom: 14%; color: #ffe08a; }
+.cell.mash.bump .cap { animation: bump .12s ease-out; }
+@keyframes bump { 40% { transform: translateY(8%) scale(.94); filter: brightness(1.5); } }
+
+/* 蓄力重拳:深紅色拳頭 + 「HOLD」,按住時集氣條由左往右填滿,滿了發光抖動 */
+.cell.hold .cap { background: linear-gradient(180deg, #ffb0b8, #e0243a 55%, #8a0a1c); --edge: #4a0010; color: #fff; }
+.cell.hold .icon { font-size: 11cqw; margin-top: 3cqw; }
+.cell.hold .label { background: #ffc23d; color: #4a0010; }
+.cell.holding .cap { transform: translateY(8%); box-shadow: inset 0 .9cqw 0 #ffffff70, 0 1cqw 0 var(--edge), 0 2cqw 2cqw #000a; animation: none; }
+.cell.holding .cap::after {
+  content: ""; position: absolute; left: 12%; right: 12%; bottom: 7%; height: 2cqw; border-radius: 99px;
+  background: #fff; opacity: 1; transform-origin: left; animation: fillup var(--hold) linear forwards; display: block;
+}
+.cell.charged .cap { animation: chargedShake .08s infinite; filter: brightness(1.3); box-shadow: inset 0 .9cqw 0 #ffffff90, 0 1cqw 0 var(--edge), 0 0 6cqw #ffc23d; }
+.cell.charged .cap::after { background: #ffe08a; box-shadow: 0 0 2cqw #fff; }
+@keyframes fillup { from { transform: scaleX(0); } to { transform: scaleX(1); } }
+@keyframes chargedShake { 50% { transform: translate(2%, 6%); } }
+
+/* 招式名飄字 */
+.float.tag { top: 14%; transform: translateX(-50%); font-size: 8cqw; -webkit-text-stroke: .6cqw #000; paint-order: stroke fill; animation: tagPop .9s ease-out forwards; }
+.float.tag.armor  { color: #d9d4cc; }
+.float.tag.charge { color: #ffc23d; }
+.float.tag.miss   { color: #999; font-size: 6cqw; }
+@keyframes tagPop {
+  from { transform: translateX(-50%) scale(2); opacity: 0; }
+  20%  { transform: translateX(-50%) scale(1); opacity: 1; }
+  to   { transform: translateX(-50%) translateY(-60%); opacity: 0; }
+}
+
+/* ---- 標題畫面 ---- */
+#title { cursor: pointer; overflow: hidden; background: #000; }
+.title-bg {
+  position: absolute; inset: -3%;
+  background: url('../../assets/images/backgrounds/title.jpg') center top / cover;
+  animation: breathe 18s ease-in-out infinite alternate;
+}
+#title::after { /* 底部壓暗,讓開始提示清楚 */
+  content: ""; position: absolute; inset: 0; pointer-events: none;
+  background: linear-gradient(180deg, #0008 0%, transparent 18%, transparent 70%, #000c 100%);
+}
+@keyframes breathe { from { transform: scale(1); } to { transform: scale(1.07) translateY(-1%); } }
+
+/* 雨絲 */
+.rain {
+  position: absolute; inset: -20%; z-index: 1; pointer-events: none; opacity: .35;
+  background: repeating-linear-gradient(100deg, transparent 0 1.6cqw, #cfe3ff55 1.6cqw 1.75cqw, transparent 1.75cqw 5cqw);
+  background-size: 100% 22cqh;
+  animation: rain .45s linear infinite;
+}
+@keyframes rain { to { background-position: -4cqw 22cqh; } }
+
+/* 火星往上飄 */
+.embers { position: absolute; inset: 0; z-index: 2; pointer-events: none; }
+.embers span {
+  position: absolute; bottom: -3%; border-radius: 50%;
+  background: radial-gradient(circle, #fff6c8, #ffc23d 40%, #ff5a1f 70%, transparent 72%);
+  box-shadow: 0 0 1.5cqw #ff7a1a;
+  animation: ember linear infinite;
+}
+@keyframes ember {
+  0%   { transform: translate(0, 0); opacity: 0; }
+  10%  { opacity: 1; }
+  50%  { transform: translate(var(--sway), -55cqh); }
+  100% { transform: translate(calc(var(--sway) * -1), -110cqh); opacity: 0; }
+}
+
+/* 閃電:畫面瞬間閃白兩下 */
+.bolt { position: absolute; inset: 0; z-index: 3; pointer-events: none; background: #e8f0ff; opacity: 0; }
+.bolt.strike { animation: strike .6s ease-out; }
+.title-bg.strike { filter: brightness(1.5) contrast(1.1); transition: filter .05s; }
+@keyframes strike { 0% { opacity: .75; } 12% { opacity: .05; } 22% { opacity: .55; } 100% { opacity: 0; } }
+
+/* LOGO:由大到小砸下來,落地震動,之後標題持續發出火光 */
+.title-logo {
+  position: absolute; z-index: 4; left: 50%; top: 3%; width: 96%;
+  aspect-ratio: 896 / 600; overflow: hidden; transform: translateX(-50%); opacity: 0;
+}
+.title-logo.enter { animation: logoSlam .7s cubic-bezier(.2, .8, .3, 1.2) .25s forwards, logoGlow 2.4s ease-in-out 1.2s infinite alternate; }
+@keyframes logoSlam {
+  0%   { opacity: 0; transform: translateX(-50%) scale(2.2); filter: blur(1cqw) brightness(2); }
+  60%  { opacity: 1; transform: translateX(-50%) scale(.94); filter: none; }
+  72%  { transform: translateX(-51.5%) scale(1.02) rotate(-1deg); }
+  84%  { transform: translateX(-48.8%) scale(1) rotate(.6deg); }
+  100% { opacity: 1; transform: translateX(-50%) scale(1); }
+}
+@keyframes logoGlow {
+  from { opacity: 1; transform: translateX(-50%); filter: drop-shadow(0 0 1cqw #ff5a1f80); }
+  to   { opacity: 1; transform: translateX(-50%) scale(1.015); filter: drop-shadow(0 0 5cqw #ffb03cc0); }
+}
+
+/* 開始提示放在最底部(主角腳下),加深色底避免壓在角色身上看不清 */
+.title-start {
+  position: absolute; z-index: 4; left: 50%; bottom: 2.2%; transform: translateX(-50%);
+  text-align: center; white-space: nowrap; padding: 1.2cqw 7cqw 1.4cqw;
+  font-size: 4.8cqw; font-weight: 900; letter-spacing: .25em; color: #fff;
+  text-shadow: 0 0 2cqw #ff5a1f, 0 .4cqw 0 #000;
+  background: linear-gradient(90deg, transparent, #000c 20%, #000c 80%, transparent);
+  opacity: 0; animation: fadeIn .5s 1.2s forwards, startBlink 1.4s 1.7s infinite;
+}
+@keyframes startBlink { 0%, 100% { opacity: 1; } 50% { opacity: .35; } }
+.title-start small { display: block; font-size: 2.8cqw; letter-spacing: .5em; color: var(--fire-2); }
+@keyframes fadeIn { to { opacity: 1; } }
+
+/* 點下開始:整個畫面往前衝並閃白 */
+#title.leaving .title-logo { animation: logoOut .45s ease-in forwards; }
+#title.leaving .bolt { animation: strike .45s ease-out; }
+#title.leaving .title-bg { animation: none; transform: scale(1.15); transition: transform .45s ease-in; }
+@keyframes logoOut { to { opacity: 0; transform: translateX(-50%) scale(1.4); } }
+
+/* 戰鬥背景圖:放在敵人背後,略壓暗與柔焦讓敵人跳出來,並緩慢飄移增加景深 */
+.stage { isolation: isolate; } /* 讓背景層可用負 z-index 墊在最底 */
+.stage-bg { position: absolute; inset: -6%; z-index: -1; background: center 62% / cover no-repeat; display: none; }
+.stage.has-bg .stage-bg {
+  display: block; filter: brightness(.78) saturate(.9) blur(.25cqw);
+  animation: bgDrift 26s ease-in-out infinite alternate;
+}
+.stage.has-bg::before { /* 敵人身後微亮、四周與底部壓暗(血條區) */
+  content: ""; position: absolute; inset: 0; pointer-events: none;
+  background:
+    radial-gradient(ellipse 45% 55% at 50% 48%, #ffffff18, transparent 70%),
+    linear-gradient(180deg, #0005 0%, transparent 25%, transparent 62%, #000b 100%);
+}
+@keyframes bgDrift { from { transform: translateX(-2.5%) scale(1.02); } to { transform: translateX(2.5%) scale(1.06); } }
+
+/* 關卡卡片也用背景圖 */
+.stage-card.has-art {
+  background: linear-gradient(90deg, #000c 0%, #0008 55%, #0002 100%), var(--card-bg) center 60% / cover;
+}
+
+/* 敵人立繪:圖片比 emoji 高,整體往上移,腳下留給名稱與血條 */
+.enemy.has-img { top: 46%; }
+.sprite img {
+  display: block; height: 26cqh; width: auto; margin: 0 auto; pointer-events: none; user-select: none;
+  filter: drop-shadow(0 0 .5cqw #ffffffb0) drop-shadow(0 1.5cqw 1cqw #000a); /* 淡色描邊,和背景分開 */
+}
+.enemy.boss .sprite img { height: 28cqh; }
+.enemy.has-img .state-tag { position: relative; top: -3cqh; }
