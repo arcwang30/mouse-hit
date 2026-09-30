@@ -1,4 +1,5 @@
-// 敵人與 BOSS(icon 為暫代圖,之後換成 assets/images 內的立繪)
+// 敵人與 BOSS
+// icon:沒有立繪時的暫代 emoji;img:assets/images/ 底下的立繪(有的話優先顯示)
 // guardLife:防禦符號停留毫秒;atkCount:每次攻擊出現的防禦符號數;shot:攻擊時飛向玩家的物件
 G.ENEMIES = {
   monk:   { name: '武僧',     icon: '🧘', shot: '👊', hp: 60, atk: 8,  atkCount: 4, guardLife: 1300 },
@@ -6,8 +7,12 @@ G.ENEMIES = {
   ninja:  { name: '機械忍者', icon: '🥷', shot: '💠', hp: 70, atk: 9,  atkCount: 5, guardLife: 950 },
   gunner: { name: '電漿槍手', icon: '🔫', shot: '⚡', hp: 65, atk: 10, atkCount: 5, guardLife: 900 },
   drunk:  { name: '醉拳師',   icon: '🍶', shot: '🍶', hp: 85, atk: 11, atkCount: 4, guardLife: 1100 },
+  // 攻擊次數多但每下傷害低
+  goblin: { name: '晶魔哥布林', icon: '👺', img: 'enemies/crystal_goblin.webp', shot: '🔮', hp: 55, atk: 6, atkCount: 5, guardLife: 1150 },
+  // 又硬又痛,但出手少、符號停留久
+  lavaGolem: { name: '熔岩石魔', icon: '🗿', img: 'enemies/lava_golem.webp', shot: '☄️', hp: 105, atk: 11, atkCount: 3, guardLife: 1400 },
 
-  // BOSS:每 3 次攻擊施放一次必殺技
+  // BOSS / 中頭目:每 3 次攻擊施放一次必殺技
   fatKing: {
     name: '胖子魔王', icon: '👹', shot: '👊', boss: true, hp: 170, atk: 11, atkCount: 5, guardLife: 1200,
     skill: { name: '肉山壓頂', desc: '防禦符號大量湧現!', count: 4, dmgMul: 1.5 },
@@ -15,6 +20,14 @@ G.ENEMIES = {
   mechGeneral: {
     name: '機甲將軍', icon: '🤖', shot: '🚀', boss: true, hp: 200, atk: 13, atkCount: 6, guardLife: 1000,
     skill: { name: '飽和轟炸', desc: '符號閃現速度大幅提升!', count: 2, lifeMul: 0.6 },
+  },
+  frostKnight: {
+    name: '霜甲亡騎', icon: '🥶', img: 'enemies/frost_knight.webp', shot: '❄️', boss: true, hp: 180, atk: 12, atkCount: 5, guardLife: 1050,
+    skill: { name: '冰封旋風', desc: '寒氣凍結反應,符號一閃即逝!', count: 2, lifeMul: 0.65 },
+  },
+  abyssCrab: {
+    name: '深淵蟹魔', icon: '🦀', img: 'enemies/abyss_crab.webp', shot: '🦀', boss: true, hp: 200, atk: 13, atkCount: 6, guardLife: 1000,
+    skill: { name: '深淵觸手', desc: '觸手亂舞,小心混在其中的 💀!', count: 3, decoy: 0.25, dmgMul: 1.3 },
   },
   poisonQueen: {
     name: '毒霧妖姬', icon: '🐍', shot: '🧪', boss: true, hp: 170, atk: 12, atkCount: 6, guardLife: 1050,

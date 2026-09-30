@@ -1,5 +1,6 @@
 // 戰鬥流程:WAVE → 玩家攻擊 → 敵人攻擊/玩家防禦 → ... → 技能三選一 → 下一 WAVE
 const STATE_LABEL = { idle: '待機', attack: '攻擊', defend: '防禦', ult: '必殺技', hit: '受擊', recoil: '被格擋', stagger: '破防', dead: '擊倒' };
+const ENEMY_IMG_DIR = '../assets/images/'; // 立繪與背景圖的根目錄,相對於 src/index.html
 const HOLD_MS = 650;       // 蓄力重拳需要按住的時間
 const BLOCK_PCT_MAX = 12;  // 盾牌一出現就擋下可得的反擊力(%),越晚越少
 const BLOCK_PCT_CAP = 60;  // 反擊力累積上限(%)
@@ -47,17 +48,25 @@ G.battle = {
     this.counterPct = 0;
     this.brokenNext = false;
 
-    G.$('#stageView').className = 'stage bg-' + this.stage.bg;
-    G.$('#deco').innerHTML = this.stage.deco.map((d, i) =>
+    // 有背景圖就用圖;沒有的話用漸層 + emoji 裝飾
+    const bgImg = this.stage.img;
+    G.$('#stageView').className = 'stage bg-' + this.stage.bg + (bgImg ? ' has-bg' : '');
+    G.$('#stageBg').style.backgroundImage = bgImg ? `url('${ENEMY_IMG_DIR + bgImg}')` : '';
+    G.$('#deco').innerHTML = bgImg ? '' : this.stage.deco.map((d, i) =>
       `<span style="left:${8 + i * 90 / this.stage.deco.length}%;animation-delay:${i * 0.4}s">${d}</span>`).join('');
     G.grid.clearAll();
+    // 先預載本關所有敵人立繪,避免出場時才載入閃一下
+    this.stage.waves.forEach(s => {
+      const d = G.ENEMIES[s.replace('+', '')];
+      if (d.img) new Image().src = ENEMY_IMG_DIR + d.img;
+    });
     G.show('battle');
 
     const total = this.stage.waves.length;
     for (let w = 0; w < total; w++) {
       this.e = makeEnemy(this.stage.waves[w], this.stage.scale, w);
       G.$('#waveTag').textContent = `WAVE ${w + 1}/${total}`;
-      G.$('#enemySprite').textContent = this.e.icon;
+      this.showSprite(this.e);
       G.$('#enemyName').textContent = (this.e.boss ? '【BOSS】' : '') + this.e.name;
       this.setEnemyState('idle');
       this.render();
@@ -448,6 +457,21 @@ G.battle = {
     btn.classList.toggle('ready', !btn.disabled);
   },
 
+  // 有立繪用圖片,沒有就用暫代 emoji
+  showSprite(e) {
+    const el = G.$('#enemySprite');
+    if (e.img) {
+      el.innerHTML = '';
+      const img = new Image();
+      img.src = ENEMY_IMG_DIR + e.img;
+      img.alt = e.name;
+      img.draggable = false;
+      el.appendChild(img);
+    } else {
+      el.textContent = e.icon;
+    }
+  },
+
   setPhase(text, kind) {
     const el = G.$('#phase');
     el.textContent = text;
@@ -457,7 +481,8 @@ G.battle = {
   setEnemyState(s, ms) {
     const el = G.$('#enemy');
     clearTimeout(this._stateTimer);
-    el.className = 'enemy ' + s + (this.e && this.e.boss ? ' boss' : '') + (this.e && this.e.elite ? ' elite' : '');
+    const e = this.e || {};
+    el.className = 'enemy ' + s + (e.boss ? ' boss' : '') + (e.elite ? ' elite' : '') + (e.img ? ' has-img' : '');
     G.$('#enemyState').textContent = STATE_LABEL[s];
     if (ms) this._stateTimer = setTimeout(() => { if (this.e.hp > 0) this.setEnemyState(this.phase === 'defend' ? 'attack' : 'idle'); }, ms);
   },

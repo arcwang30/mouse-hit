@@ -11,23 +11,24 @@ G.WAVE_GROWTH = {
   countEvery: 4,   // 每 4 個 WAVE 多一個防禦符號
 };
 
+// img:戰鬥時敵人背後的背景(assets/images/ 底下);沒有圖時用 bg 漸層 + deco 裝飾
 G.STAGES = [
   {
-    name: '第一關 竹林庭園', bg: 'garden', deco: ['🎋', '🌲', '🎋', '🐟', '🌊'], stars: 1,
-    desc: '日本庭園,樹林與竹子環繞,魚池與河川靜靜流淌。',
-    waves: ['monk', 'agent', 'monk', 'agent', 'monk+', 'agent', 'monk', 'agent+', 'monk+', 'fatKing'],
+    name: '第一關 街角公園', bg: 'garden', img: 'backgrounds/stage1.jpg', deco: ['🎋', '🌲', '🎋', '🐟', '🌊'], stars: 1,
+    desc: '山腳下的小鎮公園,紅磚老屋旁孩子們放著風箏。',
+    waves: ['monk', 'goblin', 'agent', 'goblin', 'monk+', 'lavaGolem', 'goblin+', 'agent+', 'monk+', 'fatKing'],
     scale: 1,
   },
   {
-    name: '第二關 霓虹黑市', bg: 'city', deco: ['🏙️', '💡', '🌃', '🚥'], stars: 2,
-    desc: '山腳下巨型都市的底層,霓虹招牌與地下交易交錯。',
-    waves: ['agent', 'ninja', 'gunner', 'ninja', 'gunner+', 'agent+', 'ninja', 'gunner', 'ninja+', 'mechGeneral'],
+    name: '第二關 海港小鎮', bg: 'city', img: 'backgrounds/stage2.jpg', deco: ['🏙️', '💡', '🌃', '🚥'], stars: 2,
+    desc: '船隻往來的港灣,咖啡店與衝浪店林立。WAVE 5 有中頭目。',
+    waves: ['agent', 'ninja', 'goblin', 'gunner', 'frostKnight', 'agent+', 'lavaGolem', 'gunner', 'ninja+', 'mechGeneral'],
     scale: 1.2,
   },
   {
-    name: '第三關 天穹塔頂', bg: 'tower', deco: ['⚡', '🌕', '🛰️'], stars: 3,
-    desc: '黑幕盤踞的科技高塔頂端,雷光撕裂夜空。WAVE 5 有中頭目。',
-    waves: ['drunk', 'ninja', 'gunner', 'drunk', 'poisonQueen', 'ninja+', 'gunner+', 'drunk', 'drunk+', 'shadowKing'],
+    name: '第三關 未來鐘塔廣場', bg: 'tower', img: 'backgrounds/stage3.jpg', deco: ['⚡', '🌕', '🛰️'], stars: 3,
+    desc: '古老鐘塔與全息投影交織,無人機在霓虹間穿梭。WAVE 5、8 有中頭目。',
+    waves: ['drunk', 'ninja', 'gunner', 'lavaGolem', 'poisonQueen', 'ninja+', 'gunner+', 'abyssCrab', 'lavaGolem+', 'shadowKing'],
     scale: 1.45,
   },
 ];

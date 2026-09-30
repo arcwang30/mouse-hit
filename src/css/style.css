@@ -564,3 +564,32 @@ h2 { margin: 0; }
 #title.leaving .bolt { animation: strike .45s ease-out; }
 #title.leaving .title-bg { animation: none; transform: scale(1.15); transition: transform .45s ease-in; }
 @keyframes logoOut { to { opacity: 0; transform: translateX(-50%) scale(1.4); } }
+
+/* 戰鬥背景圖:放在敵人背後,略壓暗與柔焦讓敵人跳出來,並緩慢飄移增加景深 */
+.stage { isolation: isolate; } /* 讓背景層可用負 z-index 墊在最底 */
+.stage-bg { position: absolute; inset: -6%; z-index: -1; background: center 62% / cover no-repeat; display: none; }
+.stage.has-bg .stage-bg {
+  display: block; filter: brightness(.78) saturate(.9) blur(.25cqw);
+  animation: bgDrift 26s ease-in-out infinite alternate;
+}
+.stage.has-bg::before { /* 敵人身後微亮、四周與底部壓暗(血條區) */
+  content: ""; position: absolute; inset: 0; pointer-events: none;
+  background:
+    radial-gradient(ellipse 45% 55% at 50% 48%, #ffffff18, transparent 70%),
+    linear-gradient(180deg, #0005 0%, transparent 25%, transparent 62%, #000b 100%);
+}
+@keyframes bgDrift { from { transform: translateX(-2.5%) scale(1.02); } to { transform: translateX(2.5%) scale(1.06); } }
+
+/* 關卡卡片也用背景圖 */
+.stage-card.has-art {
+  background: linear-gradient(90deg, #000c 0%, #0008 55%, #0002 100%), var(--card-bg) center 60% / cover;
+}
+
+/* 敵人立繪:圖片比 emoji 高,整體往上移,腳下留給名稱與血條 */
+.enemy.has-img { top: 46%; }
+.sprite img {
+  display: block; height: 26cqh; width: auto; margin: 0 auto; pointer-events: none; user-select: none;
+  filter: drop-shadow(0 0 .5cqw #ffffffb0) drop-shadow(0 1.5cqw 1cqw #000a); /* 淡色描邊,和背景分開 */
+}
+.enemy.boss .sprite img { height: 28cqh; }
+.enemy.has-img .state-tag { position: relative; top: -3cqh; }

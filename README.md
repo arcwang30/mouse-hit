@@ -43,7 +43,7 @@ powershell -ExecutionPolicy Bypass -File tools/serve.ps1
 
 ## 原型內容
 
-- 3 個關卡 × 10 WAVE(WAVE 10 為 BOSS,第三關 WAVE 5 有中頭目),含精英敵人;敵人 5 種、BOSS 4 名(含 BOSS 必殺技)
+- 3 個關卡(街角公園、海港小鎮、未來鐘塔廣場)× 10 WAVE,WAVE 10 為 BOSS,另有中頭目與精英敵人;一般敵人 7 種、BOSS/中頭目 6 名(各有必殺技)
 - 難度參數在 `src/js/data/stages.js`(`WAVE_GROWTH`、各關 `scale`),可用 `src/js/dev/balance-sim.js` 模擬通關率
 - 玩家攻擊 👊 / 敵人攻擊時防禦 🛡️ / 必殺技依序點數字 + 漫畫風演出
 - 進階按法:「HOLD」拳頭要按住蓄力再放開(×3);盾牌越快擋累積越多反擊力(金→藍→暗,下回合每拳 +%);全部擋下觸發「破綻」,中間按鈕連打破甲
@@ -52,4 +52,4 @@ powershell -ExecutionPolicy Bypass -File tools/serve.ps1
 - 音樂音效全部以 Web Audio 即時合成(`src/js/audio/`),不需音檔;配樂分主選單、三個關卡、BOSS 戰五首
 - 開場故事:漫畫 `assets/images/story/opening.jpg` 逐格演出(7 幕,座標與特效設定在 `src/js/scenes/scenes.js` 的 STORY)
 - 標題畫面:背景 `assets/images/backgrounds/title.jpg`、LOGO `assets/images/ui/logo.webp`(含落雷、雨、火星、LOGO 砸落動畫)
-- 戰鬥角色目前是 emoji 暫代圖,之後換成 `assets/images/` 裡的美術
+- 戰鬥背景:`assets/images/backgrounds/stage1~3.jpg`;敵人立繪:`assets/images/enemies/`(敵人資料的 `img` 欄位),尚無立繪的敵人暫用 emoji
