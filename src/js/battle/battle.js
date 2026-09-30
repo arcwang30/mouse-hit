@@ -248,12 +248,14 @@ G.battle = {
       G.grid.handler = i => {
         if (i === seq[idx]) {
           G.audio.play('note', idx);
+          G.grid.impact(i, 'num', idx === seq.length - 1); // 最後一個數字是重擊
           G.grid.clear(i, 'press');
           G.grid.flash(i, 'good');
           if (++idx === seq.length) { timer.stop(); G.grid.handler = null; res(true); }
         } else {
           timer.stop();
           G.grid.flash(i, 'bad');
+          G.grid.impact(i, 'bad');
           G.grid.handler = null;
           res(false);
         }
@@ -280,7 +282,7 @@ G.battle = {
     const el = G.$('#cutin');
     el.classList.add('show');
     G.audio.play('cutin');
-    await G.sleep(1400);
+    await G.sleep(1700);
     el.classList.remove('show');
   },
 

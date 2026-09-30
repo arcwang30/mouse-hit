@@ -73,6 +73,41 @@ G.grid = {
     setTimeout(() => c.classList.remove(kind), 300);
   },
 
+  // 敲打回饋:閃光 + 衝擊波 + 星芒 + 火花 + 按鍵壓扁回彈(+ 手機震動)
+  // kind:fist 拳頭 / guard 盾牌 / num 必殺數字 / mash 連打 / bad 陷阱或按錯 / miss 空格
+  impact(i, kind = 'fist', big = false) {
+    const c = this.cells[i];
+    if (!c) return;
+    const fx = document.createElement('span');
+    fx.className = `tap-fx ${kind}${big ? ' big' : ''}`;
+    let html = '<i class="tap-flash"></i><i class="tap-ring"></i>';
+    if (kind !== 'miss') {
+      html += '<i class="tap-star"></i>';
+      const n = big ? 12 : 8;
+      for (let k = 0; k < n; k++) {
+        const a = k * 360 / n + (Math.random() * 20 - 10);
+        const d = (big ? 14 : 10) + Math.random() * 4; // 飛到星芒外面才看得到
+        html += `<i class="tap-spark" style="--a:${a}deg;--d:${d}cqw"></i>`;
+      }
+    }
+    fx.innerHTML = html;
+    c.appendChild(fx);
+    setTimeout(() => fx.remove(), 480);
+
+    c.classList.remove('thump');
+    void c.offsetWidth;
+    c.classList.add('thump');
+    if (big) {
+      const g = G.$('#grid');
+      g.classList.remove('quake');
+      void g.offsetWidth;
+      g.classList.add('quake');
+    }
+    if (kind !== 'miss' && navigator.vibrate) {
+      try { navigator.vibrate(big ? 35 : 12); } catch (e) {}
+    }
+  },
+
   bump(i) {
     const c = this.cells[i];
     c.classList.remove('bump');
@@ -119,12 +154,13 @@ G.molePhase = o => new Promise(resolve => {
 
   G.grid.handler = i => {
     const a = active.get(i);
-    if (!a) { G.grid.flash(i, 'miss'); G.audio.play('tap'); return; }
+    if (!a) { G.grid.flash(i, 'miss'); G.grid.impact(i, 'miss'); G.audio.play('tap'); return; }
 
     if (a.kind === 'decoy') {
       kill(a); active.delete(i);
       G.grid.clear(i, 'press');
       G.grid.flash(i, 'bad');
+      G.grid.impact(i, 'bad');
       o.onDecoy && o.onDecoy(i);
       if (o.stop()) finish();
       return;
@@ -139,12 +175,14 @@ G.molePhase = o => new Promise(resolve => {
       c.style.setProperty('--hold', o.hold.holdMs + 'ms');
       c.classList.add('holding');
       G.audio.play('charge');
+      G.grid.impact(i, 'miss'); // 按下蓄力:只有輕微的壓下感
       a.ts.push(setTimeout(() => { a.full = true; c.classList.add('charged'); G.audio.play('ready'); }, o.hold.holdMs));
       a.ts.push(setTimeout(() => G.grid.release(i), o.hold.holdMs + 900)); // 按太久自動出拳
       return;
     }
 
     // 一般符號
+    G.grid.impact(i, o.cls.includes('guard') ? 'guard' : 'fist');
     const ratio = Math.max(0, a.life - (performance.now() - a.born)) / a.life;
     kill(a); active.delete(i);
     G.grid.clear(i, 'press');
@@ -161,6 +199,7 @@ G.molePhase = o => new Promise(resolve => {
     kill(a); active.delete(i);
     G.grid.clear(i, 'press');
     G.grid.flash(i, 'good');
+    G.grid.impact(i, 'fist', a.full); // 集滿放開是重擊
     o.onHit(i, { hold: true, charged: a.full });
     settle();
   };
@@ -212,10 +251,11 @@ G.mashPhase = o => new Promise(resolve => {
   G.grid.setBadge(i, '×' + left);
   G.audio.play('pop');
   G.grid.handler = j => {
-    if (j !== i) { G.grid.flash(j, 'miss'); return; }
+    if (j !== i) { G.grid.flash(j, 'miss'); G.grid.impact(j, 'miss'); return; }
     left--;
     G.grid.flash(i, 'good');
     G.grid.bump(i);
+    G.grid.impact(i, 'mash', left <= 0); // 最後一下打破護甲是重擊
     o.onTap && o.onTap(i, left);
     if (left <= 0) end(true);
     else G.grid.setBadge(i, '×' + left);
