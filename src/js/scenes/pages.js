@@ -11,13 +11,13 @@ const fitPic = img => {
     const d = ctx.getImageData(0, 0, c.width, c.height).data;
     let l = c.width, t = c.height, r = -1, b = -1;
     for (let y = 0; y < c.height; y++) for (let x = 0; x < c.width; x++) {
-      if (d[(y * c.width + x) * 4 + 3] < 20) continue;
+      if (d[(y * c.width + x) * 4 + 3] < 128) continue; // 忽略半透明的光暈、特效
       if (x < l) l = x; if (x > r) r = x; if (y < t) t = y; if (y > b) b = y;
     }
     if (r < 0) return;
     const box = img.parentElement, bw = box.clientWidth, bh = box.clientHeight;
     const cw = (r - l + 1) / k, ch = (b - t + 1) / k, cx = (l / k + cw / 2), cy = (t / k + ch / 2);
-    const s = Math.min(bw / cw, bh / ch);
+    const s = Math.min(bh / ch, bw * 1.35 / cw); // 以高度對齊;姿勢特別寬的角色允許左右稍微裁掉
     box.classList.add('fit');
     Object.assign(img.style, {
       width: W * s / bw * 100 + '%',

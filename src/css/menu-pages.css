@@ -60,9 +60,9 @@
 }
 .ht-stage-name span { color: var(--neon-y); font-size: 3.2cqw; margin-left: 1cqw; }
 .ht-enemy { display: flex; align-items: center; gap: 3cqw; padding: 1cqw 0; }
-.ht-pic { width: 13cqw; height: 16cqw; flex-shrink: 0; display: flex; align-items: center; justify-content: center; font-size: 9cqw; }
+.ht-pic { width: 15cqw; height: 16cqw; flex-shrink: 0; display: flex; align-items: center; justify-content: center; font-size: 9cqw; }
 .ht-pic img { max-width: 100%; max-height: 100%; filter: drop-shadow(0 0 .5cqw #fff8); }
-.ht-pic.fit { position: relative; }
+.ht-pic.fit { position: relative; overflow: hidden; }
 .ht-pic.fit img { position: absolute; max-width: none; max-height: none; height: auto; }
 
 /* ---------- 設定 ---------- */
