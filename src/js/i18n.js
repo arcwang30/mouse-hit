@@ -354,7 +354,7 @@ G.I18N = {
   // ---- 了解歷史 / CREDIT ----
   '格鬥與打地鼠': ['格闘ともぐらたたき', 'Fighting & Whack-a-Mole'],
   '概念結構': ['コンセプト構造', 'Concept Structure'],
-  '關於Arc遊戲庫': ['Arcゲームライブラリについて', 'About Arc Games'],
+  '關於Arc遊戲庫': ['概遊庫について', 'About'],
   '企劃': ['企画', 'Design'], '程式': ['プログラム', 'Program'], '美術': ['アート', 'Art'], '音樂音效': ['音楽・効果音', 'Music & SFX'],
   '特別感謝': ['スペシャルサンクス', 'Special Thanks'],
 };
