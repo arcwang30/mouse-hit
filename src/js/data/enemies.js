@@ -12,14 +12,14 @@ G.ENEMIES = {
   // 又硬又痛,但出手少、符號停留久
   lavaGolem: { name: '熔岩石魔', icon: '🗿', img: 'enemies/lava_golem.webp', shot: '☄️', hp: 105, atk: 11, atkCount: 3, guardLife: 1400 },
 
-  // ---- 第四關之後的一般敵人(還沒有立繪,img 補上後自動顯示)----
-  streetBoxer: { name: '地下拳手',   icon: '🥊', shot: '🥊', hp: 75,  atk: 10, atkCount: 4, guardLife: 1100 },
-  hacker:      { name: '駭客少女',   icon: '💻', shot: '💾', hp: 60,  atk: 9,  atkCount: 5, guardLife: 950 },
-  sumo:        { name: '鋼鐵力士',   icon: '🏋️', shot: '💢', hp: 115, atk: 12, atkCount: 4, guardLife: 1250 },
-  cyborg:      { name: '改造戰士',   icon: '🦾', shot: '🔩', hp: 95,  atk: 12, atkCount: 5, guardLife: 950 },
-  snowMonk:    { name: '雪山拳僧',   icon: '🏔️', shot: '❄️', hp: 80,  atk: 11, atkCount: 5, guardLife: 1050 },
-  droneOp:     { name: '無人機兵',   icon: '🛸', shot: '🛸', hp: 70,  atk: 10, atkCount: 6, guardLife: 850 },
-  puppet:      { name: '人偶刺客',   icon: '🎎', shot: '🗡️', hp: 75,  atk: 11, atkCount: 5, guardLife: 950 },
+  // ---- 第四關之後的一般敵人(立繪)----
+  streetBoxer: { name: '地下拳手',   icon: '🥊', img: 'enemies/street_boxer.webp', shot: '🥊', hp: 75,  atk: 10, atkCount: 4, guardLife: 1100 },
+  hacker:      { name: '駭客少女',   icon: '💻', img: 'enemies/hacker.webp', shot: '💾', hp: 60,  atk: 9,  atkCount: 5, guardLife: 950 },
+  sumo:        { name: '鋼鐵力士',   icon: '🏋️', img: 'enemies/sumo.webp', shot: '💢', hp: 115, atk: 12, atkCount: 4, guardLife: 1250 },
+  cyborg:      { name: '改造戰士',   icon: '🦾', img: 'enemies/cyborg.webp', shot: '🔩', hp: 95,  atk: 12, atkCount: 5, guardLife: 950 },
+  snowMonk:    { name: '雪山拳僧',   icon: '🏔️', img: 'enemies/snow_monk.webp', shot: '❄️', hp: 80,  atk: 11, atkCount: 5, guardLife: 1050 },
+  droneOp:     { name: '無人機兵',   icon: '🛸', img: 'enemies/drone_op.webp', shot: '🛸', hp: 70,  atk: 10, atkCount: 6, guardLife: 850 },
+  puppet:      { name: '人偶刺客',   icon: '🎎', img: 'enemies/puppet.png', shot: '🗡️', hp: 75,  atk: 11, atkCount: 5, guardLife: 950 },
 
   // BOSS / 中頭目:每 3 次攻擊施放一次必殺技
   fatKing: {
@@ -47,33 +47,33 @@ G.ENEMIES = {
     skill: { name: '暗影神拳', desc: '殘影與骷髏交錯,點錯即受重創!', count: 2, decoy: 0.35, dmgMul: 2, lifeMul: 0.8 },
   },
 
-  // ---- 第四關之後的 BOSS(還沒有立繪)----
+  // ---- 第四關之後的 BOSS----
   ironBull: {
-    name: '鐵牛拳王', icon: '🐂', shot: '🥊', boss: true, hp: 230, atk: 14, atkCount: 5, guardLife: 1100,
+    name: '鐵牛拳王', icon: '🐂', img: 'enemies/iron_bull.webp', shot: '🥊', boss: true, hp: 230, atk: 14, atkCount: 5, guardLife: 1100,
     skill: { name: '蠻牛衝撞', desc: '重拳連發,每一下都要頂住!', count: 3, dmgMul: 1.6 },
   },
   forgeMaster: {
-    name: '熔爐巨匠', icon: '🔨', shot: '⚒️', boss: true, hp: 250, atk: 14, atkCount: 5, guardLife: 1100,
+    name: '熔爐巨匠', icon: '🔨', img: 'enemies/forge_master.webp', shot: '⚒️', boss: true, hp: 250, atk: 14, atkCount: 5, guardLife: 1100,
     skill: { name: '千錘百煉', desc: '鐵鎚如雨落下!', count: 4, dmgMul: 1.3 },
   },
   snowWitch: {
-    name: '白魔雪女', icon: '🌨️', shot: '❄️', boss: true, hp: 240, atk: 14, atkCount: 6, guardLife: 1000,
+    name: '白魔雪女', icon: '🌨️', img: 'enemies/snow_witch.webp', shot: '❄️', boss: true, hp: 240, atk: 14, atkCount: 6, guardLife: 1000,
     skill: { name: '白夜吹雪', desc: '暴風雪遮蔽視線,符號若隱若現!', count: 2, fade: true, lifeMul: 0.8 },
   },
   thunderRonin: {
-    name: '雷霆浪人', icon: '⚡', shot: '⚡', boss: true, hp: 250, atk: 15, atkCount: 6, guardLife: 950,
+    name: '雷霆浪人', icon: '⚡', img: 'enemies/thunder_ronin.webp', shot: '⚡', boss: true, hp: 250, atk: 15, atkCount: 6, guardLife: 950,
     skill: { name: '迅雷一閃', desc: '快到看不見的居合斬!', count: 2, lifeMul: 0.55, dmgMul: 1.3 },
   },
   puppetLord: {
-    name: '千面傀儡師', icon: '🎭', shot: '🧵', boss: true, hp: 260, atk: 15, atkCount: 6, guardLife: 950,
+    name: '千面傀儡師', icon: '🎭', img: 'enemies/puppet_lord.webp', shot: '🧵', boss: true, hp: 260, atk: 15, atkCount: 6, guardLife: 950,
     skill: { name: '百鬼夜行', desc: '人偶大軍湧現,小心混在其中的 💀!', count: 3, decoy: 0.3, dmgMul: 1.4 },
   },
   skyEmpress: {
-    name: '天穹女帝', icon: '👑', shot: '💫', boss: true, hp: 280, atk: 16, atkCount: 6, guardLife: 900,
+    name: '天穹女帝', icon: '👑', img: 'enemies/sky_empress.webp', shot: '💫', boss: true, hp: 280, atk: 16, atkCount: 6, guardLife: 900,
     skill: { name: '星墜天罰', desc: '流星墜落,閃爍又致命!', count: 3, fade: true, decoy: 0.2, dmgMul: 1.5 },
   },
   steelEmperor: {
-    name: '鋼拳帝王', icon: '👊', shot: '👊', boss: true, hp: 330, atk: 17, atkCount: 7, guardLife: 900,
+    name: '鋼拳帝王', icon: '👊', img: 'enemies/steel_emperor.webp', shot: '👊', boss: true, hp: 330, atk: 17, atkCount: 7, guardLife: 900,
     skill: { name: '鋼拳天崩', desc: '帝王的全力一擊!所有招式一次襲來!', count: 3, decoy: 0.3, dmgMul: 2, lifeMul: 0.75 },
   },
 };
