@@ -230,6 +230,7 @@
       G.clock.reset();
       sv.tutorialDone = true;
       if (!skipped) sv.tutorialClear = true; // 選擇關卡的教學卡片顯示 CLEAR
+      if (!skipped) setTimeout(() => G.ach.check(), 0); // 成就「神拳門入門」
       if (!skipped && !sv.tutorialReward) {
         sv.tutorialReward = true;
         sv.points += G.upgradeCost(0);

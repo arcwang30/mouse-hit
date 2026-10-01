@@ -712,3 +712,6 @@ html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; } /* 手機瀏覽
 }
 @media (hover: none) { .kb-key { display: none; } } /* 手機、平板不需要按鍵提示 */
 .kb-focus { outline: .6cqw solid var(--neon-y); outline-offset: -.6cqw; filter: brightness(1.2); }
+
+/* ---------- 打擊頓幀:畫面凍住的那一瞬間敵人閃白 ---------- */
+#stageView.hitstop .sprite img { filter: brightness(2.2) contrast(1.3) drop-shadow(0 0 2cqw #fff) !important; }

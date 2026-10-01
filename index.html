@@ -11,6 +11,7 @@
 </head>
 <body>
   <p>正在前往遊戲… 若沒有自動跳轉,請點 <a href="src/index.html" style="color:#ffc23d">這裡</a>。</p>
-  <script>location.replace('src/index.html');</script>
+  <!-- 加上時間參數,手機瀏覽器每次都會抓最新的遊戲頁(不會用到快取的舊版) -->
+  <script>location.replace('src/index.html?t=' + Date.now());</script>
 </body>
 </html>

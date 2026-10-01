@@ -65,12 +65,17 @@ G.roundExtras = (id, r = G.round()) => {
   return out;
 };
 G.ROUND_LAST = 3;
+// 星級評價:過關一顆星,另外「過關時 HP 剩 hp 比例以上」「最高連擊達 combo」各一顆星
+G.STAR_RULES = { hp: 0.5, combo: 30 };
 // 目前選擇的輪次(不會超過已開啟的)與該輪的進度
 G.round = () => G.tutorial && G.tutorial.active ? 1 : Math.min(G.save.data.round || 1, G.save.data.roundMax); // 教學一律當第一輪
 G.roundCfg = (r = G.round()) => G.ROUNDS[r];
 G.prog = (r = G.round()) => {
   const all = G.save.data.rounds;
-  return all[r] || (all[r] = { unlocked: 1, best: {}, clear: [] });
+  const r0 = all[r] || (all[r] = { unlocked: 1, best: {}, clear: [] });
+  r0.stars = r0.stars || {}; // 舊存檔沒有星級:已通關的先算一顆星
+  if (!r0.starsInit) { r0.clear.forEach(i => { r0.stars[i] = Math.max(r0.stars[i] || 0, 1); }); r0.starsInit = true; }
+  return r0;
 };
 
 // 分歧選項(每次隨機出 2 個讓玩家選一個)

@@ -283,6 +283,7 @@ G.battle = {
           this.punchFx(i % 3, { crit });
         }
         this.hurtEnemy(Math.round(d), crit || charged, charged);
+        if (info.gold && !crit && !charged) this.hitStop(60); // 金拳也頓一下
         if (p.lifesteal) this.healPlayer(p.lifesteal, true);
         this.gainUlt(p.ultGain);
         if (!info.auto && api) this.techniques(i, charged, api); // 技法觸發的自動命中不會再連鎖
@@ -421,6 +422,7 @@ G.battle = {
       this.punchFx(1, { crit: true, final: true, dur: 200 });
       this.float('破甲!', 'tag armor');
       this.hurtEnemy(p.atk * 4, true);
+      this.hitStop(130); // 破甲:最重的一下
     } else {
       this.float('破甲失敗', 'tag miss');
     }
@@ -736,6 +738,7 @@ G.battle = {
     this.healPlayer(heal);
     this.gainUlt(ult);
     this.stats.dmg += hits * 10; // 算進結算積分
+    this.stats.bonusHits = Math.max(this.stats.bonusHits || 0, hits); // 成就「拳如雨下」
     await G.banner(`${hits} HIT!`, G.t('回復 {0} HP・必殺 +{1}', heal, Math.round(ult)), 1400);
     this.e = realEnemy;
   },
@@ -873,12 +876,40 @@ G.battle = {
     G.audio.play(big ? 'boom' : crit ? 'crit' : 'punch');
     this.float(d, crit ? (big ? 'dmg big' : 'dmg crit') : 'dmg');
     if (e.hp > 0) this.setEnemyState('hit', 250);
+    // 打擊頓幀:擊倒 > 重擊(蓄力 / 必殺最後一擊)> 暴擊
+    if (e.hp <= 0) this.hitStop(150);
+    else if (big) this.hitStop(100);
+    else if (crit) this.hitStop(55);
     this.render();
+  },
+
+  // 打擊頓幀(Hit Stop):重擊瞬間,戰鬥畫面上的動畫(敵人受擊、飛出的拳頭、特效)凍住 ms 毫秒再繼續,
+  // 讓打擊有「咚」一下的重量感。只凍畫面,不影響遊戲計時;連續觸發時取較長的那次
+  hitStop(ms) {
+    const stage = G.$('#stageView');
+    const until = performance.now() + ms;
+    if (this._stopUntil && this._stopUntil >= until) return;
+    this._stopUntil = until;
+    if (!this._stopAnims) {
+      this._stopAnims = stage.getAnimations({ subtree: true }).filter(a => a.playState === 'running');
+      this._stopAnims.forEach(a => a.pause());
+      stage.classList.add('hitstop');
+    }
+    clearTimeout(this._stopT);
+    this._stopT = setTimeout(() => {
+      stage.classList.remove('hitstop');
+      // 遊戲正在 PAUSE 時不放開,交給 PAUSE 的恢復處理
+      if (!G.clock.paused) this._stopAnims.forEach(a => { if (a.playState === 'paused') try { a.play(); } catch (err) {} });
+      else G.clock.anims.push(...this._stopAnims.filter(a => a.playState === 'paused'));
+      this._stopAnims = null;
+      this._stopUntil = 0;
+    }, ms);
   },
 
   hurtPlayer(d) {
     const p = this.p;
     d = Math.max(1, Math.round(d * (1 - p.armor)));
+    if (this.stats) this.stats.hurt = (this.stats.hurt || 0) + 1; // 成就「毫髮無傷」
     p.hp = Math.max(0, p.hp - d);
     G.audio.play('hurt');
     this.float('-' + d, 'hurt', true);
@@ -1029,14 +1060,23 @@ G.battle = {
       if (!pr.clear.includes(i)) pr.clear.push(i);
     }
     pr.best[i] = Math.max(pr.best[i] || 0, score);
+    // 星級評價:過關 / HP 剩 50% 以上 / 最高連擊 30 以上,各一顆星;保留最好的紀錄
+    const rate = this.rating = { clear: win, hp: win && p.hp >= p.maxHp * G.STAR_RULES.hp, combo: win && (s.maxCombo || 0) >= G.STAR_RULES.combo };
+    rate.stars = [rate.clear, rate.hp, rate.combo].filter(Boolean).length;
+    pr.stars = pr.stars || {};
+    rate.newBest = rate.stars > (pr.stars[i] || 0);
+    if (rate.newBest) pr.stars[i] = rate.stars;
     const finalWin = win && i === G.STAGES.length - 1;
     this.newRound = 0;
     if (finalWin) {
       sv.cleared = true; // 破關:主選單「故事」可重看結局
       if (round === sv.roundMax && round < G.ROUND_LAST) this.newRound = sv.roundMax = round + 1; // 開啟下一輪
     }
+    sv.life.breaks += s.breaks || 0; // 累計紀錄(成就用)
+    sv.life.ults += s.ults || 0;
     G.save.write();
     this.endingNext = finalWin; // 打倒最終 BOSS:結算後播放結局
     G.scenes.result(win, score, points, s, p);
+    G.ach.check(s, win); // 結算畫面上跳出這場達成的成就
   },
 };

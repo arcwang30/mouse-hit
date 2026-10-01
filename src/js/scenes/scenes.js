@@ -234,6 +234,8 @@ G.scenes = {
   // ---- 主選單 ----
   menu() {
     G.bgm.setRate(1); // 離開戰鬥:周回 / FEVER 的音樂加速還原
+    G.ach.check();      // 不在戰鬥中達成的成就(圖鑑、星級、舊存檔補發…)
+    G.ach.renderMenu(); // 右上角 🏆 達成數、logo 下方的稱號
     // 點數夠升級(而且還沒到上限)時,「成長」按鈕閃爍提示
     const sv = G.save.data, max = G.ROUNDS[sv.roundMax].upMax;
     G.$('#btnUpgrade').classList.toggle('can-up', G.UPGRADES.some(u => sv.up[u.id] < max && sv.points >= G.upgradeCost(sv.up[u.id])));
@@ -263,6 +265,7 @@ G.scenes = {
         ${clear ? '<span class="sc-clear">CLEAR</span>' : ''}
         <div class="sc-name">${locked ? '🔒 ' : ''}${G.t(s.name)} <span class="sc-stars">${'★'.repeat(s.stars)}${'☆'.repeat(5 - s.stars)}</span></div>
         <div class="sc-desc">${G.t(locked ? '通過上一關後解鎖' : s.desc)}</div>
+        ${locked ? '' : `<div class="sc-rate" title="${G.t('評價')}">${[1, 2, 3].map(k => `<span class="${k <= (pr.stars[i] || 0) ? 'on' : ''}">★</span>`).join('')}</div>`}
         <div class="sc-best">${best}</div>
       </button>`;
     }).join('');
@@ -311,6 +314,7 @@ G.scenes = {
         const lv = sv.up[b.dataset.id];
         sv.points -= G.upgradeCost(lv);
         sv.up[b.dataset.id] = lv + 1;
+        G.ach.check(); // 成就「千錘百鍊」
         G.save.write();
         G.audio.play('levelup');
         this.upgrade();
@@ -379,7 +383,14 @@ G.scenes = {
     G.bgm.stop();
     G.audio.play(win ? 'win' : 'lose');
     const skills = p.skills.map(id => G.SKILLS.find(k => k.id === id).icon).join(' ') || '—';
-    G.$('#resultBox').innerHTML = `
+    // 星級評價:三顆星依序亮起,下面列出三個條件是否達成
+    const rt = G.battle.rating || {}, R = G.STAR_RULES;
+    const conds = [[G.t('過關'), rt.clear], [G.t('HP 剩 {0}% 以上', R.hp * 100), rt.hp], [G.t('最高連擊 {0} 以上', R.combo), rt.combo]];
+    const starHtml = `<div class="rs-stars">${conds.map(([, ok], k) => `<span class="rs-star${ok ? ' on' : ''}" style="--d:${0.3 + k * 0.3}s">★</span>`).join('')}` +
+      (rt.newBest && rt.stars ? `<em>${G.t('新紀錄!')}</em>` : '') + '</div>' +
+      `<div class="rs-conds">${conds.map(([t, ok]) => `<span class="${ok ? 'ok' : ''}">${ok ? '✔' : '✘'} ${t}</span>`).join('')}</div>`;
+    conds.forEach(([, ok], k) => { if (ok) setTimeout(() => G.audio.play('note', k * 2), 300 + k * 300); });
+    G.$('#resultBox').innerHTML = starHtml + `
       <div>${G.t('總傷害')}<b>${s.dmg}</b></div>
       <div>${G.t('命中 / 格擋')}<b>${s.hits} / ${s.blocks}</b></div>
       <div>${G.t('迅擋 / 破甲')}<b>${s.perfects || 0} / ${s.breaks || 0}</b></div>
