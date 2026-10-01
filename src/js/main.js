@@ -4,6 +4,7 @@ G.applyI18n();
 // 必殺技按鈕位置(左 / 右手)
 G.applyUltSide = () => G.$('#battle').classList.toggle('ult-left', G.save.data.ultSide === 'left');
 G.applyUltSide();
+G.skin.apply(); // 九宮格造型
 G.grid.init();
 G.$('#hurtFlash').addEventListener('animationend', e => e.target.classList.remove('show'));
 

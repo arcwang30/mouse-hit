@@ -138,29 +138,29 @@
 
 /* ---------- 九宮格:金屬地板 + 鋼製插座 ---------- */
 .grid-wrap {
-  background:
+  background: var(--sk-board,
     repeating-linear-gradient(0deg, #19f0ff0c 0 1px, transparent 1px 5cqw),
     repeating-linear-gradient(90deg, #19f0ff0c 0 1px, transparent 1px 5cqw),
     radial-gradient(ellipse at 50% 0%, #19f0ff14, transparent 60%),
-    linear-gradient(180deg, #0c1016, #06080b);
+    linear-gradient(180deg, #0c1016, #06080b));
 }
 .cell {
-  border-radius: 2.4cqw;
-  background: linear-gradient(145deg, #6b7784, #2a3038 38%, #1a1f25 62%, #4a535d);
+  border-radius: var(--sk-radius, 2.4cqw); /* 九宮格造型:各種 --sk-* 變數見檔案最後的「九宮格造型」 */
+  background: var(--sk-frame, linear-gradient(145deg, #6b7784, #2a3038 38%, #1a1f25 62%, #4a535d));
   box-shadow: inset 0 0 0 .3cqw #00000080, 0 .6cqw 0 #000a, 0 0 0 .25cqw #ffffff10;
 }
 .cell::before { /* 插座內圈 */
-  content: ""; position: absolute; inset: 8%; border-radius: 1.6cqw;
-  background: radial-gradient(ellipse at 50% 60%, #020304 45%, #0b1016);
-  box-shadow: inset 0 1.6cqw 2cqw #000, inset 0 0 0 .3cqw #19f0ff2a;
+  content: ""; position: absolute; inset: 8%; border-radius: var(--sk-radius-in, 1.6cqw);
+  background: var(--sk-socket, radial-gradient(ellipse at 50% 60%, #020304 45%, #0b1016));
+  box-shadow: inset 0 1.6cqw 2cqw #000, inset 0 0 0 .3cqw var(--sk-ring, #19f0ff2a);
 }
 .cell::after { /* 四角螺栓 */
   content: ""; position: absolute; inset: 0; pointer-events: none; border-radius: inherit;
   background:
-    radial-gradient(circle at 7% 7%, #c2ccd6 0 .45cqw, #000 .55cqw, transparent .75cqw),
-    radial-gradient(circle at 93% 7%, #c2ccd6 0 .45cqw, #000 .55cqw, transparent .75cqw),
-    radial-gradient(circle at 7% 93%, #c2ccd6 0 .45cqw, #000 .55cqw, transparent .75cqw),
-    radial-gradient(circle at 93% 93%, #c2ccd6 0 .45cqw, #000 .55cqw, transparent .75cqw);
+    radial-gradient(circle at 7% 7%, var(--sk-bolt, #c2ccd6) 0 .45cqw, #000 .55cqw, transparent .75cqw),
+    radial-gradient(circle at 93% 7%, var(--sk-bolt, #c2ccd6) 0 .45cqw, #000 .55cqw, transparent .75cqw),
+    radial-gradient(circle at 7% 93%, var(--sk-bolt, #c2ccd6) 0 .45cqw, #000 .55cqw, transparent .75cqw),
+    radial-gradient(circle at 93% 93%, var(--sk-bolt, #c2ccd6) 0 .45cqw, #000 .55cqw, transparent .75cqw);
 }
 .cap { z-index: 1; border-radius: 1.8cqw; }
 .cell.on .cap::before { /* 按鈕的金屬光澤斜線(一般按鈕;盾牌另有金色層) */
@@ -715,3 +715,81 @@ html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; } /* 手機瀏覽
 
 /* ---------- 打擊頓幀:畫面凍住的那一瞬間敵人閃白 ---------- */
 #stageView.hitstop .sprite img { filter: brightness(2.2) contrast(1.3) drop-shadow(0 0 2cqw #fff) !important; }
+
+/* ---------- 九宮格造型(10 種) ----------
+   --sk-frame 格子外框  --sk-socket 插座內部  --sk-ring 插座內圈線  --sk-bolt 四角螺栓
+   --sk-board 九宮格底板  --sk-radius / --sk-radius-in 外框 / 插座圓角
+   預設「鋼鐵」直接用 .cell 裡的預設值 */
+.skin-neon {
+  --sk-frame: linear-gradient(145deg, #2a0a40, #12041e 45%, #0a0214 62%, #3a0a52);
+  --sk-socket: radial-gradient(ellipse at 50% 60%, #05010a 40%, #1a0630);
+  --sk-ring: #ff2bd6b0; --sk-bolt: #19f0ff;
+  --sk-board: repeating-linear-gradient(0deg, #ff2bd618 0 1px, transparent 1px 5cqw), repeating-linear-gradient(90deg, #19f0ff18 0 1px, transparent 1px 5cqw), linear-gradient(180deg, #12041e, #05010a);
+}
+.skin-bamboo {
+  --sk-frame: repeating-linear-gradient(90deg, #00000018 0 .4cqw, transparent .4cqw 3cqw), linear-gradient(145deg, #9aba5a, #4a6a28 40%, #2e4818 62%, #7a9a40);
+  --sk-socket: radial-gradient(ellipse at 50% 60%, #0a1406 40%, #1a2a10);
+  --sk-ring: #d8ff9a60; --sk-bolt: #f0d890; --sk-radius: 1.4cqw; --sk-radius-in: 1cqw;
+  --sk-board: repeating-linear-gradient(90deg, #3a5a2028 0 2.2cqw, #1a2a1028 2.2cqw 2.6cqw), linear-gradient(180deg, #14200c, #080e04);
+}
+.skin-lava {
+  --sk-frame: linear-gradient(145deg, #4a2e26, #1e1210 45%, #140a08 62%, #3a2018);
+  --sk-socket: radial-gradient(ellipse at 50% 70%, #ff5a1f50 0%, #2a0800 45%, #0a0200);
+  --sk-ring: #ff6a1fc0; --sk-bolt: #ff9a4a;
+  --sk-board: radial-gradient(ellipse at 30% 80%, #ff3a0030, transparent 40%), radial-gradient(ellipse at 75% 20%, #ff5a1f28, transparent 45%), linear-gradient(180deg, #1a0a06, #080200);
+}
+.skin-ice {
+  --sk-frame: linear-gradient(145deg, #e8f8ff, #9ad4f0 38%, #5a9ac0 62%, #c8ecff);
+  --sk-socket: radial-gradient(ellipse at 50% 60%, #0a2030 40%, #1a4060);
+  --sk-ring: #ffffffa0; --sk-bolt: #ffffff;
+  --sk-board: linear-gradient(135deg, #ffffff10 25%, transparent 25% 50%, #ffffff10 50% 75%, transparent 75%) 0 0 / 6cqw 6cqw, linear-gradient(180deg, #0e2638, #06121c);
+}
+.skin-mecha {
+  --sk-frame: repeating-linear-gradient(-45deg, #e0b800 0 1.1cqw, #1a1a1a 1.1cqw 2.2cqw);
+  --sk-socket: radial-gradient(ellipse at 50% 60%, #050505 45%, #141414);
+  --sk-ring: #ffd40090; --sk-bolt: #9a9a9a; --sk-radius: .6cqw; --sk-radius-in: .4cqw;
+  --sk-board: linear-gradient(90deg, #ffffff08 1px, transparent 1px) 0 0 / 10cqw 10cqw, linear-gradient(0deg, #ffffff08 1px, transparent 1px) 0 0 / 10cqw 10cqw, linear-gradient(180deg, #1c1e20, #0c0d0e);
+}
+.skin-gold {
+  --sk-frame: linear-gradient(145deg, #fff4b0, #d8a820 38%, #8a6000 62%, #f4d060);
+  --sk-socket: radial-gradient(ellipse at 50% 60%, #1a1000 40%, #3a2800);
+  --sk-ring: #ffe680b0; --sk-bolt: #fff8d8;
+  --sk-board: radial-gradient(ellipse at 50% 0%, #ffd40028, transparent 60%), linear-gradient(180deg, #201600, #0a0700);
+}
+.skin-pixel {
+  --sk-frame: linear-gradient(#5a7aff 0 0) 0 0 / 100% 100%, #2a3aa0;
+  --sk-socket: linear-gradient(#0a0a24 0 0);
+  --sk-ring: #ffffffd0; --sk-bolt: #ffffff; --sk-radius: 0; --sk-radius-in: 0;
+  --sk-board: conic-gradient(#1a1a3a 25%, #12122a 0 50%, #1a1a3a 0 75%, #12122a 0) 0 0 / 6cqw 6cqw;
+}
+.skin-pixel .cell:not(.good):not(.bad):not(.miss) { box-shadow: inset -.8cqw -.8cqw 0 #1a2a80, inset .8cqw .8cqw 0 #9ab0ff, 0 .8cqw 0 #000; }
+.skin-asura {
+  --sk-frame: linear-gradient(145deg, #7a1420, #3a0610 45%, #1e0206 62%, #5a0c18);
+  --sk-socket: radial-gradient(ellipse at 50% 60%, #0a0002 40%, #2a0408);
+  --sk-ring: #ff2a3ac0; --sk-bolt: #ff6a7a;
+  --sk-board: radial-gradient(ellipse at 50% 50%, #ff1a2a20, transparent 65%), linear-gradient(180deg, #1a0204, #060001);
+}
+.skin-demon {
+  --sk-frame: linear-gradient(145deg, #5a2a8a, #24103e 45%, #120620 62%, #40186a);
+  --sk-socket: radial-gradient(ellipse at 50% 60%, #06020c 40%, #20083a);
+  --sk-ring: #c84dffc0; --sk-bolt: #f0c0ff;
+  --sk-board: radial-gradient(1px 1px at 20% 30%, #fff, transparent), radial-gradient(1px 1px at 70% 60%, #fff, transparent), radial-gradient(1.5px 1.5px at 45% 85%, #e0a0ff, transparent),
+    radial-gradient(ellipse at 50% 50%, #8a2be230, transparent 70%), linear-gradient(180deg, #12061e, #04010a);
+}
+
+/* 設定頁:造型選擇(小九宮格預覽,沒解鎖的變暗) */
+.skin-list { display: grid; grid-template-columns: repeat(5, 1fr); gap: 2cqw; margin-top: 2cqw; }
+.skin-pick { display: flex; flex-direction: column; align-items: center; gap: .8cqw; padding: 1.2cqw .6cqw; border: 0; color: #cfe; background: #0a1418; clip-path: var(--chamfer); }
+.skin-pick.on { background: #19f0ff30; box-shadow: inset 0 0 0 .4cqw var(--neon-c); color: #fff; }
+.skin-pick.locked .skin-mini { filter: grayscale(1) brightness(.4); }
+.skin-pick small { font-size: 2.6cqw; font-weight: 800; }
+.skin-mini {
+  display: grid; grid-template-columns: repeat(3, 1fr); gap: .5cqw; width: 100%; aspect-ratio: 1; padding: .7cqw;
+  background: var(--sk-board, linear-gradient(180deg, #0c1016, #06080b)); border-radius: .6cqw;
+}
+.skin-mini i {
+  border-radius: var(--sk-radius-in, .6cqw);
+  background: var(--sk-frame, linear-gradient(145deg, #6b7784, #2a3038 38%, #1a1f25 62%, #4a535d));
+  box-shadow: inset 0 0 0 .5cqw #000a, inset 0 0 0 .7cqw var(--sk-ring, #19f0ff2a);
+}
+.skin-cond { margin: 1.6cqw 0 0; font-size: 3cqw; color: var(--steel-hi); text-align: center; }

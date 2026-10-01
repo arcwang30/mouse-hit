@@ -147,8 +147,9 @@ G.pages = {
       lang() + vol('music', '音樂') + vol('sfx', '音效') +
       toggle('vibrate', '手機震動', '點擊與受傷時震動(支援的手機)') +
       toggle('shake', '畫面震動', '受傷、重擊時畫面搖晃') +
-      toggle('voice', '角色語音', '必殺技時喊出招式名(裝置內建的 AI 語音)') +
+      (G.VOICE_ENABLED ? toggle('voice', '角色語音', '必殺技時喊出招式名(裝置內建的 AI 語音)') : '') +
       side() +
+      G.skin.html() +
       (G.clock.paused ? '' : '<div class="st-row">' +
       `<button class="btn small danger" id="stReset">${G.t(this.resetArmed ? '再按一次確認' : '🗑️ 重置存檔')}</button>` +
       '</div>');
@@ -168,6 +169,7 @@ G.pages = {
     const t = e.target.closest('button');
     if (!t) return;
     if (t.dataset.lang) { G.setLang(t.dataset.lang); G.audio.play('select'); return this.renderSettings(); }
+    if (t.dataset.skin) { G.skin.pick(t.dataset.skin) && this.renderSettings(); return; }
     if (t.dataset.ult) { G.save.data.ultSide = t.dataset.ult; G.save.write(); G.applyUltSide(); G.audio.play('select'); return this.renderSettings(); }
     if (t.dataset.vol) return this.setVol(t.dataset.vol, +t.dataset.v);
     if (t.dataset.toggle) {

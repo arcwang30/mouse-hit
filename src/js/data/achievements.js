@@ -50,6 +50,7 @@ G.ach = {
       this.queue.push(a);
     });
     if (got.length) { G.save.write(); this.next(); }
+    G.skin.checkNew(); // 成就數、通關進度也會解鎖九宮格造型
     return got;
   },
 
@@ -59,13 +60,20 @@ G.ach = {
     const a = this.queue.shift(), el = G.$('#achToast');
     this.showing = true;
     G.$('#achToastIcon').textContent = a.icon;
-    G.$('#achToastName').textContent = G.t(a.name);
-    G.$('#achToastPts').textContent = G.t('成長點數 +{0}', a.pts);
+    G.$('#achToastHead').textContent = a.head || G.t('成就達成!');
+    G.$('#achToastName').textContent = a.sub ? a.name : G.t(a.name); // 造型提示的名稱已經翻譯過
+    G.$('#achToastPts').textContent = a.sub || G.t('成長點數 +{0}', a.pts);
     el.classList.remove('show');
     void el.offsetWidth;
     el.classList.add('show');
     G.audio.play('levelup');
     setTimeout(() => { el.classList.remove('show'); this.showing = false; setTimeout(() => this.next(), 250); }, 2600);
+  },
+
+  // 其他系統借用提示框(例如造型解鎖):{ icon, name, sub, head }
+  toast(item) {
+    this.queue.push(Object.assign({ head: G.t('新造型!') }, item));
+    this.next();
   },
 
   count() { return G.ACHIEVEMENTS.filter(a => G.save.data.ach[a.id]).length; },

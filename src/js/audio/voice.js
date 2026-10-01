@@ -6,6 +6,9 @@
 // 預錄配音檔清單:key = 台詞 id,value = { zh: 檔名, ja: 檔名, en: 檔名 }(沒列到的語言用語音合成)
 // 台詞 id:hero_ult(主角必殺)、boss_<敵人 id>(BOSS 必殺,例如 boss_fatKing)
 // 例:hero_ult: { zh: 'hero_ult_zh.mp3', ja: 'hero_ult_ja.mp3', en: 'hero_ult_en.mp3' },
+// 暫時不開放:之後準備好配音再改成 true(設定頁的「角色語音」開關也會一起出現)
+G.VOICE_ENABLED = false;
+
 G.VOICE_FILES = {
 };
 
@@ -33,7 +36,7 @@ G.voice = {
   // who:'hero' / 'boss';id:台詞 id;text:要唸的中文原文(會依語言翻譯);end:句尾符號
   say(who, id, text, end = '!') {
     const sv = G.save.data;
-    if (sv.voice === false || !sv.vol.sfx) return;
+    if (!G.VOICE_ENABLED || sv.voice === false || !sv.vol.sfx) return;
     const vol = Math.min(1, sv.vol.sfx / 4);
     const lang = G.lang(), file = (G.VOICE_FILES[id] || {})[lang];
     this.stop();
