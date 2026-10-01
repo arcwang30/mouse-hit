@@ -132,6 +132,7 @@ G.battle = {
       const d = G.ENEMIES[s.replace('+', '')];
       if (d.img) new Image().src = ENEMY_IMG_DIR + d.img;
     });
+    new Image().src = ENEMY_IMG_DIR + 'enemies/training_dummy.png'; // 狂打獎勵關的木樁
     G.show('battle');
 
     const total = this.stage.waves.length;
@@ -655,7 +656,8 @@ G.battle = {
   // 狂打獎勵關:12 秒內拳頭狂冒,沒有敵人攻擊
   async bonusRound() {
     const p = this.p, realEnemy = this.e;
-    this.e = { name: G.t('訓練木樁'), icon: '🎯', hp: 1, maxHp: 1, turn: 0 };
+    this.e = { id: 'dummy', name: G.t('訓練木樁'), icon: '🎯', img: 'enemies/training_dummy.png', hp: 1, maxHp: 1, turn: 0 };
+    if (!G.save.data.seen.dummy) { G.save.data.seen.dummy = true; G.save.write(); } // 敵人圖鑑
     this.showSprite(this.e);
     G.$('#enemyName').textContent = G.t('狂打獎勵關');
     this.setEnemyState('idle');

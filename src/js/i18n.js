@@ -167,6 +167,7 @@ G.I18N = {
   '額上烈焰烙痕,燃盡一切!': ['額の烙印が燃え、すべてを焼き尽くす!', 'The brand on his brow blazes—burn it all!'],
   '斬斷觸手!': ['触手切断!', 'Tentacle cut!'],
   '訓練木樁': ['訓練用木人', 'Training Dummy'],
+  '分歧選「狂打獎勵關」時登場。不會反擊,12 秒內盡量打!': ['分岐で「連打ボーナス」を選ぶと登場。反撃してこないので 12 秒間たたきまくれ!', 'Appears when you pick Bonus Rush at a branch. It never fights back—hit it as much as you can in 12 s!'],
   '狂打獎勵關': ['連打ボーナス', 'Bonus Rush'],
   '狂打獎勵關!': ['連打ボーナス!', 'Bonus Rush!'],
   '12 秒內盡量打!': ['12 秒で打ちまくれ!', 'Hit as much as you can in 12 s!'],

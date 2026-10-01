@@ -108,6 +108,11 @@ G.pages = {
               `<p>${G.t(m ? m.hint : '沒有特殊機制,適合熟悉操作')}</p></div></div>`;
           }).join('') + '</div>';
       }).join('');
+      // 分歧「狂打獎勵關」的訓練木樁(同樣遇過才顯示)
+      const dummySeen = G.save.data.seen.dummy;
+      html += `<div class="ht-stage"><div class="ht-stage-name">${G.t('狂打獎勵關')}</div>` +
+        `<div class="ht-enemy${dummySeen ? '' : ' unknown'}"><div class="ht-pic"><img${dummySeen ? '' : ' class="unknown"'} src="../assets/images/enemies/training_dummy.png" alt="">${dummySeen ? '' : '<span class="ht-q">?</span>'}</div>` +
+        `<div><b>${dummySeen ? G.t('訓練木樁') : '？？？'}</b><p>${G.t(dummySeen ? '分歧選「狂打獎勵關」時登場。不會反擊,12 秒內盡量打!' : '尚未遇見')}</p></div></div></div>`;
     }
     const body = G.$('#howtoBody');
     body.innerHTML = html;
