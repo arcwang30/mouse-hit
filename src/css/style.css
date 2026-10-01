@@ -637,5 +637,8 @@ h2 { margin: 0; }
   display: block; height: 26cqh; width: auto; margin: 0 auto; pointer-events: none; user-select: none;
   filter: drop-shadow(0 0 .5cqw #ffffffb0) drop-shadow(0 1.5cqw 1cqw #000a); /* 淡色描邊,和背景分開 */
 }
-.enemy.boss .sprite img { height: 28cqh; }
+/* BOSS:立繪放大、頭頂貼齊畫面上緣,腳延伸到名稱與血條後面,更有壓迫感 */
+.enemy.boss.has-img { top: 0; transform: translateX(-50%); }
+.enemy.boss .sprite img { height: 38cqh; }
+.enemy.boss.has-img .state-tag { position: absolute; left: 50%; top: 21cqh; transform: translateX(-50%); }
 .enemy.has-img .state-tag { position: relative; top: -3cqh; }

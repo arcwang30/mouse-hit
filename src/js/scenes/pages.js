@@ -134,9 +134,8 @@ G.pages = {
       toggle('vibrate', '手機震動', '點擊與受傷時震動(支援的手機)') +
       toggle('shake', '畫面震動', '受傷、重擊時畫面搖晃') +
       (G.clock.paused ? '' : '<div class="st-row">' +
-      '<button class="btn small" id="stStory">' + G.t('📜 重看開場故事') + '</button>' +
       `<button class="btn small danger" id="stReset">${G.t(this.resetArmed ? '再按一次確認' : '🗑️ 重置存檔')}</button>` +
-      '</div>') + '<div class="st-note">' + G.t('音量 0~5(0 為靜音)') + '</div>';
+      '</div>');
   },
 
   setVol(key, v) {
@@ -162,7 +161,6 @@ G.pages = {
       if (k === 'vibrate' && G.save.data.vibrate && navigator.vibrate) { try { navigator.vibrate(30); } catch (err) {} }
       return this.renderSettings();
     }
-    if (t.id === 'stStory') { this.current = null; return G.scenes.story(); }
     if (t.id === 'stReset') {
       if (!this.resetArmed) { // 按兩次才會真的重置,避免誤觸
         this.resetArmed = true;

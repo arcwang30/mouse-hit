@@ -88,7 +88,6 @@
 .st-sw.on { background: linear-gradient(180deg, #5cf0a0, #178a4c); box-shadow: 0 0 2cqw #3ddc84; }
 .st-row { display: flex; gap: 3cqw; }
 .st-row .btn { flex: 1; }
-.st-note { text-align: center; font-size: 3cqw; color: var(--steel-hi); }
 
 /* ---------- 了解歷史 ---------- */
 .pg-tabs { display: flex; gap: 1.6cqw; flex-shrink: 0; }
