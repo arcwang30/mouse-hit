@@ -240,13 +240,20 @@ G.scenes = {
 
   // ---- 選擇關卡(主選單按「開始遊戲」後) ----
   stages() {
-    const sv = G.save.data;
-    G.$('#stageList').innerHTML = G.STAGES.map((s, i) => {
-      const locked = i >= sv.unlocked;
-      const best = sv.best[i] ? G.t('最高分 {0}', sv.best[i]) : '';
+    const sv = G.save.data, round = G.round(), pr = G.prog(), cfg = G.roundCfg();
+    // 周回切換:開啟第二輪後才出現
+    const tabs = sv.roundMax < 2 ? '' : '<div class="round-tabs">' +
+      [1, 2, 3].map(r => {
+        const open = r <= sv.roundMax;
+        return `<button class="round-tab r${r}${r === round ? ' on' : ''}" data-round="${r}" ${open ? '' : 'disabled'}>${open ? '' : '🔒 '}${G.t(G.ROUNDS[r].name)}</button>`;
+      }).join('') + '</div>' + (cfg.desc ? `<div class="round-desc">${G.t(cfg.desc)}</div>` : '');
+    G.$('#stageList').innerHTML = tabs + G.STAGES.map((s, i) => {
+      const locked = i >= pr.unlocked, clear = pr.clear.includes(i);
+      const best = pr.best[i] ? G.t('最高分 {0}', pr.best[i]) : '';
       // CSS 變數裡的 url() 會以 style.css 的位置解析相對路徑,所以這裡先轉成完整網址
       const art = s.img ? ` style="--card-bg:url('${new URL('../assets/images/' + s.img, location.href).href}')"` : '';
-      return `<button class="stage-card bg-${s.bg}${s.img ? ' has-art' : ''}" data-i="${i}"${art} ${locked ? 'disabled' : ''}>
+      return `<button class="stage-card round-${round} bg-${s.bg}${s.img ? ' has-art' : ''}" data-i="${i}"${art} ${locked ? 'disabled' : ''}>
+        ${clear ? '<span class="sc-clear">CLEAR</span>' : ''}
         <div class="sc-name">${locked ? '🔒 ' : ''}${G.t(s.name)} <span class="sc-stars">${'★'.repeat(s.stars)}${'☆'.repeat(5 - s.stars)}</span></div>
         <div class="sc-desc">${G.t(locked ? '通過上一關後解鎖' : s.desc)}</div>
         <div class="sc-best">${best}</div>
@@ -254,6 +261,14 @@ G.scenes = {
     }).join('');
     G.$('#stageList').querySelectorAll('.stage-card').forEach(b => {
       b.onclick = () => { G.pages.current = null; G.battle.start(+b.dataset.i); };
+    });
+    G.$('#stageList').querySelectorAll('.round-tab').forEach(b => {
+      b.onclick = () => {
+        sv.round = +b.dataset.round;
+        G.save.write();
+        G.audio.play('select');
+        this.stages();
+      };
     });
     G.pages.open('stages'); // 共用選單頁面的返回按鈕與 Esc
   },
@@ -264,11 +279,12 @@ G.scenes = {
     G.$('#upPoints').textContent = sv.points;
     G.$('#upList').innerHTML = G.UPGRADES.map(u => {
       const lv = sv.up[u.id];
-      const maxed = lv >= u.max;
+      const max = G.ROUNDS[sv.roundMax].upMax; // 周回開啟後上限提高
+      const maxed = lv >= max;
       const cost = G.upgradeCost(lv);
       return `<div class="up-item">
         <div class="up-icon">${u.icon}</div>
-        <div class="up-body"><b>${G.t(u.name)}</b> Lv.${lv}/${u.max}<div class="up-desc">${G.t(u.desc)}</div></div>
+        <div class="up-body"><b>${G.t(u.name)}</b> Lv.${lv}/${max}<div class="up-desc">${G.t(u.desc)}</div></div>
         <button class="btn small" data-id="${u.id}" ${maxed || sv.points < cost ? 'disabled' : ''}>${maxed ? 'MAX' : G.t('{0} 點', cost)}</button>
       </div>`;
     }).join('');
@@ -353,7 +369,8 @@ G.scenes = {
       <div>${G.t('擊倒 WAVE')}<b>${s.waves} / ${G.battle.stage.waves.length}</b></div>
       <div>${G.t('取得技能')}<b>${skills}</b></div>
       <div class="score">${G.t('積分')}<b>${score}</b></div>
-      <div class="score">${G.t('獲得成長點數')}<b>+${points}</b></div>`;
+      <div class="score">${G.t('獲得成長點數')}<b>+${points}</b></div>` +
+      (G.battle.newRound ? `<div class="new-round">${G.t('{0} 開啟!', G.t(G.ROUNDS[G.battle.newRound].name))}<small>${G.t('成長上限提升至 Lv{0}', G.ROUNDS[G.battle.newRound].upMax)}</small></div>` : '');
     G.show('result');
   },
 };

@@ -95,7 +95,7 @@ window.simRun = function (stageIdx, skill, upLv) {
 
       // 敵人回合:停留時間越短越難擋
       e.turn++;
-      const s = e.skill && e.turn % 3 === 0 ? e.skill : null;
+      const s = e.skill && e.turn % (e.skillEvery || 3) === 0 ? e.skill : null;
       let count = e.atkCount, life = e.guardLife + p.guardBonus, dmg = e.atk, fade = 0, decoy = 0;
       if (s) {
         count += s.count || 0; life *= s.lifeMul || 1; dmg *= s.dmgMul || 1;

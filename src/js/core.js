@@ -86,13 +86,25 @@ G.save = {
     let d = null;
     try { d = JSON.parse(localStorage.getItem(this.key)); } catch (e) {}
     // vol:音樂 / 音效音量 0~5;vibrate:手機震動;shake:畫面震動
-    this.data = Object.assign({ points: 0, unlocked: 1, best: {}, vibrate: true, shake: true, ultSide: 'right' }, d || {});
+    this.data = Object.assign({ points: 0, vibrate: true, shake: true, ultSide: 'right' }, d || {});
     this.data.vol = Object.assign({ music: 3, sfx: 4 }, this.data.vol);
     this.data.up = Object.assign({ hp: 0, atk: 0, ult: 0, react: 0 }, this.data.up);
     if (!this.data.lang) { // 第一次開啟:依瀏覽器語言決定
       const l = (navigator.language || "zh").toLowerCase();
       this.data.lang = l.startsWith("ja") ? "ja" : l.startsWith("zh") ? "zh" : "en";
     }
+    // 周回挑戰:rounds[輪] = { unlocked 解鎖到第幾關, best 各關最高分, clear 已通關的關卡 };roundMax 已開啟到第幾輪
+    // 舊存檔只有第一輪的 unlocked / best,這裡搬進 rounds[1]
+    const sv = this.data;
+    if (!sv.rounds) {
+      const unlocked = sv.unlocked || 1, last = G.STAGES.length - 1;
+      const clear = [...Array(unlocked - 1).keys()];
+      if (sv.cleared) clear.push(last);
+      sv.rounds = { 1: { unlocked, best: sv.best || {}, clear } };
+      delete sv.unlocked;
+      delete sv.best;
+    }
+    sv.roundMax = sv.roundMax || (sv.cleared ? 2 : 1);
   },
   write() {
     try { localStorage.setItem(this.key, JSON.stringify(this.data)); } catch (e) {}

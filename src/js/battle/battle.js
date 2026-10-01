@@ -35,15 +35,17 @@ function makePlayer() {
 function makeEnemy(spec, scale, w) {
   const elite = spec.endsWith('+');
   const id = elite ? spec.slice(0, -1) : spec;
-  const d = G.ENEMIES[id], g = G.WAVE_GROWTH;
-  const hp = Math.round(d.hp * G.ENEMY_HP_MUL * scale * (1 + w * g.hp) * (elite ? 1.5 : 1));
+  const d = G.ENEMIES[id], g = G.WAVE_GROWTH, r = G.roundCfg(); // r:周回強化
+  scale += r.scale; // 周回:每關的基礎強度整體往上墊
+  const hp = Math.round(d.hp * G.ENEMY_HP_MUL * scale * (1 + w * g.hp) * (elite ? 1.5 : 1) * r.hp);
   return Object.assign({}, d, {
     id, elite, hp, maxHp: hp, turn: 0,
     rawName: d.name,
     name: (elite ? G.t('精英・') : '') + G.t(d.name),
-    atk: Math.round(d.atk * (1 + (scale - 1) / 2) * (1 + w * g.atk) * (elite ? 1.2 : 1)),
-    atkCount: d.atkCount + Math.floor(w / g.countEvery) + (elite ? 1 : 0),
-    guardLife: Math.round(d.guardLife * (1 - w * g.life) * (elite ? 0.92 : 1)),
+    atk: Math.round(d.atk * (1 + (scale - 1) / 2) * (1 + w * g.atk) * (elite ? 1.2 : 1) * r.atk),
+    atkCount: d.atkCount + Math.floor(w / g.countEvery) + (elite ? 1 : 0) + r.count,
+    guardLife: Math.round(d.guardLife * (1 - w * g.life) * (elite ? 0.92 : 1) * r.life),
+    skillEvery: r.skillEvery,
   });
 }
 
@@ -141,7 +143,8 @@ G.battle = {
       if (challenged) spec += '+';
       this.eliteNext = false;
       this.e = makeEnemy(spec, this.stage.scale, w);
-      G.$('#waveTag').textContent = `WAVE ${w + 1}/${total}`;
+      const tag = G.roundCfg().tag; // 周回:WAVE 前面標上 Ⅱ / Ⅲ
+      G.$('#waveTag').textContent = (tag ? tag + ' ' : '') + `WAVE ${w + 1}/${total}`;
       this.showSprite(this.e);
       G.$('#enemyName').textContent = (this.e.boss ? G.t('【BOSS】') : '') + this.e.name;
       this.setEnemyState('idle');
@@ -255,7 +258,7 @@ G.battle = {
   async enemyTurn() {
     const e = this.e, p = this.p;
     e.turn++;
-    const s = e.skill && e.turn % 3 === 0 ? e.skill : null;
+    const s = e.skill && e.turn % (e.skillEvery || 3) === 0 ? e.skill : null;
     let count = e.atkCount, life = e.guardLife + p.guardBonus, dmg = e.atk, cls = 'guard';
     if (s) {
       this.setEnemyState('ult');
@@ -894,16 +897,24 @@ G.battle = {
     G.grid.clearBlocks();
     this.endFever();
     const p = this.p, s = this.stats;
+    const sv = G.save.data, round = G.round(), pr = G.prog(), i = this.stageIdx;
     let score = s.dmg + p.hp * 5 + s.waves * 300 + (win ? 1000 : 0);
-    score = Math.round(score * p.scoreMul);
+    score = Math.round(score * p.scoreMul * G.roundCfg().points); // 周回:積分倍率
     const points = Math.floor(score / 100);
-    const sv = G.save.data;
     sv.points += points;
-    if (win && sv.unlocked < this.stageIdx + 2) sv.unlocked = Math.min(G.STAGES.length, this.stageIdx + 2);
-    sv.best[this.stageIdx] = Math.max(sv.best[this.stageIdx] || 0, score);
-    if (win && this.stageIdx === G.STAGES.length - 1) sv.cleared = true; // 破關:主選單「故事」可重看結局
+    if (win) {
+      pr.unlocked = Math.max(pr.unlocked, Math.min(G.STAGES.length, i + 2));
+      if (!pr.clear.includes(i)) pr.clear.push(i);
+    }
+    pr.best[i] = Math.max(pr.best[i] || 0, score);
+    const finalWin = win && i === G.STAGES.length - 1;
+    this.newRound = 0;
+    if (finalWin) {
+      sv.cleared = true; // 破關:主選單「故事」可重看結局
+      if (round === sv.roundMax && round < G.ROUND_LAST) this.newRound = sv.roundMax = round + 1; // 開啟下一輪
+    }
     G.save.write();
-    this.endingNext = win && this.stageIdx === G.STAGES.length - 1; // 打倒最終 BOSS:結算後播放結局
+    this.endingNext = finalWin; // 打倒最終 BOSS:結算後播放結局
     G.scenes.result(win, score, points, s, p);
   },
 };

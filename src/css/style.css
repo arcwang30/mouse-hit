@@ -346,6 +346,9 @@ button { font: inherit; color: inherit; cursor: pointer; }
 .result-box { width: 100%; background: var(--panel); border-radius: 3cqw; padding: 3.5cqw 5cqw; display: flex; flex-direction: column; gap: min(2.2cqw, 1.4cqh); }
 .result-box div { display: flex; justify-content: space-between; gap: 4cqw; }
 .result-box .score { font-size: 4.4cqw; color: var(--fire-2); }
+.result-box .new-round { flex-direction: column; align-items: center; gap: .6cqw; margin-top: 1.5cqw; padding: 2.4cqw; font-size: 5cqw; font-weight: 900; color: #fff; text-align: center;
+  background: linear-gradient(90deg, #5a0f9c, #c0142c); box-shadow: 0 0 3cqw #ff3a3a90; }
+.result-box .new-round small { font-size: 3.4cqw; font-weight: 700; color: #ffd6c8; }
 #resultTitle { font-size: min(7.5cqw, 5cqh); margin: 2cqh 0 0; flex-shrink: 0; }
 #result .btn { margin-top: auto; }
 h2 { margin: 0; }

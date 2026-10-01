@@ -55,6 +55,18 @@ G.I18N = {
   '永久成長': ['永続強化', 'Permanent Upgrades'],
   '最高分 {0}': ['ハイスコア {0}', 'Best {0}'],
   '通過上一關後解鎖': ['前のステージをクリアで解放', 'Clear the previous stage to unlock'],
+  // ---- 周回挑戰 ----
+  '第一輪': ['一周目', 'Round 1'],
+  '第二輪・修羅': ['二周目・修羅', 'Round 2: Asura'],
+  '第三輪・天魔': ['三周目・天魔', 'Round 3: Demon'],
+  '敵人全面強化,盾牌更快消失。成長上限提升至 Lv15,點數 ×1.5。':
+    ['敵が全面的に強化され、盾の消えるのが速い。強化上限が Lv15 に、ポイント ×1.5。',
+     'Enemies are stronger and shields vanish faster. Upgrade cap rises to Lv15, points ×1.5.'],
+  '最高難度:每次攻擊多一面盾牌,BOSS 每 2 回合放一次必殺技。成長上限提升至 Lv20,點數 ×2。':
+    ['最高難度:攻撃ごとに盾が 1 枚増え、BOSS は 2 ターンごとに必殺技。強化上限が Lv20 に、ポイント ×2。',
+     'Hardest: one extra shield per attack, and bosses use their special every 2 turns. Upgrade cap rises to Lv20, points ×2.'],
+  '{0} 開啟!': ['{0} 解放!', '{0} unlocked!'],
+  '成長上限提升至 Lv{0}': ['強化上限が Lv{0} に上昇', 'Upgrade cap raised to Lv{0}'],
   '{0} 點': ['{0} pt', '{0} pt'],
 
   // ---- 故事 ----
