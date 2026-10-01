@@ -10,6 +10,7 @@ window.simRun = function (stageIdx, skill, upLv) {
   G.save.data.up = saveUp;
 
   const st = G.STAGES[stageIdx];
+  const rc = G.roundCfg(); // 周回:手感調整(停留時間、出現模式、炸彈、追加機制、不回血)
   let counterNext = 0, powerNext = 0, brokenNext = false; // 反震掌累積、反擊力%、破甲
   // 連擊   let counterNext = 0, powerNext = 0, brokenNext = false; // 反震掌累積、反擊力%、破甲 FEVER:以「符號事件」計算,FEVER 10 秒約等於 11 個事件(一輪攻防)
   let charge = 0, feverLeft = 0;
@@ -41,14 +42,15 @@ window.simRun = function (stageIdx, skill, upLv) {
     eliteNext = false;
     const e = makeEnemy(spec, st.scale, w);
     // 出現模式越複雜,真人命中率略降(後段最多 -6%)
-    const patK = Math.min(1.5, w / Math.max(1, st.waves.length - 1) + stageIdx * 0.3);
+    const patK = Math.min(1.5 + rc.pattern, w / Math.max(1, st.waves.length - 1) + stageIdx * 0.3 + rc.pattern);
     const patPenalty = 0.04 * patK;
     // 第二階段:敵人機制讓真人命中率下降(估計值)
     const mech = G.MECHS[e.id] || {};
     const hasDef = !!(mech.def || mech.rotate), board = mech.board;
-    const atkPen = (mech.atk ? 0.04 : 0) + (board === 'ice' || board === 'tentacle' ? 0.04 : 0);
-    const defPen = (hasDef ? 0.05 : 0) + (board === 'ice' || board === 'tentacle' ? 0.04 : 0);
-    const bombRate = mech.atk && mech.atk.bomb != null ? mech.atk.bomb : (w >= 3 ? 0.12 : 0);
+    const xAtk = (e.extras || []).filter(x => x.atk).length, xDef = (e.extras || []).filter(x => x.def).length; // 周回追加機制
+    const atkPen = (mech.atk ? 0.04 : 0) + (board === 'ice' || board === 'tentacle' ? 0.04 : 0) + 0.035 * xAtk;
+    const defPen = (hasDef ? 0.05 : 0) + (board === 'ice' || board === 'tentacle' ? 0.04 : 0) + 0.035 * xDef;
+    const bombRate = mech.atk && mech.atk.bomb != null ? mech.atk.bomb : Math.max(w >= 3 ? 0.12 : 0, rc.bombAll);
     const lineShare = (1.2 + 2.8 * patK) / (9.2 + 3.2 * patK); // 連線+掃射占出現模式的比例
     let guard = 0;
     while (e.hp > 0 && p.hp > 0 && guard++ < 200) {
@@ -63,7 +65,7 @@ window.simRun = function (stageIdx, skill, upLv) {
         const mul = (1 + powerNext / 100) * (brokenNext ? 1.5 : 1);
         counterNext = powerNext = 0;
         brokenNext = false;
-        const r = clamp(skill + (p.moleLife - 1200) / 2000 - patPenalty - atkPen + sim.hit);
+        const r = clamp(skill + (p.moleLife * rc.fistLife - 1200) / 2000 - patPenalty - atkPen + sim.hit);
         // 炸彈:每組約 1.8 顆符號,每顆炸彈有機率被誤點
         const bombs = sim.noBomb ? 0 : Math.round(count / 1.8 * bombRate + Math.random() * 0.5);
         for (let b = 0; b < bombs; b++) if (Math.random() < (1 - skill) * 0.6) { hurt(4 + w * 0.8 * st.scale); evMiss(); combo = 0; }
@@ -95,7 +97,7 @@ window.simRun = function (stageIdx, skill, upLv) {
       // 敵人回合:停留時間越短越難擋
       e.turn++;
       const s = e.skill && e.turn % (e.skillEvery || 3) === 0 ? e.skill : null;
-      let count = e.atkCount, life = e.guardLife + p.guardBonus, dmg = e.atk, fade = 0, decoy = 0;
+      let count = e.atkCount, life = e.guardLife + p.guardBonus * rc.life, dmg = e.atk, fade = 0, decoy = 0;
       if (s) {
         count += s.count || 0; life *= s.lifeMul || 1; dmg *= s.dmgMul || 1;
         fade = s.fade ? 0.1 : 0; decoy = s.decoy || 0;
@@ -122,7 +124,7 @@ window.simRun = function (stageIdx, skill, upLv) {
     }
     if (p.hp <= 0) return w;
     if (w < st.waves.length - 1) {
-      p.hp = Math.min(p.maxHp, p.hp + Math.round(p.maxHp * 0.1) + p.regen);
+      p.hp = Math.min(p.maxHp, p.hp + (rc.noWaveHeal ? 0 : Math.round(p.maxHp * 0.1)) + p.regen);
       pickSkill(false);
       if (eliteReward) { pickSkill(true); eliteReward = false; }
       // 分歧:從兩個隨機選項中隨機選一個(真人會挑對自己有利的,所以模擬偏保守)

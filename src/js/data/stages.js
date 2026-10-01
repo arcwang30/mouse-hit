@@ -13,20 +13,60 @@ G.WAVE_GROWTH = {
 };
 
 // 周回挑戰:打倒第一輪最終 BOSS 開啟第二輪,第二輪破關開啟第三輪。關卡流程相同,敵人用以下方式強化(用模擬器校正)
-// scale:每關基礎強度往上墊多少(第二輪第一關 ≈ 第一輪後段);hp / atk:HP 與攻擊倍率
-// life:防禦符號停留時間倍率;count:每次攻擊多幾個盾牌;skillEvery:BOSS 必殺技每幾回合一次
-// breakLen / breakTime:破綻要依序點幾個數字、限時幾毫秒(數字越多、每個數字分到的時間越少)
-// points:積分與成長點數倍率;upMax:開啟這一輪後「成長」各項的等級上限(以開啟到的最高輪為準)
+// 數值:scale 每關基礎強度往上墊多少;hp / atk HP 與攻擊倍率;count 每次攻擊多幾個盾牌;skillEvery BOSS 必殺技每幾回合一次
+// 手感(讓玩家「感覺得到」變難):
+//   fistLife / life 拳頭 / 盾牌停留時間倍率(抵銷「反應」升級)  pattern 出現模式更常多發、連線、掃射
+//   bombAll 從第 1 波起炸彈混入的機率                          extras 每個敵人額外多幾個其他敵人的機制(見 G.ROUND_EXTRAS)
+//   noWaveHeal 波與波之間不回血(技能的回復仍有效)
+// 演出:prefix 敵人名字前綴;bgmRate 戰鬥音樂加速;畫面色調與敵人光環見 cyber-ui.css 的 #battle.round-2 / .round-3
+// breakLen / breakTime 破綻要依序點幾個數字、限時幾毫秒;points 積分與成長點數倍率;upMax 開啟這一輪後「成長」的等級上限
 G.ROUNDS = {
-  1: { name: '第一輪・凡塵', tag: '',   scale: 0,   hp: 1,   atk: 1,    life: 1,    count: 0, skillEvery: 3, breakLen: 4, breakTime: 4500, points: 1,   upMax: 10 },
-  2: { name: '第二輪・修羅', tag: 'Ⅱ', scale: 0.9, hp: 1.1, atk: 1.1,  life: 0.92, count: 0, skillEvery: 3, breakLen: 5, breakTime: 5000, points: 1.5, upMax: 15,
-       desc: '敵人全面強化,盾牌更快消失,破綻要點 5 個數字。成長上限提升至 Lv15,點數 ×1.5。' },
-  3: { name: '第三輪・天魔', tag: 'Ⅲ', scale: 1.8, hp: 1.2, atk: 1.15, life: 0.86, count: 1, skillEvery: 2, breakLen: 6, breakTime: 5400, points: 2,   upMax: 20,
-       desc: '最高難度:每次攻擊多一面盾牌,BOSS 每 2 回合放一次必殺技,破綻要點 6 個數字。成長上限提升至 Lv20,點數 ×2。' },
+  1: { name: '第一輪・凡塵', tag: '',   scale: 0,   hp: 1,   atk: 1,   count: 0, skillEvery: 3,
+       fistLife: 1,    life: 1,    pattern: 0,   bombAll: 0,    extras: 0, noWaveHeal: false, prefix: '',      bgmRate: 1,
+       breakLen: 4, breakTime: 4500, points: 1,   upMax: 10 },
+  2: { name: '第二輪・修羅', tag: 'Ⅱ', scale: 0.6, hp: 1,   atk: 1,    count: 0, skillEvery: 3,
+       fistLife: 0.85, life: 0.85, pattern: 0.5, bombAll: 0.12, extras: 1, noWaveHeal: true,  prefix: '修羅・', bgmRate: 1.08,
+       breakLen: 5, breakTime: 5000, points: 1.5, upMax: 15,
+       desc: '符號更快消失、更常多發,敵人多一種招式,波與波之間不回血。破綻要點 5 個數字。成長上限 Lv15,點數 ×1.5。' },
+  3: { name: '第三輪・天魔', tag: 'Ⅲ', scale: 1.0, hp: 1.05, atk: 1.05, count: 1, skillEvery: 2,
+       fistLife: 0.76, life: 0.76, pattern: 0.9, bombAll: 0.18, extras: 2, noWaveHeal: true,  prefix: '天魔・', bgmRate: 1.15,
+       breakLen: 6, breakTime: 5400, points: 2,   upMax: 20,
+       desc: '最高難度:符號極快、敵人多兩種招式、多一面盾牌,BOSS 每 2 回合放必殺技,不回血。破綻要點 6 個數字。成長上限 Lv20,點數 ×2。' },
+};
+
+// 周回追加機制:第二、三輪每個敵人從這裡多拿 extras 個「自己原本沒有」的機制(依敵人固定,每次都一樣)
+G.ROUND_EXTRAS = [
+  { key: 'blink',  atk: { blink: 0.3 },   name: '拳頭瞬移' },
+  { key: 'armor',  atk: { armor: 0.25 },  name: '拳頭晶盾' },
+  { key: 'hidden', atk: { hidden: 0.4 },  name: '拳頭駭入' },
+  { key: 'blink',  def: { blink: 0.35 },  name: '盾牌瞬移' },
+  { key: 'ghost',  def: { ghost: 0.4 },   name: '盾牌殘影' },
+  { key: 'lockon', def: { lockon: 450 },  name: '準星鎖定' },
+  { key: 'armor',  def: { armor: 0.3 },   name: '盾牌晶盾' },
+];
+G.roundExtras = (id, r = G.round()) => {
+  const n = G.ROUNDS[r].extras;
+  if (!n) return [];
+  // 敵人原本就有的機制不重複給
+  const m = G.MECHS[id] || {};
+  const has = phase => Object.assign({}, m[phase], ...(m.rotate || []).map(x => x[phase] || {}));
+  const pool = G.ROUND_EXTRAS.filter(x => !(x.atk && x.key in has('atk')) && !(x.def && x.key in has('def')));
+  // 依 id 決定起點,同一個敵人每次拿到的都一樣;第二個盡量換一個階段(一個攻、一個守)
+  let seed = [...id].reduce((s, c) => s * 31 + c.charCodeAt(0), 7) >>> 0;
+  const out = [];
+  while (out.length < n && pool.length) {
+    const prefer = out.length ? pool.filter(x => !!x.atk !== !!out[0].atk) : pool;
+    const from = prefer.length ? prefer : pool;
+    const pick = from[seed % from.length];
+    out.push(pick);
+    pool.splice(pool.indexOf(pick), 1);
+    seed = Math.floor(seed / 7) + 3;
+  }
+  return out;
 };
 G.ROUND_LAST = 3;
 // 目前選擇的輪次(不會超過已開啟的)與該輪的進度
-G.round = () => Math.min(G.save.data.round || 1, G.save.data.roundMax);
+G.round = () => G.tutorial && G.tutorial.active ? 1 : Math.min(G.save.data.round || 1, G.save.data.roundMax); // 教學一律當第一輪
 G.roundCfg = (r = G.round()) => G.ROUNDS[r];
 G.prog = (r = G.round()) => {
   const all = G.save.data.rounds;

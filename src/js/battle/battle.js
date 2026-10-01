@@ -41,11 +41,12 @@ function makeEnemy(spec, scale, w) {
   return Object.assign({}, d, {
     id, elite, hp, maxHp: hp, turn: 0,
     rawName: d.name,
-    name: (elite ? G.t('精英・') : '') + G.t(d.name),
+    name: G.t(r.prefix) + (elite ? G.t('精英・') : '') + G.t(d.name), // 周回:名字前加「修羅・」「天魔・」
     atk: Math.round(d.atk * (1 + (scale - 1) / 2) * (1 + w * g.atk) * (elite ? 1.2 : 1) * r.atk),
     atkCount: d.atkCount + Math.floor(w / g.countEvery) + (elite ? 1 : 0) + r.count,
     guardLife: Math.round(d.guardLife * (1 - w * g.life) * (elite ? 0.92 : 1) * r.life),
     skillEvery: r.skillEvery,
+    extras: G.roundExtras(id), // 周回:額外多拿的機制
   });
 }
 
@@ -98,7 +99,7 @@ G.battle = {
   relabel() {
     const e = this.e;
     if (!e || !this.p || !G.$('#battle').classList.contains('active')) return;
-    if (e.rawName) e.name = (e.elite ? G.t('精英・') : '') + G.t(e.rawName);
+    if (e.rawName) e.name = G.t(G.roundCfg().prefix) + (e.elite ? G.t('精英・') : '') + G.t(e.rawName);
     G.$('#enemyName').textContent = (e.boss ? G.t('【BOSS】') : '') + e.name;
     const st = [...G.$('#enemy').classList].find(c => STATE_LABEL[c]);
     if (st) G.$('#enemyState').textContent = G.t(STATE_LABEL[st]);
@@ -152,6 +153,11 @@ G.battle = {
       if (d.img) new Image().src = ENEMY_IMG_DIR + d.img;
     });
     new Image().src = ENEMY_IMG_DIR + 'enemies/training_dummy.png'; // 狂打獎勵關的木樁
+    // 周回演出:畫面色調、敵人光環(CSS)與戰鬥音樂加速
+    G.$('#battle').classList.remove('round-2', 'round-3');
+    if (G.round() > 1) G.$('#battle').classList.add('round-' + G.round());
+    this.bgmBase = G.roundCfg().bgmRate;
+    G.bgm.setRate(this.bgmBase);
     G.show('battle');
 
     const total = this.stage.waves.length;
@@ -174,7 +180,9 @@ G.battle = {
       this.render();
       G.bgm.play(this.e.boss ? 'boss' : this.stage.bgm || 'battle' + stageIdx);
       const intro = G.t(this.e.boss ? (w === total - 1 ? '魔王降臨!' : '中頭目出現!') : this.e.elite ? '精英來襲!' : '');
-      const hint = G.t((G.MECHS[this.e.id] || {}).hint || '');
+      const extra = (this.e.extras || []).map(x => G.t(x.name)).join('、'); // 周回追加的機制也寫在提示裡
+      const base = G.t((G.MECHS[this.e.id] || {}).hint || '');
+      const hint = base + (extra ? (base ? '\n' : '') + G.t('追加:{0}', extra) : '');
       G.grid.clearBlocks();
       await G.banner(`WAVE ${w + 1}`, intro + this.e.name + (hint ? '\n' + hint : ''), hint ? 1900 : 1200);
 
@@ -196,8 +204,9 @@ G.battle = {
       this.stats.waves++;
       await G.clock.wait(900);
       if (w < total - 1) {
-        // 每個 WAVE 之間基礎回復 10% 最大 HP,再加上技能的回復量
-        this.healPlayer(Math.round(this.p.maxHp * 0.1) + this.p.regen);
+        // 每個 WAVE 之間基礎回復 10% 最大 HP(第二輪起沒有),再加上技能的回復量
+        const baseHeal = G.roundCfg().noWaveHeal ? 0 : Math.round(this.p.maxHp * 0.1);
+        if (baseHeal + this.p.regen > 0) this.healPlayer(baseHeal + this.p.regen);
         await G.tips.show('skill'); // 第一次遇到才說明
         await G.scenes.pickSkill(this.p);
         if (challenged) await G.scenes.pickSkill(this.p, true); // 精英挑戰的獎勵:技法三選一
@@ -228,19 +237,20 @@ G.battle = {
     this.setupBoard('attack');
     this.render();
 
-    const m = this.mech('atk');
+    const m = this.mech('atk'), rc = G.roundCfg();
+    const life = Math.round(p.moleLife * rc.fistLife); // 周回:拳頭停留時間縮短
     this.soulReady = p.comboSoul; // 連擊之魂:每回合擋一次失誤
     let api = null;
     await G.molePhase({
-      icon: '👊', cls: 'fist', count: p.attackCount, life: p.moleLife,
-      interval: Math.max(250, p.moleLife * 0.45), patterns: this.patterns(),
+      icon: '👊', cls: 'fist', count: p.attackCount, life,
+      interval: Math.max(250, life * 0.45), patterns: this.patterns(),
       // 蓄力重拳:每回合其中一顆拳頭需要按住蓄力
       hold: { at: 1 + Math.floor(Math.random() * (p.attackCount - 1)), icon: '👊', label: 'HOLD', holdMs: HOLD_MS * (p.holdMaster ? 0.6 : 1) },
       mods: { gold: GOLD_RATE * p.goldMul, hidden: m.hidden, blink: m.blink, armor: m.armor },
       slowFirst: p.slowmo ? SLOWMO : null,
       onReady: a => { api = a; },
       // 炸彈:第 4 波起一般敵人也會混入;部分敵人機制會更多
-      decoyRate: m.bomb != null ? m.bomb : this.wave >= 3 ? BOMB_RATE : 0,
+      decoyRate: m.bomb != null ? m.bomb : Math.max(this.wave >= 3 ? BOMB_RATE : 0, rc.bombAll), // 周回:第 1 波就有炸彈
       decoyIcon: m.bombIcon || '💣',
       decoySafe: p.defuse,
       onDecoy: () => p.defuse ? this.defuseBomb() : this.bomb(m.bombIcon || '💣'),
@@ -283,7 +293,8 @@ G.battle = {
     const e = this.e, p = this.p;
     e.turn++;
     const s = e.skill && e.turn % (e.skillEvery || 3) === 0 ? e.skill : null;
-    let count = e.atkCount, life = e.guardLife + p.guardBonus, dmg = e.atk, cls = 'guard';
+    // 盾牌停留:敵人基礎值已含周回倍率,「反應」升級的加成也跟著縮短
+    let count = e.atkCount, life = e.guardLife + p.guardBonus * G.roundCfg().life, dmg = e.atk, cls = 'guard';
     if (s) {
       this.setEnemyState('ult');
       G.audio.play('bossSkill');
@@ -605,10 +616,11 @@ G.battle = {
   // ---- 出現模式:越後面的 WAVE、越後面的關卡,越常出現多發 / 連線 / 掃射 ----
   patterns() {
     const t = this.wave / Math.max(1, this.stage.waves.length - 1);   // 本關進度 0 → 1
-    const k = Math.min(1.5, t + this.stageIdx * 0.3);                // 第二、三關起點較高
+    const pr = G.roundCfg().pattern;                                  // 周回:一開始就更常多發 / 連線
+    const k = Math.min(1.5 + pr, t + this.stageIdx * 0.3 + pr);      // 第二、三關起點較高
     const ln = this.p.lineMaster ? 2 : 1;                            // 連線大師:連線 / 掃射加倍出現
     return {
-      single: 6 - 3 * k,
+      single: Math.max(0.6, 6 - 3 * k),
       pair: 1 + 1.4 * k,
       triple: 0.3 + 1.2 * k,
       line: (0.6 + 1.4 * k) * ln,
@@ -622,7 +634,8 @@ G.battle = {
   mech(phase) {
     const m = G.MECHS[this.e.id] || {};
     const cur = m.rotate ? m.rotate[this.e.turn % m.rotate.length] : m;
-    return cur[phase] || {};
+    // 周回追加的機制墊在底下,敵人原本的機制優先
+    return Object.assign({}, ...(this.e.extras || []).map(x => x[phase] || {}), cur[phase] || {});
   },
 
   // 回合開始時依敵人機制佈置格子
@@ -806,7 +819,7 @@ G.battle = {
     this.stats.fevers++;
     G.$('#app').classList.add('fever');
     G.audio.play('fever');
-    G.bgm.setRate(1.2);
+    G.bgm.setRate(1.2 * (this.bgmBase || 1));
     this.float('FEVER!!', 'tag fever');
     clearInterval(this._feverTimer);
     this._feverTimer = setInterval(() => {
@@ -819,7 +832,7 @@ G.battle = {
     clearInterval(this._feverTimer);
     this.feverUntil = 0;
     G.$('#app').classList.remove('fever');
-    G.bgm.setRate(1);
+    G.bgm.setRate(this.bgmBase || 1);
     this.renderCombo();
   },
 

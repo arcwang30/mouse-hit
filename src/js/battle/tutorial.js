@@ -54,7 +54,10 @@
       G.$('#deco').innerHTML = '';
       G.grid.clearAll();
       G.grid.clearBlocks();
+      G.$('#battle').classList.remove('round-2', 'round-3');
       G.$('#battle').classList.add('tutorial');
+      b.bgmBase = 1;
+      G.bgm.setRate(1);
       G.show('battle');
       G.$('#waveTag').textContent = 'TUTORIAL';
       b.showSprite(b.e);

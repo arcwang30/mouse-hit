@@ -60,12 +60,12 @@ G.I18N = {
   '第一輪・凡塵': ['一周目・凡塵', 'Round 1: Mortal'],
   '第二輪・修羅': ['二周目・修羅', 'Round 2: Asura'],
   '第三輪・天魔': ['三周目・天魔', 'Round 3: Demon'],
-  '敵人全面強化,盾牌更快消失,破綻要點 5 個數字。成長上限提升至 Lv15,點數 ×1.5。':
-    ['敵が全面的に強化され、盾の消えるのが速い。隙の数字は 5 つ。強化上限が Lv15 に、ポイント ×1.5。',
-     'Enemies are stronger, shields vanish faster, and openings need 5 numbers. Upgrade cap rises to Lv15, points ×1.5.'],
-  '最高難度:每次攻擊多一面盾牌,BOSS 每 2 回合放一次必殺技,破綻要點 6 個數字。成長上限提升至 Lv20,點數 ×2。':
-    ['最高難度:攻撃ごとに盾が 1 枚増え、BOSS は 2 ターンごとに必殺技、隙の数字は 6 つ。強化上限が Lv20 に、ポイント ×2。',
-     'Hardest: one extra shield per attack, bosses use their special every 2 turns, and openings need 6 numbers. Upgrade cap rises to Lv20, points ×2.'],
+  '符號更快消失、更常多發,敵人多一種招式,波與波之間不回血。破綻要點 5 個數字。成長上限 Lv15,點數 ×1.5。':
+    ['符号が速く消え、複数出現が増加。敵の技が 1 つ増え、WAVE 間の回復なし。隙の数字は 5 つ。強化上限 Lv15、ポイント ×1.5。',
+     'Symbols vanish faster and come in bunches, enemies gain an extra trick, and there is no healing between waves. Openings need 5 numbers. Upgrade cap Lv15, points ×1.5.'],
+  '最高難度:符號極快、敵人多兩種招式、多一面盾牌,BOSS 每 2 回合放必殺技,不回血。破綻要點 6 個數字。成長上限 Lv20,點數 ×2。':
+    ['最高難度:符号は超高速、敵の技が 2 つ増え盾も 1 枚増加、BOSS は 2 ターンごとに必殺技、回復なし。隙の数字は 6 つ。強化上限 Lv20、ポイント ×2。',
+     'Hardest: blazing-fast symbols, two extra enemy tricks plus an extra shield, boss specials every 2 turns, no healing. Openings need 6 numbers. Upgrade cap Lv20, points ×2.'],
   '{0} 開啟!': ['{0} 解放!', '{0} unlocked!'],
   '成長上限提升至 Lv{0}': ['強化上限が Lv{0} に上昇', 'Upgrade cap raised to Lv{0}'],
   '{0} 點': ['{0} pt', '{0} pt'],
@@ -128,6 +128,10 @@ G.I18N = {
   '必殺 MAX!': ['必殺 MAX!', 'SPECIAL MAX!'],
   '必殺 {0}%': ['必殺 {0}%', 'SPECIAL {0}%'],
   '精英・': ['エリート・', 'Elite '],
+  '修羅・': ['修羅・', 'Asura '], '天魔・': ['天魔・', 'Demon '],
+  '追加:{0}': ['追加:{0}', 'Bonus: {0}'],
+  '拳頭瞬移': ['拳が瞬間移動', 'Blinking fists'], '拳頭晶盾': ['拳に晶盾', 'Crystal fists'], '拳頭駭入': ['拳がハック', 'Hacked fists'],
+  '盾牌瞬移': ['盾が瞬間移動', 'Blinking shields'], '盾牌殘影': ['盾に残像', 'Ghost shields'], '準星鎖定': ['照準ロックオン', 'Lock-on'], '盾牌晶盾': ['盾に晶盾', 'Crystal shields'],
   '【BOSS】': ['【BOSS】', '[BOSS] '],
   '魔王降臨!': ['魔王降臨!', 'The Overlord descends! '],
   '中頭目出現!': ['中ボス出現!', 'Mid-boss appears! '],

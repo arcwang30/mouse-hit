@@ -233,7 +233,11 @@ G.scenes = {
 
   // ---- 主選單 ----
   menu() {
+    G.bgm.setRate(1); // 離開戰鬥:周回 / FEVER 的音樂加速還原
     G.$('#menuPoints').textContent = G.save.data.points;
+    // 點數夠升級(而且還沒到上限)時,「成長」按鈕閃爍提示
+    const sv = G.save.data, max = G.ROUNDS[sv.roundMax].upMax;
+    G.$('#btnUpgrade').classList.toggle('can-up', G.UPGRADES.some(u => sv.up[u.id] < max && sv.points >= G.upgradeCost(sv.up[u.id])));
     G.show('menu');
     G.bgm.play('menu');
   },
@@ -241,6 +245,7 @@ G.scenes = {
   // ---- 選擇關卡(主選單按「開始遊戲」後) ----
   stages() {
     const sv = G.save.data, round = G.round(), pr = G.prog(), cfg = G.roundCfg();
+    G.bgm.setRate(1);
     G.bgm.play('menu'); // 從結算畫面回來時音樂已經停了;已在播就不會重來
     // 周回切換:開啟第二輪後才出現
     const tabs = sv.roundMax < 2 ? '' : '<div class="round-tabs">' +
