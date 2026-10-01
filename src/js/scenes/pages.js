@@ -243,7 +243,8 @@ G.pages = {
 };
 
 // ---------- 事件綁定 ----------
-G.$('#btnStart').onclick = () => G.scenes.stages();
+// 第一次玩:先進新手教學(之後可在選擇關卡的第一輪重玩)
+G.$('#btnStart').onclick = () => G.save.data.tutorialDone ? G.scenes.stages() : G.tutorial.run(false);
 G.$('#btnHowto').onclick = () => G.pages.howto();
 G.$('#btnSettings').onclick = () => G.pages.settings();
 G.$('#btnHistory').onclick = () => G.pages.history();

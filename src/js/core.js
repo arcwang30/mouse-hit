@@ -105,6 +105,11 @@ G.save = {
       delete sv.best;
     }
     sv.roundMax = sv.roundMax || (sv.cleared ? 2 : 1);
+    // 新手教學:已經有通關紀錄的老玩家直接算完成,也不再領新手獎勵
+    if (sv.tutorialDone === undefined) {
+      sv.tutorialDone = sv.tutorialReward = Object.values(sv.rounds).some(r => r.clear.length > 0 || r.unlocked > 1);
+      if (sv.tutorialDone) sv.tips = { fever: true, skill: true, branch: true }; // 老玩家也不用再看說明卡
+    }
     // 敵人圖鑑:遇過的敵人 id。舊存檔沒有這筆,就把已通關關卡裡的敵人都算遇過
     if (!sv.seen) {
       sv.seen = {};

@@ -247,7 +247,10 @@ G.scenes = {
         const open = r <= sv.roundMax;
         return `<button class="round-tab r${r}${r === round ? ' on' : ''}" data-round="${r}" ${open ? '' : 'disabled'}>${open ? '' : '🔒 '}${G.t(G.ROUNDS[r].name)}</button>`;
       }).join('') + '</div>' + (cfg.desc ? `<div class="round-desc">${G.t(cfg.desc)}</div>` : '');
-    G.$('#stageList').innerHTML = tabs + G.STAGES.map((s, i) => {
+    // 新手教學卡片:只在第一輪最上面
+    const tut = round !== 1 ? '' : `<button class="stage-card tut-card" id="tutCard">${sv.tutorialClear ? '<span class="sc-clear">CLEAR</span>' : ''}` +
+      `<div class="sc-name">🎓 ${G.t('新手教學')}</div><div class="sc-desc">${G.t('從頭學會點擊、防禦、破綻與必殺技。')}</div></button>`;
+    G.$('#stageList').innerHTML = tabs + tut + G.STAGES.map((s, i) => {
       const locked = i >= pr.unlocked, clear = pr.clear.includes(i);
       const best = pr.best[i] ? G.t('最高分 {0}', pr.best[i]) : '';
       // CSS 變數裡的 url() 會以 style.css 的位置解析相對路徑,所以這裡先轉成完整網址
@@ -259,9 +262,11 @@ G.scenes = {
         <div class="sc-best">${best}</div>
       </button>`;
     }).join('');
-    G.$('#stageList').querySelectorAll('.stage-card').forEach(b => {
+    G.$('#stageList').querySelectorAll('.stage-card[data-i]').forEach(b => {
       b.onclick = () => { G.pages.current = null; G.battle.start(+b.dataset.i); };
     });
+    const tc = G.$('#tutCard');
+    if (tc) tc.onclick = () => { G.pages.current = null; G.tutorial.run(true); };
     G.$('#stageList').querySelectorAll('.round-tab').forEach(b => {
       b.onclick = () => {
         sv.round = +b.dataset.round;

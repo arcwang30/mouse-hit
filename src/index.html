@@ -124,6 +124,9 @@
         <div class="sprite" id="enemySprite">🧘</div>
         <div class="state-tag" id="enemyState">待機</div>
       </div>
+      <!-- 新手教學的說明框 -->
+      <div class="coach" id="coach"><div class="coach-step" id="coachStep"></div><div class="coach-text" id="coachText"></div></div>
+      <button class="coach-skip" id="coachSkip">跳過教學 ▶▶</button>
       <div class="enemy-info">
         <div class="enemy-name" id="enemyName">武僧</div>
         <div class="bar enemy-bar"><div class="fill" id="enemyHpFill"></div><span id="enemyHpText"></span></div>
@@ -188,10 +191,34 @@
     <h2>PAUSE</h2>
     <div class="pause-btns">
       <button class="btn" id="pauseResume" data-i18n>繼續遊戲</button>
+      <button class="btn" id="pauseSkills" data-i18n>📜 已獲得技能</button>
       <button class="btn" id="pauseSettings" data-i18n>設定</button>
       <button class="btn" id="pauseQuit">回到主畫面</button>
     </div>
     <div class="pause-note" data-i18n>回到主畫面後,本局進度不會保留</div>
+    <!-- 已獲得技能:在 PAUSE 中切換到這個畫面 -->
+    <div class="pause-skills" id="pauseSkillView">
+      <div class="ps-head"><b data-i18n>已獲得技能</b><span id="psCount"></span></div>
+      <div class="ps-list" id="psList"></div>
+      <button class="btn small" id="psBack" data-i18n>返回</button>
+    </div>
+  </div>
+  <!-- 新手教學:第一次完成的獎勵(挑一項成長升級後進第一關) -->
+  <div id="tutReward" class="overlay tut-reward">
+    <h2 data-i18n>教學完成!</h2>
+    <div class="tr-pts" id="tutRewardPts"></div>
+    <p class="tr-desc" data-i18n>成長點數可以永久強化炎鋼。現在就挑一項升一級吧!</p>
+    <div class="tr-list" id="tutRewardList"></div>
+    <p class="tr-note" data-i18n>之後過關獲得的點數,可以在主選單「💪 成長」繼續強化。</p>
+  </div>
+  <!-- 第一次遇到 FEVER / 技能 / 分歧時的說明卡 -->
+  <div id="tipCard" class="overlay tip-card">
+    <div class="tip-box">
+      <div class="tip-icon" id="tipIcon"></div>
+      <b id="tipTitle"></b>
+      <p id="tipText"></p>
+      <button class="btn small" id="tipOk" data-i18n>知道了</button>
+    </div>
   </div>
   <div id="hurtFlash"></div>
   <button class="pause-btn" id="pauseBtn" title="PAUSE (Esc)">❚❚</button>
@@ -207,6 +234,7 @@
 <script src="js/data/upgrades.js"></script>
 <script src="js/battle/grid.js"></script>
 <script src="js/battle/battle.js"></script>
+<script src="js/battle/tutorial.js"></script>
 <script src="js/data/pages.js"></script>
 <script src="js/data/history-i18n.js"></script>
 <script src="js/scenes/scenes.js"></script>

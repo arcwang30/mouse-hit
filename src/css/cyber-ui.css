@@ -574,3 +574,82 @@ html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; } /* 手機瀏覽
 @keyframes bwBlink { 50% { opacity: .35; } }
 @keyframes bwLoom  { from { transform: translate(-50%, -46%) scale(.85); opacity: 0; } 30% { opacity: .55; } }
 @keyframes bwName  { from { opacity: 0; letter-spacing: 1em; } }
+
+/* ---------- PAUSE:已獲得技能 ---------- */
+.pause-skills { display: none; flex-direction: column; gap: 2.4cqw; width: 88%; max-height: 72cqh; }
+#pauseMenu.skills .pause-btns, #pauseMenu.skills .pause-note { display: none; }
+#pauseMenu.skills .pause-skills { display: flex; }
+#pauseMenu.skills h2 { font-size: 8cqw; }
+.ps-head { display: flex; justify-content: space-between; align-items: baseline; color: var(--neon-c); font-size: 4.6cqw; }
+.ps-head span { font-family: var(--tech); font-size: 5cqw; color: var(--neon-y); text-shadow: 0 0 1.2cqw var(--neon-y); }
+.ps-list {
+  flex: 1; min-height: 0; overflow-y: auto; display: flex; flex-direction: column; gap: 2cqw; padding: 2.4cqw;
+  background: #0006; clip-path: var(--chamfer); box-shadow: inset 0 0 0 .3cqw #19f0ff50;
+}
+.ps-item { display: flex; align-items: center; gap: 3cqw; padding: 2cqw 2.4cqw; background: #ffffff0a; border-left: .8cqw solid var(--neon-c); text-align: left; }
+.ps-item.rule { border-left-color: var(--neon-m); background: #ff2bd612; }
+.ps-icon { font-size: 8cqw; width: 11cqw; text-align: center; flex-shrink: 0; }
+.ps-item b { font-size: 4.2cqw; color: var(--fire-2); }
+.ps-item p { margin: .6cqw 0 0; font-size: 3.2cqw; line-height: 1.5; color: #e6ecff; }
+.ps-n { font-family: var(--tech); font-size: 3.4cqw; color: var(--neon-y); }
+.ps-tag { font-size: 2.6cqw; padding: .2cqw 1.6cqw; color: #fff; background: var(--neon-m); vertical-align: middle; clip-path: polygon(8% 0, 100% 0, 92% 100%, 0 100%); }
+.ps-empty { padding: 6cqw 0; text-align: center; color: var(--steel-hi); font-size: 3.6cqw; }
+#psBack { align-self: center; min-width: 40%; }
+
+/* ---------- 新手教學 ---------- */
+.coach {
+  display: none; position: absolute; left: 3cqw; right: 3cqw; top: 12cqw; z-index: 6; pointer-events: none;
+  padding: 2.4cqw 3.4cqw; background: #05080bdd; clip-path: var(--chamfer); box-shadow: inset 0 0 0 .35cqw var(--neon-y);
+}
+.coach.show { display: block; }
+.coach-step { font-family: var(--tech); font-size: 3cqw; letter-spacing: .15em; color: var(--neon-y); text-shadow: 0 0 1.2cqw var(--neon-y); }
+.coach-step:empty { display: none; }
+.coach-text { margin-top: .8cqw; font-size: 4cqw; font-weight: 800; line-height: 1.5; color: #fff; }
+.coach-text.pop { animation: coachPop .3s ease-out; }
+@keyframes coachPop { from { transform: translateY(-15%); opacity: 0; } }
+.coach-skip {
+  display: none; position: absolute; right: 3cqw; bottom: 13cqw; z-index: 7;
+  font-size: 3cqw; font-weight: 800; padding: 1.2cqw 3cqw; color: #fff; border: 0;
+  background: #000a; clip-path: var(--chamfer); box-shadow: inset 0 0 0 .3cqw #ffffff50;
+}
+.coach-skip.armed { background: #c0142c; }
+#battle.tutorial .coach-skip { display: block; }
+/* 指向目標的手指 */
+.coach-hand {
+  position: absolute; z-index: 9; right: -8%; bottom: -14%; font-size: 9cqw; line-height: 1; pointer-events: none;
+  filter: drop-shadow(0 0 1.5cqw #ffd400); animation: handTap .8s ease-in-out infinite;
+}
+.ult-wrap .coach-hand { right: auto; left: 50%; bottom: auto; top: 100%; margin-left: -4cqw; }
+@keyframes handTap { 50% { transform: translate(-12%, -18%) scale(.9); } }
+/* 選擇關卡的教學卡片 */
+#stages .tut-card { background: linear-gradient(90deg, #13304a, #0a1a28); box-shadow: inset 0 0 0 .45cqw var(--neon-y), inset 0 0 5cqw #ffd40030; }
+/* 第一次完成的獎勵 */
+.tut-reward {
+  z-index: 25; flex-direction: column; align-items: center; justify-content: center; gap: 3cqw; padding: 0 6cqw; text-align: center;
+  background: repeating-linear-gradient(0deg, #0000 0 2px, #0003 2px 3px), #05080bf2;
+}
+.tut-reward h2 { margin: 0; font-size: 9cqw; color: var(--neon-y); text-shadow: 0 0 3cqw var(--neon-y); }
+.tr-pts { font-size: 5.4cqw; font-weight: 900; color: #fff; padding: 1cqw 5cqw; background: linear-gradient(90deg, #5a0f9c, #c0142c); clip-path: var(--chamfer); }
+.tr-desc { margin: 0; font-size: 3.8cqw; line-height: 1.6; color: #e6ecff; }
+.tr-note { margin: 0; font-size: 3cqw; line-height: 1.5; color: var(--steel-hi); }
+.tr-list { display: grid; grid-template-columns: 1fr 1fr; gap: 2.4cqw; width: 100%; }
+.tr-item {
+  display: flex; flex-direction: column; align-items: center; gap: .6cqw; padding: 3cqw 2cqw; border: 0; color: #fff;
+  background: #0a1418; clip-path: var(--chamfer); box-shadow: inset 0 0 0 .35cqw #19f0ff60; animation: trGlow 1s ease-in-out infinite alternate;
+}
+.tr-item:active { transform: scale(.96); }
+.tr-icon { font-size: 9cqw; line-height: 1; }
+.tr-item b { font-size: 4.4cqw; color: var(--fire-2); }
+.tr-item small { font-size: 3cqw; color: #cfe; }
+@keyframes trGlow { to { box-shadow: inset 0 0 0 .5cqw var(--neon-c), 0 0 3cqw #19f0ff60; } }
+/* 第一次遇到 FEVER / 技能 / 分歧的說明卡 */
+.tip-card { z-index: 26; align-items: center; justify-content: center; background: #000a; }
+.tip-box {
+  width: 84%; display: flex; flex-direction: column; align-items: center; gap: 2.4cqw; padding: 5cqw 5cqw 4cqw; text-align: center;
+  background: linear-gradient(180deg, #13202c, #070b10); clip-path: var(--chamfer); box-shadow: inset 0 0 0 .4cqw var(--neon-c);
+  animation: coachPop .3s ease-out;
+}
+.tip-icon { font-size: 13cqw; line-height: 1; }
+.tip-box b { font-size: 6cqw; color: var(--neon-y); text-shadow: 0 0 2cqw var(--neon-y); }
+.tip-box p { margin: 0; font-size: 3.8cqw; line-height: 1.65; color: #e6ecff; }
+#tipOk { min-width: 45%; margin-top: 1cqw; }

@@ -65,7 +65,7 @@ G.battle = {
   },
 
   resume() {
-    if (!G.clock.paused) return;
+    if (!G.clock.paused || G.tips.open) return; // 說明卡開著時由說明卡負責恢復
     G.$('#pauseMenu').classList.remove('show');
     G.audio.play('click');
     G.clock.resume();
@@ -74,6 +74,24 @@ G.battle = {
   renderPause() {
     G.$('#pauseQuit').textContent = G.t(this.quitArmed ? '再按一次確認' : '回到主畫面');
     G.$('#pauseQuit').classList.toggle('danger', !!this.quitArmed);
+    G.$('#pauseMenu').classList.remove('skills'); // 每次暫停都從主選單開始
+  },
+
+  // PAUSE 中查看本局已取得的技能(同一個技能拿多次會顯示 ×N;技法另外標示)
+  showPauseSkills(open) {
+    G.$('#pauseMenu').classList.toggle('skills', open);
+    G.audio.play(open ? 'select' : 'click');
+    if (!open) return;
+    const counts = new Map();
+    (this.p ? this.p.skills : []).forEach(id => counts.set(id, (counts.get(id) || 0) + 1));
+    G.$('#psCount').textContent = counts.size ? `${this.p.skills.length}` : '';
+    G.$('#psList').innerHTML = counts.size ? [...counts].map(([id, n]) => {
+      const s = G.SKILLS.find(k => k.id === id);
+      return `<div class="ps-item${s.rule ? ' rule' : ''}"><div class="ps-icon">${s.icon}</div>` +
+        `<div><b>${G.t(s.name)}${n > 1 ? ` <span class="ps-n">×${n}</span>` : ''}${s.rule ? ` <span class="ps-tag">${G.t('技法')}</span>` : ''}</b>` +
+        `<p>${G.t(s.desc)}</p></div></div>`;
+    }).join('') : `<div class="ps-empty">${G.t('還沒有取得任何技能')}</div>`;
+    G.$('#psList').scrollTop = 0;
   },
 
   // PAUSE 中切換語言:更新戰鬥畫面上已經顯示的文字
@@ -100,6 +118,7 @@ G.battle = {
     this.phase = null;
     ['#pauseMenu', '#banner', '#cutin', '#bossWarn'].forEach(s => G.$(s).classList.remove('show'));
     G.$('#stageView').classList.remove('rush');
+    if (G.tutorial.active) G.tutorial.cleanup();
     G.scenes.menu();
   },
 
@@ -179,6 +198,7 @@ G.battle = {
       if (w < total - 1) {
         // 每個 WAVE 之間基礎回復 10% 最大 HP,再加上技能的回復量
         this.healPlayer(Math.round(this.p.maxHp * 0.1) + this.p.regen);
+        await G.tips.show('skill'); // 第一次遇到才說明
         await G.scenes.pickSkill(this.p);
         if (challenged) await G.scenes.pickSkill(this.p, true); // 精英挑戰的獎勵:技法三選一
         this.render();
@@ -403,6 +423,8 @@ G.battle = {
       let idx = 0;
       const timer = this.timebar(ms, () => { G.grid.handler = null; res(false); });
       G.grid.handler = i => {
+        const done = seq.indexOf(i);
+        if (done >= 0 && done < idx) return; // 已經按過的數字(按下動畫還沒收完)再點一次不算錯
         if (i === seq[idx]) {
           G.audio.play('note', idx);
           G.grid.impact(i, 'num', idx === seq.length - 1); // 最後一個數字是重擊
@@ -638,6 +660,7 @@ G.battle = {
     const eliteOk = next && !next.endsWith('+') && !G.ENEMIES[next].boss;
     const rulesLeft = G.SKILLS.some(s => s.rule && !this.p.skills.includes(s.id));
     const pool = G.BRANCHES.filter(b => (b.id !== 'elite' || eliteOk) && (b.id !== 'train' || rulesLeft));
+    await G.tips.show('branch'); // 第一次遇到才說明
     const pick = await G.scenes.pickBranch(G.shuffle(pool).slice(0, 2));
     const p = this.p;
     if (pick === 'rest') {
@@ -679,6 +702,7 @@ G.battle = {
         G.$('#counter').textContent = hits;
         this.comboHit();
         this.punchFx(i % 3, { small: true, dur: 120 });
+        this.setEnemyState('hit', 250); // 木樁被打中也要晃一下
         G.audio.play('punch');
       },
       onMiss: () => {},
@@ -776,6 +800,7 @@ G.battle = {
   },
 
   startFever() {
+    G.tips.show('fever'); // 第一次進 FEVER 時說明(遊戲時間暫停)
     this.feverCharge = 0;
     this.feverUntil = G.clock.now() + this.p.feverMs;
     this.stats.fevers++;

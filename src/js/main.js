@@ -51,12 +51,16 @@ const KEYMAP = {
 // ---- PAUSE ----
 G.$('#pauseBtn').addEventListener('click', () => G.battle.pause());
 G.$('#pauseResume').onclick = () => G.battle.resume();
+G.$('#pauseSkills').onclick = () => G.battle.showPauseSkills(true);
+G.$('#psBack').onclick = () => G.battle.showPauseSkills(false);
 G.$('#pauseSettings').onclick = () => G.pages.settingsOver();
 G.$('#pauseQuit').onclick = () => G.battle.quit();
+G.$('#coachSkip').onclick = () => G.tutorial.skip();
 // 切到別的分頁 / App 時自動暫停
 document.addEventListener('visibilitychange', () => { if (document.hidden) G.battle.pause(); });
 document.addEventListener('keydown', e => {
   if (e.code !== 'Escape' || e.defaultPrevented || !G.$('#battle').classList.contains('active')) return;
+  if (G.clock.paused && G.$('#pauseMenu').classList.contains('skills')) return G.battle.showPauseSkills(false); // 技能畫面先退回 PAUSE
   G.clock.paused ? G.battle.resume() : G.battle.pause();
 });
 
