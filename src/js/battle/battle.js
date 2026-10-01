@@ -98,7 +98,7 @@ G.battle = {
     G.grid.clearBlocks();
     this.endFever();
     this.phase = null;
-    ['#pauseMenu', '#banner', '#cutin'].forEach(s => G.$(s).classList.remove('show'));
+    ['#pauseMenu', '#banner', '#cutin', '#bossWarn'].forEach(s => G.$(s).classList.remove('show'));
     G.$('#stageView').classList.remove('rush');
     G.scenes.menu();
   },
@@ -144,6 +144,8 @@ G.battle = {
       this.eliteNext = false;
       this.e = makeEnemy(spec, this.stage.scale, w);
       if (!G.save.data.seen[this.e.id]) { G.save.data.seen[this.e.id] = true; G.save.write(); } // 敵人圖鑑:遇過才顯示
+      if (this.e.boss && w === total - 1) await this.bossWarning(this.e); // 最終 BOSS 前的警報演出
+      if (run !== this.run) return;
       const tag = G.roundCfg().tag; // 周回:WAVE 前面標上 Ⅱ / Ⅲ
       G.$('#waveTag').textContent = (tag ? tag + ' ' : '') + `WAVE ${w + 1}/${total}`;
       this.showSprite(this.e);
@@ -434,6 +436,24 @@ G.battle = {
     await this.cutIn();
     await this.barrage(Math.round(p.atk * p.ultMult));
     await G.clock.wait(700);
+  },
+
+  // 最終 BOSS 登場前的警報:音樂停下 → 警報聲、警示膠帶、BOSS 黑影、WARNING 閃爍(約 2.6 秒)
+  async bossWarning(e) {
+    const el = G.$('#bossWarn'), shadow = G.$('#bwShadow');
+    G.bgm.stop();
+    shadow.style.display = e.img ? '' : 'none';
+    if (e.img) shadow.src = ENEMY_IMG_DIR + e.img;
+    G.$('#bwName').textContent = e.name;
+    el.classList.remove('show');
+    void el.offsetWidth;
+    el.classList.add('show');
+    G.audio.play('siren');
+    G.clock.after(() => G.audio.play('siren'), 1100);
+    G.clock.after(() => G.audio.play('bossSkill'), 1900);
+    if (G.save.data.vibrate && navigator.vibrate) { try { navigator.vibrate([120, 80, 120, 500, 120, 80, 120]); } catch (err) {} }
+    await G.clock.wait(2600);
+    el.classList.remove('show');
   },
 
   async cutIn() {

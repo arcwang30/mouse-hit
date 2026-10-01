@@ -152,6 +152,7 @@ G.I18N = {
   '迅擋! +{0}%': ['瞬防! +{0}%', 'Quick Block! +{0}%'],
   '格擋 +{0}%': ['ガード +{0}%', 'Block +{0}%'],
   '險擋 +{0}%': ['ギリギリ +{0}%', 'Close call +{0}%'],
+  'BOSS 襲來!': ['BOSS 襲来!', 'BOSS INCOMING!'],
   '破綻!': ['隙あり!', 'Opening!'],
   '破綻:依序點擊數字!': ['隙あり:数字を順番にタップ!', 'Opening: tap the numbers in order!'],
   '破綻消失': ['隙が消えた', 'Opening lost'],

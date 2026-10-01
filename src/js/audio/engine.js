@@ -151,6 +151,14 @@ const SFX = {
     arp(a, t, 523, [0, 4, 7, 12, 16, 19, 24], 0.045, { type: 'square', vol: 0.16, dur: 0.18 });
     a.noise(0.6, { filter: 'bandpass', freq: 500, to: 7000, q: 1.2, vol: 0.4 });
   },
+  siren: (a, t) => { // BOSS 警報:高低兩音交替的鳴笛 × 2,底下壓一聲低鼓
+    [0, 0.26, 0.52, 0.78].forEach((d, k) => {
+      const f = k % 2 ? 560 : 820;
+      a.tone(f, 0.26, { type: 'sawtooth', vol: 0.16, to: k % 2 ? 820 : 560, lp: 2400, q: 2, when: t + d });
+      a.tone(f / 2, 0.26, { type: 'square', vol: 0.08, when: t + d });
+    });
+    a.tone(70, 0.6, { to: 40, vol: 0.7 });
+  },
   thunder: a => {
     a.noise(0.08, { filter: 'highpass', freq: 2000, vol: 0.35 });
     a.noise(1.8, { freq: 500, to: 60, vol: 0.55 });

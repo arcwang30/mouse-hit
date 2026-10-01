@@ -527,3 +527,50 @@ html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; } /* 手機瀏覽
   box-shadow: inset 0 0 0 1cqw #ff3a4a, inset 0 0 16cqw #ff1a3ad0;
 }
 @keyframes dangerPulse { 0%, 100% { opacity: .15; } 50% { opacity: .9; } }
+
+/* ---------- 最終 BOSS 警報(約 2.6 秒) ---------- */
+.boss-warn {
+  z-index: 12; flex-direction: column; align-items: center; justify-content: center; gap: 1.5cqh; overflow: hidden;
+  background: radial-gradient(ellipse at 50% 50%, #5a000ccc, #12000390 70%);
+}
+.boss-warn.show { animation: bwIn .25s ease-out, bwOut .35s 2.25s ease-in forwards; }
+.boss-warn::before { /* 整個畫面跟著警報一明一暗 */
+  content: ""; position: absolute; inset: 0; background: #ff0022; mix-blend-mode: screen; opacity: 0;
+  animation: bwPulse .55s ease-in-out infinite;
+}
+.bw-shadow { /* BOSS 的黑影慢慢逼近 */
+  position: absolute; left: 50%; top: 50%; height: 62cqh; width: auto; opacity: .55;
+  transform: translate(-50%, -50%) scale(1.1);
+  filter: brightness(0) drop-shadow(0 0 2cqw #ff0022) drop-shadow(0 0 6cqw #ff002299);
+  animation: bwLoom 2.6s ease-out forwards;
+}
+.bw-tape { /* 上下兩條捲動的警示膠帶 */
+  position: absolute; left: -20%; right: -20%; height: 7cqh;
+  background: repeating-linear-gradient(-45deg, #ffd400 0 4cqw, #111 4cqw 8cqw);
+  box-shadow: 0 0 3cqw #000;
+  animation: bwTape .6s linear infinite;
+}
+.bw-tape.top    { top: 10cqh; transform: rotate(-4deg); }
+.bw-tape.bottom { bottom: 10cqh; transform: rotate(-4deg); animation-direction: reverse; }
+.bw-main {
+  position: relative; font-family: var(--tech); font-weight: 800; font-size: 15cqw; letter-spacing: .12em; line-height: 1;
+  color: #fff; text-shadow: 0 0 2cqw #ff0022, 0 0 6cqw #ff0022, 0 .6cqw 0 #6a0010;
+  animation: bwBlink .55s steps(1) infinite;
+}
+.bw-sub {
+  position: relative; font-size: 8cqw; font-weight: 900; color: #ffd400; transform: skewX(-10deg);
+  -webkit-text-stroke: .5cqw #2a0000; paint-order: stroke fill; text-shadow: 0 0 3cqw #ff3a00;
+  animation: slam .35s .35s ease-out backwards;
+}
+.bw-name {
+  position: relative; font-size: 5cqw; font-weight: 800; color: #fff; letter-spacing: .2em; padding: .8cqw 5cqw;
+  background: linear-gradient(90deg, transparent, #000c 20%, #000c 80%, transparent);
+  animation: bwName .4s .7s ease-out backwards;
+}
+@keyframes bwIn    { from { opacity: 0; } }
+@keyframes bwOut   { to { opacity: 0; transform: scale(1.08); } }
+@keyframes bwPulse { 50% { opacity: .22; } }
+@keyframes bwTape  { to { background-position: 11.3cqw 0; } }
+@keyframes bwBlink { 50% { opacity: .35; } }
+@keyframes bwLoom  { from { transform: translate(-50%, -46%) scale(.85); opacity: 0; } 30% { opacity: .55; } }
+@keyframes bwName  { from { opacity: 0; letter-spacing: 1em; } }
