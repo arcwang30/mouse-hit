@@ -257,9 +257,21 @@ html:lang(en) .round-tab { font-size: 2.7cqw; letter-spacing: 0; } /* 英文名�
 #stageList.slide-l { animation: slideFromR .22s ease-out; }
 #stageList.slide-r { animation: slideFromL .22s ease-out; }
 
-/* 成長點數夠升級時,主選單的「成長」按鈕換成金色並一明一暗 */
-.menu-grid .btn.can-up { --neon: var(--neon-y); --neon2: #fff3a0; color: #fff6c8; animation: canUp 1s ease-in-out infinite alternate; }
-@keyframes canUp {
-  from { filter: brightness(1); }
-  to   { filter: brightness(1.45); box-shadow: inset 0 0 0 .6cqw var(--neon-y), inset 0 0 5cqw #ffd40090; }
+/* 成長點數夠升級時,主選單的「成長」按鈕整顆變金色發光,右上角掛紅色「UP!」標籤 */
+.menu-grid .btn.can-up {
+  --neon: #ffd400; --neon2: #fff3a0; color: #3a1a00; text-shadow: 0 0 .8cqw #fff8;
+  background: linear-gradient(180deg, #fff3a0, #ffd400 45%, #ff9a00);
+  animation: canUp .8s ease-in-out infinite alternate;
 }
+.menu-grid .btn.can-up::before { /* 借用左上角的亮邊,改成右上角的 UP! 標籤 */
+  content: "UP!"; left: auto; right: 0; top: 0; width: auto; height: auto; z-index: 1;
+  padding: .3cqw 1.6cqw .4cqw 2.2cqw; font-family: var(--tech); font-size: 2.4cqw; font-weight: 800; line-height: 1.2;
+  color: #fff; text-shadow: none; letter-spacing: .05em;
+  background: #e0102a; clip-path: polygon(22% 0, 100% 0, 100% 100%, 0 100%);
+  animation: upBadge .4s ease-in-out infinite alternate;
+}
+@keyframes canUp {
+  from { filter: brightness(1); transform: scale(1); }
+  to   { filter: brightness(1.3) drop-shadow(0 0 2cqw #ffd400); transform: scale(1.06); }
+}
+@keyframes upBadge { to { background: #ff4a5a; } }
