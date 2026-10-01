@@ -503,7 +503,7 @@ G.battle = {
     G.audio.play('siren');
     G.clock.after(() => G.audio.play('siren'), 1100);
     G.clock.after(() => G.audio.play('bossSkill'), 1900);
-    if (G.save.data.vibrate && navigator.vibrate) { try { navigator.vibrate([120, 80, 120, 500, 120, 80, 120]); } catch (err) {} }
+    G.haptic.buzz([120, 80, 120, 500, 120, 80, 120]);
     await G.clock.wait(2600);
     el.classList.remove('show');
   },
@@ -522,7 +522,7 @@ G.battle = {
     G.audio.play('cutin');
     G.voice.say('hero', 'hero_ult', '烈焰鋼拳・焚天'); // 喊招
     G.clock.after(() => G.audio.play('boom'), 450); // 命中瞬間
-    if (G.save.data.vibrate && navigator.vibrate) { try { navigator.vibrate([0, 450, 80]); } catch (e) {} }
+    G.haptic.buzz([0, 450, 80]);
     await G.clock.wait(1700);
     el.classList.remove('show');
   },
@@ -954,7 +954,7 @@ G.battle = {
       void app.offsetWidth;
       app.classList.add('shake');
     }
-    if (G.save.data.vibrate && navigator.vibrate) { try { navigator.vibrate(40); } catch (e) {} }
+    G.haptic.buzz(40);
     if (p.hp <= 0 && p.revive > 0) {
       p.revive = 0;
       p.hp = Math.round(p.maxHp / 2);

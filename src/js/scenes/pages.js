@@ -133,12 +133,16 @@ G.pages = {
     // 必殺技按鈕放左手邊或右手邊
     const side = () => `<div class="st-item"><div class="st-top"><b>${G.t('必殺技位置')}</b><span class="st-val">SPECIAL</span></div><div class="st-lang two">` +
       [['left', '左'], ['right', '右']].map(([code, label]) => `<button class="st-lang-btn${d.ultSide === code ? ' on' : ''}" data-ult="${code}">${G.t(label)}</button>`).join('') + '</div></div>';
+    // 手機震動:Android 正常震動;iPhone 只有點擊時的輕觸回饋;都不支援就顯示灰色、不能切換
+    const vibrate = () => !G.haptic.supported
+      ? `<div class="st-item st-toggle off"><div><b>${G.t('手機震動')}</b><p>${G.t('此裝置不支援震動')}</p></div><span class="st-sw">${G.t('不支援')}</span></div>`
+      : toggle('vibrate', '手機震動', G.haptic.ios ? '點擊時輕觸回饋(iPhone 只有點擊會震)' : '點擊與受傷時震動');
     G.$('#settingsTabs').innerHTML = this.SETTINGS_TABS.map((t, i) =>
       `<button class="pg-tab${i === this.settingsTab ? ' on' : ''}" data-tab="${i}">${G.t(t)}</button>`).join('');
     G.$('#settingsBody').innerHTML = this.settingsTab === 1
       ? G.skin.html() + G.wall.html()
       : lang() + vol('music', '音樂') + vol('sfx', '音效') +
-        toggle('vibrate', '手機震動', '點擊與受傷時震動(支援的手機)') +
+        vibrate() +
         toggle('shake', '畫面震動', '受傷、重擊時畫面搖晃') +
         (G.VOICE_ENABLED ? toggle('voice', '角色語音', '必殺技時喊出招式名(裝置內建的 AI 語音)') : '') +
         side() +
@@ -172,7 +176,7 @@ G.pages = {
       G.save.data[k] = !G.save.data[k];
       G.save.write();
       G.audio.play('select');
-      if (k === 'vibrate' && G.save.data.vibrate && navigator.vibrate) { try { navigator.vibrate(30); } catch (err) {} }
+      if (k === 'vibrate') G.haptic.buzz(30, true); // 打開時試震一下
       if (k === 'voice' && G.save.data.voice) G.voice.say('hero', 'hero_ult', '烈焰鋼拳・焚天'); // 打開時試聽一次
       return this.renderSettings();
     }

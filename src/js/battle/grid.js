@@ -103,9 +103,7 @@ G.grid = {
       void g.offsetWidth;
       g.classList.add('quake');
     }
-    if (kind !== 'miss' && G.save.data.vibrate && navigator.vibrate) {
-      try { navigator.vibrate(big ? 35 : 12); } catch (e) {}
-    }
+    if (kind !== 'miss') G.haptic.buzz(big ? 40 : 28); // 點擊回饋(太短的話有些手機感覺不到)
   },
 
   // ---- 格子狀態(由敵人機制放置,跨回合保留,和按鈕分開顯示) ----
@@ -515,7 +513,7 @@ G.megaMash = o => new Promise(resolve => {
     fx.style.setProperty('--r', (Math.random() * 60 - 30) + 'deg');
     btn.appendChild(fx);
     G.clock.after(() => fx.remove(), 420);
-    if (G.save.data.vibrate && navigator.vibrate) { try { navigator.vibrate(left <= 0 ? 40 : 12); } catch (e) {} }
+    G.haptic.buzz(left <= 0 ? 45 : 25);
     if (left <= 0 && G.save.data.shake) {
       grid.classList.remove('quake');
       void grid.offsetWidth;

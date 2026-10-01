@@ -387,3 +387,6 @@ html:lang(en) .round-tab { font-size: 2.7cqw; letter-spacing: 0; } /* 英文名�
 .dd-skill { padding: 2cqw; background: #ff2bd612; border-left: .8cqw solid var(--neon-m); text-align: left; }
 .dd-close { font-size: 2.8cqw; color: var(--steel-hi); }
 .result-box .score.coins { color: #fff3a0; }
+/* 裝置不支援的設定(例如舊 iPhone 的震動):變灰、不能切換 */
+.st-toggle.off { opacity: .55; }
+.st-toggle.off .st-sw { background: #ffffff14; color: var(--steel-hi); }
