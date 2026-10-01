@@ -93,6 +93,9 @@
 }
 .st-sw.on { background: linear-gradient(180deg, #5cf0a0, #178a4c); box-shadow: 0 0 2cqw #3ddc84; }
 .st-row { display: flex; gap: 3cqw; }
+.st-pwa ol.st-steps { margin: 1.4cqw 0 0; padding-left: 5.4cqw; font-size: 3.2cqw; line-height: 1.6; color: #fff; }
+.st-pwa .st-warn { color: var(--neon-y); }
+.st-pwa .st-install { margin-top: 2cqw; width: 100%; }
 .st-row .btn { flex: 1; }
 
 /* ---------- 了解歷史 ---------- */

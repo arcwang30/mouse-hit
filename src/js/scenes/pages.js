@@ -127,6 +127,7 @@ G.pages = {
       (G.VOICE_ENABLED ? toggle('voice', '角色語音', '必殺技時喊出招式名(裝置內建的 AI 語音)') : '') +
       side() +
       G.skin.html() +
+      (G.clock.paused ? '' : G.pwa.html()) + // PAUSE 中開設定時不顯示安裝引導
       (G.clock.paused ? '' : '<div class="st-row">' +
       `<button class="btn small danger" id="stReset">${G.t(this.resetArmed ? '再按一次確認' : '🗑️ 重置存檔')}</button>` +
       '</div>');
@@ -147,6 +148,7 @@ G.pages = {
     if (!t) return;
     if (t.dataset.lang) { G.setLang(t.dataset.lang); G.audio.play('select'); return this.renderSettings(); }
     if (t.dataset.skin) { G.skin.pick(t.dataset.skin) && this.renderSettings(); return; }
+    if (t.id === 'stInstall') return G.pwa.install();
     if (t.dataset.ult) { G.save.data.ultSide = t.dataset.ult; G.save.write(); G.applyUltSide(); G.audio.play('select'); return this.renderSettings(); }
     if (t.dataset.vol) return this.setVol(t.dataset.vol, +t.dataset.v);
     if (t.dataset.toggle) {

@@ -5,11 +5,20 @@
   <meta name="google" content="notranslate"><!-- 遊戲自己有語言切換,別讓瀏覽器自動翻譯把日文/英文又翻成中文 -->
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
   <title>鋼拳風雲錄</title>
+  <!-- PWA:可以「加入主畫面」以 App 方式全螢幕遊玩(不安裝也照常用瀏覽器玩) -->
+  <link rel="manifest" href="manifest.webmanifest">
+  <meta name="theme-color" content="#000000">
+  <link rel="icon" type="image/png" href="../assets/images/icons/favicon-64.png">
+  <link rel="apple-touch-icon" href="../assets/images/icons/apple-touch-icon.png">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black">
+  <meta name="apple-mobile-web-app-title" content="鋼拳風雲錄">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Orbitron:wght@600;800&display=swap">
-  <link rel="stylesheet" href="css/style.css?v=202610020201">
-  <link rel="stylesheet" href="css/cyber-ui.css?v=202610020201">
-  <link rel="stylesheet" href="css/menu-pages.css?v=202610020201">
+  <link rel="stylesheet" href="css/style.css?v=202610020215">
+  <link rel="stylesheet" href="css/cyber-ui.css?v=202610020215">
+  <link rel="stylesheet" href="css/menu-pages.css?v=202610020215">
 </head>
 <body>
 <div id="app">
@@ -252,26 +261,27 @@
   <button class="pause-btn" id="pauseBtn" title="PAUSE (Esc)">❚❚</button>
 </div>
 
-<script src="js/core.js?v=202610020201"></script>
-<script src="js/i18n.js?v=202610020201"></script>
-<script src="js/audio/engine.js?v=202610020201"></script>
-<script src="js/audio/voice.js?v=202610020201"></script>
-<script src="js/audio/bgm.js?v=202610020201"></script>
-<script src="js/data/skills.js?v=202610020201"></script>
-<script src="js/data/enemies.js?v=202610020201"></script>
-<script src="js/data/stages.js?v=202610020201"></script>
-<script src="js/data/upgrades.js?v=202610020201"></script>
-<script src="js/data/achievements.js?v=202610020201"></script>
-<script src="js/data/skins.js?v=202610020201"></script>
-<script src="js/data/collection.js?v=202610020201"></script>
-<script src="js/battle/grid.js?v=202610020201"></script>
-<script src="js/battle/battle.js?v=202610020201"></script>
-<script src="js/battle/tutorial.js?v=202610020201"></script>
-<script src="js/data/pages.js?v=202610020201"></script>
-<script src="js/data/history-i18n.js?v=202610020201"></script>
-<script src="js/scenes/scenes.js?v=202610020201"></script>
-<script src="js/scenes/pages.js?v=202610020201"></script>
-<script src="js/scenes/shop.js?v=202610020201"></script>
-<script src="js/main.js?v=202610020201"></script>
+<script src="js/core.js?v=202610020215"></script>
+<script src="js/i18n.js?v=202610020215"></script>
+<script src="js/audio/engine.js?v=202610020215"></script>
+<script src="js/audio/voice.js?v=202610020215"></script>
+<script src="js/audio/bgm.js?v=202610020215"></script>
+<script src="js/data/skills.js?v=202610020215"></script>
+<script src="js/data/enemies.js?v=202610020215"></script>
+<script src="js/data/stages.js?v=202610020215"></script>
+<script src="js/data/upgrades.js?v=202610020215"></script>
+<script src="js/data/achievements.js?v=202610020215"></script>
+<script src="js/data/skins.js?v=202610020215"></script>
+<script src="js/data/collection.js?v=202610020215"></script>
+<script src="js/battle/grid.js?v=202610020215"></script>
+<script src="js/battle/battle.js?v=202610020215"></script>
+<script src="js/battle/tutorial.js?v=202610020215"></script>
+<script src="js/data/pages.js?v=202610020215"></script>
+<script src="js/data/history-i18n.js?v=202610020215"></script>
+<script src="js/scenes/scenes.js?v=202610020215"></script>
+<script src="js/scenes/pages.js?v=202610020215"></script>
+<script src="js/scenes/shop.js?v=202610020215"></script>
+<script src="js/pwa.js?v=202610020215"></script>
+<script src="js/main.js?v=202610020215"></script>
 </body>
 </html>
