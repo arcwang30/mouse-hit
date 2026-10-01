@@ -144,7 +144,7 @@ button { font: inherit; color: inherit; cursor: pointer; }
 /* 選單類畫面:背景改由 #artBg 動態顯示,這裡只留四周淡淡的暗角,不再整片壓暗 */
 .screen.art { background: radial-gradient(ellipse 85% 70% at 50% 45%, transparent 55%, #0008 100%); }
 /* LOGO 只取上半部(拳頭 + 中文標題),英文卷軸由背景圖本身提供 */
-.menu-logo { width: 74%; aspect-ratio: 896 / 600; overflow: hidden; flex-shrink: 0; margin-top: -1cqh; }
+.menu-logo { width: 88%; aspect-ratio: 896 / 600; overflow: hidden; flex-shrink: 0; margin-top: -1cqh; }
 .menu-logo img, .title-logo img { width: 100%; display: block; filter: drop-shadow(0 0 3cqw #ff5a1f80); }
 /* logo.webp 下半部是「STEEL FIST: WIND & CLOUD」卷軸,背景圖已經有同樣的卷軸:直接把圖片下半部切掉
    (外框的 aspect-ratio 也會裁,但舊版手機瀏覽器不支援 aspect-ratio,會露出卷軸) */

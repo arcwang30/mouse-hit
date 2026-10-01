@@ -98,9 +98,22 @@ G.pages = {
   },
 
   // ---------- 設定 ----------
+  // 分成「設定」(聲音、操作等)與「外觀」(九宮格造型、桌布)兩頁,上方分頁或左右滑動切換
+  settingsTab: 0,
+  SETTINGS_TABS: ['⚙️ 設定', '🎨 外觀'],
   settings() {
+    this.settingsTab = 0;
     this.renderSettings();
     this.open('settings');
+  },
+
+  setSettingsTab(i) {
+    const n = this.SETTINGS_TABS.length;
+    this.settingsTab = (i + n) % n;
+    this.resetArmed = false;
+    G.audio.play('click');
+    this.renderSettings();
+    G.$('#settingsBody').scrollTop = 0;
   },
 
   renderSettings() {
@@ -120,18 +133,19 @@ G.pages = {
     // 必殺技按鈕放左手邊或右手邊
     const side = () => `<div class="st-item"><div class="st-top"><b>${G.t('必殺技位置')}</b><span class="st-val">SPECIAL</span></div><div class="st-lang two">` +
       [['left', '左'], ['right', '右']].map(([code, label]) => `<button class="st-lang-btn${d.ultSide === code ? ' on' : ''}" data-ult="${code}">${G.t(label)}</button>`).join('') + '</div></div>';
-    G.$('#settingsBody').innerHTML =
-      lang() + vol('music', '音樂') + vol('sfx', '音效') +
-      toggle('vibrate', '手機震動', '點擊與受傷時震動(支援的手機)') +
-      toggle('shake', '畫面震動', '受傷、重擊時畫面搖晃') +
-      (G.VOICE_ENABLED ? toggle('voice', '角色語音', '必殺技時喊出招式名(裝置內建的 AI 語音)') : '') +
-      side() +
-      G.skin.html() +
-      G.wall.html() +
-      (G.clock.paused ? '' : G.pwa.html()) + // PAUSE 中開設定時不顯示安裝引導
-      (G.clock.paused ? '' : '<div class="st-row">' +
-      `<button class="btn small danger" id="stReset">${G.t(this.resetArmed ? '再按一次確認' : '🗑️ 重置存檔')}</button>` +
-      '</div>');
+    G.$('#settingsTabs').innerHTML = this.SETTINGS_TABS.map((t, i) =>
+      `<button class="pg-tab${i === this.settingsTab ? ' on' : ''}" data-tab="${i}">${G.t(t)}</button>`).join('');
+    G.$('#settingsBody').innerHTML = this.settingsTab === 1
+      ? G.skin.html() + G.wall.html()
+      : lang() + vol('music', '音樂') + vol('sfx', '音效') +
+        toggle('vibrate', '手機震動', '點擊與受傷時震動(支援的手機)') +
+        toggle('shake', '畫面震動', '受傷、重擊時畫面搖晃') +
+        (G.VOICE_ENABLED ? toggle('voice', '角色語音', '必殺技時喊出招式名(裝置內建的 AI 語音)') : '') +
+        side() +
+        (G.clock.paused ? '' : G.pwa.html()) + // PAUSE 中開設定時不顯示安裝引導
+        (G.clock.paused ? '' : '<div class="st-row">' +
+        `<button class="btn small danger" id="stReset">${G.t(this.resetArmed ? '再按一次確認' : '🗑️ 重置存檔')}</button>` +
+        '</div>');
   },
 
   setVol(key, v) {
@@ -238,6 +252,10 @@ G.$('#btnAch').onclick = () => { G.audio.play('select'); G.ach.open(); };
 G.$('#howtoPrev').onclick = () => G.pages.turnHowto(-1);
 G.$('#howtoNext').onclick = () => G.pages.turnHowto(1);
 G.$('#settingsBody').addEventListener('click', e => G.pages.settingsClick(e));
+G.$('#settingsTabs').addEventListener('click', e => {
+  const t = e.target.closest('[data-tab]');
+  if (t) G.pages.setSettingsTab(+t.dataset.tab);
+});
 G.$('#historyTabs').addEventListener('click', e => {
   const t = e.target.closest('[data-tab]');
   if (t) G.pages.setHistoryTab(+t.dataset.tab);
@@ -249,6 +267,7 @@ document.querySelectorAll('[data-back]').forEach(b => { b.onclick = () => G.page
 const flipPage = (cur, d) => {
   if (cur === 'stages') return G.scenes.setRound(G.round() + d); // 選擇關卡:切換周回
   if (cur === 'shop') return G.shop.setTab(G.shop.tab + d);       // 商店:切換分頁
+  if (cur === 'settings') return G.pages.setSettingsTab(G.pages.settingsTab + d); // 設定:設定 / 外觀
   if (cur === 'howto') G.pages.turnHowto(d);
   else if (cur === 'history') G.pages.setHistoryTab(G.pages.historyTab + d);
   else return;
@@ -268,7 +287,7 @@ document.addEventListener('keydown', e => {
 });
 
 // 手機:手指往左滑看下一頁、往右滑看上一頁(上下捲動不受影響);選擇關卡則是切換第一 / 二 / 三輪
-['howto', 'history', 'stages', 'shop'].forEach(id => {
+['howto', 'history', 'stages', 'shop', 'settings'].forEach(id => {
   const el = G.$('#' + id);
   let x0 = null, y0 = 0, t0 = 0;
   el.addEventListener('touchstart', e => {

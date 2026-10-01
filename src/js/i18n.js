@@ -437,6 +437,7 @@ G.I18N = {
   '必殺技位置': ['必殺技の位置', 'Special Button'], '左': ['左', 'Left'], '右': ['右', 'Right'],
   '🗑️ 重置存檔': ['🗑️ セーブをリセット', '🗑️ Reset Save'],
   // 桌布
+  '⚙️ 設定': ['⚙️ 設定', '⚙️ Settings'], '🎨 外觀': ['🎨 外観', '🎨 Appearance'],
   '🖼️ 桌布': ['🖼️ 壁紙', '🖼️ Wallpapers'], '桌布': ['壁紙', 'Wallpaper'], '跟隨造型': ['スキンに合わせる', 'Match Skin'],
   '鋼板工坊': ['鋼板工房', 'Steel Works'], '霓虹網格': ['ネオングリッド', 'Neon Grid'], '竹影': ['竹影', 'Bamboo Shade'],
   '熔岩裂谷': ['溶岩の裂け目', 'Lava Rift'], '冰晶': ['氷晶', 'Ice Crystal'], '機庫': ['格納庫', 'Hangar'],
