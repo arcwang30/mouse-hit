@@ -5,6 +5,7 @@ G.applyI18n();
 G.applyUltSide = () => G.$('#battle').classList.toggle('ult-left', G.save.data.ultSide === 'left');
 G.applyUltSide();
 G.skin.apply(); // 九宮格造型
+G.wall.apply(); // 桌布
 G.grid.init();
 G.$('#hurtFlash').addEventListener('animationend', e => e.target.classList.remove('show'));
 

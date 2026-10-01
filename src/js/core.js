@@ -101,7 +101,7 @@ G.save = {
     this.data.up = Object.assign({ hp: 0, atk: 0, ult: 0, react: 0 }, this.data.up);
     this.data.ach = this.data.ach || {};                                        // 已達成的成就 { id: 時間 }
     this.data.life = Object.assign({ breaks: 0, ults: 0 }, this.data.life); // 累計紀錄(成就用)
-    this.data.owned = Object.assign({ skins: {}, dex: {} }, this.data.owned);  // 商店買過的東西
+    this.data.owned = Object.assign({ skins: {}, walls: {}, dex: {} }, this.data.owned);  // 商店買過的東西
     if (!this.data.lang) { // 第一次開啟:依瀏覽器語言決定
       const l = (navigator.language || "zh").toLowerCase();
       this.data.lang = l.startsWith("ja") ? "ja" : l.startsWith("zh") ? "zh" : "en";

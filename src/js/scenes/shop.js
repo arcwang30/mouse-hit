@@ -13,7 +13,7 @@ const dexName = e => G.t(e.kind === 'hero' ? e.name : e.dummy ? '訓練木樁' :
 
 G.shop = {
   tab: 0, armed: null,
-  TABS: [['skins', '🎨 造型'], ['hero', '主角圖鑑'], ['minion', '小兵圖鑑'], ['boss', 'BOSS 圖鑑']],
+  TABS: [['skins', '🎨 造型'], ['walls', '🖼️ 桌布'], ['hero', '主角圖鑑'], ['minion', '小兵圖鑑'], ['boss', 'BOSS 圖鑑']],
 
   open() {
     this.tab = 0;
@@ -43,6 +43,18 @@ G.shop = {
           return `<div class="shop-skin skin-${s.id}"><span class="skin-mini">${'<i></i>'.repeat(9)}</span><b>${G.t(s.name)}</b>` +
             this.buyBtn('skin:' + s.id, s.price, owned) + '</div>';
         }).join('') + '</div>';
+    } else if (kind === 'walls') {
+      // 桌布:主題(對應九宮格造型)與世界觀(關卡場景)分兩段;✨ 是有動態效果
+      const card = w => {
+        const owned = G.wall.unlocked(w);
+        return `<div class="shop-wall">${G.wall.mini(w)}<b>${G.t(w.name)}</b>` +
+          (w.anim ? `<span class="wp-tag">${G.t('✨ 動態')}</span>` : '') +
+          (w.ach && !owned ? `<span class="wp-ach">${G.t('或完成成就「{0}」', G.wall.achName(w))}</span>` : '') +
+          this.buyBtn('wall:' + w.id, w.price, owned) + '</div>';
+      };
+      const sec = (kind2, title) => `<p class="shop-sec">${G.t(title)}</p>` + G.WALLPAPERS.filter(w => w.kind === kind2).map(card).join('');
+      body.innerHTML = `<p class="shop-tip">${G.t('桌布會換掉九宮格底下的底板,可在「設定」中更換。')}</p><div class="shop-walls">` +
+        sec('theme', '主題桌布') + sec('world', '世界觀桌布') + '</div>';
     } else {
       const list = G.dexList(kind);
       const got = list.filter(e => sv.owned.dex[G.dexKey(e)]).length;
@@ -78,6 +90,7 @@ G.shop = {
     sv.coins -= price;
     const [type, ...rest] = key.split(':'), id = rest.join(':');
     if (type === 'skin') sv.owned.skins[id] = true;
+    else if (type === 'wall') sv.owned.walls[id] = true;
     else sv.owned.dex[id] = true;
     G.save.write();
     G.audio.play('levelup');

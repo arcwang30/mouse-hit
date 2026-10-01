@@ -50,6 +50,7 @@ G.ach = {
     });
     if (got.length) { G.save.write(); this.next(); }
     G.skin.checkNew(); // 成就數、通關進度也會解鎖九宮格造型
+    G.wall.checkNew(); // 部分桌布完成成就就能解鎖
     return got;
   },
 

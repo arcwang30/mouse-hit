@@ -1,0 +1,231 @@
+/* ---------- 桌布:九宮格底下的底板(資料見 js/data/wallpapers.js) ----------
+   .wp-layer 疊在底板上、九宮格與攻守 / 瀕死光效之下;--u 是圖樣的尺寸單位
+   (戰鬥中 1cqw,設定 / 商店的小預覽縮小),讓預覽和實際看起來一樣
+   動態桌布的動畫都放在 ::before / ::after,桌布層本身留給 FEVER 的閃光 */
+.grid-wrap { isolation: isolate; --u: 1cqw; }
+.wp-layer { display: none; position: absolute; inset: 0; z-index: -1; pointer-events: none; overflow: hidden; }
+.wp-on .wp-layer { display: block; }
+.wp-layer::before, .wp-layer::after { content: ""; position: absolute; inset: 0; }
+#app.fever #battle.wp-on .wp-layer { box-shadow: inset 0 0 0 .6cqw var(--neon-m), inset 0 0 6cqw #ff2bd680; animation: feverGrid .5s ease-in-out infinite alternate; }
+
+/* 小預覽 */
+.wp-mini {
+  position: relative; display: block; width: 100%; aspect-ratio: 1; overflow: hidden; isolation: isolate;
+  border-radius: .6cqw; --u: .2cqw; background: linear-gradient(180deg, #0c1016, #06080b);
+}
+.wp-mini.wp-auto::after { content: "AUTO"; position: absolute; inset: 0; display: grid; place-items: center; font: 800 2.4cqw var(--tech); color: #19f0ffb0; }
+.skin-pick.locked .wp-mini { filter: grayscale(1) brightness(.4); }
+.shop-wall .wp-mini { --u: .3cqw; border-radius: 1cqw; }
+
+/* ===== 主題桌布(對應九宮格造型) ===== */
+/* 鋼板工坊:防滑花紋鋼板 + 鉚釘 */
+.wp-steel .wp-layer {
+  background:
+    radial-gradient(circle at calc(var(--u) * 2) calc(var(--u) * 2), #c8d2dc60 0 calc(var(--u) * .5), transparent calc(var(--u) * .7)) 0 0 / calc(var(--u) * 24) calc(var(--u) * 24),
+    linear-gradient(45deg, transparent 44%, #a8b4c028 44% 56%, transparent 56%) 0 0 / calc(var(--u) * 4) calc(var(--u) * 4),
+    linear-gradient(-45deg, transparent 44%, #a8b4c020 44% 56%, transparent 56%) calc(var(--u) * 2) calc(var(--u) * 2) / calc(var(--u) * 4) calc(var(--u) * 4),
+    linear-gradient(180deg, #2a3038, #10141a);
+}
+/* 霓虹網格:往前流動的透視格線 + 地平線光 */
+.wp-neon .wp-layer { background: radial-gradient(ellipse 80% 30% at 50% 38%, #ff2bd650, transparent 70%), linear-gradient(180deg, #0a0218, #1a0430 40%, #05010a); }
+.wp-neon .wp-layer::before {
+  inset: 38% -60% -20%; transform: perspective(calc(var(--u) * 30)) rotateX(62deg); transform-origin: 50% 0;
+  background:
+    linear-gradient(90deg, #19f0ff90 0 calc(var(--u) * .5), transparent calc(var(--u) * .5)) 0 0 / calc(var(--u) * 8) 100%,
+    linear-gradient(0deg, #ff2bd6a0 0 calc(var(--u) * .5), transparent calc(var(--u) * .5)) 0 0 / 100% calc(var(--u) * 8);
+  animation: wpNeonRun 1.2s linear infinite;
+}
+.wp-neon .wp-layer::after { inset: 0 0 62%; background: linear-gradient(180deg, transparent, #ff2bd618 80%, #ff2bd660); }
+@keyframes wpNeonRun { to { background-position: 0 0, 0 calc(var(--u) * 8); } }
+/* 竹影:竹竿與竹節 */
+.wp-bamboo .wp-layer {
+  background:
+    repeating-linear-gradient(0deg, transparent 0 calc(var(--u) * 16), #b8d87a50 calc(var(--u) * 16) calc(var(--u) * 16.6), transparent calc(var(--u) * 16.6) calc(var(--u) * 22)),
+    linear-gradient(90deg, #0a1206 0 8%, #3a5a20 8% 11%, #6a8a38 11% 12%, #2e4818 12% 18%, #0a1206 18% 34%, #2e4818 34% 40%, #5a7a30 40% 41%, #2e4818 41% 46%,
+      #0a1206 46% 64%, #3a5a20 64% 69%, #6a8a38 69% 70%, #2e4818 70% 75%, #0a1206 75% 88%, #2e4818 88% 92%, #0a1206 92%),
+    #0a1206;
+  box-shadow: inset 0 0 calc(var(--u) * 12) #000;
+}
+/* 熔岩裂谷:岩縫裡的岩漿一明一暗 */
+.wp-lava .wp-layer {
+  background:
+    linear-gradient(28deg, transparent 49.4%, #ff5a1f 49.6% 50.4%, transparent 50.6%) 0 0 / calc(var(--u) * 26) calc(var(--u) * 18),
+    linear-gradient(-52deg, transparent 49.3%, #ff7a1f 49.6% 50.4%, transparent 50.7%) calc(var(--u) * 9) calc(var(--u) * 5) / calc(var(--u) * 19) calc(var(--u) * 23),
+    linear-gradient(80deg, transparent 49.5%, #ff3a00 49.7% 50.3%, transparent 50.5%) calc(var(--u) * 4) 0 / calc(var(--u) * 31) calc(var(--u) * 14),
+    linear-gradient(180deg, #1e0c06, #0a0300);
+}
+.wp-lava .wp-layer::before {
+  background: radial-gradient(ellipse at 25% 85%, #ff4a0060, transparent 45%), radial-gradient(ellipse at 80% 15%, #ff6a1f50, transparent 45%), radial-gradient(ellipse at 60% 60%, #ff3a0030, transparent 50%);
+  animation: wpPulse 2.4s ease-in-out infinite alternate;
+}
+@keyframes wpPulse { from { opacity: .35; } to { opacity: 1; } }
+/* 冰晶:冰面晶格 + 掃過的反光 */
+.wp-ice .wp-layer {
+  background:
+    conic-gradient(from 45deg, #ffffff14 0 25%, transparent 0 50%, #ffffff0a 0 75%, transparent 0) 0 0 / calc(var(--u) * 7) calc(var(--u) * 7),
+    radial-gradient(ellipse at 50% 0%, #9ad4f040, transparent 65%), linear-gradient(180deg, #123048, #06121c);
+}
+.wp-ice .wp-layer::before {
+  background: linear-gradient(105deg, transparent 38%, #ffffff30 48%, #ffffff50 50%, #ffffff30 52%, transparent 62%) 0 0 / 300% 100% no-repeat;
+  animation: wpShine 4s ease-in-out infinite;
+}
+@keyframes wpShine { 0% { background-position: 120% 0; } 60%, 100% { background-position: -20% 0; } }
+/* 機庫:鋼板接縫 + 上下警示斜紋 */
+.wp-mecha .wp-layer {
+  background:
+    repeating-linear-gradient(-45deg, #e0b800 0 calc(var(--u) * 1.4), #141414 calc(var(--u) * 1.4) calc(var(--u) * 2.8)) top / 100% calc(var(--u) * 2.4) no-repeat,
+    repeating-linear-gradient(-45deg, #e0b800 0 calc(var(--u) * 1.4), #141414 calc(var(--u) * 1.4) calc(var(--u) * 2.8)) bottom / 100% calc(var(--u) * 2.4) no-repeat,
+    radial-gradient(circle, #8a8a8a 0 calc(var(--u) * .45), transparent calc(var(--u) * .6)) calc(var(--u) * 1.5) calc(var(--u) * 1.5) / calc(var(--u) * 15) calc(var(--u) * 12),
+    linear-gradient(90deg, #00000080 0 calc(var(--u) * .5), transparent calc(var(--u) * .5)) 0 0 / calc(var(--u) * 15) 100%,
+    linear-gradient(0deg, #00000080 0 calc(var(--u) * .5), transparent calc(var(--u) * .5)) 0 0 / 100% calc(var(--u) * 12),
+    linear-gradient(180deg, #24272a, #111315);
+}
+/* 金光萬丈:緩緩轉動的光芒 */
+.wp-gold .wp-layer { background: radial-gradient(ellipse at 50% 50%, #ffd40030, transparent 65%), linear-gradient(180deg, #241a00, #0a0700); }
+.wp-gold .wp-layer::before {
+  inset: -60%; background: repeating-conic-gradient(from 0deg, #ffd40022 0 8deg, transparent 8deg 20deg);
+  animation: wpSpin 40s linear infinite;
+}
+.wp-gold .wp-layer::after { background: radial-gradient(circle at 50% 50%, #fff2b030, transparent 30%); }
+@keyframes wpSpin { to { transform: rotate(360deg); } }
+/* 像素星空:像素格 + 方形小星星 */
+.wp-pixel .wp-layer { background: conic-gradient(#1a1a40 25%, #12122e 0 50%, #1a1a40 0 75%, #12122e 0) 0 0 / calc(var(--u) * 6) calc(var(--u) * 6); }
+.wp-pixel .wp-layer::before {
+  inset: auto; left: 0; top: 0; width: calc(var(--u) * 1); height: calc(var(--u) * 1); background: transparent;
+  box-shadow:
+    calc(var(--u) * 7) calc(var(--u) * 9) #fff, calc(var(--u) * 21) calc(var(--u) * 4) #9ab0ff, calc(var(--u) * 36) calc(var(--u) * 15) #ffe680,
+    calc(var(--u) * 50) calc(var(--u) * 6) #fff, calc(var(--u) * 63) calc(var(--u) * 21) #9ab0ff, calc(var(--u) * 78) calc(var(--u) * 10) #fff,
+    calc(var(--u) * 91) calc(var(--u) * 27) #ffe680, calc(var(--u) * 12) calc(var(--u) * 33) #9ab0ff, calc(var(--u) * 28) calc(var(--u) * 45) #fff,
+    calc(var(--u) * 45) calc(var(--u) * 38) #fff, calc(var(--u) * 58) calc(var(--u) * 52) #ffe680, calc(var(--u) * 72) calc(var(--u) * 42) #9ab0ff,
+    calc(var(--u) * 86) calc(var(--u) * 57) #fff, calc(var(--u) * 4) calc(var(--u) * 62) #fff, calc(var(--u) * 19) calc(var(--u) * 76) #ffe680,
+    calc(var(--u) * 39) calc(var(--u) * 69) #9ab0ff, calc(var(--u) * 54) calc(var(--u) * 84) #fff, calc(var(--u) * 69) calc(var(--u) * 73) #fff,
+    calc(var(--u) * 83) calc(var(--u) * 88) #9ab0ff, calc(var(--u) * 95) calc(var(--u) * 70) #ffe680, calc(var(--u) * 9) calc(var(--u) * 92) #9ab0ff,
+    calc(var(--u) * 32) calc(var(--u) * 98) #fff, calc(var(--u) * 62) calc(var(--u) * 100) #ffe680, calc(var(--u) * 97) calc(var(--u) * 45) #fff;
+}
+/* 修羅血霧:飄動的紅霧 */
+.wp-asura .wp-layer { background: linear-gradient(180deg, #1e0306, #060001); }
+.wp-asura .wp-layer::before {
+  inset: -30%; background: radial-gradient(ellipse 40% 30% at 30% 40%, #ff1a2a40, transparent 70%), radial-gradient(ellipse 35% 25% at 70% 70%, #c0101c48, transparent 70%);
+  animation: wpDrift 7s ease-in-out infinite alternate;
+}
+.wp-asura .wp-layer::after {
+  inset: -30%; background: radial-gradient(ellipse 30% 35% at 65% 30%, #ff3a3a30, transparent 70%), radial-gradient(ellipse 45% 25% at 25% 75%, #8a001040, transparent 70%);
+  animation: wpDrift 9s ease-in-out infinite alternate-reverse;
+}
+@keyframes wpDrift { from { transform: translate(-8%, 3%) scale(1); } to { transform: translate(8%, -3%) scale(1.15); } }
+/* 天魔星河:紫色星雲 + 閃爍的星星 */
+.wp-demon .wp-layer { background: radial-gradient(ellipse 70% 40% at 40% 55%, #8a2be240, transparent 70%), radial-gradient(ellipse 40% 30% at 75% 25%, #c84dff28, transparent 70%), linear-gradient(180deg, #12061e, #04010a); }
+.wp-demon .wp-layer::before, .wp-demon .wp-layer::after {
+  background:
+    radial-gradient(circle, #fff 0 calc(var(--u) * .28), transparent calc(var(--u) * .45)) calc(var(--u) * 3) calc(var(--u) * 5) / calc(var(--u) * 17) calc(var(--u) * 13),
+    radial-gradient(circle, #e0b0ff 0 calc(var(--u) * .28), transparent calc(var(--u) * .45)) calc(var(--u) * 11) calc(var(--u) * 2) / calc(var(--u) * 23) calc(var(--u) * 19);
+  animation: wpTwinkle 2.2s ease-in-out infinite alternate;
+}
+.wp-demon .wp-layer::after {
+  background:
+    radial-gradient(circle, #fff 0 calc(var(--u) * .35), transparent calc(var(--u) * .55)) calc(var(--u) * 8) calc(var(--u) * 10) / calc(var(--u) * 21) calc(var(--u) * 17),
+    radial-gradient(circle, #ffd0ff 0 calc(var(--u) * .28), transparent calc(var(--u) * .45)) calc(var(--u) * 1) calc(var(--u) * 14) / calc(var(--u) * 13) calc(var(--u) * 21);
+  animation-duration: 3.1s; animation-direction: alternate-reverse;
+}
+@keyframes wpTwinkle { from { opacity: .2; } to { opacity: 1; } }
+/* 櫻吹雪:斜斜飄落的花瓣 */
+.wp-sakura .wp-layer { background: radial-gradient(ellipse at 50% 0%, #f08ab030, transparent 60%), linear-gradient(180deg, #2a0a1a, #12040c); }
+.wp-sakura .wp-layer::before, .wp-sakura .wp-layer::after {
+  background:
+    radial-gradient(ellipse calc(var(--u) * 1.1) calc(var(--u) * .6), #ffc0d8d0 60%, transparent 100%) calc(var(--u) * 4) calc(var(--u) * 6) / calc(var(--u) * 22) calc(var(--u) * 26),
+    radial-gradient(ellipse calc(var(--u) * .7) calc(var(--u) * 1), #ff9ac0b0 60%, transparent 100%) calc(var(--u) * 15) calc(var(--u) * 17) / calc(var(--u) * 22) calc(var(--u) * 26);
+  animation: wpPetal 7s linear infinite;
+}
+.wp-sakura .wp-layer::after { transform: scale(1.4); opacity: .6; animation-duration: 11s; }
+@keyframes wpPetal { to { background-position: calc(var(--u) * 26) calc(var(--u) * 32), calc(var(--u) * 37) calc(var(--u) * 43); } }
+/* 深海光紋:晃動的水波光 + 從上方灑下的光柱 */
+.wp-ocean .wp-layer { background: radial-gradient(ellipse at 50% 0%, #19c8f030, transparent 60%), linear-gradient(180deg, #06243a, #020a14); }
+.wp-ocean .wp-layer::before {
+  inset: -20%;
+  background:
+    repeating-radial-gradient(ellipse at 30% 40%, transparent 0 calc(var(--u) * 3), #6ae0ff18 calc(var(--u) * 3.4), transparent calc(var(--u) * 4.2) calc(var(--u) * 7)),
+    repeating-radial-gradient(ellipse at 70% 65%, transparent 0 calc(var(--u) * 4), #6ae0ff12 calc(var(--u) * 4.4), transparent calc(var(--u) * 5.2) calc(var(--u) * 9));
+  animation: wpDrift 6s ease-in-out infinite alternate;
+}
+.wp-ocean .wp-layer::after {
+  background: linear-gradient(100deg, transparent 20%, #9af0ff14 26%, transparent 32%, transparent 52%, #9af0ff10 58%, transparent 64%);
+  transform-origin: 50% 0; animation: wpSway 5s ease-in-out infinite alternate;
+}
+@keyframes wpSway { from { transform: skewX(-8deg); } to { transform: skewX(8deg); } }
+/* 糖果波點 */
+.wp-candy .wp-layer {
+  background:
+    radial-gradient(circle, #ff8ad0a0 0 calc(var(--u) * 1), transparent calc(var(--u) * 1.2)) 0 0 / calc(var(--u) * 8) calc(var(--u) * 8),
+    radial-gradient(circle, #7af0d0a0 0 calc(var(--u) * .7), transparent calc(var(--u) * .9)) calc(var(--u) * 4) calc(var(--u) * 4) / calc(var(--u) * 8) calc(var(--u) * 8),
+    linear-gradient(180deg, #3a1048, #1a0624);
+}
+/* 碳纖編織 */
+.wp-carbon .wp-layer {
+  background:
+    linear-gradient(27deg, #151515 calc(var(--u) * 1), transparent calc(var(--u) * 1)) 0 calc(var(--u) * 1),
+    linear-gradient(207deg, #151515 calc(var(--u) * 1), transparent calc(var(--u) * 1)) calc(var(--u) * 2) 0,
+    linear-gradient(27deg, #262626 calc(var(--u) * 1), transparent calc(var(--u) * 1)) 0 calc(var(--u) * 2),
+    linear-gradient(207deg, #262626 calc(var(--u) * 1), transparent calc(var(--u) * 1)) calc(var(--u) * 2) calc(var(--u) * 1),
+    linear-gradient(90deg, #1b1b1b calc(var(--u) * 2), transparent calc(var(--u) * 2)),
+    linear-gradient(#1d1d1d 25%, #1a1a1a 25% 50%, transparent 50% 75%, #242424 75%);
+  background-color: #131313; background-size: calc(var(--u) * 4) calc(var(--u) * 4);
+}
+.wp-carbon .wp-layer::before { background: linear-gradient(180deg, #ffffff10, transparent 40%, #00000060); }
+/* 彩虹流光 */
+.wp-rainbow .wp-layer { background: #06040c; }
+.wp-rainbow .wp-layer::before {
+  background: linear-gradient(120deg, #ff3a3a, #ffb400, #f0ff3a, #3aff8a, #3ad0ff, #8a5aff, #ff3ad0, #ff3a3a) 0 0 / 300% 100%;
+  opacity: .5; animation: wpFlow 6s linear infinite;
+}
+.wp-rainbow .wp-layer::after { background: radial-gradient(ellipse at 50% 50%, transparent 30%, #06040cb0); }
+@keyframes wpFlow { to { background-position: 150% 0; } }
+
+/* ===== 世界觀桌布(關卡場景圖,已預先柔化、壓暗) ===== */
+.wp-w-arena .wp-layer, .wp-w-sky .wp-layer, .wp-w-summit .wp-layer,
+.wp-w-forge .wp-layer, .wp-w-snow .wp-layer, .wp-w-subway .wp-layer { background: center / cover no-repeat; }
+.wp-w-arena .wp-layer  { background-image: radial-gradient(ellipse at 50% 50%, transparent 40%, #000a), url('../../assets/images/wallpapers/arena.jpg'); }
+.wp-w-sky .wp-layer    { background-image: radial-gradient(ellipse at 50% 50%, transparent 40%, #000a), url('../../assets/images/wallpapers/sky.jpg'); }
+.wp-w-summit .wp-layer { background-image: radial-gradient(ellipse at 50% 50%, transparent 40%, #000a), url('../../assets/images/wallpapers/summit.jpg'); }
+.wp-w-forge .wp-layer  { background-image: radial-gradient(ellipse at 50% 50%, transparent 40%, #000a), url('../../assets/images/wallpapers/forge.jpg'); }
+.wp-w-snow .wp-layer   { background-image: radial-gradient(ellipse at 50% 50%, transparent 40%, #000a), url('../../assets/images/wallpapers/snow.jpg'); }
+.wp-w-subway .wp-layer { background-image: radial-gradient(ellipse at 50% 50%, transparent 40%, #000a), url('../../assets/images/wallpapers/subway.jpg'); }
+/* 鋼鐵熔爐:往上飄的火星 + 底部爐火 */
+.wp-w-forge .wp-layer::before {
+  background:
+    radial-gradient(circle, #ffb040 0 calc(var(--u) * .28), transparent calc(var(--u) * .55)) calc(var(--u) * 3) 0 / calc(var(--u) * 13) calc(var(--u) * 19),
+    radial-gradient(circle, #ff6a1f 0 calc(var(--u) * .38), transparent calc(var(--u) * .65)) calc(var(--u) * 9) calc(var(--u) * 7) / calc(var(--u) * 17) calc(var(--u) * 23);
+  animation: wpEmber 3.5s linear infinite;
+}
+.wp-w-forge .wp-layer::after { background: radial-gradient(ellipse 90% 40% at 50% 110%, #ff5a1f60, transparent 70%); animation: wpPulse 1.6s ease-in-out infinite alternate; }
+@keyframes wpEmber { to { background-position: calc(var(--u) * 6) calc(var(--u) * -19), calc(var(--u) * 5) calc(var(--u) * -16); } }
+/* 雪嶺古寺:兩層速度不同的落雪 */
+.wp-w-snow .wp-layer::before, .wp-w-snow .wp-layer::after {
+  background:
+    radial-gradient(circle, #ffffffe0 0 calc(var(--u) * .38), transparent calc(var(--u) * .65)) calc(var(--u) * 2) 0 / calc(var(--u) * 11) calc(var(--u) * 13),
+    radial-gradient(circle, #ffffffb0 0 calc(var(--u) * .28), transparent calc(var(--u) * .55)) calc(var(--u) * 7) calc(var(--u) * 5) / calc(var(--u) * 15) calc(var(--u) * 17);
+  animation: wpSnow 6s linear infinite;
+}
+.wp-w-snow .wp-layer::after { transform: scale(1.6); opacity: .7; animation-duration: 4s; }
+@keyframes wpSnow { to { background-position: calc(var(--u) * 5) calc(var(--u) * 13), calc(var(--u) * 4) calc(var(--u) * 22); } }
+/* 霓虹地下鐵:閃爍的霓虹光 + 斜斜的雨絲 */
+.wp-w-subway .wp-layer::before {
+  background: radial-gradient(ellipse 50% 35% at 25% 20%, #ff2bd640, transparent 70%), radial-gradient(ellipse 45% 35% at 78% 30%, #19f0ff38, transparent 70%);
+  animation: wpFlicker 3s steps(1) infinite;
+}
+.wp-w-subway .wp-layer::after {
+  background: repeating-linear-gradient(105deg, transparent 0 calc(var(--u) * 3), #b0e8ff22 calc(var(--u) * 3) calc(var(--u) * 3.2), transparent calc(var(--u) * 3.2) calc(var(--u) * 7)) 0 0 / calc(var(--u) * 14) calc(var(--u) * 14);
+  animation: wpRain .5s linear infinite;
+}
+@keyframes wpFlicker { 0%, 100% { opacity: 1; } 40% { opacity: .55; } 43% { opacity: 1; } 46% { opacity: .4; } 49% { opacity: 1; } 80% { opacity: .85; } }
+@keyframes wpRain { to { background-position: calc(var(--u) * -3.75) calc(var(--u) * 14); } }
+
+/* 想減少動態效果的玩家:桌布動畫全部停下 */
+@media (prefers-reduced-motion: reduce) { .wp-layer::before, .wp-layer::after { animation: none !important; } }
+
+/* ===== 商店的桌布分頁 ===== */
+.shop-walls { display: grid; grid-template-columns: repeat(3, 1fr); gap: 2.4cqw; }
+.shop-wall { display: flex; flex-direction: column; align-items: center; gap: 1cqw; padding: 1.6cqw; background: #0006; clip-path: var(--chamfer); text-align: center; }
+.shop-wall b { font-size: 3.2cqw; }
+.shop-wall .wp-tag { font-size: 2.4cqw; color: var(--neon-y); }
+.shop-wall .wp-ach { font-size: 2.3cqw; color: #9ff5c6; line-height: 1.3; }
+.shop-sec { grid-column: 1 / -1; margin: 1.6cqw 0 0; font-size: 3.4cqw; font-weight: 900; color: var(--neon-c); }
