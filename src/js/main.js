@@ -7,6 +7,19 @@ G.applyUltSide();
 G.grid.init();
 G.$('#hurtFlash').addEventListener('animationend', e => e.target.classList.remove('show'));
 
+// ---- 手機:擋掉縮放與選取 ----
+// iOS Safari 不理會 user-scalable=no,雙指縮放要擋 gesture 事件;長按不跳選單、雙擊不放大
+['gesturestart', 'gesturechange', 'gestureend'].forEach(ev => document.addEventListener(ev, e => e.preventDefault()));
+['dblclick', 'contextmenu', 'selectstart'].forEach(ev => document.addEventListener(ev, e => e.preventDefault()));
+document.addEventListener('touchmove', e => { if (e.touches.length > 1) e.preventDefault(); }, { passive: false });
+// 在空白處(非按鈕)快速點兩下也不要放大;按鈕不擋,才不會吃掉連點
+let lastTouchEnd = 0;
+document.addEventListener('touchend', e => {
+  const now = Date.now();
+  if (now - lastTouchEnd < 350 && !e.target.closest('button, a, .cell, .mega-btn, #story, #title')) e.preventDefault();
+  lastTouchEnd = now;
+}, { passive: false });
+
 // ---- 音效 ----
 // 瀏覽器要求使用者互動後才能播放聲音
 ['pointerdown', 'keydown'].forEach(ev => document.addEventListener(ev, () => G.audio.unlock(), true));

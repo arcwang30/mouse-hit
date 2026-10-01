@@ -202,7 +202,12 @@ const SFX = {
     a.tone(740, 0.12, { type: 'square', vol: 0.16, to: 1480, lp: 3000 });
     a.tone(1480, 0.2, { type: 'triangle', vol: 0.2, when: t + 0.07 });
   },
-  note:    (a, t, i) => a.tone(semi(523, [0, 3, 5, 7, 10, 12, 15, 17, 19][i] || 0), 0.2, { type: 'square', vol: 0.2 }),
+  // 依序點數字:do → re → mi → fa → so → la → si → do,一路往上爬;主音加一點八度泛音更亮
+  note:    (a, t, i) => {
+    const f = semi(523, [0, 2, 4, 5, 7, 9, 11, 12, 14][i] ?? 0);
+    a.tone(f, 0.22, { type: 'square', vol: 0.16 });
+    a.tone(f * 2, 0.16, { type: 'triangle', vol: 0.1 });
+  },
   fail:    (a, t) => arp(a, t, 330, [0, -3, -7], 0.12, { type: 'square', vol: 0.18 }),
   cutin:   (a, t) => {
     a.noise(0.6, { filter: 'bandpass', freq: 400, to: 6000, q: 1.5, vol: 0.6 });

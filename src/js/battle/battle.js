@@ -19,7 +19,7 @@ function makePlayer() {
   const p = {
     maxHp: 100, atk: 8, crit: 0.05, critMul: 1.8,
     attackCount: 6, moleLife: 1200, guardBonus: 0,
-    ult: 0, ultMax: 100, ultGain: 4, blockUlt: 1, ultMult: 6, ultLen: 4, ultTime: 4500,
+    ult: 0, ultMax: 100, ultGain: 4, blockUlt: 1, ultMult: 6,
     armor: 0, lifesteal: 0, counter: 0, combo: 0, regen: 0, revive: 0,
     firstStrike: false, execute: false, scoreMul: 1, skills: [],
     // 技法(改變規則),見 skills.js
@@ -143,6 +143,7 @@ G.battle = {
       if (challenged) spec += '+';
       this.eliteNext = false;
       this.e = makeEnemy(spec, this.stage.scale, w);
+      if (!G.save.data.seen[this.e.id]) { G.save.data.seen[this.e.id] = true; G.save.write(); } // 敵人圖鑑:遇過才顯示
       const tag = G.roundCfg().tag; // 周回:WAVE 前面標上 Ⅱ / Ⅲ
       G.$('#waveTag').textContent = (tag ? tag + ' ' : '') + `WAVE ${w + 1}/${total}`;
       this.showSprite(this.e);
@@ -338,23 +339,39 @@ G.battle = {
     if (!missed && !this.over()) await this.breakChance();
   },
 
+  // 破綻:先依序點數字抓住破綻(原本必殺技的指令輸入),成功後九宮格變成一顆大按鈕狂按破甲
   async breakChance() {
     const p = this.p, e = this.e;
-    const hits = e.boss ? 8 : e.elite ? 6 : 5;
+    const hits = e.boss ? 14 : e.elite ? 12 : 10;
     this.setEnemyState('stagger');
-    await G.banner('破綻!', G.t('2.5 秒內連打 {0} 下破甲', hits), 800);
+    const { breakLen, breakTime } = G.roundCfg(); // 第二、三輪數字更多
+    await G.banner('破綻!', G.t('{0} 秒內依序點擊 1 → {1}', (breakTime / 1000).toFixed(1), breakLen), 800);
     this.phase = 'break';
-    this.setPhase(G.t('破綻:連打中間的按鈕 {0} 下!', hits), 'atk');
-    this.setEnemyState('stagger');
-    G.grid.removeBlock(4); // 連打按鈕固定在中間,先清掉那格的冰 / 觸手
-    const broken = await G.mashPhase({
-      cell: 4, icon: '👊', label: G.t('連打'), hits, life: 2500,
-      onTap: (i, left) => {
+    this.setPhase('破綻:依序點擊數字!', 'atk');
+    const seized = await this.numberInput(breakLen, breakTime);
+    if (!seized || this.over()) {
+      this.phase = null;
+      G.audio.play('fail');
+      this.float('破綻消失', 'tag miss');
+      await G.clock.wait(500);
+      if (e.hp > 0) this.setEnemyState('idle');
+      this.render();
+      return;
+    }
+
+    this.setPhase(G.t('破甲:狂按大按鈕 {0} 下!', hits), 'atk');
+    G.audio.play('ready');
+    const life = 3000;
+    const timer = this.timebar(life, () => {});
+    const broken = await G.megaMash({
+      hits, life, label: G.t('連打'),
+      onTap: () => {
         G.audio.play('punch');
         this.punchFx(Math.floor(Math.random() * 3), { small: true, dur: 110 });
         this.setEnemyState('stagger');
       },
     });
+    timer.stop();
     this.phase = null;
     if (broken) {
       this.stats.breaks++;
@@ -372,18 +389,16 @@ G.battle = {
     this.render();
   },
 
-  async ultimate() {
-    const p = this.p;
-    this.ultRequested = false;
-    this.setPhase('必殺技:依序點擊數字!', 'ult');
-    await G.banner('必殺技!', G.t('{0} 秒內依序點擊 1 → {1}', (p.ultTime / 1000).toFixed(1), p.ultLen), 900);
-
-    // 數字鍵避開被觸手 / 冰蓋住的格子
-    const seq = G.shuffle([...Array(9).keys()].filter(i => !G.grid.blocks.has(i) || G.grid.blocks.get(i).type === 'lava')).slice(0, p.ultLen);
+  // 在九宮格亮出 1 → len 的數字,ms 內依序點完回傳 true;按錯或超時 false
+  async numberInput(len, ms) {
+    // 數字可以出現在任何格子:輸入期間先把冰 / 觸手 / 熔岩藏起來(點了也不會敲到它們),結束後再顯示
+    const grid = G.$('#grid');
+    grid.classList.add('numbering');
+    const seq = G.shuffle([...Array(9).keys()]).slice(0, len);
     seq.forEach((c, n) => G.grid.set(c, String(n + 1), 'num'));
     const ok = await new Promise(res => {
       let idx = 0;
-      const timer = this.timebar(p.ultTime, () => { G.grid.handler = null; res(false); });
+      const timer = this.timebar(ms, () => { G.grid.handler = null; res(false); });
       G.grid.handler = i => {
         if (i === seq[idx]) {
           G.audio.play('note', idx);
@@ -403,27 +418,38 @@ G.battle = {
       };
     });
     G.grid.clearAll();
+    grid.classList.remove('numbering');
+    return ok;
+  },
 
-    if (ok) {
-      p.ult = 0;
-      this.stats.ults++;
-      this.render();
-      await this.cutIn();
-      await this.barrage(Math.round(p.atk * p.ultMult));
-      await G.clock.wait(700);
-    } else {
-      p.ult = Math.floor(p.ultMax / 2);
-      this.render();
-      G.audio.play('fail');
-      this.comboBreak(); // 必殺失敗(按錯或超時)連擊歸零
-      await G.banner('必殺技失敗', '氣勁散去了一半…', 900);
-    }
+  // 必殺技:按下就直接發動(不用再輸入指令),快輸的時候也能一招翻盤
+  async ultimate() {
+    const p = this.p;
+    this.ultRequested = false;
+    this.setPhase('必殺技發動!', 'ult');
+    G.grid.clearAll();
+    p.ult = 0;
+    this.stats.ults++;
+    this.render();
+    await this.cutIn();
+    await this.barrage(Math.round(p.atk * p.ultMult));
+    await G.clock.wait(700);
   },
 
   async cutIn() {
     const el = G.$('#cutin');
+    // 出拳命中時從拳頭位置四射的火星:兩波,每次方向、距離、大小都隨機
+    G.$('#cutinEmbers').innerHTML = Array.from({ length: 36 }, (_, k) => {
+      const a = Math.random() * Math.PI * 2, r = 18 + Math.random() * 38;
+      return `<i style="--x:${Math.cos(a) * r}cqw;--y:${Math.sin(a) * r * 1.3}cqh;--s:${2 + Math.random() * 3}cqw;` +
+        `--t:${0.7 + Math.random() * 0.5}s;--d:${(k < 22 ? 0.45 : 0.62) + Math.random() * 0.12}s"></i>`;
+    }).join('');
+    el.classList.remove('show');
+    void el.offsetWidth;
     el.classList.add('show');
     G.audio.play('cutin');
+    G.clock.after(() => G.audio.play('boom'), 450); // 命中瞬間
+    if (G.save.data.vibrate && navigator.vibrate) { try { navigator.vibrate([0, 450, 80]); } catch (e) {} }
     await G.clock.wait(1700);
     el.classList.remove('show');
   },
@@ -825,6 +851,10 @@ G.battle = {
     if (!p || !e) return;
     G.$('#playerHpFill').style.width = (p.hp / p.maxHp * 100) + '%';
     G.$('#playerHpText').textContent = G.t('炎鋼 HP {0}/{1}', p.hp, p.maxHp);
+    // 瀕死警示:HP ≤ 30% 九宮格縫隙緩慢閃紅,≤ 15% 閃得快一點(玩家專心看格子時也知道快撐不住了)
+    const hpRate = p.hp / p.maxHp;
+    G.$('#battle').classList.toggle('danger', p.hp > 0 && hpRate <= 0.3 && hpRate > 0.15);
+    G.$('#battle').classList.toggle('critical', p.hp > 0 && hpRate <= 0.15);
     G.$('#enemyHpFill').style.width = (e.hp / e.maxHp * 100) + '%';
     G.$('#enemyHpText').textContent = `${e.hp}/${e.maxHp}`;
     G.$('#ultFill').style.width = (p.ult / p.ultMax * 100) + '%';

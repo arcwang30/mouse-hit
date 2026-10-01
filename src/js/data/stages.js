@@ -15,13 +15,14 @@ G.WAVE_GROWTH = {
 // 周回挑戰:打倒第一輪最終 BOSS 開啟第二輪,第二輪破關開啟第三輪。關卡流程相同,敵人用以下方式強化(用模擬器校正)
 // scale:每關基礎強度往上墊多少(第二輪第一關 ≈ 第一輪後段);hp / atk:HP 與攻擊倍率
 // life:防禦符號停留時間倍率;count:每次攻擊多幾個盾牌;skillEvery:BOSS 必殺技每幾回合一次
+// breakLen / breakTime:破綻要依序點幾個數字、限時幾毫秒(數字越多、每個數字分到的時間越少)
 // points:積分與成長點數倍率;upMax:開啟這一輪後「成長」各項的等級上限(以開啟到的最高輪為準)
 G.ROUNDS = {
-  1: { name: '第一輪',       tag: '',   scale: 0,   hp: 1,   atk: 1,    life: 1,    count: 0, skillEvery: 3, points: 1,   upMax: 10 },
-  2: { name: '第二輪・修羅', tag: 'Ⅱ', scale: 0.9, hp: 1.1, atk: 1.1,  life: 0.92, count: 0, skillEvery: 3, points: 1.5, upMax: 15,
-       desc: '敵人全面強化,盾牌更快消失。成長上限提升至 Lv15,點數 ×1.5。' },
-  3: { name: '第三輪・天魔', tag: 'Ⅲ', scale: 1.8, hp: 1.2, atk: 1.15, life: 0.86, count: 1, skillEvery: 2, points: 2,   upMax: 20,
-       desc: '最高難度:每次攻擊多一面盾牌,BOSS 每 2 回合放一次必殺技。成長上限提升至 Lv20,點數 ×2。' },
+  1: { name: '第一輪',       tag: '',   scale: 0,   hp: 1,   atk: 1,    life: 1,    count: 0, skillEvery: 3, breakLen: 4, breakTime: 4500, points: 1,   upMax: 10 },
+  2: { name: '第二輪・修羅', tag: 'Ⅱ', scale: 0.9, hp: 1.1, atk: 1.1,  life: 0.92, count: 0, skillEvery: 3, breakLen: 5, breakTime: 5000, points: 1.5, upMax: 15,
+       desc: '敵人全面強化,盾牌更快消失,破綻要點 5 個數字。成長上限提升至 Lv15,點數 ×1.5。' },
+  3: { name: '第三輪・天魔', tag: 'Ⅲ', scale: 1.8, hp: 1.2, atk: 1.15, life: 0.86, count: 1, skillEvery: 2, breakLen: 6, breakTime: 5400, points: 2,   upMax: 20,
+       desc: '最高難度:每次攻擊多一面盾牌,BOSS 每 2 回合放一次必殺技,破綻要點 6 個數字。成長上限提升至 Lv20,點數 ×2。' },
 };
 G.ROUND_LAST = 3;
 // 目前選擇的輪次(不會超過已開啟的)與該輪的進度

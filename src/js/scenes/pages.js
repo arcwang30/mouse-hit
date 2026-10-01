@@ -97,6 +97,12 @@ G.pages = {
         return `<div class="ht-stage"><div class="ht-stage-name">${G.t(st.name)} <span>${'★'.repeat(st.stars)}${'☆'.repeat(5 - st.stars)}</span></div>` +
           ids.map(id => {
             const e = G.ENEMIES[id], m = G.MECHS[id];
+            // 還沒遇過:黑色剪影 + ?,名稱與說明都不顯示
+            if (!G.save.data.seen[id]) {
+              const pic = e.img ? `<img class="unknown" src="../assets/images/${e.img}" alt="">` : '';
+              return `<div class="ht-enemy unknown"><div class="ht-pic">${pic}<span class="ht-q">?</span></div><div><b>？？？</b>` +
+                `<p>${G.t('尚未遇見')}</p></div></div>`;
+            }
             const pic = e.img ? `<img src="../assets/images/${e.img}" alt="">` : `<span>${e.icon}</span>`;
             return `<div class="ht-enemy"><div class="ht-pic">${pic}</div><div><b>${e.boss ? G.t('【BOSS】') : ''}${G.t(e.name)}</b>` +
               `<p>${G.t(m ? m.hint : '沒有特殊機制,適合熟悉操作')}</p></div></div>`;
@@ -226,7 +232,7 @@ G.pages = {
       line(`<h3 class="cr-thanks">${G.t('特別感謝')}</h3>`) +
       C.thanks.map(t => line(`<div class="cr-thank">${t}</div>`)).join('') +
       line(`<div class="cr-foot">${C.footer}</div>`) +
-      line('<img class="cr-hero" src="../assets/images/fx/ult_cutin.webp" alt="">');
+      line('<img class="cr-hero" src="../assets/images/fx/credit_hero.png" alt="">');
     this.open('credits');
   },
 };
@@ -247,13 +253,40 @@ G.$('#historyTabs').addEventListener('click', e => {
 G.$('#fbLink').addEventListener('click', () => G.audio.play('select'));
 document.querySelectorAll('[data-back]').forEach(b => { b.onclick = () => G.pages.back(); });
 
+// 切換分頁(d = -1 上一頁 / 1 下一頁),內容從滑動的方向滑進來
+const flipPage = (cur, d) => {
+  if (cur === 'howto') G.pages.turnHowto(d);
+  else if (cur === 'history') G.pages.setHistoryTab(G.pages.historyTab + d);
+  else return;
+  const body = G.$(cur === 'howto' ? '#howtoBody' : '#historyBody');
+  body.classList.remove('slide-l', 'slide-r');
+  void body.offsetWidth;
+  body.classList.add(d > 0 ? 'slide-l' : 'slide-r');
+};
+
 // 鍵盤:← → 切換分頁、Esc 返回
 document.addEventListener('keydown', e => {
   const cur = G.pages.current;
   if (!cur || !G.$('#' + cur).classList.contains('active')) return;
   if (e.code === 'Escape' || e.code === 'Backspace') { e.preventDefault(); G.pages.back(); return; }
   const d = e.code === 'ArrowLeft' ? -1 : e.code === 'ArrowRight' ? 1 : 0;
-  if (!d) return;
-  if (cur === 'howto') G.pages.turnHowto(d);
-  if (cur === 'history') G.pages.setHistoryTab(G.pages.historyTab + d);
+  if (d) flipPage(cur, d);
+});
+
+// 手機:手指往左滑看下一頁、往右滑看上一頁(上下捲動不受影響)
+['howto', 'history'].forEach(id => {
+  const el = G.$('#' + id);
+  let x0 = null, y0 = 0, t0 = 0;
+  el.addEventListener('touchstart', e => {
+    if (e.touches.length !== 1) { x0 = null; return; }
+    x0 = e.touches[0].clientX; y0 = e.touches[0].clientY; t0 = Date.now();
+  }, { passive: true });
+  el.addEventListener('touchend', e => {
+    if (x0 === null) return;
+    const t = e.changedTouches[0], dx = t.clientX - x0, dy = t.clientY - y0;
+    x0 = null;
+    // 夠長、夠快,而且明顯是橫向才算
+    if (Math.abs(dx) < 50 || Math.abs(dx) < Math.abs(dy) * 1.5 || Date.now() - t0 > 700) return;
+    flipPage(id, dx < 0 ? 1 : -1);
+  }, { passive: true });
 });

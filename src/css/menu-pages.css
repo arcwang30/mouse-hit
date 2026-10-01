@@ -60,10 +60,16 @@
 }
 .ht-stage-name span { color: var(--neon-y); font-size: 3.2cqw; margin-left: 1cqw; }
 .ht-enemy { display: flex; align-items: center; gap: 3cqw; padding: 1cqw 0; }
-.ht-pic { width: 15cqw; height: 16cqw; flex-shrink: 0; display: flex; align-items: center; justify-content: center; font-size: 9cqw; }
+.ht-pic { position: relative; width: 15cqw; height: 16cqw; flex-shrink: 0; display: flex; align-items: center; justify-content: center; font-size: 9cqw; }
 .ht-pic img { max-width: 100%; max-height: 100%; filter: drop-shadow(0 0 .5cqw #fff8); }
 .ht-pic.fit { position: relative; overflow: hidden; }
 .ht-pic.fit img { position: absolute; max-width: none; max-height: none; height: auto; }
+/* 還沒遇過的敵人:黑色剪影 + ? */
+.ht-pic img.unknown { filter: brightness(0) drop-shadow(0 0 .4cqw #ffffff90); }
+.ht-q { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; z-index: 1;
+  font-family: var(--tech); font-size: 8cqw; font-weight: 800; color: #fff; text-shadow: 0 0 2cqw var(--neon-c), 0 .4cqw 0 #000; }
+.ht-enemy.unknown b { color: var(--steel-hi); letter-spacing: .2em; }
+.ht-enemy.unknown p { color: #ffffff70; }
 
 /* ---------- 設定 ---------- */
 #settingsBody { display: flex; flex-direction: column; gap: 3cqw; }
@@ -240,3 +246,9 @@ html[lang="en"] #stages .pg-sub, html[lang="en"] #settings .pg-sub { visibility:
 /* 第二輪紅、第三輪紫的外框 */
 #stages .stage-card.round-2 { box-shadow: inset 0 0 0 .45cqw #ff4a4acc, inset 0 0 5cqw #ff2a2a40; }
 #stages .stage-card.round-3 { box-shadow: inset 0 0 0 .45cqw #b04dffcc, inset 0 0 5cqw #8a2be260; }
+
+/* 換頁時內容從滑動方向滑進來 */
+.pg-panel.slide-l { animation: slideFromR .22s ease-out; }
+.pg-panel.slide-r { animation: slideFromL .22s ease-out; }
+@keyframes slideFromR { from { transform: translateX(12%); opacity: 0; } }
+@keyframes slideFromL { from { transform: translateX(-12%); opacity: 0; } }

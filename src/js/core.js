@@ -105,6 +105,12 @@ G.save = {
       delete sv.best;
     }
     sv.roundMax = sv.roundMax || (sv.cleared ? 2 : 1);
+    // 敵人圖鑑:遇過的敵人 id。舊存檔沒有這筆,就把已通關關卡裡的敵人都算遇過
+    if (!sv.seen) {
+      sv.seen = {};
+      Object.values(sv.rounds).forEach(r => r.clear.forEach(i =>
+        G.STAGES[i].waves.forEach(w => { sv.seen[w.replace('+', '')] = true; })));
+    }
   },
   write() {
     try { localStorage.setItem(this.key, JSON.stringify(this.data)); } catch (e) {}

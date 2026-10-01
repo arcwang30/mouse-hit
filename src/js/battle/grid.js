@@ -478,31 +478,58 @@ G.molePhase = o => new Promise(resolve => {
   spawnTimer = G.clock.after(spawnGroup, 300);
 });
 
-// 連打階段:九宮格只留一個按鈕,在時間內連點 hits 下。回傳是否打破。
-// { cell, icon, label, hits, life, onTap(i, left) }
-G.mashPhase = o => new Promise(resolve => {
-  const i = o.cell;
-  let left = o.hits, done = false, timer;
+// 破綻連打:九宮格整個變成一顆大按鈕,life 毫秒內連打 hits 下。回傳是否打破。
+// 點按鈕任何位置都算;鍵盤按九宮格對應的任一鍵也算。{ hits, life, label, onTap(left) }
+G.megaMash = o => new Promise(resolve => {
+  const grid = G.$('#grid');
+  const btn = document.createElement('button');
+  btn.className = 'mega-btn';
+  btn.innerHTML = `<span class="mega-label">${o.label}</span><span class="mega-icon">👊</span><span class="mega-count"></span>`;
+  const count = btn.querySelector('.mega-count');
+  grid.appendChild(btn);
+  let left = o.hits, done = false;
+  count.textContent = '×' + left;
+
   const end = broken => {
     if (done) return;
     done = true;
     G.clock.cancel(timer);
     G.grid.handler = null;
-    G.grid.clear(i, broken ? 'press' : 'sink');
+    btn.classList.add(broken ? 'broken' : 'fail');
+    G.clock.after(() => btn.remove(), 380);
     resolve(broken);
   };
-  G.grid.set(i, o.icon, 'mash', o.life, o.label);
-  G.grid.setBadge(i, '×' + left);
-  G.audio.play('pop');
-  G.grid.handler = j => {
-    if (j !== i) { G.grid.flash(j, 'miss'); G.grid.impact(j, 'miss'); return; }
+  // 每一下:按鈕壓扁回彈 + 隨機位置爆出 💥 + 震動
+  const tap = (x, y) => {
+    if (done) return;
     left--;
-    G.grid.flash(i, 'good');
-    G.grid.bump(i);
-    G.grid.impact(i, 'mash', left <= 0); // 最後一下打破護甲是重擊
-    o.onTap && o.onTap(i, left);
+    count.textContent = '×' + Math.max(0, left);
+    btn.classList.remove('hit');
+    void btn.offsetWidth;
+    btn.classList.add('hit');
+    const fx = document.createElement('span');
+    fx.className = 'mega-burst' + (left <= 0 ? ' big' : '');
+    fx.textContent = '💥';
+    fx.style.left = (x ?? 15 + Math.random() * 70) + '%';
+    fx.style.top = (y ?? 15 + Math.random() * 70) + '%';
+    fx.style.setProperty('--r', (Math.random() * 60 - 30) + 'deg');
+    btn.appendChild(fx);
+    G.clock.after(() => fx.remove(), 420);
+    if (G.save.data.vibrate && navigator.vibrate) { try { navigator.vibrate(left <= 0 ? 40 : 12); } catch (e) {} }
+    if (left <= 0 && G.save.data.shake) {
+      grid.classList.remove('quake');
+      void grid.offsetWidth;
+      grid.classList.add('quake');
+    }
+    o.onTap && o.onTap(left);
     if (left <= 0) end(true);
-    else G.grid.setBadge(i, '×' + left);
   };
-  timer = G.clock.after(() => end(false), o.life);
+  btn.addEventListener('pointerdown', e => {
+    e.preventDefault();
+    const r = btn.getBoundingClientRect();
+    tap((e.clientX - r.left) / r.width * 100, (e.clientY - r.top) / r.height * 100);
+  });
+  G.grid.handler = () => tap();
+  G.audio.play('pop');
+  const timer = G.clock.after(() => end(false), o.life);
 });

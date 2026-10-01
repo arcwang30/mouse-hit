@@ -56,8 +56,7 @@ window.simRun = function (stageIdx, skill, upLv) {
       simStats.turns++;
       if (p.ult >= p.ultMax) {
         simStats.ults++;
-        if (Math.random() < clamp(skill + 0.05)) { e.hp -= Math.round(p.atk * p.ultMult); p.ult = 0; for (let k = 0; k < p.ultLen; k++) evHit(); }
-        else { p.ult = p.ultMax / 2; evMiss(); }
+        e.hp -= Math.round(p.atk * p.ultMult); p.ult = 0; // 必殺技按下就直接發動
       } else {
         let combo = 0, first = true;
         const counter = counterNext, count = p.attackCount;
@@ -115,8 +114,8 @@ window.simRun = function (stageIdx, skill, upLv) {
         } else { missed++; evMiss(); hurt(dmg); }
         if (decoy && Math.random() < decoy / (1 - decoy) * 0.2) { missed++; hurt(dmg * 1.5); }
       }
-      // 全部擋下 → 破綻連打(一般 5、精英 6、BOSS 8 下,2.5 秒)
-      if (!missed && p.hp > 0 && Math.random() < clamp(skill + 0.1 - (e.boss ? 0.1 : 0))) {
+      // 全部擋下 → 破綻:先依序點數字(成功率約同點擊),再狂按大按鈕(幾乎都按得完)
+      if (!missed && p.hp > 0 && Math.random() < clamp(skill + 0.05 - 0.05 * (G.roundCfg().breakLen - 4)) * 0.95) { // 第二、三輪數字更多
         e.hp -= p.atk * 4;
         brokenNext = true;
       }
