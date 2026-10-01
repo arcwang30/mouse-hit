@@ -1,5 +1,7 @@
 // Roguelike 技能(每擊倒一個 WAVE 三選一)
-// 一般技能調整數值;rule: true 的「技法」會改變玩法規則(每次三選一保證至少出現一個,每種只能拿一次)
+// 一般技能調整數值;rule: true 的「技法」會改變玩法規則(每種只能拿一次)
+// 每波結束的三選一:有 RULE_CHANCE 的機率混入一張技法,其餘三張都是一般技能;分歧「修行」與精英挑戰則是技法三選一
+G.RULE_CHANCE = 0.35;
 G.SKILLS = [
   { id: 'iron',     icon: '👊', name: '鐵拳淬煉', desc: '每次出拳傷害 +3',                   apply: p => { p.atk += 3; } },
   { id: 'flurry',   icon: '💥', name: '烈火連打', desc: '攻擊回合拳頭數量 +2',               apply: p => { p.attackCount += 2; } },

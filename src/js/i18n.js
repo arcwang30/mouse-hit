@@ -427,7 +427,7 @@ G.I18N = {
   '蓄力拳': ['溜め拳', 'Charge Fist'], '按住集滿再放開,傷害 ×3。': ['長押しで溜めきってから離すとダメージ ×3。', 'Hold until full, then release for ×3 damage.'],
   '盾牌': ['盾', 'Shield'], '敵人的攻擊。金 → 藍 → 暗,越早擋越好。': ['敵の攻撃。金 → 青 → 暗。早く防ぐほど良い。', 'An enemy attack. Gold → blue → dark; block as early as you can.'],
   '炸彈 / 陷阱': ['爆弾 / 罠', 'Bomb / Trap'], '不要點!點到會受傷並中斷連擊。': ['タップ禁止!ダメージを受けコンボが途切れる。', "Don't tap! It hurts you and breaks your combo."],
-  '破綻連打': ['隙の連打', 'Opening Mash'], '點完數字後,整個九宮格變成大按鈕,3 秒內狂按破甲。': ['数字を押し終えると 9 マス全体が大ボタンに。3 秒以内に連打で装甲破壊。', 'After the numbers, the whole grid becomes one giant button—mash it within 3 s to break armor.'],
+  '破綻連打': ['隙の連打', 'Opening Mash'], '點完數字後,整個九宮格變成大按鈕,2.5 秒內狂按破甲。': ['数字を押し終えると 9 マス全体が大ボタンに。2.5 秒以内に連打で装甲破壊。', 'After the numbers, the whole grid becomes one giant button—mash it within 2.5 s to break armor.'],
   '破綻數字': ['隙の数字', 'Opening Numbers'], '全部擋下後出現,依 1 → 2 → 3 → 4 的順序點完抓住破綻。': ['全部防ぐと出現。1 → 2 → 3 → 4 の順にタップして隙をつかむ。', 'Appear after a perfect defense—tap 1 → 2 → 3 → 4 in order to seize the opening.'],
   '沒有特殊機制,適合熟悉操作': ['特殊な仕掛けなし。操作に慣れよう', 'No special tricks—good for learning the controls'],
 

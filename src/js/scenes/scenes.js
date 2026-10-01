@@ -348,9 +348,10 @@ G.scenes = {
       if (rulesOnly && rules.length) {
         choices = rules.slice(0, 3);
       } else {
-        // 保證至少一個技法(還有的話)
-        choices = G.shuffle(pool.filter(s => !s.rule)).slice(0, rules.length ? 2 : 3);
-        if (rules.length) choices.splice(Math.floor(Math.random() * 3), 0, rules[0]);
+        // 一般三選一:有 RULE_CHANCE 的機率混入一張技法(還有沒拿過的才會出現)
+        const withRule = rules.length && Math.random() < G.RULE_CHANCE;
+        choices = G.shuffle(pool.filter(s => !s.rule)).slice(0, withRule ? 2 : 3);
+        if (withRule || choices.length < 3) choices.splice(Math.floor(Math.random() * (choices.length + 1)), 0, ...rules.slice(0, 3 - choices.length));
       }
       G.$('#skillPick h2').textContent = G.t(rulesOnly ? '修得一項技法' : '選擇一項技能');
       const box = G.$('#skillCards');

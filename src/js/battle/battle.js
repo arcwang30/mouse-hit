@@ -401,7 +401,7 @@ G.battle = {
 
     this.setPhase(G.t('破甲:狂按大按鈕 {0} 下!', hits), 'atk');
     G.audio.play('ready');
-    const life = 3000;
+    const life = 2500; // 狂按大按鈕的時間
     const timer = this.timebar(life, () => {});
     const broken = await G.megaMash({
       hits, life, label: G.t('連打'),
