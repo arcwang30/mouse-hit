@@ -299,8 +299,9 @@ G.I18N = {
 
   // ---- 設定 ----
   '音樂': ['音楽', 'Music'], '音效': ['効果音', 'SFX'], 'MUTE': ['ミュート', 'MUTE'],
-  '手機震動': ['スマホ振動', 'Vibration'], '點擊與受傷時震動(支援的手機)': ['タップ・被弾時に振動(対応スマホ)', 'Vibrate on taps and hits (supported phones)'],
-  '畫面震動': ['画面の揺れ', 'Screen Shake'], '受傷、重擊時畫面搖晃': ['被弾・重撃時に画面が揺れる', 'Shake the screen on hits and heavy blows'],
+  '手機震動': ['スマホ振動', 'Vibration'], '點擊與受傷時震動(支援的手機)': ['タップ・被弾時に振動(対応スマホ)', 'Vibrate on tap and hit'],
+  '畫面震動': ['画面の揺れ', 'Screen Shake'], '受傷、重擊時畫面搖晃': ['被弾・重撃時に画面が揺れる', 'Screen shakes on hits'],
+  '必殺技位置': ['必殺技の位置', 'Special Button'], '左': ['左', 'Left'], '右': ['右', 'Right'],
   '🗑️ 重置存檔': ['🗑️ セーブをリセット', '🗑️ Reset Save'],
   '存檔已重置': ['セーブをリセットしました', 'Save reset'],
   '成長點數與關卡進度歸零': ['成長ポイントとステージ進行をリセット', 'Growth points and stage progress cleared'],

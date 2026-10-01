@@ -88,7 +88,7 @@ G.scenes = {
       panel.style.width = `min(86cqw, ${52 * aspect}cqh)`;
       panel.style.setProperty('--tilt', (b.tilt || 0) + 'deg');
       img.style.setProperty('--focus', b.focus || '50% 50%');
-      panel.className = 'story-panel' + (b.fx ? ' fx-' + b.fx : '');
+      panel.className = 'story-panel' + (b.fx ? ' sfx-' + b.fx : ''); // 注意:別用 fx- 開頭,會撞到戰鬥的 .fx-impact 樣式
 
       img.classList.toggle('pan', !!b.pan);
       img.style.transition = 'none';

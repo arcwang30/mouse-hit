@@ -187,6 +187,21 @@ const SFX = {
 
   // 必殺技
   ready:   (a, t) => arp(a, t, 440, [0, 4, 7, 12], 0.06, { type: 'triangle', vol: 0.25 }),
+  ultFull: (a, t) => { // 必殺集滿:電流上衝 + 和弦重擊 + 兩聲高音提示,和一般的 ready 區隔
+    a.tone(180, 0.35, { type: 'sawtooth', vol: 0.22, to: 1400, attack: 0.02, lp: 2500, q: 3 });
+    a.noise(0.3, { filter: 'bandpass', freq: 600, to: 6000, q: 1.5, vol: 0.3 });
+    [0, 4, 7, 12].forEach(n => a.tone(semi(392, n), 0.55, { type: 'square', vol: 0.12, when: t + 0.3 }));
+    a.tone(130, 0.5, { to: 50, vol: 0.7, when: t + 0.3 });
+    a.tone(2093, 0.12, { type: 'triangle', vol: 0.22, when: t + 0.5 });
+    a.tone(2093, 0.12, { type: 'triangle', vol: 0.22, when: t + 0.65 });
+    a.tone(2637, 0.3, { type: 'triangle', vol: 0.24, when: t + 0.8 });
+  },
+  ultPress: (a, t) => { // 按下必殺鈕:點火的「轟」一聲 + 上揚的金屬音
+    a.tone(110, 0.28, { to: 38, vol: 0.8 });
+    a.noise(0.22, { filter: 'bandpass', freq: 400, to: 5000, q: 1.2, vol: 0.45 });
+    a.tone(740, 0.12, { type: 'square', vol: 0.16, to: 1480, lp: 3000 });
+    a.tone(1480, 0.2, { type: 'triangle', vol: 0.2, when: t + 0.07 });
+  },
   note:    (a, t, i) => a.tone(semi(523, [0, 3, 5, 7, 10, 12, 15, 17, 19][i] || 0), 0.2, { type: 'square', vol: 0.2 }),
   fail:    (a, t) => arp(a, t, 330, [0, -3, -7], 0.12, { type: 'square', vol: 0.18 }),
   cutin:   (a, t) => {

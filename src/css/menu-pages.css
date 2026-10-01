@@ -11,11 +11,11 @@
 .screen.page { padding: min(5cqw, 3cqh) 5cqw; gap: 2.4cqw; }
 .pg-head { text-align: center; flex-shrink: 0; }
 .pg-head h2 {
-  margin: 0; font-size: 7.5cqw; letter-spacing: .12em;
+  margin: 0; line-height: 1.45; font-size: 7.5cqw; letter-spacing: .12em;
   background: linear-gradient(180deg, #fff, var(--fire-2) 55%, var(--fire)); -webkit-background-clip: text; background-clip: text; color: transparent;
   filter: drop-shadow(0 .5cqw 0 #5a1000) drop-shadow(0 0 2cqw #ff5a1f80);
 }
-.pg-sub { font-family: var(--tech); font-size: 3cqw; letter-spacing: .2em; color: var(--neon-c); text-shadow: 0 0 1.2cqw var(--neon-c); }
+.pg-sub { font-family: var(--tech); line-height: 1.6; font-size: 3cqw; letter-spacing: .2em; color: var(--neon-c); text-shadow: 0 0 1.2cqw var(--neon-c); }
 .pg-panel {
   flex: 1; min-height: 0; overflow-y: auto; padding: 4cqw;
   background: repeating-linear-gradient(0deg, #ffffff05 0 1px, transparent 1px 3px), linear-gradient(160deg, #22282fe8, #0c1016f0);
@@ -171,7 +171,7 @@
 .btn:disabled { filter: grayscale(1) brightness(.55); }
 .btn:disabled::after { display: none; }
 .btn.small { font-size: 3.4cqw; padding: 2.2cqw 3cqw; }
-.menu-grid .btn { --neon: var(--neon-c); --neon2: #b8fbff; font-size: 3.3cqw; }
+.menu-grid .btn { --neon: var(--neon-c); --neon2: #b8fbff; font-size: 3.3cqw; line-height: 1.6; }
 html:lang(en) .menu-grid .btn { padding-left: 1cqw; padding-right: 1cqw; letter-spacing: 0; }
 .btn.danger { --neon: var(--neon-r); --neon2: #ffb0c0; background: linear-gradient(180deg, #3a0a14, #14040a); box-shadow: inset 0 0 0 .45cqw var(--neon), inset 0 -1.4cqw 2.4cqw -1cqw var(--neon); }
 .btn.fb { --neon: #3ea8ff; --neon2: #8ee8ff; background: linear-gradient(180deg, #0c2a44, #061420); box-shadow: inset 0 0 0 .45cqw var(--neon), inset 0 -1.4cqw 2.4cqw -1cqw var(--neon); }
@@ -211,6 +211,7 @@ html:lang(en) .menu-grid .btn { padding-left: 1cqw; padding-right: 1cqw; letter-
 .st-lang-btn { padding: 2.2cqw 0; font-size: 3.6cqw; font-weight: 800; color: #cfe; background: #0a1418;
   border: 0; clip-path: polygon(6% 0, 100% 0, 94% 100%, 0 100%); box-shadow: inset 0 0 0 .35cqw #19f0ff55; }
 .st-lang-btn.on { color: #001; background: linear-gradient(180deg, #7ff8ff, #19c8e0); box-shadow: 0 0 3cqw #19f0ff80; }
+.st-lang.two { grid-template-columns: repeat(2, 1fr); }
 /* 英文模式:副標題本來就是英文,和主標題重複的就不顯示 */
 html[lang="en"] .btn.start small, html[lang="en"] .title-start small,
-html[lang="en"] #stages .pg-sub, html[lang="en"] #settings .pg-sub { display: none; }
+html[lang="en"] #stages .pg-sub, html[lang="en"] #settings .pg-sub { visibility: hidden; /* 保留位置,切語言時標題才不會跳動 */ }

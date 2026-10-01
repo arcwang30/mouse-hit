@@ -764,6 +764,7 @@ G.battle = {
   requestUlt() {
     if (this.phase === 'attack' && this.p.ult >= this.p.ultMax) {
       this.ultRequested = true;
+      G.audio.play('ultPress');
       G.$('#ultBtn').disabled = true;
     }
   },
@@ -811,7 +812,7 @@ G.battle = {
   gainUlt(n) {
     const was = this.p.ult;
     this.p.ult = Math.min(this.p.ultMax, this.p.ult + n * (this.fever() ? FEVER_MUL : 1));
-    if (was < this.p.ultMax && this.p.ult >= this.p.ultMax) G.audio.play('ready');
+    if (was < this.p.ultMax && this.p.ult >= this.p.ultMax) G.audio.play('ultFull');
     this.render();
   },
 
@@ -830,6 +831,7 @@ G.battle = {
     const btn = G.$('#ultBtn');
     btn.disabled = !(full && this.phase === 'attack' && !this.ultRequested);
     btn.classList.toggle('ready', !btn.disabled);
+    G.$('#ultWrap').classList.toggle('ready', !btn.disabled);
   },
 
   // 有立繪用圖片,沒有就用暫代 emoji

@@ -446,3 +446,30 @@
 .pause-note { font-size: 3cqw; color: var(--muted); }
 /* PAUSE 中開啟的設定:疊在戰鬥畫面上,戰鬥畫面保持原狀 */
 #settings.over { z-index: 40; background: #05080bf5; }
+
+/* ---------- 必殺技按鈕:放大,集滿時閃爍 ---------- */
+html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; } /* 手機瀏覽器換語言時不要自動放大文字 */
+.ult-wrap { position: relative; flex-shrink: 0; transition: filter .2s; }
+.ult-wrap .ult-btn { position: relative; z-index: 1; font-size: 4.2cqw; padding: 2cqw 5cqw; min-width: 24cqw; }
+.ult-wrap.ready { z-index: 6; }
+.ult-wrap.ready .ult-btn {
+  color: #3a0800; font-weight: 900; letter-spacing: .08em; text-shadow: 0 0 .8cqw #fff8;
+  background:
+    repeating-linear-gradient(-45deg, #0000 0 1.6cqw, #ff3a0033 1.6cqw 3.2cqw),
+    linear-gradient(180deg, #fff6a0, #ffd400 35%, #ff7a00 80%, #e03000);
+  animation: ultBlink .5s linear infinite;
+}
+
+
+/* 集滿時整顆按鈕明暗閃爍 + 光圈跳動,提醒玩家現在可以按 */
+.ult-wrap.ready { animation: ultGlow .5s steps(2, jump-none) infinite; }
+@keyframes ultGlow {
+  0%   { filter: drop-shadow(0 0 1cqw #ff6a00); }
+  100% { filter: drop-shadow(0 0 3.5cqw #ffd400) drop-shadow(0 0 1.5cqw #fff); }
+}
+@keyframes ultBlink {
+  0%, 49% { filter: brightness(1); transform: scale(1); }
+  50%, 100% { filter: brightness(1.7) saturate(.8); transform: scale(1.08); }
+}
+/* 設定「必殺技位置」= 左:按鈕換到血條左邊,方便左手拇指 */
+.ult-left .hud-row:has(.ult-wrap) { flex-direction: row-reverse; }

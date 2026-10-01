@@ -129,10 +129,14 @@ G.pages = {
     // 語言:中文 / 日本語 / English
     const lang = () => `<div class="st-item"><div class="st-top"><b>${G.t('語言')}</b><span class="st-val">LANGUAGE</span></div><div class="st-lang">` +
       G.LANGS.map(([code, label]) => `<button class="st-lang-btn${G.lang() === code ? ' on' : ''}" data-lang="${code}">${label}</button>`).join('') + '</div></div>';
+    // 必殺技按鈕放左手邊或右手邊
+    const side = () => `<div class="st-item"><div class="st-top"><b>${G.t('必殺技位置')}</b><span class="st-val">SPECIAL</span></div><div class="st-lang two">` +
+      [['left', '左'], ['right', '右']].map(([code, label]) => `<button class="st-lang-btn${d.ultSide === code ? ' on' : ''}" data-ult="${code}">${G.t(label)}</button>`).join('') + '</div></div>';
     G.$('#settingsBody').innerHTML =
       lang() + vol('music', '音樂') + vol('sfx', '音效') +
       toggle('vibrate', '手機震動', '點擊與受傷時震動(支援的手機)') +
       toggle('shake', '畫面震動', '受傷、重擊時畫面搖晃') +
+      side() +
       (G.clock.paused ? '' : '<div class="st-row">' +
       `<button class="btn small danger" id="stReset">${G.t(this.resetArmed ? '再按一次確認' : '🗑️ 重置存檔')}</button>` +
       '</div>');
@@ -152,6 +156,7 @@ G.pages = {
     const t = e.target.closest('button');
     if (!t) return;
     if (t.dataset.lang) { G.setLang(t.dataset.lang); G.audio.play('select'); return this.renderSettings(); }
+    if (t.dataset.ult) { G.save.data.ultSide = t.dataset.ult; G.save.write(); G.applyUltSide(); G.audio.play('select'); return this.renderSettings(); }
     if (t.dataset.vol) return this.setVol(t.dataset.vol, +t.dataset.v);
     if (t.dataset.toggle) {
       const k = t.dataset.toggle;
@@ -170,7 +175,7 @@ G.pages = {
         return this.renderSettings();
       }
       this.resetArmed = false;
-      const keep = { lang: G.save.data.lang, vol: G.save.data.vol, vibrate: G.save.data.vibrate, shake: G.save.data.shake };
+      const keep = { lang: G.save.data.lang, vol: G.save.data.vol, vibrate: G.save.data.vibrate, shake: G.save.data.shake, ultSide: G.save.data.ultSide };
       try { localStorage.removeItem(G.save.key); } catch (err) {}
       G.save.load();
       Object.assign(G.save.data, keep); // 重置進度,保留設定
