@@ -18,7 +18,7 @@ G.WAVE_GROWTH = {
 // breakLen / breakTime:破綻要依序點幾個數字、限時幾毫秒(數字越多、每個數字分到的時間越少)
 // points:積分與成長點數倍率;upMax:開啟這一輪後「成長」各項的等級上限(以開啟到的最高輪為準)
 G.ROUNDS = {
-  1: { name: '第一輪',       tag: '',   scale: 0,   hp: 1,   atk: 1,    life: 1,    count: 0, skillEvery: 3, breakLen: 4, breakTime: 4500, points: 1,   upMax: 10 },
+  1: { name: '第一輪・凡塵', tag: '',   scale: 0,   hp: 1,   atk: 1,    life: 1,    count: 0, skillEvery: 3, breakLen: 4, breakTime: 4500, points: 1,   upMax: 10 },
   2: { name: '第二輪・修羅', tag: 'Ⅱ', scale: 0.9, hp: 1.1, atk: 1.1,  life: 0.92, count: 0, skillEvery: 3, breakLen: 5, breakTime: 5000, points: 1.5, upMax: 15,
        desc: '敵人全面強化,盾牌更快消失,破綻要點 5 個數字。成長上限提升至 Lv15,點數 ×1.5。' },
   3: { name: '第三輪・天魔', tag: 'Ⅲ', scale: 1.8, hp: 1.2, atk: 1.15, life: 0.86, count: 1, skillEvery: 2, breakLen: 6, breakTime: 5400, points: 2,   upMax: 20,

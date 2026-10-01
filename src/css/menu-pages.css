@@ -239,6 +239,7 @@ html[lang="en"] #stages .pg-sub, html[lang="en"] #settings .pg-sub { visibility:
   background: #0a1418; clip-path: var(--chamfer); box-shadow: inset 0 0 0 .3cqw #19f0ff50;
 }
 .round-tab:disabled { opacity: .45; cursor: default; }
+html:lang(en) .round-tab { font-size: 2.7cqw; letter-spacing: 0; } /* 英文名稱較長,縮小一點才放得進一行 */
 .round-tab.on.r1 { color: #001; background: linear-gradient(180deg, #7ff8ff, #19c8e0); box-shadow: 0 0 3cqw #19f0ff80; }
 .round-tab.on.r2 { color: #fff; background: linear-gradient(180deg, #ff8a5c, #c0142c); box-shadow: 0 0 3cqw #ff3a3a90; }
 .round-tab.on.r3 { color: #fff; background: linear-gradient(180deg, #d58bff, #5a0f9c); box-shadow: 0 0 3cqw #b04dff90; }
