@@ -117,7 +117,9 @@ G.battle = {
     G.grid.clearBlocks();
     this.endFever();
     this.phase = null;
-    ['#pauseMenu', '#banner', '#cutin', '#bossWarn'].forEach(s => G.$(s).classList.remove('show'));
+    // 戰鬥中所有覆蓋畫面都要關掉(技能三選一、分歧、說明卡也可能開著)
+    ['#pauseMenu', '#banner', '#cutin', '#bossWarn', '#skillPick', '#branch', '#tipCard'].forEach(s => G.$(s).classList.remove('show'));
+    G.tips.open = false;
     G.$('#stageView').classList.remove('rush');
     this.setTurn(null);
     if (G.tutorial.active) G.tutorial.cleanup();

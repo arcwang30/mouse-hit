@@ -325,7 +325,7 @@ G.scenes = {
     return new Promise(resolve => {
       const box = G.$('#branchCards');
       box.innerHTML = options.map((b, i) =>
-        `<button class="branch-card ${b.id}" data-i="${i}"><div class="br-icon">${b.icon}</div><b>${G.t(b.name)}</b><div>${G.t(b.desc)}</div></button>`).join('');
+        `<button class="branch-card ${b.id}" data-i="${i}"><span class="kb-key">${i + 1}</span><div class="br-icon">${b.icon}</div><b>${G.t(b.name)}</b><div>${G.t(b.desc)}</div></button>`).join('');
       const el = G.$('#branch');
       el.classList.add('show');
       box.querySelectorAll('.branch-card').forEach(btn => {
@@ -355,7 +355,7 @@ G.scenes = {
       G.$('#skillPick h2').textContent = G.t(rulesOnly ? '修得一項技法' : '選擇一項技能');
       const box = G.$('#skillCards');
       box.innerHTML = choices.map((s, i) =>
-        `<button class="skill-card${s.rule ? ' rule' : ''}" data-i="${i}"><div class="sk-icon">${s.icon}</div>` +
+        `<button class="skill-card${s.rule ? ' rule' : ''}" data-i="${i}"><span class="kb-key">${i + 1}</span><div class="sk-icon">${s.icon}</div>` +
         `<b>${s.rule ? '<span class="rule-tag">' + G.t('技法') + '</span>' : ''}${G.t(s.name)}</b><div>${G.t(s.desc)}</div></button>`).join('');
       const el = G.$('#skillPick');
       el.classList.add('show');

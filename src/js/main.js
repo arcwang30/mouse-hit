@@ -48,6 +48,36 @@ const KEYMAP = {
   Numpad7: 0, Numpad8: 1, Numpad9: 2, Numpad4: 3, Numpad5: 4, Numpad6: 5, Numpad1: 6, Numpad2: 7, Numpad3: 8,
   KeyQ: 0, KeyW: 1, KeyE: 2, KeyA: 3, KeyS: 4, KeyD: 5, KeyZ: 6, KeyX: 7, KeyC: 8,
 };
+// ---- 鍵盤選擇:說明卡 / 新手獎勵 / 技能三選一 / 分歧 ----
+// 數字鍵 1~9 直接選;方向鍵移動選取框,Enter / 空白鍵確定。
+// 用 capture 先攔下,避免同一個按鍵又被當成九宮格或必殺技(數字鍵盤 1~9、空白鍵)
+const choiceCards = () => {
+  if (G.$('#tipCard').classList.contains('show')) return [G.$('#tipOk')];
+  for (const [ov, sel] of [['#tutReward', '.tr-item'], ['#skillPick', '.skill-card'], ['#branch', '.branch-card']]) {
+    if (G.$(ov).classList.contains('show')) return [...G.$(ov).querySelectorAll(sel)];
+  }
+  return null;
+};
+document.addEventListener('keydown', e => {
+  const cards = choiceCards();
+  if (!cards || !cards.length || e.repeat) return;
+  if (G.clock.paused && !G.tips.open) return; // PAUSE 選單蓋在上面時交給 PAUSE 處理
+  const pick = c => { e.preventDefault(); e.stopImmediatePropagation(); c.click(); };
+  const num = /^(Digit|Numpad)([1-9])$/.exec(e.code);
+  if (num) { if (cards[num[2] - 1]) pick(cards[num[2] - 1]); return; }
+  const at = cards.findIndex(c => c.classList.contains('kb-focus'));
+  const d = { ArrowLeft: -1, ArrowUp: -1, ArrowRight: 1, ArrowDown: 1 }[e.code];
+  if (d) {
+    e.preventDefault();
+    e.stopImmediatePropagation();
+    const i = at < 0 ? 0 : (at + d + cards.length) % cards.length;
+    cards.forEach((c, k) => c.classList.toggle('kb-focus', k === i));
+    G.audio.play('tap');
+    return;
+  }
+  if (e.code === 'Enter' || e.code === 'Space') pick(cards[Math.max(0, at)]);
+}, true);
+
 // ---- PAUSE ----
 G.$('#pauseBtn').addEventListener('click', () => G.battle.pause());
 G.$('#pauseResume').onclick = () => G.battle.resume();
