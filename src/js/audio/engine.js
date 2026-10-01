@@ -21,6 +21,21 @@ G.audio = {
     this.bgmBus.gain.value = 0.22;
     this.bgmBus.connect(this.master);
 
+    // 背景音樂用的回音(主選單合成器曲的 delay):bgmSend → delay ⇄ 回授 → bgmBus
+    const delay = this.bgmDelay = ctx.createDelay(1);
+    delay.delayTime.value = 0.45;
+    const fb = ctx.createGain(), damp = ctx.createBiquadFilter(), wet = ctx.createGain();
+    fb.gain.value = 0.38;
+    damp.type = 'lowpass';
+    damp.frequency.value = 2400;
+    wet.gain.value = 0.45;
+    delay.connect(damp);
+    damp.connect(fb);
+    fb.connect(delay);
+    damp.connect(wet);
+    wet.connect(this.bgmBus);
+    this.bgmSend = delay;
+
     const buf = ctx.createBuffer(1, ctx.sampleRate, ctx.sampleRate);
     const d = buf.getChannelData(0);
     for (let i = 0; i < d.length; i++) d[i] = Math.random() * 2 - 1;
@@ -58,6 +73,7 @@ G.audio = {
   },
 
   // 單音:type 波形、to 滑音目標頻率、when 排程時間、dest 輸出匯流排
+  // lp / lpTo 低通濾波(起始 → 結束截止頻率,做出合成器的「撥弦」感);q 共振;send 另外送進回音
   tone(freq, dur, o = {}) {
     const ctx = this.ctx, t = o.when ?? ctx.currentTime;
     const osc = ctx.createOscillator(), g = ctx.createGain();
@@ -67,7 +83,18 @@ G.audio = {
     g.gain.setValueAtTime(0.0001, t);
     g.gain.exponentialRampToValueAtTime(o.vol ?? 0.5, t + (o.attack ?? 0.005));
     g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
-    osc.connect(g);
+    if (o.lp) {
+      const f = ctx.createBiquadFilter();
+      f.type = 'lowpass';
+      f.Q.value = o.q || 1;
+      f.frequency.setValueAtTime(o.lp, t);
+      if (o.lpTo) f.frequency.exponentialRampToValueAtTime(o.lpTo, t + dur);
+      osc.connect(f);
+      f.connect(g);
+    } else {
+      osc.connect(g);
+    }
+    if (o.send && this.bgmSend) g.connect(this.bgmSend);
     g.connect(o.dest || this.sfxBus);
     osc.start(t);
     osc.stop(t + dur + 0.02);
