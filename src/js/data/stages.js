@@ -81,7 +81,7 @@ G.prog = (r = G.round()) => {
 // 分歧選項(每次隨機出 2 個讓玩家選一個)
 G.BRANCHES = [
   { id: 'rest',  icon: '🍵', name: '休息',       desc: '回復 40% HP' },
-  { id: 'bonus', icon: '⚡', name: '狂打獎勵關', desc: '12 秒內盡量打,打越多回復越多 HP 與必殺值' },
+  { id: 'bonus', icon: '💰', name: '狂打獎勵關', desc: '12 秒內盡量打,打越多金幣越多(不回血)' },
   { id: 'elite', icon: '💀', name: '精英挑戰',   desc: '下一波變成精英,打倒後獲得一次技法三選一' },
   { id: 'train', icon: '📜', name: '修行',       desc: '立刻從三個技法中選一個' },
 ];

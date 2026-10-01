@@ -136,11 +136,7 @@ window.simRun = function (stageIdx, skill, upLv) {
         if (b.id === 'rest') p.hp = Math.min(p.maxHp, p.hp + Math.round(p.maxHp * 0.4));
         if (b.id === 'train') pickSkill(true);
         if (b.id === 'elite') eliteNext = true;
-        if (b.id === 'bonus') { // 真人 12 秒約 45 擊 × 命中率
-          const hits = Math.round(55 * skill);
-          p.hp = Math.min(p.maxHp, p.hp + Math.min(Math.round(hits * 0.8), Math.round(p.maxHp * 0.45)));
-          p.ult = Math.min(p.ultMax, p.ult + hits * 1.5);
-        }
+        // 狂打獎勵關只給金幣,不影響戰力
       }
     }
   }

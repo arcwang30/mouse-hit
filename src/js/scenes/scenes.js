@@ -407,7 +407,7 @@ G.scenes = {
       <div>${G.t('取得技能')}<b>${skills}</b></div>
       <div class="score">${G.t('積分')}<b>${score}</b></div>
       <div class="score">${G.t('獲得成長點數')}<b>${G.PT} +${points}</b></div>` +
-      `<div class="score coins">${G.t('獲得金幣')}<b>💰 +${G.battle.coins || 0}</b></div>` +
+      `<div class="score coins">${G.t('獲得金幣')}<b>💰 +${G.battle.coins || 0}${s.bonusCoins ? `<small class="coin-bonus">${G.t('(狂打 +{0})', s.bonusCoins)}</small>` : ''}</b></div>` +
       (G.battle.newRound ? `<div class="new-round">${G.t('{0} 開啟!', G.t(G.ROUNDS[G.battle.newRound].name))}<small>${G.t('成長上限提升至 Lv{0}', G.ROUNDS[G.battle.newRound].upMax)}</small></div>` : '');
     G.show('result');
   },

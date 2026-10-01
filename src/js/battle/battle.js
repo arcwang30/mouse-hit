@@ -14,6 +14,8 @@ const LAVA_BURN = 4;       // 打熔岩格的燙傷
 const LINE_MUL = 3;        // 三連擊額外傷害(攻擊力倍數)
 const SLOWMO = { ms: 2500, mul: 1.6 }; // 時之呼吸:每回合前 2.5 秒符號停留 ×1.6
 const BONUS_MS = 12000;    // 狂打獎勵關長度
+const BONUS_COIN_PER = 2;  // 狂打獎勵關:每幾 HIT 換 1 金幣
+const BONUS_COIN_MAX = 40; // 狂打獎勵關:一次最多幾枚(第二、三輪再乘倍率)
 
 function makePlayer() {
   const p = {
@@ -706,17 +708,19 @@ G.battle = {
     this.render();
   },
 
-  // 狂打獎勵關:12 秒內拳頭狂冒,沒有敵人攻擊
+  // 狂打獎勵關:12 秒內拳頭狂冒,沒有敵人攻擊;獎勵只有金幣(不回血、不加必殺,讓玩家清楚這是賺錢關)
   async bonusRound() {
-    const p = this.p, realEnemy = this.e;
+    const realEnemy = this.e;
     this.e = { id: 'dummy', name: G.t('訓練木樁'), icon: '🎯', img: 'enemies/training_dummy.png', hp: 1, maxHp: 1, turn: 0 };
     if (!G.save.data.seen.dummy) { G.save.data.seen.dummy = true; G.save.write(); } // 敵人圖鑑
     this.showSprite(this.e);
     G.$('#enemyName').textContent = G.t('狂打獎勵關');
     this.setEnemyState('idle');
     this.render();
-    G.$('#enemyHpText').textContent = 'BONUS';
-    await G.banner('狂打獎勵關!', '12 秒內盡量打!', 1100);
+    const coinsOf = h => Math.round(Math.min(Math.floor(h / BONUS_COIN_PER), BONUS_COIN_MAX) * G.roundCfg().points);
+    const showCoins = h => { G.$('#enemyHpText').textContent = '💰 ' + coinsOf(h); }; // 血條上即時顯示賺到的金幣
+    showCoins(0);
+    await G.banner('狂打獎勵關!', G.t('12 秒內盡量打,打越多金幣越多 💰'), 1100);
     this.phase = 'bonus';
     await this.setTurn('atk');
     this.setPhase('狂打!12 秒內盡量打!', 'atk');
@@ -735,6 +739,10 @@ G.battle = {
         this.punchFx(i % 3, { small: true, dur: 120 });
         this.setEnemyState('hit', 250); // 木樁被打中也要晃一下
         G.audio.play('punch');
+        // 打中就從格子噴出金幣(金色拳頭 3 枚)並響起金幣聲
+        this.coinFx(i, info.gold ? 3 : 1);
+        G.audio.play('coin', info.gold);
+        showCoins(hits);
       },
       onMiss: () => {},
       stop: () => timeUp,
@@ -742,14 +750,32 @@ G.battle = {
     timer.stop();
     G.clock.cancel(endT);
     this.phase = null;
-    // 獎勵:每擊 0.8 HP(上限 45% 最大 HP)、1.5 必殺值;打得好的話和「休息」差不多,再多一點必殺
-    const heal = Math.min(Math.round(hits * 0.8), Math.round(p.maxHp * 0.45)), ult = hits * 1.5;
-    this.healPlayer(heal);
-    this.gainUlt(ult);
-    this.stats.dmg += hits * 10; // 算進結算積分
+    // 獎勵:每 2 HIT 1 金幣(上限 40),第二、三輪 ×1.5 / ×2;結算時和過關金幣一起入帳
+    const coins = coinsOf(hits);
+    this.stats.bonusCoins = (this.stats.bonusCoins || 0) + coins;
+    G.audio.play('levelup');
     this.stats.bonusHits = Math.max(this.stats.bonusHits || 0, hits); // 成就「拳如雨下」
-    await G.banner(`${hits} HIT!`, G.t('回復 {0} HP・必殺 +{1}', heal, Math.round(ult)), 1400);
+    await G.banner(`${hits} HIT!`, G.t('獲得金幣 💰 +{0}', coins), 1400);
     this.e = realEnemy;
+  },
+
+  // 金幣特效:從第 i 格往上噴出 n 枚旋轉的金幣
+  coinFx(i, n) {
+    const host = G.$('#battle'), cell = G.grid.cells[i];
+    if (!host.clientWidth) return; // 戰鬥畫面沒顯示時不產生特效
+    const hr = host.getBoundingClientRect(), cr = cell.getBoundingClientRect(), u = hr.width / 100;
+    const x0 = cr.left - hr.left + cr.width / 2, y0 = cr.top - hr.top + cr.height * 0.4;
+    for (let k = 0; k < n; k++) {
+      const c = document.createElement('div');
+      c.className = 'fx-coin';
+      host.appendChild(c);
+      const dx = ((Math.random() - 0.5) * 18 + (k - (n - 1) / 2) * 7) * u, up = (16 + Math.random() * 10) * u;
+      c.animate([
+        { transform: `translate(${x0}px, ${y0}px) translate(-50%, -50%) scale(.4) rotateY(0deg)`, opacity: 1 },
+        { transform: `translate(${x0 + dx * 0.6}px, ${y0 - up}px) translate(-50%, -50%) scale(1) rotateY(540deg)`, opacity: 1, offset: 0.55 },
+        { transform: `translate(${x0 + dx}px, ${y0 - up * 0.7}px) translate(-50%, -50%) scale(.8) rotateY(900deg)`, opacity: 0 },
+      ], { duration: 650 + k * 60, easing: 'cubic-bezier(.2, .7, .4, 1)' }).onfinish = () => c.remove();
+    }
   },
 
   // ---- 技法 ----
@@ -1076,7 +1102,8 @@ G.battle = {
     rate.newBest = rate.stars > (pr.stars[i] || 0);
     if (rate.newBest) pr.stars[i] = rate.stars;
     // 金幣:過關 20 + 每關 6 + 每顆星 10;沒過關每擊倒一波 2;第二、三輪 ×1.5 / ×2
-    const coins = this.coins = Math.round((win ? 20 + i * 6 + rate.stars * 10 : s.waves * 2) * G.roundCfg().points);
+    // 狂打獎勵關賺到的金幣(s.bonusCoins)不論輸贏都入帳
+    const coins = this.coins = Math.round((win ? 20 + i * 6 + rate.stars * 10 : s.waves * 2) * G.roundCfg().points) + (s.bonusCoins || 0);
     sv.coins += coins;
     const finalWin = win && i === G.STAGES.length - 1;
     this.newRound = 0;
