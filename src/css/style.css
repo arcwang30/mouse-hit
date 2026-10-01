@@ -124,10 +124,19 @@ button { font: inherit; color: inherit; cursor: pointer; }
 #storyText { margin: 0; font-size: 4.8cqw; line-height: 1.75; font-weight: 700; letter-spacing: .04em; white-space: pre-line; }
 .story-caption.pop { animation: captionPop .3s ease-out; }
 @keyframes captionPop { from { transform: translateY(20%) skewX(-3deg); opacity: 0; } }
+/* 章節標題:黑底金字置中 */
+.story-caption.title { display: flex; align-items: center; justify-content: center; text-align: center; background: #1a1210; color: #ffc23d; border-color: #ffc23d; }
+.story-caption.title #storyText { font-size: 6.2cqw; line-height: 1.6; letter-spacing: .08em; text-shadow: 0 0 2cqw #ff5a1f; }
+/* 長段落(結局、英文)字縮小,避免旁白框撐太高 */
+.story-caption.long  #storyText { font-size: 4cqw; line-height: 1.6; }
+.story-caption.xlong #storyText { font-size: 3.5cqw; line-height: 1.55; letter-spacing: .01em; }
+.story-caption.xxlong #storyText { font-size: 3.15cqw; line-height: 1.5; letter-spacing: 0; }
+.story-caption.title.long #storyText { font-size: 4.6cqw; letter-spacing: .03em; }
 .skip { position: absolute; top: 3cqw; right: 3cqw; background: #0008; border: 1px solid #fff4; border-radius: 99px; padding: 1.5cqw 4cqw; }
 @keyframes blink { 50% { opacity: .3; } }
 
 /* ---- 主選單 ---- */
+#storyPick { align-items: center; justify-content: center; gap: 6cqw; }
 #menu, #upgrade, #result { align-items: center; gap: min(3cqw, 2cqh); padding: min(6cqw, 4cqh) 6cqw; overflow-y: auto; }
 /* 選單類畫面:沿用標題背景圖,壓暗以便閱讀 */
 /* 選單類畫面:背景改由 #artBg 動態顯示,這裡只留四周淡淡的暗角,不再整片壓暗 */

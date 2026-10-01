@@ -1,9 +1,9 @@
 // 非戰鬥畫面:故事開場、主選單、成長、技能三選一、結算
 
-// 開場漫畫:assets/images/story/opening.jpg(1408×768,共 8 格)
+// 過場漫畫:開場 assets/images/story/opening.jpg(1408×768)、破關結局 ending.jpg(1380×752)
 // crop:該格在原圖上的位置;pan:寬畫面改成由左往右橫搖(view 為可視寬度)
 // fx:fire 火光 / impact 震動 / shock 紫光+震動 / rage 怒火+震動;tilt:格子傾斜角度;focus:鏡頭推近的中心
-const COMIC = { w: 1408, h: 768 };
+// title:這一句是章節標題(置中、放大)
 const STORY = [
   { crop: { x: 28, y: 35, w: 365, h: 337 }, fx: 'fire', tilt: -1.5, focus: '70% 40%', sfx: 'fire',
     text: '西元 2XXX 年。\n一場無情大火中,神拳門掌門雷震天破窗而入,從火海裡救出一名男嬰。' },
@@ -21,10 +21,33 @@ const STORY = [
     text: '炎鋼走下群山,迎向霓虹閃爍的未來都市。\n「用這雙鐵拳,砸碎幕後的陰謀!」' },
 ];
 
-// 讓 el 只顯示原圖上 (x, y, w, h) 這一塊
-const showCrop = (el, x, y, w, h) => {
-  el.style.backgroundSize = `${COMIC.w / w * 100}% auto`;
-  el.style.backgroundPosition = `${x / (COMIC.w - w) * 100}% ${y / (COMIC.h - h) * 100}%`;
+// 破關結局:打倒最終 BOSS 後播放
+const ENDING = [
+  { crop: { x: 29, y: 30, w: 640, h: 333 }, tilt: -1, focus: '50% 45%', sfx: 'thunder', title: true,
+    text: '烈火淬煉的孤星\n最終章・踏上無盡的拳道' },
+  { crop: { x: 29, y: 30, w: 640, h: 333 }, fx: 'impact', tilt: -1.5, focus: '60% 45%', sfx: 'boom',
+    text: '在新神州科技堡壘的最深處，炎鋼施展神拳門終極絕學「烈炎崩天拳」，徹底擊碎了融合改造義體與叛門武學的魔王「暗曜」。' },
+  { crop: { x: 723, y: 30, w: 641, h: 333 }, tilt: 1, focus: '45% 60%', sfx: 'ko',
+    text: '隨著魔王化為灰燼，殺師之仇與父母慘案的幕後陰謀終於真相大白。' },
+  { crop: { x: 28, y: 401, w: 427, h: 333 }, tilt: -1.5, focus: '55% 30%', sfx: 'chip',
+    text: '大仇得報後，炎鋼從魔王殘留的晶片中發現，新神州之外的「不毛混沌界」隱藏著更龐大的科技巨擘與更古老的武學源頭。' },
+  { crop: { x: 470, y: 401, w: 199, h: 333 }, fx: 'shock', tilt: 2, focus: '50% 35%', sfx: 'bossSkill', tone: 'shock',
+    text: '魔王不過是一枚棋子。' },
+  { crop: { x: 723, y: 401, w: 420, h: 333 }, tilt: -1, focus: '40% 60%',
+    text: '三天後，炎鋼在師傅墓前灑酒告別。他放棄了新神州的權力，毅然背起行囊，迎著朝陽踏向未知的荒野。' },
+  { crop: { x: 723, y: 401, w: 641, h: 333 }, pan: { view: 400 }, tilt: 0, sfx: 'fire',
+    text: '他的眼中不再有仇恨，只有對武道巔峰的追求。烈火淬煉完畢，這顆孤星將在更廣闊的世界，展開全新的修練旅程。' },
+];
+
+const COMICS = {
+  opening: { src: '../assets/images/story/opening.jpg', w: 1408, h: 768, beats: STORY },
+  ending:  { src: '../assets/images/story/ending.jpg',  w: 1380, h: 752, beats: ENDING },
+};
+
+// 讓 el 只顯示原圖(comic)上 (x, y, w, h) 這一塊
+const showCrop = (el, comic, x, y, w, h) => {
+  el.style.backgroundSize = `${comic.w / w * 100}% auto`;
+  el.style.backgroundPosition = `${x / (comic.w - w) * 100}% ${y / (comic.h - h) * 100}%`;
 };
 
 // 產生一道由上往下、鋸齒狀的閃電(含兩條分岔),每次形狀都不同
@@ -53,14 +76,17 @@ const lightningSvg = () => {
 };
 
 G.scenes = {
-  // ---- 故事 ----
-  story() {
+  // ---- 故事(開場 / 破關結局)----
+  // name:COMICS 的 key;onDone:播完或按跳過後要去的地方
+  story(name = 'opening', onDone) {
+    const comic = COMICS[name], beats = comic.beats;
     G.show('story');
     G.bgm.play('menu');
     const root = G.$('#story'), panel = G.$('#storyPanel'), img = G.$('#panelImg');
     const caption = G.$('#storyCaption'), text = G.$('#storyText'), speaker = G.$('#storySpeaker');
     const hint = root.querySelector('.story-hint');
-    G.$('#storyDots').innerHTML = STORY.map(() => '<span></span>').join('');
+    img.style.backgroundImage = `url('${comic.src}')`;
+    G.$('#storyDots').innerHTML = beats.map(() => '<span></span>').join('');
     const dots = [...G.$('#storyDots').children];
     let idx = -1, typing = null, busy = false, panTimer;
 
@@ -76,7 +102,7 @@ G.scenes = {
     };
 
     const show = i => {
-      const b = STORY[i];
+      const b = beats[i];
       clearTimeout(panTimer);
       dots.forEach((d, k) => { d.classList.toggle('on', k < i); d.classList.toggle('now', k === i); });
       root.classList.toggle('tone-shock', b.tone === 'shock');
@@ -92,11 +118,11 @@ G.scenes = {
 
       img.classList.toggle('pan', !!b.pan);
       img.style.transition = 'none';
-      showCrop(img, b.crop.x, b.crop.y, view.w, view.h);
+      showCrop(img, comic, b.crop.x, b.crop.y, view.w, view.h);
       void img.offsetWidth;
       if (b.pan) { // 寬畫面:從左邊橫搖到右邊的主角
         img.style.transition = '';
-        panTimer = setTimeout(() => showCrop(img, b.crop.x + b.crop.w - view.w, b.crop.y, view.w, view.h), 500);
+        panTimer = setTimeout(() => showCrop(img, comic, b.crop.x + b.crop.w - view.w, b.crop.y, view.w, view.h), 500);
       } else {
         img.style.animation = 'none';
         void img.offsetWidth;
@@ -107,11 +133,15 @@ G.scenes = {
       G.audio.play('drum');
       if (b.sfx) setTimeout(() => G.audio.play(b.sfx), 200);
 
-      caption.className = 'story-caption' + (b.speaker ? ' say' : '');
+      // 依文字「寬度」決定字級:中日文一個字約等於兩個英文字母寬
+      const str = G.t(b.text);
+      const width = [...str].reduce((n, ch) => n + (ch.charCodeAt(0) > 0x2e80 ? 2 : 1), 0);
+      const len = b.title ? (width > 60 ? ' long' : '') : width > 280 ? ' xlong xxlong' : width > 220 ? ' xlong' : width > 90 ? ' long' : '';
+      caption.className = 'story-caption' + (b.speaker ? ' say' : '') + (b.title ? ' title' : '') + len;
       void caption.offsetWidth;
       caption.classList.add('pop');
       speaker.textContent = b.speaker ? G.t(b.speaker) : '';
-      type(G.t(b.text));
+      type(str);
     };
 
     const next = () => {
@@ -119,11 +149,11 @@ G.scenes = {
       if (typing) { // 還在打字:先把整段顯示出來
         clearInterval(typing);
         typing = null;
-        text.textContent = G.t(STORY[idx].text);
+        text.textContent = G.t(beats[idx].text);
         hint.classList.remove('hide');
         return;
       }
-      if (idx + 1 >= STORY.length) return done();
+      if (idx + 1 >= beats.length) return done();
       if (idx < 0) { show(++idx); return; }
       busy = true;
       panel.classList.remove('in');
@@ -135,6 +165,7 @@ G.scenes = {
       clearInterval(typing);
       clearTimeout(panTimer);
       root.onclick = null;
+      if (onDone) return onDone();
       try { localStorage.setItem('gangquan_seen_story', '1'); } catch (e) {}
       this.title();
     };

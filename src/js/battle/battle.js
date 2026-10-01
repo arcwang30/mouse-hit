@@ -901,7 +901,9 @@ G.battle = {
     sv.points += points;
     if (win && sv.unlocked < this.stageIdx + 2) sv.unlocked = Math.min(G.STAGES.length, this.stageIdx + 2);
     sv.best[this.stageIdx] = Math.max(sv.best[this.stageIdx] || 0, score);
+    if (win && this.stageIdx === G.STAGES.length - 1) sv.cleared = true; // 破關:主選單「故事」可重看結局
     G.save.write();
+    this.endingNext = win && this.stageIdx === G.STAGES.length - 1; // 打倒最終 BOSS:結算後播放結局
     G.scenes.result(win, score, points, s, p);
   },
 };

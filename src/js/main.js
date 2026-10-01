@@ -17,9 +17,17 @@ document.addEventListener('pointerdown', e => {
 });
 
 G.$('#btnUpgrade').onclick = () => G.scenes.upgrade();
-G.$('#btnStory').onclick = () => G.scenes.story();
+// 故事:破關後可選擇看開場或結局,否則直接播開場
+G.$('#btnStory').onclick = () => G.save.data.cleared ? G.show('storyPick') : G.scenes.story();
+G.$('#pickOpening').onclick = () => G.scenes.story('opening', () => G.scenes.menu());
+G.$('#pickEnding').onclick = () => G.scenes.story('ending', () => G.show('storyPick'));
+G.$('#pickBack').onclick = () => G.scenes.menu();
 G.$('#upBack').onclick = () => G.scenes.menu();
-G.$('#resultBack').onclick = () => G.scenes.menu();
+G.$('#resultBack').onclick = () => {
+  if (!G.battle.endingNext) return G.scenes.menu();
+  G.battle.endingNext = false;
+  G.scenes.story('ending', () => G.scenes.menu());
+};
 G.$('#ultBtn').addEventListener('pointerdown', e => { e.preventDefault(); G.battle.requestUlt(); });
 
 // 鍵盤:數字鍵盤 7-9/4-6/1-3 或 QWE/ASD/ZXC 對應九宮格,空白鍵放必殺技

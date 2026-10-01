@@ -43,6 +43,7 @@ G.I18N = {
   '🎮 操作說明': ['🎮 あそびかた', '🎮 How to Play'],
   '⚙️ 設定': ['⚙️ 設定', '⚙️ Settings'],
   '📜 故事': ['📜 ストーリー', '📜 Story'],
+  '故事': ['ストーリー', 'Story'], '開場故事': ['オープニング', 'Opening'], '破關結局': ['エンディング', 'Ending'],
   '📖 了解歷史': ['📖 歴史を知る', '📖 History'],
   '選擇關卡': ['ステージ選択', 'Stage Select'],
   '返回': ['もどる', 'BACK'],
@@ -79,6 +80,29 @@ G.I18N = {
   '炎鋼走下群山,迎向霓虹閃爍的未來都市。\n「用這雙鐵拳,砸碎幕後的陰謀!」':
     ['炎鋼は山を下り、ネオン輝く未来都市へ向かう。\n「この鉄拳で、黒幕の陰謀を打ち砕く!」',
      'Yan Gang descended the mountains toward a neon-lit city of the future.\n"With these iron fists, I will crush the conspiracy behind it all!"'],
+
+  // ---- 破關結局 ----
+  '烈火淬煉的孤星\n最終章・踏上無盡的拳道':
+    ['烈火に淬がれし孤星\n最終章・終わりなき拳の道へ',
+     'The Lone Star Tempered by Fire\nFinal Chapter • Embarking on the Endless Way of the Fist'],
+  '在新神州科技堡壘的最深處，炎鋼施展神拳門終極絕學「烈炎崩天拳」，徹底擊碎了融合改造義體與叛門武學的魔王「暗曜」。':
+    ['新神州のテクノロジー要塞の最深部、炎鋼は神拳門の究極絶技「烈炎崩天拳」を放ち、サイボーグ改造義体と叛門の武学を融合させた魔王「暗曜」を完全に粉砕した。',
+     'Deep within the tech-fortress of New Shenzhou, Yan Gang unleashed the ultimate secret technique of the Divine Fist Sect—the "Blazing Flame Heaven-Crushing Fist"—completely shattering the Demon King, "Anyao," who had fused cybernetic enhancements with forbidden renegade martial arts.'],
+  '隨著魔王化為灰燼，殺師之仇與父母慘案的幕後陰謀終於真相大白。':
+    ['魔王が灰燼に帰すと同時に、師殺しの仇と両親の悲劇の裏に隠されていた陰謀のすべてが、ついに白日の下に晒された。',
+     "As the Demon King turned to ash, the ultimate truth behind the murder of Yan Gang's master and the tragic conspiracy surrounding his parents was finally brought to light."],
+  '大仇得報後，炎鋼從魔王殘留的晶片中發現，新神州之外的「不毛混沌界」隱藏著更龐大的科技巨擘與更古老的武學源頭。':
+    ['大仇を果たした炎鋼は、魔王が遺したチップから、新神州の外に広がる「不毛の混沌界」に、さらに巨大なテクノロジー巨頭と、より古の武学の源流が隠されていることを知る。',
+     'With his great vengeance fulfilled, Yan Gang discovered from a chip left behind by the Demon King that a far more massive tech conglomerate and a much more ancient source of martial arts lay hidden beyond New Shenzhou in the "Barren Chaos Realm."'],
+  '魔王不過是一枚棋子。':
+    ['魔王すらも、ただの捨て駒に過ぎなかったのだ。',
+     'The Demon King was merely a pawn.'],
+  '三天後，炎鋼在師傅墓前灑酒告別。他放棄了新神州的權力，毅然背起行囊，迎著朝陽踏向未知的荒野。':
+    ['三日後、炎鋼は師の墓前で酒を酌み交わし、別れを告げた。彼は新神州での権力を捨て、毅然と荷物を背負うと、朝日に向かって未知なる荒野へと歩みを進めた。',
+     "Three days later, Yan Gang poured wine at his master’s grave in farewell. Turning his back on the power and authority of New Shenzhou, he resolutely packed his gear and stepped out into the unknown wilderness against the morning sun."],
+  '他的眼中不再有仇恨，只有對武道巔峰的追求。烈火淬煉完畢，這顆孤星將在更廣闊的世界，展開全新的修練旅程。':
+    ['その瞳にはもはや憎しみはなく、ただ武の頂点への探求心だけが宿っていた。烈火による淬煉を終えた孤星は、さらなる広大な世界で、新たなる修練の旅路へと踏み出す。',
+     'His eyes no longer held hatred, but only the pure pursuit of the pinnacle of martial arts. Having been fully tempered by the fire, this lone star now sets forth into a vaster world to begin a brand-new journey of cultivation.'],
 
   // ---- 戰鬥畫面 ----
   '待機': ['待機', 'Idle'], '攻擊': ['攻撃', 'Attack'], '防禦': ['防御', 'Guard'], '必殺技': ['必殺技', 'Special'],
