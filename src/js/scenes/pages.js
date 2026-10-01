@@ -261,6 +261,7 @@ document.querySelectorAll('[data-back]').forEach(b => { b.onclick = () => G.page
 
 // 切換分頁(d = -1 上一頁 / 1 下一頁),內容從滑動的方向滑進來
 const flipPage = (cur, d) => {
+  if (cur === 'stages') return G.scenes.setRound(G.round() + d); // 選擇關卡:切換周回
   if (cur === 'howto') G.pages.turnHowto(d);
   else if (cur === 'history') G.pages.setHistoryTab(G.pages.historyTab + d);
   else return;
@@ -279,8 +280,8 @@ document.addEventListener('keydown', e => {
   if (d) flipPage(cur, d);
 });
 
-// 手機:手指往左滑看下一頁、往右滑看上一頁(上下捲動不受影響)
-['howto', 'history'].forEach(id => {
+// 手機:手指往左滑看下一頁、往右滑看上一頁(上下捲動不受影響);選擇關卡則是切換第一 / 二 / 三輪
+['howto', 'history', 'stages'].forEach(id => {
   const el = G.$('#' + id);
   let x0 = null, y0 = 0, t0 = 0;
   el.addEventListener('touchstart', e => {

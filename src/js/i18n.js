@@ -249,7 +249,7 @@ G.I18N = {
   '取得技能': ['獲得スキル', 'Skills'],
   '積分': ['スコア', 'Score'],
   '獲得成長點數': ['獲得成長ポイント', 'Growth Points Earned'],
-  '返回主選單': ['メニューへ', 'MAIN MENU'],
+  '返回選擇關卡': ['ステージ選択へ', 'STAGE SELECT'],
 
   '休息': ['休息', 'Rest'], '回復 40% HP': ['HP を 40% 回復', 'Restore 40% HP'],
   '12 秒內盡量打,打越多回復越多 HP 與必殺值': ['12 秒間打ちまくれ。打つほど HP と必殺ゲージが回復', 'Hit as much as you can for 12 s. More hits restore more HP and Special'],

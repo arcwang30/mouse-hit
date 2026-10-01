@@ -391,7 +391,7 @@ G.battle = {
       onTap: () => {
         G.audio.play('punch');
         this.punchFx(Math.floor(Math.random() * 3), { small: true, dur: 110 });
-        this.setEnemyState('stagger');
+        this.setEnemyState('hit', 200); // 每一拳都抖,之後回到破防姿勢
       },
     });
     timer.stop();
@@ -939,9 +939,13 @@ G.battle = {
     const el = G.$('#enemy');
     G.clock.cancel(this._stateTimer);
     const e = this.e || {};
+    // 連續快打時同一個狀態會重設成一樣的 class,動畫不會重播;先拿掉再加回去,每一下都抖
+    if (['hit', 'recoil', 'stagger'].includes(s) && el.classList.contains(s)) { el.classList.remove(s); void el.offsetWidth; }
     el.className = 'enemy ' + s + (e.boss ? ' boss' : '') + (e.elite ? ' elite' : '') + (e.img ? ' has-img' : '');
     G.$('#enemyState').textContent = G.t(STATE_LABEL[s]);
-    if (ms) this._stateTimer = G.clock.after(() => { if (this.e.hp > 0) this.setEnemyState(this.phase === 'defend' ? 'attack' : 'idle'); }, ms);
+    // 時間到回到該階段的基本姿勢(破綻連打中維持破防)
+    const back = () => this.phase === 'defend' ? 'attack' : this.phase === 'break' ? 'stagger' : 'idle';
+    if (ms) this._stateTimer = G.clock.after(() => { if (this.e.hp > 0) this.setEnemyState(back()); }, ms);
   },
 
   float(text, cls, onPlayer) {

@@ -253,3 +253,6 @@ html:lang(en) .round-tab { font-size: 2.7cqw; letter-spacing: 0; } /* 英文名�
 .pg-panel.slide-r { animation: slideFromL .22s ease-out; }
 @keyframes slideFromR { from { transform: translateX(12%); opacity: 0; } }
 @keyframes slideFromL { from { transform: translateX(-12%); opacity: 0; } }
+/* 選擇關卡切換周回時,關卡清單從滑動方向滑進來 */
+#stageList.slide-l { animation: slideFromR .22s ease-out; }
+#stageList.slide-r { animation: slideFromL .22s ease-out; }

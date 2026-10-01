@@ -241,6 +241,7 @@ G.scenes = {
   // ---- 選擇關卡(主選單按「開始遊戲」後) ----
   stages() {
     const sv = G.save.data, round = G.round(), pr = G.prog(), cfg = G.roundCfg();
+    G.bgm.play('menu'); // 從結算畫面回來時音樂已經停了;已在播就不會重來
     // 周回切換:開啟第二輪後才出現
     const tabs = sv.roundMax < 2 ? '' : '<div class="round-tabs">' +
       [1, 2, 3].map(r => {
@@ -267,15 +268,24 @@ G.scenes = {
     });
     const tc = G.$('#tutCard');
     if (tc) tc.onclick = () => { G.pages.current = null; G.tutorial.run(true); };
-    G.$('#stageList').querySelectorAll('.round-tab').forEach(b => {
-      b.onclick = () => {
-        sv.round = +b.dataset.round;
-        G.save.write();
-        G.audio.play('select');
-        this.stages();
-      };
-    });
+    G.$('#stageList').querySelectorAll('.round-tab').forEach(b => { b.onclick = () => this.setRound(+b.dataset.round); });
     G.pages.open('stages'); // 共用選單頁面的返回按鈕與 Esc
+  },
+
+  // 切換周回(點分頁、左右滑或 ← →);只能切到已開啟的輪次,不循環。回傳是否有切換
+  setRound(r) {
+    const sv = G.save.data, cur = G.round();
+    r = Math.max(1, Math.min(sv.roundMax, r));
+    if (sv.roundMax < 2 || r === cur) return false;
+    sv.round = r;
+    G.save.write();
+    G.audio.play('select');
+    this.stages();
+    const list = G.$('#stageList');
+    list.classList.remove('slide-l', 'slide-r');
+    void list.offsetWidth;
+    list.classList.add(r > cur ? 'slide-l' : 'slide-r');
+    return true;
   },
 
   // ---- 成長 ----
