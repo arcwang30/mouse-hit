@@ -234,7 +234,6 @@ G.scenes = {
   // ---- 主選單 ----
   menu() {
     G.bgm.setRate(1); // 離開戰鬥:周回 / FEVER 的音樂加速還原
-    G.$('#menuPoints').textContent = G.save.data.points;
     // 點數夠升級(而且還沒到上限)時,「成長」按鈕閃爍提示
     const sv = G.save.data, max = G.ROUNDS[sv.roundMax].upMax;
     G.$('#btnUpgrade').classList.toggle('can-up', G.UPGRADES.some(u => sv.up[u.id] < max && sv.points >= G.upgradeCost(sv.up[u.id])));
