@@ -147,6 +147,7 @@ G.pages = {
       lang() + vol('music', '音樂') + vol('sfx', '音效') +
       toggle('vibrate', '手機震動', '點擊與受傷時震動(支援的手機)') +
       toggle('shake', '畫面震動', '受傷、重擊時畫面搖晃') +
+      toggle('voice', '角色語音', '必殺技時喊出招式名(裝置內建的 AI 語音)') +
       side() +
       (G.clock.paused ? '' : '<div class="st-row">' +
       `<button class="btn small danger" id="stReset">${G.t(this.resetArmed ? '再按一次確認' : '🗑️ 重置存檔')}</button>` +
@@ -175,6 +176,7 @@ G.pages = {
       G.save.write();
       G.audio.play('select');
       if (k === 'vibrate' && G.save.data.vibrate && navigator.vibrate) { try { navigator.vibrate(30); } catch (err) {} }
+      if (k === 'voice' && G.save.data.voice) G.voice.say('hero', 'hero_ult', '烈焰鋼拳・焚天'); // 打開時試聽一次
       return this.renderSettings();
     }
     if (t.id === 'stReset') {
@@ -186,7 +188,7 @@ G.pages = {
         return this.renderSettings();
       }
       this.resetArmed = false;
-      const keep = { lang: G.save.data.lang, vol: G.save.data.vol, vibrate: G.save.data.vibrate, shake: G.save.data.shake, ultSide: G.save.data.ultSide };
+      const keep = { lang: G.save.data.lang, vol: G.save.data.vol, vibrate: G.save.data.vibrate, shake: G.save.data.shake, voice: G.save.data.voice, ultSide: G.save.data.ultSide };
       try { localStorage.removeItem(G.save.key); } catch (err) {}
       G.save.load();
       Object.assign(G.save.data, keep); // 重置進度,保留設定

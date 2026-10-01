@@ -112,6 +112,7 @@ G.battle = {
     if (!this.quitArmed) { this.quitArmed = true; G.audio.play('fail'); return this.renderPause(); }
     this.run = (this.run || 0) + 1;
     G.clock.reset();
+    G.voice.stop();
     G.grid.handler = null;
     G.grid.clearAll();
     G.grid.clearBlocks();
@@ -304,6 +305,7 @@ G.battle = {
     if (s) {
       this.setEnemyState('ult');
       G.audio.play('bossSkill');
+      G.voice.say('boss', 'boss_' + e.id, s.name); // BOSS 喊出招式名
       await G.banner(G.t('{0}「{1}」', e.name, G.t(s.name)), s.desc, 1300);
       count += s.count || 0;
       life *= s.lifeMul || 1;
@@ -510,6 +512,7 @@ G.battle = {
     void el.offsetWidth;
     el.classList.add('show');
     G.audio.play('cutin');
+    G.voice.say('hero', 'hero_ult', '烈焰鋼拳・焚天'); // 喊招
     G.clock.after(() => G.audio.play('boom'), 450); // 命中瞬間
     if (G.save.data.vibrate && navigator.vibrate) { try { navigator.vibrate([0, 450, 80]); } catch (e) {} }
     await G.clock.wait(1700);
