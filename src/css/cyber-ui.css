@@ -670,3 +670,35 @@ html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; } /* 手機瀏覽
   from { filter: drop-shadow(0 0 .5cqw #ffffffb0) drop-shadow(0 0 2.5cqw #b04dff) drop-shadow(0 0 1cqw #c84dff) drop-shadow(0 1.5cqw 1cqw #000a); }
   to   { filter: drop-shadow(0 0 .5cqw #ffffffb0) drop-shadow(0 0 6cqw #c84dff) drop-shadow(0 0 2cqw #ff2bd6) drop-shadow(0 1.5cqw 1cqw #000a); }
 }
+
+/* ---------- 攻守回合:九宮格換色 + 斜劃大字 ---------- */
+/* A:底板外框與內光(攻擊橘、防禦青藍),疊在瀕死紅光(::after)之下 */
+.grid-wrap::before {
+  content: ""; position: absolute; inset: 0; z-index: 0; pointer-events: none;
+  box-shadow: inset 0 0 0 0 transparent, inset 0 0 0 transparent; transition: box-shadow .35s ease-out;
+}
+#battle.turn-atk .grid-wrap::before { box-shadow: inset 0 0 0 .7cqw #ff7a1fcc, inset 0 0 12cqw #ff5a1f55; }
+#battle.turn-def .grid-wrap::before { box-shadow: inset 0 0 0 .7cqw #19c8f0cc, inset 0 0 12cqw #19a8ff50; }
+/* D:空格子的插座內圈跟著亮橘 / 青藍 */
+.cell::before { transition: box-shadow .35s; }
+#battle.turn-atk .cell::before { box-shadow: inset 0 1.6cqw 2cqw #000, inset 0 0 0 .35cqw #ff7a1fa0, inset 0 0 3cqw #ff7a1f45; }
+#battle.turn-def .cell::before { box-shadow: inset 0 1.6cqw 2cqw #000, inset 0 0 0 .35cqw #19c8f0a0, inset 0 0 3cqw #19c8f045; }
+/* B:回合開始時一道斜劃過九宮格的大字 */
+.turn-slash {
+  position: absolute; left: -10%; right: -10%; top: 50%; z-index: 9; pointer-events: none;
+  display: flex; flex-direction: column; align-items: center; padding: 2.4cqw 0;
+  transform: translateY(-50%) rotate(-8deg); animation: slashIn .85s cubic-bezier(.2, .8, .3, 1) forwards;
+}
+.turn-slash.atk { background: linear-gradient(90deg, transparent, #ff5a1fdd 15%, #ffb000ee 50%, #ff5a1fdd 85%, transparent); }
+.turn-slash.def { background: linear-gradient(90deg, transparent, #0a6aa8dd 15%, #19c8f0ee 50%, #0a6aa8dd 85%, transparent); }
+.turn-slash b {
+  font-family: var(--tech); font-size: 10cqw; font-weight: 800; letter-spacing: .12em; line-height: 1; color: #fff;
+  text-shadow: 0 .5cqw 0 #0008, 0 0 3cqw #fff8;
+}
+.turn-slash small { font-size: 3.4cqw; font-weight: 900; color: #fff; letter-spacing: .3em; text-shadow: 0 .3cqw 0 #0008; }
+@keyframes slashIn {
+  0%   { clip-path: inset(0 100% 0 0); opacity: 1; }
+  30%  { clip-path: inset(0 0 0 0); }
+  70%  { opacity: 1; }
+  100% { clip-path: inset(0 0 0 0); opacity: 0; transform: translateY(-50%) rotate(-8deg) translateX(8%); }
+}

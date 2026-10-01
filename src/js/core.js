@@ -32,7 +32,9 @@ G.clock = {
     this.paused = true;
     this.timers.forEach(t => clearTimeout(t.h));
     // 畫面上的動畫(符號倒數、飛來的攻擊、特效)一起停住
-    this.anims = document.getAnimations().filter(a => a.playState === 'running');
+    // 敵人立繪的狀態動畫(被擊中發亮、倒下淡出…)不停:讓它自己播完,避免停在半路卡住或之後被錯誤重播
+    this.anims = document.getAnimations().filter(a => a.playState === 'running' &&
+      !(a.effect && a.effect.target && a.effect.target.closest && a.effect.target.closest('#enemy')));
     this.anims.forEach(a => a.pause());
   },
   resume() {
@@ -40,14 +42,20 @@ G.clock = {
     this.offset += performance.now() - this.pausedAt;
     this.paused = false;
     this.timers.forEach((t, id) => this.arm(id, t));
-    this.anims.forEach(a => { try { a.play(); } catch (e) {} });
+    this.playPaused();
     this.anims = [];
+  },
+  // 只重播「還停著」的動畫:暫停期間已被換掉(例如敵人狀態改變)的 CSS 動畫不能再 play,
+  // 否則會脫離 CSS 控制一直留著(倒下的 die 動畫會讓敵人圖永遠透明、被擊中的發亮會卡住)
+  playPaused() {
+    this.anims.forEach(a => { if (a.playState === 'paused') try { a.play(); } catch (e) {} });
   },
   // 離開戰鬥:丟掉所有還沒觸發的計時器
   reset() {
     this.timers.forEach(t => clearTimeout(t.h));
     this.timers.clear();
     this.paused = false;
+    this.playPaused(); // 暫停中離開戰鬥:停住的動畫也要放掉,不要凍在半路
     this.anims = [];
   },
 };

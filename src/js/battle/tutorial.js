@@ -87,9 +87,10 @@
       };
 
       // 攻擊階段(拳頭):回傳本次的命中統計
-      const attack = o => {
+      const attack = async o => {
         const r = { hits: 0, golds: 0, charged: false, early: false, bombs: 0 };
         b.phase = 'attack';
+        await b.setTurn('atk');
         b.setPhase('你的回合:點擊 👊,HOLD 要按住', 'atk');
         return G.molePhase(Object.assign({
           icon: '👊', cls: 'fist', interval: 800, patterns: { single: 1 }, noCounter: true,
@@ -111,9 +112,10 @@
       };
 
       // 防禦階段(盾牌):每面盾牌對應一發飛來的攻擊
-      const defend = o => {
+      const defend = async o => {
         const r = { blocked: 0, missed: 0 };
         b.phase = 'defend';
+        await b.setTurn('def');
         b.setPhase('防禦:點擊 🛡️ 擋下攻擊!', 'def');
         b.setEnemyState('attack');
         return G.molePhase(Object.assign({
@@ -152,7 +154,7 @@
       // 3. HOLD 蓄力拳:按住、等發光再放開
       await step(3, '標著 HOLD 的拳頭要「按住」,等集氣條滿、按鈕發光再放開,傷害 ×3!', async () => {
         const pr = attack({ count: 1, life: LONG, hold: { at: 0, icon: '👊', label: 'HOLD', holdMs: 650 } });
-        G.clock.after(() => { const c = G.$('#grid .cell.hold.on'); if (c) point(c); }, 450);
+        G.clock.after(() => { const c = G.$('#grid .cell.hold.on'); if (c) point(c); }, 1550); // 斬擊演出 1.1 秒 + 符號出現
         const r = await pr;
         return r.charged || '太早放開了,要等按鈕發光再放開。';
       });
@@ -186,6 +188,7 @@
         heal();
         b.p.ult = b.p.ultMax;
         b.phase = 'attack';
+        b.setTurn('atk');
         b.ultRequested = false;
         b.setPhase('按下「🔥 必殺」!', 'ult');
         b.render();
@@ -246,6 +249,7 @@
       G.$('#coach').classList.remove('show');
       G.$('#battle').classList.remove('tutorial');
       G.battle.phase = null;
+      G.battle.setTurn(null);
     },
 
     // 跳過:按兩次才算(避免誤觸)

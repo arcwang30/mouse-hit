@@ -195,6 +195,17 @@ const SFX = {
 
   // 必殺技
   ready:   (a, t) => arp(a, t, 440, [0, 4, 7, 12], 0.06, { type: 'triangle', vol: 0.25 }),
+  turnAtk: (a, t) => { // 換到攻擊回合:往上衝的風切 + 短促的上揚音
+    a.noise(0.22, { filter: 'bandpass', freq: 500, to: 4000, q: 1.2, vol: 0.3 });
+    a.tone(330, 0.16, { type: 'square', vol: 0.12, to: 880, lp: 3000 });
+    a.tone(120, 0.18, { to: 60, vol: 0.5 });
+  },
+  turnDef: (a, t) => { // 換到防禦回合:舉盾的金屬聲 + 低沉的警示
+    a.tone(1500, 0.18, { type: 'triangle', vol: 0.2 });
+    a.tone(2250, 0.12, { type: 'triangle', vol: 0.1, when: t + 0.02 });
+    a.tone(440, 0.22, { type: 'sawtooth', vol: 0.1, to: 330, lp: 1800 });
+    a.noise(0.06, { filter: 'highpass', freq: 3000, vol: 0.25 });
+  },
   ultFull: (a, t) => { // 必殺集滿:電流上衝 + 和弦重擊 + 兩聲高音提示,和一般的 ready 區隔
     a.tone(180, 0.35, { type: 'sawtooth', vol: 0.22, to: 1400, attack: 0.02, lp: 2500, q: 3 });
     a.noise(0.3, { filter: 'bandpass', freq: 600, to: 6000, q: 1.5, vol: 0.3 });

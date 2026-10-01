@@ -247,12 +247,11 @@ G.scenes = {
     const sv = G.save.data, round = G.round(), pr = G.prog(), cfg = G.roundCfg();
     G.bgm.setRate(1);
     G.bgm.play('menu'); // 從結算畫面回來時音樂已經停了;已在播就不會重來
-    // 周回切換:開啟第二輪後才出現
-    const tabs = sv.roundMax < 2 ? '' : '<div class="round-tabs">' +
-      [1, 2, 3].map(r => {
-        const open = r <= sv.roundMax;
-        return `<button class="round-tab r${r}${r === round ? ' on' : ''}" data-round="${r}" ${open ? '' : 'disabled'}>${open ? '' : '🔒 '}${G.t(G.ROUNDS[r].name)}</button>`;
-      }).join('') + '</div>' + (cfg.desc ? `<div class="round-desc">${G.t(cfg.desc)}</div>` : '');
+    // 周回切換:開啟第二輪後才出現;只列出已開啟的輪次(還沒開的第三輪不顯示)
+    const opened = [1, 2, 3].filter(r => r <= sv.roundMax);
+    const tabs = sv.roundMax < 2 ? '' : `<div class="round-tabs" style="grid-template-columns:repeat(${opened.length}, 1fr)">` +
+      opened.map(r => `<button class="round-tab r${r}${r === round ? ' on' : ''}" data-round="${r}">${G.t(G.ROUNDS[r].name)}</button>`).join('') +
+      '</div>' + (cfg.desc ? `<div class="round-desc">${G.t(cfg.desc)}</div>` : '');
     // 新手教學卡片:只在第一輪最上面
     const tut = round !== 1 ? '' : `<button class="stage-card tut-card" id="tutCard">${sv.tutorialClear ? '<span class="sc-clear">CLEAR</span>' : ''}` +
       `<div class="sc-name">🎓 ${G.t('新手教學')}</div><div class="sc-desc">${G.t('從頭學會點擊、防禦、破綻與必殺技。')}</div></button>`;

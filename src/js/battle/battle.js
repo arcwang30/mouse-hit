@@ -119,11 +119,13 @@ G.battle = {
     this.phase = null;
     ['#pauseMenu', '#banner', '#cutin', '#bossWarn'].forEach(s => G.$(s).classList.remove('show'));
     G.$('#stageView').classList.remove('rush');
+    this.setTurn(null);
     if (G.tutorial.active) G.tutorial.cleanup();
     G.scenes.menu();
   },
 
   async start(stageIdx) {
+    this.setTurn(null);
     const run = this.run = (this.run || 0) + 1; // 中途回到主畫面時,舊的戰鬥流程就此停下
     G.clock.reset();
     this.stageIdx = stageIdx;
@@ -233,6 +235,7 @@ G.battle = {
     if (broken) bonus.push(G.t('破甲 ×1.5'));
     if (counter) bonus.push(G.t('反震 +{0}', counter));
     this.phase = 'attack';
+    await this.setTurn('atk'); // 斬擊演出播完才開始冒拳頭
     this.setPhase(bonus.length ? G.t('你的回合・{0}', bonus.join('・')) : '你的回合:點擊 👊,HOLD 要按住', 'atk');
     this.setupBoard('attack');
     this.render();
@@ -305,9 +308,10 @@ G.battle = {
       if (s.fade) cls += ' fade';
     } else {
       this.setEnemyState('attack');
-      await G.banner('敵人攻擊!', '點擊 🛡️ 擋下攻擊', 800);
+      // 一般攻擊不再跳「敵人攻擊!」橫幅,由九宮格上的 DEFENSE! 斬擊提示(BOSS 必殺技仍保留橫幅,告訴玩家招式名)
     }
     this.phase = 'defend';
+    await this.setTurn('def'); // 斬擊演出播完才開始冒盾牌
     this.setPhase(s ? G.t('必殺技來襲:{0}!', G.t(s.name)) : '防禦:點擊 🛡️ 擋下攻擊!', 'def');
     this.setupBoard('defend');
     const m = this.mech('def');
@@ -701,6 +705,7 @@ G.battle = {
     G.$('#enemyHpText').textContent = 'BONUS';
     await G.banner('狂打獎勵關!', '12 秒內盡量打!', 1100);
     this.phase = 'bonus';
+    await this.setTurn('atk');
     this.setPhase('狂打!12 秒內盡量打!', 'atk');
     let hits = 0, timeUp = false;
     // 結束用真正的計時器;倒數條只是畫面(頁面切到背景時動畫會暫停)
@@ -948,6 +953,24 @@ G.battle = {
     el.className = 'phase ' + (kind || '');
   },
 
+  // 攻守切換:九宮格換色(攻擊橘、防禦青藍)+ 一道斜劃過九宮格的大字與音效;kind 為 null 時清掉
+  // 回傳演出結束的 Promise,呼叫端 await 之後才開始冒符號,避免和斬擊重疊
+  setTurn(kind) {
+    const bt = G.$('#battle');
+    bt.classList.toggle('turn-atk', kind === 'atk');
+    bt.classList.toggle('turn-def', kind === 'def');
+    if (!kind) return;
+    const wrap = G.$('.grid-wrap');
+    wrap.querySelectorAll('.turn-slash').forEach(x => x.remove());
+    const s = document.createElement('div');
+    s.className = 'turn-slash ' + kind;
+    s.innerHTML = `<b>${kind === 'atk' ? 'ATTACK!' : 'DEFENSE!'}</b><small>${G.t(kind === 'atk' ? '你的回合' : '敵人回合')}</small>`;
+    wrap.appendChild(s);
+    setTimeout(() => s.remove(), 900);
+    G.audio.play(kind === 'atk' ? 'turnAtk' : 'turnDef');
+    return G.clock.wait(1100); // 等演出結束(0.85 秒)再多留一點準備時間;可被暫停
+  },
+
   setEnemyState(s, ms) {
     const el = G.$('#enemy');
     G.clock.cancel(this._stateTimer);
@@ -955,6 +978,9 @@ G.battle = {
     // 連續快打時同一個狀態會重設成一樣的 class,動畫不會重播;先拿掉再加回去,每一下都抖
     if (['hit', 'recoil', 'stagger'].includes(s) && el.classList.contains(s)) { el.classList.remove(s); void el.offsetWidth; }
     el.className = 'enemy ' + s + (e.boss ? ' boss' : '') + (e.elite ? ' elite' : '') + (e.img ? ' has-img' : '');
+    // 保險:清掉已經不屬於目前狀態、卻還掛在立繪上的動畫(避免卡在發亮或透明)
+    const spr = G.$('#enemySprite'), names = getComputedStyle(spr).animationName.split(',').map(n => n.trim());
+    spr.getAnimations().forEach(a => { if (a.animationName && !names.includes(a.animationName)) a.cancel(); });
     G.$('#enemyState').textContent = G.t(STATE_LABEL[s]);
     // 時間到回到該階段的基本姿勢(破綻連打中維持破防)
     const back = () => this.phase === 'defend' ? 'attack' : this.phase === 'break' ? 'stagger' : 'idle';
