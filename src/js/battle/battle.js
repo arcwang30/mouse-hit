@@ -388,10 +388,13 @@ G.battle = {
     const hits = e.boss ? 14 : e.elite ? 12 : 10;
     this.setEnemyState('stagger');
     const { breakLen, breakTime } = G.roundCfg(); // 第二、三輪數字更多
-    await G.banner('破綻!', G.t('{0} 秒內依序點擊 1 → {1}', (breakTime / 1000).toFixed(1), breakLen), 800);
+    // 每次破綻隨機:數字 / 希臘數字 / 骰子(教學固定用數字)
+    const style = G.tutorial.active ? G.BREAK_STYLES[0] : G.pick(G.BREAK_STYLES);
+    const range = style.id === 'dice' ? G.t('骰子 1 → {0} 點', breakLen) : style.marks[0] + ' → ' + style.marks[breakLen - 1];
+    await G.banner('破綻!', G.t('{0} 秒內依序點擊 {1}', (breakTime / 1000).toFixed(1), range), 800);
     this.phase = 'break';
     this.setPhase('破綻:依序點擊數字!', 'atk');
-    const seized = await this.numberInput(breakLen, breakTime);
+    const seized = await this.numberInput(breakLen, breakTime, style);
     if (!seized || this.over()) {
       this.phase = null;
       G.audio.play('fail');
@@ -433,13 +436,16 @@ G.battle = {
     this.render();
   },
 
-  // 在九宮格亮出 1 → len 的數字,ms 內依序點完回傳 true;按錯或超時 false
-  async numberInput(len, ms) {
+  // 在九宮格亮出第 1 → len 個符號(style 見 G.BREAK_STYLES),ms 內依序點完回傳 true;按錯或超時 false
+  async numberInput(len, ms, style = G.BREAK_STYLES[0]) {
     // 數字可以出現在任何格子:輸入期間先把冰 / 觸手 / 熔岩藏起來(點了也不會敲到它們),結束後再顯示
     const grid = G.$('#grid');
     grid.classList.add('numbering');
     const seq = G.shuffle([...Array(9).keys()]).slice(0, len);
-    seq.forEach((c, n) => G.grid.set(c, String(n + 1), 'num'));
+    seq.forEach((c, n) => {
+      G.grid.set(c, style.marks[n], 'num num-' + style.id);
+      if (style.id === 'dice') G.grid.cells[c].querySelector('.icon').innerHTML = G.diceHtml(n + 1);
+    });
     const ok = await new Promise(res => {
       let idx = 0;
       const timer = this.timebar(ms, () => { G.grid.handler = null; res(false); });

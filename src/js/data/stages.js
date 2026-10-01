@@ -151,3 +151,14 @@ G.STAGES = [
     events: [2, 4], scale: 2.1,
   },
 ];
+
+// 破綻輸入的符號樣式:每次破綻隨機選一種,依序點第 1 → N 個
+// dice 骰子的點數用 G.diceHtml 畫成圓點(全部同色,不像實體骰子 1、4 點是紅的)
+G.BREAK_STYLES = [
+  { id: 'digit', marks: ['1', '2', '3', '4', '5', '6'] },
+  { id: 'roman', marks: ['Ⅰ', 'Ⅱ', 'Ⅲ', 'Ⅳ', 'Ⅴ', 'Ⅵ'] },
+  { id: 'dice',  marks: ['⚀', '⚁', '⚂', '⚃', '⚄', '⚅'] },
+];
+// 骰子 n 點:3×3 的點位,亮哪幾格
+const DICE_PIPS = [[4], [0, 8], [0, 4, 8], [0, 2, 6, 8], [0, 2, 4, 6, 8], [0, 2, 3, 5, 6, 8]];
+G.diceHtml = n => '<span class="die">' + [...Array(9).keys()].map(k => `<i${DICE_PIPS[n - 1].includes(k) ? ' class="on"' : ''}></i>`).join('') + '</span>';
