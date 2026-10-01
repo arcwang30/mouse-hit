@@ -7,9 +7,9 @@
   <title>鋼拳風雲錄</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Orbitron:wght@600;800&display=swap">
-  <link rel="stylesheet" href="css/style.css?v=202610020139">
-  <link rel="stylesheet" href="css/cyber-ui.css?v=202610020139">
-  <link rel="stylesheet" href="css/menu-pages.css?v=202610020139">
+  <link rel="stylesheet" href="css/style.css?v=202610020201">
+  <link rel="stylesheet" href="css/cyber-ui.css?v=202610020201">
+  <link rel="stylesheet" href="css/menu-pages.css?v=202610020201">
 </head>
 <body>
 <div id="app">
@@ -40,6 +40,7 @@
 
   <!-- 主選單 -->
   <section id="menu" class="screen art">
+    <button class="shop-btn" id="btnShop" title="商店" data-i18n-title>🛒 💰 <span id="menuCoins">0</span></button>
     <button class="ach-btn" id="btnAch" title="成就" data-i18n-title>🏆 <span id="achCount"></span></button>
     <div class="menu-logo"><img src="../assets/images/ui/logo.webp" alt="鋼拳風雲錄"></div>
     <div class="menu-title" id="menuTitle"></div>
@@ -86,6 +87,14 @@
     <div class="pg-tabs" id="historyTabs"></div>
     <div class="pg-panel scroll" id="historyBody"></div>
     <a class="btn small fb" id="fbLink" target="_blank" rel="noopener noreferrer" data-i18n>前往 Facebook 粉絲團</a>
+    <div class="pg-foot"><button class="btn small" data-back data-i18n>返回</button></div>
+  </section>
+
+  <!-- 商店:金幣購買九宮格造型與圖鑑收藏 -->
+  <section id="shop" class="screen art page">
+    <header class="pg-head"><h2 data-i18n>商店</h2><div class="pg-sub">💰 <span id="shopCoins">0</span></div></header>
+    <div class="pg-tabs" id="shopTabs"></div>
+    <div class="pg-panel scroll" id="shopBody"></div>
     <div class="pg-foot"><button class="btn small" data-back data-i18n>返回</button></div>
   </section>
 
@@ -219,6 +228,15 @@
     <div class="tr-list" id="tutRewardList"></div>
     <p class="tr-note" data-i18n>之後過關獲得的點數,可以在主選單「💪 成長」繼續強化。</p>
   </div>
+  <!-- 圖鑑詳細資料(點任一處關閉) -->
+  <div id="dexDetail" class="overlay dex-detail">
+    <div class="dd-box">
+      <div class="ht-pic dd-pic" id="dexDetailPic"></div>
+      <b class="dd-name" id="dexDetailName"></b>
+      <div class="dd-info" id="dexDetailInfo"></div>
+      <small class="dd-close" data-i18n>點一下關閉</small>
+    </div>
+  </div>
   <!-- 第一次遇到 FEVER / 技能 / 分歧時的說明卡 -->
   <div id="tipCard" class="overlay tip-card">
     <div class="tip-box">
@@ -234,24 +252,26 @@
   <button class="pause-btn" id="pauseBtn" title="PAUSE (Esc)">❚❚</button>
 </div>
 
-<script src="js/core.js?v=202610020139"></script>
-<script src="js/i18n.js?v=202610020139"></script>
-<script src="js/audio/engine.js?v=202610020139"></script>
-<script src="js/audio/voice.js?v=202610020139"></script>
-<script src="js/audio/bgm.js?v=202610020139"></script>
-<script src="js/data/skills.js?v=202610020139"></script>
-<script src="js/data/enemies.js?v=202610020139"></script>
-<script src="js/data/stages.js?v=202610020139"></script>
-<script src="js/data/upgrades.js?v=202610020139"></script>
-<script src="js/data/achievements.js?v=202610020139"></script>
-<script src="js/data/skins.js?v=202610020139"></script>
-<script src="js/battle/grid.js?v=202610020139"></script>
-<script src="js/battle/battle.js?v=202610020139"></script>
-<script src="js/battle/tutorial.js?v=202610020139"></script>
-<script src="js/data/pages.js?v=202610020139"></script>
-<script src="js/data/history-i18n.js?v=202610020139"></script>
-<script src="js/scenes/scenes.js?v=202610020139"></script>
-<script src="js/scenes/pages.js?v=202610020139"></script>
-<script src="js/main.js?v=202610020139"></script>
+<script src="js/core.js?v=202610020201"></script>
+<script src="js/i18n.js?v=202610020201"></script>
+<script src="js/audio/engine.js?v=202610020201"></script>
+<script src="js/audio/voice.js?v=202610020201"></script>
+<script src="js/audio/bgm.js?v=202610020201"></script>
+<script src="js/data/skills.js?v=202610020201"></script>
+<script src="js/data/enemies.js?v=202610020201"></script>
+<script src="js/data/stages.js?v=202610020201"></script>
+<script src="js/data/upgrades.js?v=202610020201"></script>
+<script src="js/data/achievements.js?v=202610020201"></script>
+<script src="js/data/skins.js?v=202610020201"></script>
+<script src="js/data/collection.js?v=202610020201"></script>
+<script src="js/battle/grid.js?v=202610020201"></script>
+<script src="js/battle/battle.js?v=202610020201"></script>
+<script src="js/battle/tutorial.js?v=202610020201"></script>
+<script src="js/data/pages.js?v=202610020201"></script>
+<script src="js/data/history-i18n.js?v=202610020201"></script>
+<script src="js/scenes/scenes.js?v=202610020201"></script>
+<script src="js/scenes/pages.js?v=202610020201"></script>
+<script src="js/scenes/shop.js?v=202610020201"></script>
+<script src="js/main.js?v=202610020201"></script>
 </body>
 </html>

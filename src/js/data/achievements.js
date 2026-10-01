@@ -2,7 +2,6 @@
 // check(c) 回傳是否達成;c = { sv 存檔, run 本場統計(不在戰鬥結算時為 null), win 本場是否過關 }
 // progress(c) 回傳 [目前, 目標],成就頁會顯示累積進度
 const cleared = (sv, r, i) => !!(sv.rounds[r] && sv.rounds[r].clear.includes(i));
-const allEnemyIds = () => Object.keys(G.ENEMIES).concat('dummy');
 
 G.ACHIEVEMENTS = [
   // 進度
@@ -30,9 +29,9 @@ G.ACHIEVEMENTS = [
   { id: 'starR1',   icon: '🌟', name: '凡塵全制霸', desc: '第一輪全部關卡 ★★★',   pts: 60,
     progress: c => [G.STAGES.filter((s, i) => ((c.sv.rounds[1].stars || {})[i] || 0) >= 3).length, G.STAGES.length],
     check: c => G.STAGES.every((s, i) => ((c.sv.rounds[1].stars || {})[i] || 0) >= 3) },
-  { id: 'dex',      icon: '📖', name: '百敵圖鑑',   desc: '敵人圖鑑全部解鎖',     pts: 40,
-    progress: c => [allEnemyIds().filter(id => c.sv.seen[id]).length, allEnemyIds().length],
-    check: c => allEnemyIds().every(id => c.sv.seen[id]) },
+  { id: 'dex',      icon: '📖', name: '百敵圖鑑',   desc: '在商店收集全部圖鑑',   pts: 40,
+    progress: c => [G.dexAll().filter(e => c.sv.owned.dex[G.dexKey(e)]).length, G.dexAll().length],
+    check: c => G.dexAll().every(e => c.sv.owned.dex[G.dexKey(e)]) },
   { id: 'maxup',    icon: '💪', name: '千錘百鍊',   desc: '任一項成長升到 Lv10',  pts: 20, check: c => Object.values(c.sv.up).some(lv => lv >= 10) },
 ];
 

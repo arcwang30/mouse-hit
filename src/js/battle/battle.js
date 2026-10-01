@@ -1069,6 +1069,9 @@ G.battle = {
     pr.stars = pr.stars || {};
     rate.newBest = rate.stars > (pr.stars[i] || 0);
     if (rate.newBest) pr.stars[i] = rate.stars;
+    // 金幣:過關 20 + 每關 6 + 每顆星 10;沒過關每擊倒一波 2;第二、三輪 ×1.5 / ×2
+    const coins = this.coins = Math.round((win ? 20 + i * 6 + rate.stars * 10 : s.waves * 2) * G.roundCfg().points);
+    sv.coins += coins;
     const finalWin = win && i === G.STAGES.length - 1;
     this.newRound = 0;
     if (finalWin) {

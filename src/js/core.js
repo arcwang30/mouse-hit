@@ -99,6 +99,7 @@ G.save = {
     this.data.up = Object.assign({ hp: 0, atk: 0, ult: 0, react: 0 }, this.data.up);
     this.data.ach = this.data.ach || {};                                        // 已達成的成就 { id: 時間 }
     this.data.life = Object.assign({ breaks: 0, ults: 0 }, this.data.life); // 累計紀錄(成就用)
+    this.data.owned = Object.assign({ skins: {}, dex: {} }, this.data.owned);  // 商店買過的東西
     if (!this.data.lang) { // 第一次開啟:依瀏覽器語言決定
       const l = (navigator.language || "zh").toLowerCase();
       this.data.lang = l.startsWith("ja") ? "ja" : l.startsWith("zh") ? "zh" : "en";
@@ -115,6 +116,12 @@ G.save = {
       delete sv.best;
     }
     sv.roundMax = sv.roundMax || (sv.cleared ? 2 : 1);
+    // 金幣(商店用,和成長點數分開)。舊存檔第一次:依已通關的關卡數發「商店開幕禮」
+    if (sv.coins === undefined) {
+      const clears = Object.values(sv.rounds).reduce((n, r) => n + r.clear.length, 0);
+      sv.coins = clears * 50;
+      sv.coinsGift = sv.coins; // 主選單顯示一次提示
+    }
     // 新手教學:已經有通關紀錄的老玩家直接算完成,也不再領新手獎勵
     if (sv.tutorialDone === undefined) {
       sv.tutorialDone = sv.tutorialReward = Object.values(sv.rounds).some(r => r.clear.length > 0 || r.unlocked > 1);

@@ -236,6 +236,13 @@ G.scenes = {
     G.bgm.setRate(1); // 離開戰鬥:周回 / FEVER 的音樂加速還原
     G.ach.check();      // 不在戰鬥中達成的成就(圖鑑、星級、舊存檔補發…)
     G.ach.renderMenu(); // 右上角 🏆 達成數、logo 下方的稱號
+    const sv0 = G.save.data;
+    G.$('#menuCoins').textContent = sv0.coins; // 左上角商店按鈕上的金幣數
+    if (sv0.coinsGift) { // 舊存檔的商店開幕禮,只提示一次
+      G.ach.toast({ icon: '🛒', head: G.t('商店開幕禮'), name: '💰 +' + sv0.coinsGift, sub: G.t('到左上角的商店逛逛吧!') });
+      sv0.coinsGift = 0;
+      G.save.write();
+    }
     // 點數夠升級(而且還沒到上限)時,「成長」按鈕閃爍提示
     const sv = G.save.data, max = G.ROUNDS[sv.roundMax].upMax;
     G.$('#btnUpgrade').classList.toggle('can-up', G.UPGRADES.some(u => sv.up[u.id] < max && sv.points >= G.upgradeCost(sv.up[u.id])));
@@ -400,6 +407,7 @@ G.scenes = {
       <div>${G.t('取得技能')}<b>${skills}</b></div>
       <div class="score">${G.t('積分')}<b>${score}</b></div>
       <div class="score">${G.t('獲得成長點數')}<b>+${points}</b></div>` +
+      `<div class="score coins">${G.t('獲得金幣')}<b>💰 +${G.battle.coins || 0}</b></div>` +
       (G.battle.newRound ? `<div class="new-round">${G.t('{0} 開啟!', G.t(G.ROUNDS[G.battle.newRound].name))}<small>${G.t('成長上限提升至 Lv{0}', G.ROUNDS[G.battle.newRound].upMax)}</small></div>` : '');
     G.show('result');
   },

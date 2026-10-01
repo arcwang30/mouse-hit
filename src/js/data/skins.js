@@ -12,10 +12,17 @@ G.SKINS = [
   { id: 'pixel',  name: '像素', desc: '達成 8 個成就',        check: sv => Object.keys(sv.ach).length >= 8 },
   { id: 'asura',  name: '修羅', desc: '打倒第二輪的最終 BOSS', check: sv => cleared(sv, 2, 9) },
   { id: 'demon',  name: '天魔', desc: '打倒第三輪的最終 BOSS', check: sv => cleared(sv, 3, 9) },
+  // 以下在商店用金幣購買(price)
+  { id: 'sakura',  name: '櫻花', desc: '在商店購買', price: 500 },
+  { id: 'ocean',   name: '深海', desc: '在商店購買', price: 500 },
+  { id: 'candy',   name: '糖果', desc: '在商店購買', price: 600 },
+  { id: 'carbon',  name: '碳纖', desc: '在商店購買', price: 700 },
+  { id: 'rainbow', name: '彩虹', desc: '在商店購買', price: 900 },
 ];
 
 G.skin = {
-  unlocked: s => !s.check || s.check(G.save.data),
+  // 商店造型:買了才算解鎖;其他:沒有條件或已達成條件
+  unlocked: s => s.price ? !!G.save.data.owned.skins[s.id] : !s.check || s.check(G.save.data),
 
   // 套用目前選的造型(還沒解鎖或不存在就用預設)
   apply() {
@@ -30,7 +37,7 @@ G.skin = {
   checkNew() {
     const sv = G.save.data, first = !sv.skinsKnown;
     sv.skinsKnown = sv.skinsKnown || {};
-    G.SKINS.filter(s => s.check && !sv.skinsKnown[s.id] && this.unlocked(s)).forEach(s => {
+    G.SKINS.filter(s => s.check && !s.price && !sv.skinsKnown[s.id] && this.unlocked(s)).forEach(s => {
       sv.skinsKnown[s.id] = true;
       if (!first) G.ach.toast({ icon: '🎨', name: G.t('造型「{0}」解鎖', G.t(s.name)), sub: G.t('可在設定中更換九宮格造型') });
     });
@@ -44,7 +51,7 @@ G.skin = {
       '<div class="skin-list">' + G.SKINS.map(s => {
         const open = this.unlocked(s);
         return `<button class="skin-pick skin-${s.id}${s.id === cur.id ? ' on' : ''}${open ? '' : ' locked'}" data-skin="${s.id}">` +
-          `<span class="skin-mini">${'<i></i>'.repeat(9)}</span><small>${open ? G.t(s.name) : '🔒'}</small></button>`;
+          `<span class="skin-mini">${'<i></i>'.repeat(9)}</span><small>${open ? G.t(s.name) : s.price ? '🛒' : '🔒'}</small></button>`;
       }).join('') + `</div><p class="skin-cond" id="skinCond">${G.t(cur.name)}:${G.t(cur.desc)}</p></div>`;
   },
 
@@ -52,7 +59,7 @@ G.skin = {
   pick(id) {
     const s = G.SKINS.find(x => x.id === id);
     if (!this.unlocked(s)) {
-      G.$('#skinCond').textContent = G.t('🔒 {0}:{1}', G.t(s.name), G.t(s.desc));
+      G.$('#skinCond').textContent = s.price ? G.t('🛒 {0}:在商店用 💰 {1} 購買', G.t(s.name), s.price) : G.t('🔒 {0}:{1}', G.t(s.name), G.t(s.desc));
       G.audio.play('fail');
       return false;
     }

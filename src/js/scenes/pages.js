@@ -90,29 +90,6 @@ G.pages = {
       html = H.symbols.map(([cls, ic, label, t, d]) =>
         `<div class="ht-row"><div class="ht-cell cell on ${cls}"><span class="cap">${label ? `<span class="label">${G.t(label)}</span>` : ''}<span class="icon">${ic}</span></span></div>` +
         `<div><b>${G.t(t)}</b><p>${G.t(d)}</p></div></div>`).join('');
-    } else {
-      // 各關敵人:立繪 + 名稱 + 機制
-      html = G.STAGES.map(st => {
-        const ids = [...new Set(st.waves.map(w => w.replace('+', '')))];
-        return `<div class="ht-stage"><div class="ht-stage-name">${G.t(st.name)} <span>${'★'.repeat(st.stars)}${'☆'.repeat(5 - st.stars)}</span></div>` +
-          ids.map(id => {
-            const e = G.ENEMIES[id], m = G.MECHS[id];
-            // 還沒遇過:黑色剪影 + ?,名稱與說明都不顯示
-            if (!G.save.data.seen[id]) {
-              const pic = e.img ? `<img class="unknown" src="../assets/images/${e.img}" alt="">` : '';
-              return `<div class="ht-enemy unknown"><div class="ht-pic">${pic}<span class="ht-q">?</span></div><div><b>？？？</b>` +
-                `<p>${G.t('尚未遇見')}</p></div></div>`;
-            }
-            const pic = e.img ? `<img src="../assets/images/${e.img}" alt="">` : `<span>${e.icon}</span>`;
-            return `<div class="ht-enemy"><div class="ht-pic">${pic}</div><div><b>${e.boss ? G.t('【BOSS】') : ''}${G.t(e.name)}</b>` +
-              `<p>${G.t(m ? m.hint : '沒有特殊機制,適合熟悉操作')}</p></div></div>`;
-          }).join('') + '</div>';
-      }).join('');
-      // 分歧「狂打獎勵關」的訓練木樁(同樣遇過才顯示)
-      const dummySeen = G.save.data.seen.dummy;
-      html += `<div class="ht-stage"><div class="ht-stage-name">${G.t('狂打獎勵關')}</div>` +
-        `<div class="ht-enemy${dummySeen ? '' : ' unknown'}"><div class="ht-pic"><img${dummySeen ? '' : ' class="unknown"'} src="../assets/images/enemies/training_dummy.png" alt="">${dummySeen ? '' : '<span class="ht-q">?</span>'}</div>` +
-        `<div><b>${dummySeen ? G.t('訓練木樁') : '？？？'}</b><p>${G.t(dummySeen ? '分歧選「狂打獎勵關」時登場。不會反擊,12 秒內盡量打!' : '尚未遇見')}</p></div></div></div>`;
     }
     const body = G.$('#howtoBody');
     body.innerHTML = html;
@@ -267,6 +244,7 @@ document.querySelectorAll('[data-back]').forEach(b => { b.onclick = () => G.page
 // 切換分頁(d = -1 上一頁 / 1 下一頁),內容從滑動的方向滑進來
 const flipPage = (cur, d) => {
   if (cur === 'stages') return G.scenes.setRound(G.round() + d); // 選擇關卡:切換周回
+  if (cur === 'shop') return G.shop.setTab(G.shop.tab + d);       // 商店:切換分頁
   if (cur === 'howto') G.pages.turnHowto(d);
   else if (cur === 'history') G.pages.setHistoryTab(G.pages.historyTab + d);
   else return;
@@ -286,7 +264,7 @@ document.addEventListener('keydown', e => {
 });
 
 // 手機:手指往左滑看下一頁、往右滑看上一頁(上下捲動不受影響);選擇關卡則是切換第一 / 二 / 三輪
-['howto', 'history', 'stages'].forEach(id => {
+['howto', 'history', 'stages', 'shop'].forEach(id => {
   const el = G.$('#' + id);
   let x0 = null, y0 = 0, t0 = 0;
   el.addEventListener('touchstart', e => {

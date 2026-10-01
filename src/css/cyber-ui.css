@@ -793,3 +793,38 @@ html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; } /* 手機瀏覽
   box-shadow: inset 0 0 0 .5cqw #000a, inset 0 0 0 .7cqw var(--sk-ring, #19f0ff2a);
 }
 .skin-cond { margin: 1.6cqw 0 0; font-size: 3cqw; color: var(--steel-hi); text-align: center; }
+/* 商店造型 */
+.skin-sakura {
+  --sk-frame: linear-gradient(145deg, #ffd6e6, #f08ab0 38%, #c05080 62%, #ffc0d8);
+  --sk-socket: radial-gradient(ellipse at 50% 60%, #2a0a18 40%, #4a1430);
+  --sk-ring: #ffe0ecc0; --sk-bolt: #ffffff;
+  --sk-board: radial-gradient(circle at 20% 30%, #ff9ac040 0 .8cqw, transparent 1cqw), radial-gradient(circle at 75% 70%, #ffb6d040 0 1cqw, transparent 1.2cqw), radial-gradient(circle at 60% 20%, #ffc6dc30 0 .6cqw, transparent .8cqw), linear-gradient(180deg, #2a0e1e, #12040c);
+}
+.skin-ocean {
+  --sk-frame: linear-gradient(145deg, #2a8ab0, #0e4a6a 40%, #062a40 62%, #1a6a8a);
+  --sk-socket: radial-gradient(ellipse at 50% 70%, #00c8ff30 0%, #021420 50%, #000a12);
+  --sk-ring: #5af0ffb0; --sk-bolt: #b0f4ff;
+  --sk-board: repeating-radial-gradient(ellipse at 50% 120%, #0a3a5a40 0 2cqw, transparent 2cqw 4cqw), linear-gradient(180deg, #04202e, #000a10);
+}
+.skin-candy {
+  --sk-frame: repeating-linear-gradient(-45deg, #ff6aa8 0 1.2cqw, #fff4fa 1.2cqw 2.4cqw);
+  --sk-socket: radial-gradient(ellipse at 50% 60%, #3a1030 40%, #5a1a48);
+  --sk-ring: #ffffffd0; --sk-bolt: #7ae8ff; --sk-radius: 3.4cqw; --sk-radius-in: 2.6cqw;
+  --sk-board: radial-gradient(circle at 25% 25%, #ff9ad040 0 1.2cqw, transparent 1.4cqw) 0 0 / 8cqw 8cqw, linear-gradient(180deg, #2a0a26, #120414);
+}
+.skin-carbon {
+  --sk-frame: repeating-linear-gradient(45deg, #2a2c30 0 .6cqw, #16181a .6cqw 1.2cqw), repeating-linear-gradient(-45deg, #ffffff0a 0 .6cqw, transparent .6cqw 1.2cqw);
+  --sk-socket: radial-gradient(ellipse at 50% 60%, #020202 45%, #0e0f10);
+  --sk-ring: #ff3a3ab0; --sk-bolt: #e8e8e8; --sk-radius: 1cqw; --sk-radius-in: .6cqw;
+  --sk-board: repeating-linear-gradient(45deg, #1a1c1e 0 1cqw, #121314 1cqw 2cqw);
+}
+.skin-rainbow {
+  --sk-frame: linear-gradient(120deg, #ff5a5a, #ffd400, #3ddc84, #19c8f0, #b04dff, #ff5a5a, #ffd400, #3ddc84) 0 0 / 300% 300%;
+  --sk-socket: radial-gradient(ellipse at 50% 60%, #08060e 45%, #1a1428);
+  --sk-ring: #ffffffc0; --sk-bolt: #ffffff;
+  --sk-board: linear-gradient(180deg, #120c1e, #06040c);
+}
+/* 只讓外框的漸層流動(不用 filter,才不會連按鈕上的符號一起變色) */
+#battle.skin-rainbow .cell, .skin-rainbow .skin-mini i { animation: rainbowFlow 4s linear infinite; }
+@keyframes rainbowFlow { to { background-position: 100% 100%; } }
+#battle.skin-rainbow .cell.thump { animation: thump .2s ease-out, rainbowFlow 4s linear infinite; } /* 保留敲擊的壓扁動畫 */
