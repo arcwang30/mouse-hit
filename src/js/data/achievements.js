@@ -61,7 +61,7 @@ G.ach = {
     G.$('#achToastIcon').textContent = a.icon;
     G.$('#achToastHead').textContent = a.head || G.t('成就達成!');
     G.$('#achToastName').textContent = a.sub ? a.name : G.t(a.name); // 造型提示的名稱已經翻譯過
-    G.$('#achToastPts').textContent = a.sub || G.t('成長點數 +{0}', a.pts);
+    G.$('#achToastPts').innerHTML = a.sub || G.PT + ' ' + G.t('成長點數 +{0}', a.pts);
     el.classList.remove('show');
     void el.offsetWidth;
     el.classList.add('show');
@@ -100,7 +100,7 @@ G.ach = {
         return `<button class="ach-item${done ? ' done' : ''}${sv.title === a.id ? ' equipped' : ''}" data-id="${a.id}" ${done ? '' : 'disabled'}>` +
           `<span class="ach-icon">${a.icon}</span><span class="ach-body"><b>${G.t(a.name)}</b><small>${G.t(a.desc)}</small>` +
           (prog ? `<i class="ach-bar"><i style="width:${Math.min(100, prog[0] / prog[1] * 100)}%"></i><em>${Math.min(prog[0], prog[1])}/${prog[1]}</em></i>` : '') +
-          `</span><span class="ach-pts">${sv.title === a.id ? G.t('稱號中') : done ? '✔' : '+' + a.pts}</span></button>`;
+          `</span><span class="ach-pts">${sv.title === a.id ? G.t('稱號中') : done ? '✔' : G.PT + '+' + a.pts}</span></button>`;
       }).join('');
     G.$('#achList').querySelectorAll('.ach-item.done').forEach(btn => {
       btn.onclick = () => {

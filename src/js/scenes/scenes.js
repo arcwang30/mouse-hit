@@ -313,7 +313,7 @@ G.scenes = {
       return `<div class="up-item">
         <div class="up-icon">${u.icon}</div>
         <div class="up-body"><b>${G.t(u.name)}</b> Lv.${lv}/${max}<div class="up-desc">${G.t(u.desc)}</div></div>
-        <button class="btn small" data-id="${u.id}" ${maxed || sv.points < cost ? 'disabled' : ''}>${maxed ? 'MAX' : G.t('{0} 點', cost)}</button>
+        <button class="btn small" data-id="${u.id}" ${maxed || sv.points < cost ? 'disabled' : ''}>${maxed ? 'MAX' : G.PT + cost}</button>
       </div>`;
     }).join('');
     G.$('#upList').querySelectorAll('button').forEach(b => {
@@ -406,7 +406,7 @@ G.scenes = {
       <div>${G.t('擊倒 WAVE')}<b>${s.waves} / ${G.battle.stage.waves.length}</b></div>
       <div>${G.t('取得技能')}<b>${skills}</b></div>
       <div class="score">${G.t('積分')}<b>${score}</b></div>
-      <div class="score">${G.t('獲得成長點數')}<b>+${points}</b></div>` +
+      <div class="score">${G.t('獲得成長點數')}<b>${G.PT} +${points}</b></div>` +
       `<div class="score coins">${G.t('獲得金幣')}<b>💰 +${G.battle.coins || 0}</b></div>` +
       (G.battle.newRound ? `<div class="new-round">${G.t('{0} 開啟!', G.t(G.ROUNDS[G.battle.newRound].name))}<small>${G.t('成長上限提升至 Lv{0}', G.ROUNDS[G.battle.newRound].upMax)}</small></div>` : '');
     G.show('result');

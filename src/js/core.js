@@ -4,6 +4,8 @@ window.G = {};
 G.$ = s => document.querySelector(s);
 G.sleep = ms => new Promise(r => setTimeout(r, ms));
 G.pick = arr => arr[Math.floor(Math.random() * arr.length)];
+// 成長點數的圖示(六角晶石,和金幣 💰 區分),用在顯示點數的地方
+G.PT = '<i class="pt-ico"></i>';
 G.shuffle = arr => {
   const a = arr.slice();
   for (let i = a.length - 1; i > 0; i--) {

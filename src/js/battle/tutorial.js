@@ -275,7 +275,7 @@
     // 第一次完成的獎勵:剛好夠升一級,直接挑一項升級後進第一關
     reward() {
       const sv = G.save.data, cost = G.upgradeCost(0);
-      G.$('#tutRewardPts').textContent = G.t('獲得成長點數 +{0}', cost);
+      G.$('#tutRewardPts').innerHTML = G.PT + ' ' + G.t('獲得成長點數 +{0}', cost);
       G.$('#tutRewardList').innerHTML = G.UPGRADES.map((u, i) =>
         `<button class="tr-item" data-id="${u.id}"><span class="kb-key">${i + 1}</span><span class="tr-icon">${u.icon}</span><b>${G.t(u.name)}</b><small>${G.t(u.desc)}</small></button>`).join('');
       G.$('#tutRewardList').querySelectorAll('.tr-item').forEach(btn => {

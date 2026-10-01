@@ -705,3 +705,10 @@ h2 { margin: 0; }
 }
 .die i { border-radius: 50%; }
 .die i.on { background: #fff; box-shadow: 0 0 1.2cqw var(--ult); }
+
+/* 成長點數圖示(和文字同高,跟著字級縮放) */
+.pt-ico {
+  display: inline-block; width: 1.05em; height: 1.05em; vertical-align: -.17em; margin-right: .15em;
+  background: url('../../assets/images/icons/growth.svg') center / contain no-repeat;
+  filter: drop-shadow(0 0 .25em #ff7a1f99);
+}
