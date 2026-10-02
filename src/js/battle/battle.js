@@ -16,6 +16,15 @@ const SLOWMO = { ms: 2500, mul: 1.6 }; // 時之呼吸:每回合前 2.5 秒符�
 const BONUS_MS = 12000;    // 狂打獎勵關長度
 const BONUS_COIN_PER = 1;  // 狂打獎勵關:每幾 HIT 換 1 金幣
 const BONUS_COIN_MAX = 60; // 狂打獎勵關:一次最多幾枚(第二、三輪再乘倍率)
+// 特殊事件:流浪商人的商品(price 金幣,再乘周回倍率)、寶箱的機率、惡魔黃金契約的金幣
+const MERCHANT = [
+  { id: 'heal',   icon: '🧪', name: '回復藥水', desc: '回復 50% HP',          price: 40 },
+  { id: 'rage',   icon: '🔥', name: '怒氣藥水', desc: '必殺值立刻全滿',       price: 50 },
+  { id: 'scroll', icon: '📜', name: '技法卷軸', desc: '從三個技法中選一個',   price: 90 },
+  { id: 'leave',  icon: '🚶', name: '離開',     desc: '什麼都不買' },
+];
+const CHEST_ODDS = { coins: 0.45, skill: 0.25 }; // 剩下 30% 是寶箱怪(扣 20% 最大 HP)
+const DEVIL_GOLD = 100;
 
 function makePlayer() {
   const p = {
@@ -691,7 +700,9 @@ G.battle = {
     const next = this.stage.waves[this.wave + 1];
     const eliteOk = next && !next.endsWith('+') && !G.ENEMIES[next].boss;
     const rulesLeft = G.SKILLS.some(s => s.rule && !this.p.skills.includes(s.id));
-    const pool = G.BRANCHES.filter(b => (b.id !== 'elite' || eliteOk) && (b.id !== 'train' || rulesLeft));
+    const cheapest = Math.round(MERCHANT[0].price * G.roundCfg().points);
+    const pool = G.BRANCHES.filter(b => (b.id !== 'elite' || eliteOk) && (b.id !== 'train' || rulesLeft) &&
+      (b.id !== 'merchant' || G.save.data.coins >= cheapest)); // 金幣連最便宜的都買不起,商人就不出現
     await G.tips.show('branch'); // 第一次遇到才說明
     const pick = await G.scenes.pickBranch(G.shuffle(pool).slice(0, 2));
     const p = this.p;
@@ -704,8 +715,141 @@ G.battle = {
       this.eliteNext = true;
     } else if (pick === 'bonus') {
       await this.bonusRound();
+    } else if (pick === 'merchant') {
+      await this.merchant();
+    } else if (pick === 'chest') {
+      await this.chest();
+    } else if (pick === 'devil') {
+      await this.devil();
     }
     this.render();
+  },
+
+  // ---- 特殊事件:流浪商人 / 神秘寶箱 / 惡魔交易 ----
+  // 事件期間:上方戰鬥畫面換成事件的場景插畫(角色就在畫裡,先藏起敵人),回傳還原用的函式
+  eventStage(img, name) {
+    const realEnemy = this.e, view = G.$('#stageView'), bg = G.$('#stageBg');
+    const before = { cls: view.className, bg: bg.style.backgroundImage };
+    this.e = { id: 'event', name: G.t(name), icon: '❔', hp: 1, maxHp: 1, turn: 0 };
+    view.className = 'stage has-bg event-scene';
+    bg.style.backgroundImage = `url('${ENEMY_IMG_DIR + img}')`;
+    G.$('#enemyName').textContent = G.t(name);
+    this.render();
+    G.$('#enemyHpText').textContent = '???';
+    return () => {
+      this.e = realEnemy;
+      view.className = before.cls;
+      bg.style.backgroundImage = before.bg;
+    };
+  },
+  // 事件場景的特效(ev-shake 震動 / ev-bite 閃紅),重複觸發也會重播
+  sceneFx(cls) {
+    const view = G.$('#stageView');
+    view.classList.remove('ev-shake', 'ev-bite');
+    void view.offsetWidth;
+    view.classList.add(cls);
+  },
+  // 事件拿到的金幣:結算時和過關金幣一起入帳
+  eventCoins(n) {
+    this.stats.eventCoins = (this.stats.eventCoins || 0) + n;
+    [...Array(Math.min(9, Math.ceil(n / 20)))].forEach((_, k) => G.clock.after(() => this.coinFx(G.pick([...Array(9).keys()]), 2), k * 90));
+    G.audio.play('coin', true);
+  },
+  // 不會致死的傷害(事件的代價不該直接讓人 Game Over)
+  safeHurt(d) {
+    d = Math.min(Math.round(d), this.p.hp - 1);
+    if (d > 0) this.hurtPlayer(d);
+  },
+
+  // 流浪商人:用存下來的金幣買一樣東西(價格隨周回倍率)
+  async merchant() {
+    const p = this.p, sv = G.save.data, mul = G.roundCfg().points;
+    const restore = this.eventStage('events/merchant.jpg', '流浪商人');
+    await G.banner('流浪商人', G.t('「嘿嘿……要不要看看我的好貨?」'), 1300);
+    const items = MERCHANT.map(it => {
+      const price = it.price && Math.round(it.price * mul);
+      return Object.assign({}, it, { price, disabled: price > sv.coins });
+    });
+    const pick = await G.scenes.pickBranch(items, { title: '流浪商人', sub: G.t('持有金幣 💰 {0}・只能買一樣', sv.coins) });
+    const it = items.find(x => x.id === pick);
+    if (it.price) {
+      sv.coins -= it.price;
+      G.save.write();
+      G.audio.play('coin', true);
+      this.float(`💰 -${it.price}`, 'tag');
+    }
+    if (pick === 'heal') {
+      this.healPlayer(Math.round(p.maxHp * 0.5));
+      G.audio.play('revive');
+    } else if (pick === 'rage') {
+      this.gainUlt(p.ultMax);
+    } else if (pick === 'scroll') {
+      await G.scenes.pickSkill(p, true);
+    } else {
+      await G.banner('流浪商人', G.t('「下次再來啊~」'), 900);
+    }
+    restore();
+  },
+
+  // 神秘寶箱:打開可能是金幣、技能,也可能是寶箱怪
+  async chest() {
+    const p = this.p, mul = G.roundCfg().points;
+    const restore = this.eventStage('events/chest.jpg', '神秘寶箱');
+    await G.banner('神秘寶箱', G.t('要打開嗎……?'), 1100);
+    const pick = await G.scenes.pickBranch([
+      { id: 'open',  icon: '🗝️', name: '打開', desc: '金幣、技能……還是寶箱怪?' },
+      { id: 'leave', icon: '🚶', name: '不理它', desc: '小心駛得萬年船' },
+    ], { title: '神秘寶箱', sub: '打開之前,誰也不知道裡面是什麼' });
+    if (pick === 'open') {
+      this.sceneFx('ev-shake'); // 場景震一下:寶箱在晃
+      G.audio.play('block');
+      await G.clock.wait(600);
+      const r = Math.random();
+      if (r < CHEST_ODDS.coins) {
+        const coins = Math.round((40 + Math.random() * 40) * mul);
+        this.eventCoins(coins);
+        await G.banner('寶物!', G.t('獲得金幣 💰 +{0}', coins), 1300);
+      } else if (r < CHEST_ODDS.coins + CHEST_ODDS.skill) {
+        G.audio.play('levelup');
+        await G.banner('寶物!', G.t('獲得一個技能'), 1000);
+        await G.scenes.pickSkill(p);
+      } else {
+        this.sceneFx('ev-bite');  // 場景閃紅:被咬了
+        G.audio.play('bossSkill');
+        await G.banner('寶箱怪!', G.t('被狠狠咬了一口!'), 1000);
+        this.safeHurt(p.maxHp * 0.2);
+      }
+    }
+    restore();
+  },
+
+  // 惡魔交易:用 HP 換技法或金幣
+  async devil() {
+    const p = this.p, gold = Math.round(DEVIL_GOLD * G.roundCfg().points);
+    const restore = this.eventStage('events/devil.jpg', '惡魔');
+    await G.banner('惡魔交易', G.t('「想要力量嗎?只要付出一點點代價……」'), 1400);
+    const pick = await G.scenes.pickBranch([
+      { id: 'blood',  icon: '🩸', name: '血之契約', desc: '最大 HP -25%,換一個技法' },
+      { id: 'greed',  icon: '💰', name: '黃金契約', desc: G.t('目前 HP -30%,換 💰 {0}', gold) },
+      { id: 'refuse', icon: '✋', name: '拒絕', desc: '什麼都不會發生' },
+    ], { title: '惡魔交易', sub: '契約一旦簽下,就無法反悔' });
+    if (pick === 'blood') {
+      G.audio.play('bossSkill');
+      const lose = Math.round(p.maxHp * 0.25);
+      p.maxHp -= lose;
+      p.hp = Math.min(p.hp, p.maxHp);
+      this.float(G.t('最大 HP -{0}', lose), 'hurt', true);
+      this.render();
+      await G.scenes.pickSkill(p, true);
+    } else if (pick === 'greed') {
+      G.audio.play('bossSkill');
+      this.safeHurt(p.hp * 0.3);
+      this.eventCoins(gold);
+      await G.banner('契約成立', G.t('獲得金幣 💰 +{0}', gold), 1100);
+    } else {
+      await G.banner('惡魔交易', G.t('「哼,膽小鬼。」'), 900);
+    }
+    restore();
   },
 
   // 狂打獎勵關:12 秒內拳頭狂冒,沒有敵人攻擊;獎勵只有金幣(不回血、不加必殺,讓玩家清楚這是賺錢關)
@@ -1102,8 +1246,8 @@ G.battle = {
     rate.newBest = rate.stars > (pr.stars[i] || 0);
     if (rate.newBest) pr.stars[i] = rate.stars;
     // 金幣:過關 20 + 每關 6 + 每顆星 10;沒過關每擊倒一波 2;第二、三輪 ×1.5 / ×2
-    // 狂打獎勵關賺到的金幣(s.bonusCoins)不論輸贏都入帳
-    const coins = this.coins = Math.round((win ? 20 + i * 6 + rate.stars * 10 : s.waves * 2) * G.roundCfg().points) + (s.bonusCoins || 0);
+    // 狂打獎勵關(s.bonusCoins)和特殊事件(s.eventCoins)賺到的金幣不論輸贏都入帳
+    const coins = this.coins = Math.round((win ? 20 + i * 6 + rate.stars * 10 : s.waves * 2) * G.roundCfg().points) + (s.bonusCoins || 0) + (s.eventCoins || 0);
     sv.coins += coins;
     const finalWin = win && i === G.STAGES.length - 1;
     this.newRound = 0;
@@ -1113,6 +1257,7 @@ G.battle = {
     }
     sv.life.breaks += s.breaks || 0; // 累計紀錄(成就用)
     sv.life.ults += s.ults || 0;
+    G.daily.record({ s, win, rate }); // 每日任務進度
     G.save.write();
     this.endingNext = finalWin; // 打倒最終 BOSS:結算後播放結局
     G.scenes.result(win, score, points, s, p);

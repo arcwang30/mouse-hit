@@ -236,6 +236,7 @@ G.scenes = {
     G.bgm.setRate(1); // 離開戰鬥:周回 / FEVER 的音樂加速還原
     G.ach.check();      // 不在戰鬥中達成的成就(圖鑑、星級、舊存檔補發…)
     G.ach.renderMenu(); // 右上角 🏆 達成數、logo 下方的稱號
+    G.daily.renderMenu(); // 右上角 📅 每日的紅點;今天第一次進主選單自動打開登入獎勵
     const sv0 = G.save.data;
     G.$('#menuCoins').textContent = sv0.coins; // 左上角商店按鈕上的金幣數
     if (sv0.coinsGift) { // 舊存檔的商店開幕禮,只提示一次
@@ -332,12 +333,16 @@ G.scenes = {
 
   // ---- 技能三選一 ----
   // ---- 分歧:options 為 G.BRANCHES 中的兩項,回傳選到的 id ----
-  pickBranch(options) {
+  // 分歧選項;特殊事件也共用這個畫面(head 換標題,price 顯示價格,disabled 不能選)
+  pickBranch(options, head = {}) {
     return new Promise(resolve => {
-      const box = G.$('#branchCards');
+      const el = G.$('#branch'), box = G.$('#branchCards');
+      el.querySelector('h2').textContent = G.t(head.title || '選擇路線');
+      el.querySelector('.branch-sub').textContent = G.t(head.sub || '兩條路,只能走一條');
+      box.classList.toggle('many', options.length > 2);
       box.innerHTML = options.map((b, i) =>
-        `<button class="branch-card ${b.id}" data-i="${i}"><span class="kb-key">${i + 1}</span><div class="br-icon">${b.icon}</div><b>${G.t(b.name)}</b><div>${G.t(b.desc)}</div></button>`).join('');
-      const el = G.$('#branch');
+        `<button class="branch-card ${b.id}" data-i="${i}" ${b.disabled ? 'disabled' : ''}><span class="kb-key">${i + 1}</span><div class="br-icon">${b.icon}</div>` +
+        `<b>${G.t(b.name)}</b><div>${G.t(b.desc)}</div>${b.price ? `<em class="br-price">💰 ${b.price}</em>` : ''}</button>`).join('');
       el.classList.add('show');
       box.querySelectorAll('.branch-card').forEach(btn => {
         btn.onclick = () => {
@@ -407,7 +412,7 @@ G.scenes = {
       <div>${G.t('取得技能')}<b>${skills}</b></div>
       <div class="score">${G.t('積分')}<b>${score}</b></div>
       <div class="score">${G.t('獲得成長點數')}<b>${G.PT} +${points}</b></div>` +
-      `<div class="score coins">${G.t('獲得金幣')}<b>💰 +${G.battle.coins || 0}${s.bonusCoins ? `<small class="coin-bonus">${G.t('(狂打 +{0})', s.bonusCoins)}</small>` : ''}</b></div>` +
+      `<div class="score coins">${G.t('獲得金幣')}<b>💰 +${G.battle.coins || 0}${s.bonusCoins ? `<small class="coin-bonus">${G.t('(狂打 +{0})', s.bonusCoins)}</small>` : ''}${s.eventCoins ? `<small class="coin-bonus">${G.t('(事件 +{0})', s.eventCoins)}</small>` : ''}</b></div>` +
       (G.battle.newRound ? `<div class="new-round">${G.t('{0} 開啟!', G.t(G.ROUNDS[G.battle.newRound].name))}<small>${G.t('成長上限提升至 Lv{0}', G.ROUNDS[G.battle.newRound].upMax)}</small></div>` : '');
     G.show('result');
   },

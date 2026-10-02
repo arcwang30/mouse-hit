@@ -84,6 +84,10 @@ G.BRANCHES = [
   { id: 'bonus', icon: '💰', name: '狂打獎勵關', desc: '12 秒內盡量打,打越多金幣越多(不回血)' },
   { id: 'elite', icon: '💀', name: '精英挑戰',   desc: '下一波變成精英,打倒後獲得一次技法三選一' },
   { id: 'train', icon: '📜', name: '修行',       desc: '立刻從三個技法中選一個' },
+  // 特殊事件(圖片在 assets/images/events/)
+  { id: 'merchant', icon: '<img class="br-img" src="../assets/images/events/merchant.jpg" alt="">', name: '流浪商人', desc: '用金幣買藥水或技法卷軸' },
+  { id: 'chest',    icon: '<img class="br-img" src="../assets/images/events/chest.jpg" alt="">',    name: '神秘寶箱', desc: '可能是寶物,也可能是寶箱怪……' },
+  { id: 'devil',    icon: '<img class="br-img" src="../assets/images/events/devil.jpg" alt="">',    name: '惡魔交易', desc: '用 HP 換取技法或金幣' },
 ];
 
 // img:戰鬥時敵人背後的背景(assets/images/ 底下);沒有圖時用 bg 漸層 + deco 裝飾

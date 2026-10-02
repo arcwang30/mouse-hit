@@ -828,3 +828,29 @@ html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; } /* 手機瀏覽
 #battle.skin-rainbow .cell, .skin-rainbow .skin-mini i { animation: rainbowFlow 4s linear infinite; }
 @keyframes rainbowFlow { to { background-position: 100% 100%; } }
 #battle.skin-rainbow .cell.thump { animation: thump .2s ease-out, rainbowFlow 4s linear infinite; } /* 保留敲擊的壓扁動畫 */
+
+/* 特殊事件:分歧卡上的角色圖、商人的商品(3~4 張卡改成兩欄)、價格、買不起變灰 */
+.branch-card.merchant { --c: #c89aff; }
+.branch-card.chest    { --c: #b06aff; }
+.branch-card.devil    { --c: #ff4a5a; }
+.branch-cards.many { display: grid; grid-template-columns: 1fr 1fr; }
+.branch-cards.many .branch-card { padding-top: 2.4cqw; padding-bottom: 2.4cqw; }
+.branch-cards.many .br-icon { font-size: 10cqw; }
+.branch-card .br-price { font-style: normal; font-size: 3.6cqw; font-weight: 900; color: #ffe08a; }
+.branch-card:disabled { filter: grayscale(1) brightness(.55); }
+.branch-card.heal  { --c: #3ddc84; }
+.branch-card.rage  { --c: #ff7a1f; }
+.branch-card.scroll, .branch-card.blood { --c: var(--neon-m); }
+.branch-card.greed { --c: var(--neon-y); }
+.branch-card.open  { --c: #c89aff; }
+/* 特殊事件的場景:插畫直接當戰鬥背景(角色就在畫裡,敵人區先藏起來),不柔焦、不套周回色調,進場時慢慢拉近 */
+.stage.event-scene .enemy { visibility: hidden; }
+.stage.event-scene .stage-bg { inset: 0; filter: none; background-position: center 45%; animation: evZoom 6s ease-out both; }
+#battle .stage.event-scene .stage-bg::after { display: none; }
+.stage.event-scene.ev-shake .stage-bg { animation: evShake .5s ease-out; }
+.stage.event-scene.ev-bite .stage-bg { animation: evShake .5s ease-out, evBite .8s ease-out; }
+@keyframes evZoom { from { transform: scale(1.08); } }
+@keyframes evShake { 20% { transform: translate(-2%, 1%) rotate(-1deg); } 45% { transform: translate(2%, -1%) rotate(1deg); } 70% { transform: translate(-1%, .5%); } }
+@keyframes evBite { 0%, 30% { filter: brightness(1.4) sepia(1) hue-rotate(-50deg) saturate(5); } }
+/* 分歧卡上的事件縮圖:裁成 4:3 */
+.branch-card .br-img { width: 100%; height: auto; max-width: none; aspect-ratio: 4 / 3; object-fit: cover; border-radius: 1.2cqw; box-shadow: 0 0 0 .3cqw var(--c); }

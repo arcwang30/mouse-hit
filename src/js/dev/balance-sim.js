@@ -137,6 +137,10 @@ window.simRun = function (stageIdx, skill, upLv) {
         if (b.id === 'train') pickSkill(true);
         if (b.id === 'elite') eliteNext = true;
         // 狂打獎勵關只給金幣,不影響戰力
+        // 特殊事件(粗略估計):商人當作買回復藥水;寶箱 25% 技能、30% 扣 20% 最大 HP;惡魔當作血之契約
+        if (b.id === 'merchant') p.hp = Math.min(p.maxHp, p.hp + Math.round(p.maxHp * 0.5));
+        if (b.id === 'chest') { const r = Math.random(); if (r > 0.7) p.hp = Math.max(1, p.hp - Math.round(p.maxHp * 0.2)); else if (r > 0.45) pickSkill(false); }
+        if (b.id === 'devil') { p.maxHp = Math.round(p.maxHp * 0.75); p.hp = Math.min(p.hp, p.maxHp); pickSkill(true); }
       }
     }
   }

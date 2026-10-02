@@ -390,3 +390,45 @@ html:lang(en) .round-tab { font-size: 2.7cqw; letter-spacing: 0; } /* 英文名�
 /* 裝置不支援的設定(例如舊 iPhone 的震動):變灰、不能切換 */
 .st-toggle.off { opacity: .55; }
 .st-toggle.off .st-sw { background: #ffffff14; color: var(--steel-hi); }
+
+/* ---------- 每日:主選單按鈕(🏆 下方)與每日頁 ---------- */
+.daily-btn {
+  position: absolute; top: 12cqw; right: 3cqw; z-index: 3; border: 0; padding: 1.4cqw 2.6cqw;
+  font-size: 3.2cqw; font-weight: 800; color: #9ff5ff;
+  background: #000b; clip-path: var(--chamfer); box-shadow: inset 0 0 0 .35cqw #19f0ff90;
+}
+.daily-btn .dl-dot { display: none; position: absolute; top: .8cqw; right: .8cqw; width: 2cqw; height: 2cqw; border-radius: 50%; background: #ff3a4a; box-shadow: 0 0 1.4cqw #ff3a4a; }
+.daily-btn.alert .dl-dot { display: block; animation: dlBlink 1s ease-in-out infinite alternate; }
+.daily-btn.alert { animation: dlPulse 1.4s ease-in-out infinite; }
+@keyframes dlBlink { from { opacity: .4; } }
+@keyframes dlPulse { 50% { box-shadow: inset 0 0 0 .35cqw #19f0ff, 0 0 3cqw #19f0ffa0; } }
+.dl-h { display: flex; align-items: baseline; justify-content: space-between; margin: 1cqw 0 2cqw; font-size: 4.6cqw; color: var(--fire-2); }
+.dl-h small { font-size: 2.8cqw; font-weight: 400; color: var(--steel-hi); }
+.dl-h:not(:first-child) { margin-top: 5cqw; }
+.dl-days { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1.8cqw; }
+.dl-day {
+  position: relative; display: flex; flex-direction: column; align-items: center; gap: .6cqw; padding: 1.8cqw .5cqw;
+  background: #0008; clip-path: var(--chamfer); box-shadow: inset 0 0 0 .3cqw #ffffff22; color: #fff;
+}
+.dl-day small { font-size: 2.6cqw; color: var(--steel-hi); }
+.dl-day b { font-size: 3.6cqw; color: #ffe08a; }
+.dl-day.big { grid-column: span 1; background: linear-gradient(180deg, #5a3a00a0, #0008); box-shadow: inset 0 0 0 .4cqw #ffd400a0; }
+.dl-day.today { background: linear-gradient(180deg, #ff7a1a, #8a2000); box-shadow: inset 0 0 0 .5cqw var(--fire-2), 0 0 3cqw #ff7a1a; animation: dlPulse 1.4s infinite; }
+.dl-day.today small { color: #fff; }
+.dl-day.got { opacity: .5; }
+.dl-day i { position: absolute; inset: 0; display: grid; place-items: center; font-size: 8cqw; font-style: normal; color: #3ddc84; text-shadow: 0 0 2cqw #000; }
+.btn.dl-login { width: 100%; margin-top: 3cqw; }
+.dl-note { margin: 3cqw 0 0; text-align: center; font-size: 3.2cqw; color: var(--steel-hi); }
+.dl-task { display: flex; align-items: center; gap: 2.4cqw; padding: 2.4cqw 3cqw; margin-bottom: 2cqw; background: #0008; clip-path: var(--chamfer); box-shadow: inset 0 0 0 .3cqw #ffffff22; }
+.dl-task.ok { box-shadow: inset 0 0 0 .4cqw #3ddc84, 0 0 2cqw #3ddc8460; }
+.dl-task.got { opacity: .55; }
+.dl-task.all { background: linear-gradient(90deg, #3a2400c0, #0008); }
+.dl-icon { font-size: 7cqw; flex-shrink: 0; }
+.dl-body { flex: 1; display: flex; flex-direction: column; gap: 1.2cqw; min-width: 0; }
+.dl-body b { font-size: 3.6cqw; color: #fff; }
+.dl-claim {
+  flex-shrink: 0; border: 0; padding: 1.8cqw 3cqw; font-size: 3.4cqw; font-weight: 900; color: #2a1400;
+  background: linear-gradient(180deg, #fff2a0, #ffb800); clip-path: var(--chamfer);
+}
+.dl-claim:disabled { color: #fff8; background: #ffffff20; }
+.dl-done { flex-shrink: 0; font-size: 6cqw; color: #3ddc84; padding: 0 2cqw; }

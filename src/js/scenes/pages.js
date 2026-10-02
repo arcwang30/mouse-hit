@@ -253,6 +253,7 @@ G.$('#btnSettings').onclick = () => G.pages.settings();
 G.$('#btnHistory').onclick = () => G.pages.history();
 G.$('#btnCredits').onclick = () => G.pages.credits();
 G.$('#btnAch').onclick = () => { G.audio.play('select'); G.ach.open(); };
+G.$('#btnDaily').onclick = () => { G.audio.play('select'); G.daily.open(); };
 G.$('#howtoPrev').onclick = () => G.pages.turnHowto(-1);
 G.$('#howtoNext').onclick = () => G.pages.turnHowto(1);
 G.$('#settingsBody').addEventListener('click', e => G.pages.settingsClick(e));
