@@ -912,3 +912,81 @@ html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; } /* 手機瀏覽
   --sk-ring: #4aff8aa0; --sk-bolt: #d8a04a; --sk-radius: .8cqw; --sk-radius-in: .5cqw;
   --sk-board: linear-gradient(90deg, #d8a04a18 1px, transparent 1px) 0 0 / 6cqw 6cqw, linear-gradient(0deg, #d8a04a18 1px, transparent 1px) 0 0 / 6cqw 6cqw, linear-gradient(180deg, #0a2410, #030c05);
 }
+
+/* ===== 旋風破綻:蓋住九宮格的雷達圓盤 ===== */
+.dial {
+  position: absolute; inset: 0; z-index: 6; display: flex; align-items: center; justify-content: center;
+  touch-action: none; user-select: none; -webkit-user-select: none; --heat: 0;
+  animation: dialIn .28s cubic-bezier(.3, 1.4, .5, 1);
+}
+.dial.out { animation: dialOut .25s ease-in forwards; }
+@keyframes dialIn { from { transform: scale(.4) rotate(-90deg); opacity: 0; } }
+@keyframes dialOut { to { transform: scale(1.15); opacity: 0; } }
+.dial-disc {
+  position: relative; border-radius: 50%; overflow: hidden; width: 80cqw; height: 80cqw; flex: none;
+  background: radial-gradient(circle, #10283a 0 55%, #081521 70%, #04090f 100%);
+  border: 1.4cqw solid #2ee6ff; box-shadow: 0 0 4cqw #2ee6ff88, inset 0 0 6cqw #000c;
+}
+/* 缺口:披薩切片般的發亮扇形(從 --w0 開始、寬 --ww) */
+.dial-gap {
+  position: absolute; inset: 0; border-radius: 50%;
+  background: conic-gradient(from var(--w0), #ffcf3add 0 var(--ww), transparent var(--ww));
+  animation: dialGap .5s ease-in-out infinite alternate;
+}
+@keyframes dialGap { to { filter: brightness(1.45) drop-shadow(0 0 2cqw #ffcf3a); } }
+.dial-ticks {
+  position: absolute; inset: 0; border-radius: 50%;
+  background: radial-gradient(circle, transparent 0 30%, #2ee6ff33 30.5% 31%, transparent 31.5% 62%, #2ee6ff33 62.5% 63%, transparent 63.5%);
+}
+/* 外圈刻度:每 15 度一格,只畫在最外圈 */
+.dial-ticks::before {
+  content: ''; position: absolute; inset: 0; border-radius: 50%;
+  background: repeating-conic-gradient(#6ff3ffaa 0 1.2deg, transparent 1.2deg 15deg);
+  -webkit-mask: radial-gradient(circle, transparent 0 86%, #000 87%);
+  mask: radial-gradient(circle, transparent 0 86%, #000 87%);
+}
+/* 雷達指針:從圓心指向外圈 */
+.dial-needle {
+  position: absolute; left: 50%; top: 4%; width: 1.6cqw; height: 46%; margin-left: -.8cqw;
+  transform-origin: 50% 100%; border-radius: 1cqw;
+  background: linear-gradient(#fff, #5ff4ff); box-shadow: 0 0 2cqw #5ff4ff, 0 0 5cqw #2ee6ff;
+}
+.dial-hub {
+  position: absolute; left: 50%; top: 50%; width: 20%; height: 20%; transform: translate(-50%, -50%);
+  border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 8cqw;
+  background: radial-gradient(circle, #1d4d66, #0a1d2a); border: .8cqw solid #2ee6ff; z-index: 2;
+}
+.dial-disc.hit { border-color: #ffcf3a; box-shadow: 0 0 6cqw #ffcf3a, inset 0 0 6cqw #000c; }
+.dial-disc.bad { border-color: #ff3b5c; box-shadow: 0 0 6cqw #ff3b5c; }
+.dial-disc.bad .dial-needle { background: #ff3b5c; box-shadow: 0 0 3cqw #ff3b5c; }
+/* 畫圈階段:指針與缺口退場,中央出現跟著手指轉的漩渦,強度 --heat 隨轉速變化 */
+.dial.spin .dial-needle, .dial.spin .dial-gap { display: none; }
+.dial-storm {
+  position: absolute; inset: 6%; border-radius: 50%; opacity: calc(.45 + var(--heat) * .55);
+  background:
+    repeating-conic-gradient(from 0deg, #e6fdff00 0deg, #e6fdffdd 9deg, #7fe9ff55 16deg, #e6fdff00 24deg),
+    radial-gradient(circle, #ffffff 0 10%, #9ff1ffaa 32%, #2ee6ff33 60%, transparent 75%);
+  -webkit-mask: radial-gradient(circle, #000 0 40%, #000a 65%, transparent 80%);
+  mask: radial-gradient(circle, #000 0 40%, #000a 65%, transparent 80%);
+  filter: blur(calc(var(--heat) * .4cqw)); display: none;
+}
+.dial.spin .dial-storm { display: block; }
+.dial.spin .dial-disc { border-color: #7fe9ff; box-shadow: 0 0 calc(4cqw + var(--heat) * 8cqw) #7fe9ff, inset 0 0 6cqw #000c; }
+.dial.spin .dial-hub { animation: dialHub .6s linear infinite; }
+@keyframes dialHub { to { transform: translate(-50%, -50%) rotate(-360deg); } }
+.dial-pt {
+  position: absolute; left: 50%; top: 50%; width: 5cqw; height: 1.3cqw; margin: -.65cqw 0 0 -2.5cqw;
+  border-radius: 1cqw; background: #dffbff; box-shadow: 0 0 1.5cqw #7fe9ff; pointer-events: none; z-index: 1;
+}
+.dial-count {
+  position: absolute; left: 50%; bottom: 9%; transform: translateX(-50%); z-index: 3;
+  font-size: 6cqw; color: #fff; text-shadow: 0 0 2cqw #2ee6ff, 0 .4cqw 0 #000; letter-spacing: .05em;
+}
+.dial-disc.lap .dial-count { animation: dialLap .3s ease-out; }
+@keyframes dialLap { from { transform: translateX(-50%) scale(1.6); color: #ffcf3a; } }
+/* 龍捲風飛向敵人 */
+.fx-tornado {
+  position: absolute; left: 0; top: 0; z-index: 4; pointer-events: none; font-size: 12cqw; line-height: 1;
+  filter: drop-shadow(0 0 2cqw #7fe9ff);
+}
+.fx-tornado.big { filter: drop-shadow(0 0 3cqw #fff) drop-shadow(0 0 5cqw #2ee6ff); }

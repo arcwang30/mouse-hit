@@ -19,18 +19,18 @@ G.WAVE_GROWTH = {
 //   bombAll 從第 1 波起炸彈混入的機率                          extras 每個敵人額外多幾個其他敵人的機制(見 G.ROUND_EXTRAS)
 //   noWaveHeal 波與波之間不回血(技能的回復仍有效)
 // 演出:prefix 敵人名字前綴;bgmRate 戰鬥音樂加速;畫面色調與敵人光環見 cyber-ui.css 的 #battle.round-2 / .round-3
-// breakLen / breakTime 破綻要依序點幾個數字、限時幾毫秒;points 積分與成長點數倍率;upMax 開啟這一輪後「成長」的等級上限
+// breakLen / breakTime 破綻要依序點幾個數字、限時幾毫秒;dialArc / dialSpeed 旋風破綻的缺口寬度(度)與指針轉速(度/秒);points 積分與成長點數倍率;upMax 開啟這一輪後「成長」的等級上限
 G.ROUNDS = {
   1: { name: '第一輪・凡塵', tag: '',   scale: 0,   hp: 1,   atk: 1,   count: 0, skillEvery: 3,
        fistLife: 1,    life: 1,    pattern: 0,   bombAll: 0,    extras: 0, noWaveHeal: false, prefix: '',      bgmRate: 1,
-       breakLen: 4, breakTime: 3500, points: 1,   upMax: 10 },
+       breakLen: 4, breakTime: 3500, dialArc: 70, dialSpeed: 200, points: 1,   upMax: 10 },
   2: { name: '第二輪・修羅', tag: 'Ⅱ', scale: 0.6, hp: 1,   atk: 1,    count: 0, skillEvery: 3,
        fistLife: 0.85, life: 0.85, pattern: 0.5, bombAll: 0.12, extras: 1, noWaveHeal: true,  prefix: '修羅・', bgmRate: 1.08,
-       breakLen: 5, breakTime: 4000, points: 1.5, upMax: 15,
+       breakLen: 5, breakTime: 4000, dialArc: 54, dialSpeed: 260, points: 1.5, upMax: 15,
        desc: '符號更快消失、更常多發,敵人多一種招式,波與波之間不回血。破綻要點 5 個數字。成長上限 Lv15,點數 ×1.5。' },
   3: { name: '第三輪・天魔', tag: 'Ⅲ', scale: 1.0, hp: 1.05, atk: 1.05, count: 1, skillEvery: 2,
        fistLife: 0.76, life: 0.76, pattern: 0.9, bombAll: 0.18, extras: 2, noWaveHeal: true,  prefix: '天魔・', bgmRate: 1.15,
-       breakLen: 6, breakTime: 4500, points: 2,   upMax: 20,
+       breakLen: 6, breakTime: 4500, dialArc: 42, dialSpeed: 320, points: 2,   upMax: 20,
        desc: '最高難度:符號極快、敵人多兩種招式、多一面盾牌,BOSS 每 2 回合放必殺技,不回血。破綻要點 6 個數字。成長上限 Lv20,點數 ×2。' },
 };
 

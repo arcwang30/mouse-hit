@@ -29,6 +29,8 @@ const DEVIL_GOLD = 100;
 const SWIPE_MUL = 1.5;
 const TIMEBOMB_MS = 3000, TIMEBOMB_DMG = 1.5;
 const MEMORY_LEN = { 1: 3, 2: 4, 3: 5 }, MEMORY_SHOW = 520, MEMORY_PER = 900, MEMORY_DMG = 1.5;
+// 旋風破綻:出現機率、指針最多轉幾圈、缺口兩側寬容角度、畫圈限時、需要的圈數(一般 / 精英 / BOSS)
+const DIAL_CHANCE = 0.4, DIAL_LAPS = 3, DIAL_GRACE = 6, DIAL_SPIN_MS = 4000, DIAL_TURNS = [3, 4, 5];
 const BONUS_STARS = [40, 70]; // 特訓關:狂打幾 HIT 拿第二、第三顆星
 const CHAPTER_COINS = 300;    // 章節通關獎勵(每一輪第一次打倒最終 BOSS)
 const TIANDAO_MUL = 1.5, TIANDAO_HEAL = 0.2; // 炎鋼天道(第二章破關後的必殺技):威力倍率、回復比例
@@ -451,9 +453,10 @@ G.battle = {
 
   // 破綻:先依序點數字抓住破綻(原本必殺技的指令輸入),成功後九宮格變成一顆大按鈕狂按破甲
   async breakChance() {
-    const p = this.p, e = this.e;
+    const e = this.e;
     const hits = e.boss ? 14 : e.elite ? 12 : 10;
     this.setEnemyState('stagger');
+    if (!G.tutorial.active && Math.random() < DIAL_CHANCE) return this.dialBreak(); // 另一種玩法:旋風破綻
     const { breakLen, breakTime } = G.roundCfg(); // 第二、三輪數字更多
     // 每次破綻隨機:數字 / 希臘數字 / 骰子(教學固定用數字)
     const style = G.tutorial.active ? G.BREAK_STYLES[0] : G.pick(G.BREAK_STYLES);
@@ -486,21 +489,240 @@ G.battle = {
     });
     timer.stop();
     this.phase = null;
+    this.breakResult(broken);
+    await G.clock.wait(500);
+    if (e.hp > 0) this.setEnemyState('idle');
+    this.render();
+  },
+
+  // 破甲結算(兩種破綻共用):成功打出攻擊力 ×4,下一回合傷害提高;tornado 時最後一擊由龍捲風代替拳頭特效
+  breakResult(broken, tornado) {
     if (broken) {
       this.stats.breaks++;
       this.brokenNext = true;
       this.comboHit();
       G.audio.play('break');
-      this.punchFx(1, { crit: true, final: true, dur: 200 });
-      this.float('破甲!', 'tag armor');
-      this.hurtEnemy(p.atk * 4, true);
+      if (!tornado) this.punchFx(1, { crit: true, final: true, dur: 200 });
+      this.float(tornado ? '旋風破甲!' : '破甲!', 'tag armor');
+      this.hurtEnemy(this.p.atk * 4, true);
       this.hitStop(130); // 破甲:最重的一下
     } else {
       this.float('破甲失敗', 'tag miss');
     }
+  },
+
+  // 旋風破綻:圓盤蓋住九宮格,雷達指針旋轉,指針在發亮的缺口內時點一下抓住破綻;
+  // 接著手指在圓盤上畫圈,每轉一圈捲起一道龍捲風衝向敵人,限時內轉滿圈數就破甲
+  // 難度:缺口寬度 dialArc、指針轉速 dialSpeed 依周回(G.ROUNDS);圈數依敵人(一般 / 精英 / BOSS)
+  async dialBreak() {
+    const e = this.e, { dialArc, dialSpeed } = G.roundCfg();
+    const turns = DIAL_TURNS[e.boss ? 2 : e.elite ? 1 : 0];
+    await G.tips.show('dial'); // 第一次遇到才說明
+    await G.banner('破綻!', G.t('指針轉進發亮的缺口時,點一下抓住破綻!'), 800);
+    this.phase = 'break';
+    this.setPhase('破綻:指針進入缺口時點擊!', 'atk');
+    const d = this.dialOpen(dialArc);
+    const seized = await this.dialCatch(d, dialArc, dialSpeed);
+    if (!seized || this.over()) {
+      await G.clock.wait(350); // 讓玩家看到指針停在哪裡
+      d.close();
+      this.phase = null;
+      G.audio.play('fail');
+      this.float('破綻消失', 'tag miss');
+      await G.clock.wait(500);
+      if (e.hp > 0) this.setEnemyState('idle');
+      this.render();
+      return;
+    }
+    this.setPhase(G.t('旋風:在圓盤上畫圈旋轉 {0} 圈!', turns), 'atk');
+    G.audio.play('ready');
+    const broken = await this.dialSpin(d, turns);
+    d.close();
+    this.phase = null;
+    this.breakResult(broken, true);
     await G.clock.wait(500);
     if (e.hp > 0) this.setEnemyState('idle');
     this.render();
+  },
+
+  // 建立圓盤(放在 .grid-wrap,不受九宮格旋轉影響);缺口從隨機角度開始,寬 arc 度
+  dialOpen(arc) {
+    const wrap = G.$('.grid-wrap'), grid = G.$('#grid');
+    const w0 = Math.random() * 360;
+    const el = document.createElement('div');
+    el.className = 'dial';
+    el.innerHTML = '<div class="dial-disc"><div class="dial-gap"></div><div class="dial-ticks"></div>' +
+      '<div class="dial-storm"></div><div class="dial-needle"></div><div class="dial-hub">🌀</div><b class="dial-count"></b></div>';
+    const disc = el.querySelector('.dial-disc');
+    const size = Math.min(grid.offsetWidth, grid.offsetHeight); // 畫面沒顯示(0)時改用 CSS 的預設大小
+    if (size) disc.style.width = disc.style.height = size + 'px';
+    disc.style.setProperty('--w0', w0 + 'deg');
+    disc.style.setProperty('--ww', arc + 'deg');
+    wrap.appendChild(el);
+    return {
+      el, disc, w0,
+      needle: el.querySelector('.dial-needle'),
+      storm: el.querySelector('.dial-storm'),
+      count: el.querySelector('.dial-count'),
+      close() { G.grid.handler = null; el.classList.add('out'); setTimeout(() => el.remove(), 250); },
+    };
+  },
+
+  // 指針以 speed 度/秒旋轉(跟著遊戲時鐘,暫停時也停);只有一次機會,指針在缺口內點下才成功
+  // 轉滿 DIAL_LAPS 圈還沒點就算錯過
+  dialCatch(d, arc, speed) {
+    const a0 = d.w0 + arc + 40 + Math.random() * 120; // 從缺口後方一段距離開始,不會一開場就在缺口裡
+    const t0 = G.clock.now(), limit = DIAL_LAPS * 360 / speed * 1000;
+    const angle = () => a0 + speed * (G.clock.now() - t0) / 1000;
+    return new Promise(res => {
+      let done = false, raf;
+      const end = ok => {
+        if (done) return;
+        done = true;
+        cancelAnimationFrame(raf);
+        timer.stop();
+        G.grid.handler = null;
+        d.el.removeEventListener('pointerdown', tap);
+        d.needle.style.transform = `rotate(${angle()}deg)`;
+        res(ok);
+      };
+      const tap = ev => {
+        if (ev) ev.preventDefault();
+        const off = ((angle() - d.w0) % 360 + 360) % 360;
+        const ok = off <= arc + DIAL_GRACE || off >= 360 - DIAL_GRACE; // 缺口兩側各放寬一點,補手指反應
+        d.disc.classList.add(ok ? 'hit' : 'bad');
+        if (ok) {
+          G.audio.play('break');
+          G.haptic.buzz(40);
+          this.comboHit();
+          this.setEnemyState('hit', 200);
+        } else {
+          this.comboBreak();
+        }
+        end(ok);
+      };
+      const timer = this.timebar(limit, () => { d.disc.classList.add('bad'); end(false); });
+      const spin = () => {
+        if (done) return;
+        d.needle.style.transform = `rotate(${angle()}deg)`;
+        raf = requestAnimationFrame(spin);
+      };
+      spin();
+      d.el.addEventListener('pointerdown', tap);
+      G.grid.handler = () => tap(); // 鍵盤:任一格的按鍵都算點擊
+    });
+  },
+
+  // 在圓盤上畫圈:以圓心算手指角度的變化並累加(來回抖動會互相抵銷),每滿一圈一道龍捲風
+  // 圓盤上的龍捲風粒子隨手指轉速變強;鍵盤每按一下算 90 度
+  dialSpin(d, turns) {
+    d.el.classList.add('spin');
+    d.count.textContent = '0 / ' + turns;
+    return new Promise(res => {
+      let total = 0, rot = 0, heat = 0, laps = 0, last = null, lastPt = 0, done = false, raf;
+      const end = ok => {
+        if (done) return;
+        done = true;
+        timer.stop();
+        cancelAnimationFrame(raf);
+        G.grid.handler = null;
+        res(ok);
+      };
+      const timer = this.timebar(DIAL_SPIN_MS, () => end(false));
+      const angleOf = ev => {
+        const r = d.disc.getBoundingClientRect();
+        return Math.atan2(ev.clientY - (r.top + r.height / 2), ev.clientX - (r.left + r.width / 2)) * 180 / Math.PI;
+      };
+      const add = delta => {
+        if (done) return;
+        total += delta;
+        rot += delta;
+        heat = Math.min(1, heat + Math.abs(delta) / 160);
+        d.storm.style.transform = `rotate(${rot * 2}deg)`;
+        const now = performance.now();
+        if (now - lastPt > 25) { lastPt = now; this.dialParticle(d, Math.sign(delta)); this.dialParticle(d, Math.sign(delta)); }
+        while (laps < turns && Math.abs(total) >= (laps + 1) * 360) {
+          laps++;
+          d.count.textContent = laps + ' / ' + turns;
+          d.disc.classList.remove('lap'); void d.disc.offsetWidth; d.disc.classList.add('lap');
+          G.audio.play('note', laps);
+          G.haptic.buzz(25);
+          this.comboHit();
+          this.tornadoFx(laps === turns);
+        }
+        if (laps >= turns) end(true);
+      };
+      d.el.addEventListener('pointerdown', ev => {
+        ev.preventDefault();
+        last = angleOf(ev);
+        try { d.el.setPointerCapture(ev.pointerId); } catch (x) {}
+      });
+      d.el.addEventListener('pointermove', ev => {
+        if (last == null) return;
+        const a = angleOf(ev);
+        let delta = a - last;
+        if (delta > 180) delta -= 360;
+        if (delta < -180) delta += 360;
+        last = a;
+        if (Math.abs(delta) > 0.5) add(delta);
+      });
+      d.el.addEventListener('pointerup', () => { last = null; });
+      d.el.addEventListener('pointercancel', () => { last = null; });
+      G.grid.handler = () => add(90);
+      // 粒子強度慢慢退去:手指停下來龍捲風就變弱
+      const cool = () => {
+        if (done) return;
+        heat *= 0.94;
+        d.el.style.setProperty('--heat', heat.toFixed(3));
+        raf = requestAnimationFrame(cool);
+      };
+      cool();
+    });
+  },
+
+  // 圓盤上的龍捲風粒子:從外圈繞著圓心往內捲
+  dialParticle(d, dir) {
+    const R = d.disc.offsetWidth / 2;
+    if (!R) return;
+    const p = document.createElement('i');
+    p.className = 'dial-pt';
+    d.disc.appendChild(p);
+    const a = Math.random() * 360, r0 = R * (0.7 + Math.random() * 0.28), r1 = R * (0.08 + Math.random() * 0.2);
+    p.animate([
+      { transform: `rotate(${a}deg) translateX(${r0}px) rotate(${(dir || 1) * 70}deg) scale(1.2)`, opacity: 0.95 },
+      { transform: `rotate(${a + (dir || 1) * 320}deg) translateX(${r1}px) rotate(${(dir || 1) * 70}deg) scale(.3)`, opacity: 0 },
+    ], { duration: 520 + Math.random() * 260, easing: 'cubic-bezier(.3, .1, .6, 1)' }).onfinish = () => p.remove();
+  },
+
+  // 龍捲風從畫面下方捲向敵人;big 是最後一道(更大、命中時爆開)
+  tornadoFx(big) {
+    const stage = G.$('#stageView');
+    const W = stage.clientWidth, H = stage.clientHeight;
+    if (!W) return;
+    const sx = W * (0.15 + Math.random() * 0.7), sy = H * 1.1;
+    const ex = W * 0.5 + (Math.random() - 0.5) * W * 0.16, ey = H * 0.5 + (Math.random() - 0.5) * H * 0.12;
+    const mx = (sx + ex) / 2 + (Math.random() - 0.5) * W * 0.35; // 中途左右甩一下,像捲過去
+    const s0 = big ? 4.2 : 2.6, s1 = big ? 2.2 : 1.1;
+    const f = document.createElement('div');
+    f.className = 'fx-tornado' + (big ? ' big' : '');
+    f.textContent = '🌪️';
+    stage.appendChild(f);
+    f.animate([
+      { transform: `translate(${sx}px, ${sy}px) translate(-50%, -50%) scale(${s0})`, opacity: 0.7 },
+      { transform: `translate(${mx}px, ${(sy + ey) / 2}px) translate(-50%, -50%) scale(${(s0 + s1) / 2})`, opacity: 1, offset: 0.5 },
+      { transform: `translate(${ex}px, ${ey}px) translate(-50%, -50%) scale(${s1})`, opacity: 1 },
+    ], { duration: big ? 420 : 340, easing: 'ease-in' }).onfinish = () => {
+      f.remove();
+      G.audio.play('punch');
+      this.setEnemyState('hit', 220);
+      const b = document.createElement('div');
+      b.className = 'fx-impact' + (big ? ' final' : '');
+      b.textContent = big ? '💥' : '💨';
+      b.style.left = ex + 'px';
+      b.style.top = ey + 'px';
+      stage.appendChild(b);
+      G.clock.after(() => b.remove(), big ? 600 : 320);
+    };
   },
 
   // 在九宮格亮出第 1 → len 個符號(style 見 G.BREAK_STYLES),ms 內依序點完回傳 true;按錯或超時 false
