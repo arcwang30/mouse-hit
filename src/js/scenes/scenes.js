@@ -54,18 +54,21 @@ const showCrop = (el, comic, x, y, w, h) => {
   el.style.backgroundPosition = `${x / (comic.w - w) * 100}% ${y / (comic.h - h) * 100}%`;
 };
 
-// 產生一道由上往下、鋸齒狀的閃電(含兩條分岔),每次形狀都不同
-const lightningSvg = () => {
+// 產生一道由上往下、鋸齒狀的閃電(含兩條分岔),每次形狀都不同;to = [x, y] 時劈到那一點為止(標題碎裂的撞擊點)
+const SHATTER_AT = [50, 48]; // 標題碎裂的撞擊點(畫面 %)
+const lightningSvg = to => {
   const rnd = (a, b) => a + Math.random() * (b - a);
   const main = [];
+  const endY = to ? to[1] : 100;
   let x = rnd(40, 60);
-  for (let y = 0; y <= 100; y += rnd(6, 11)) {
+  for (let y = 0; y < endY; y += rnd(6, 11)) {
     main.push([x, y]);
     x = Math.max(18, Math.min(82, x + rnd(-10, 10)));
+    if (to) x += (to[0] - x) * 0.4 * (y / endY); // 越接近撞擊點越往它靠
   }
-  main.push([x, 100]);
+  main.push(to || [x, 100]);
   const branch = (from, dir) => {
-    let [bx, by] = main[from];
+    let [bx, by] = main[Math.min(from, main.length - 2)]; // 劈得短的時候點比較少
     const pts = [[bx, by]];
     for (let k = 0; k < 4; k++) { bx += dir * rnd(4, 9); by += rnd(4, 9); pts.push([bx, by]); }
     return pts;
@@ -191,48 +194,114 @@ G.scenes = {
           `animation-delay:-${Math.random() * 10}s"></span>`;
       }).join('');
     }
-    el.classList.remove('leaving', 'fadeout');
-    el.querySelectorAll('.strike-bolt').forEach(b => b.remove());
+    el.classList.remove('leaving', 'fadeout', 'ready', 'slam');
+    el.querySelectorAll('.strike-bolt, .title-wave').forEach(b => b.remove());
     const logo = el.querySelector('.title-logo');
     logo.classList.remove('enter');
-    void logo.offsetWidth; // 重新播放 LOGO 砸下來的動畫
-    logo.classList.add('enter');
+    void logo.offsetWidth;
+    el.classList.add('intro'); // 開場演出(CSS):品牌 LOGO → 鏡頭仰望
     G.show('title');
     G.bgm.play('menu');
 
-    // 隨機落雷
+    // 落雷:閃白 + 雷聲;big 是開場那一下(加上劈下來的閃電、震動、太鼓)
     clearTimeout(this._bolt);
+    (this._introT || []).forEach(clearTimeout);
     const bolt = el.querySelector('.bolt'), bg = el.querySelector('.title-bg');
-    const strike = () => {
+    const strike = big => {
       if (!el.classList.contains('active') || el.classList.contains('leaving')) return;
       bolt.classList.remove('strike');
       void bolt.offsetWidth;
       bolt.classList.add('strike');
       bg.classList.add('strike');
       setTimeout(() => bg.classList.remove('strike'), 160);
+      if (big) {
+        el.querySelectorAll('.strike-bolt').forEach(b => b.remove());
+        el.insertAdjacentHTML('beforeend', lightningSvg());
+        G.audio.play('thunder');
+        G.haptic.buzz([0, 60, 40, 140]);
+        return;
+      }
       setTimeout(() => G.audio.play('thunder'), 150);
       this._bolt = setTimeout(strike, 4000 + Math.random() * 5000);
     };
-    this._bolt = setTimeout(strike, 2200);
+    // 開場時間軸(毫秒):1100 鏡頭開始仰望 → 3500 落雷 + LOGO 砸下(太鼓、震動)→ 4400 出現「點擊畫面開始」
+    // 演出中點一下 = 直接跳到最後
+    const slam = () => {
+      strike(true);
+      logo.classList.add('enter');
+      setTimeout(() => { G.audio.play('drum'); el.classList.add('slam'); }, 430); // LOGO 落地那一刻
+      setTimeout(() => el.classList.remove('slam'), 850);
+    };
+    const ready = () => {
+      this._introT.forEach(clearTimeout);
+      el.classList.remove('intro');
+      if (!logo.classList.contains('enter')) logo.classList.add('enter');
+      el.classList.add('ready');
+      this._bolt = setTimeout(strike, 4000 + Math.random() * 4000); // 之後隨機落雷
+    };
+    this._introT = [setTimeout(slam, 3500), setTimeout(ready, 4400)];
 
     // 點一下(或按 Enter / 空白鍵)開始
-    // 轉場:一道閃電劈下 → 閃白兩下、震動 → 淡出進主選單
+    // 轉場:一道閃電劈在畫面中央、炸出一圈火焰衝擊波 → 畫面像玻璃碎裂飛散,露出主選單
     el.onclick = () => {
       if (el.classList.contains('leaving')) return;
+      if (el.classList.contains('intro')) return ready();
       el.classList.add('leaving');
       clearTimeout(this._bolt);
-      el.insertAdjacentHTML('beforeend', lightningSvg());
+      el.querySelectorAll('.strike-bolt').forEach(b => b.remove());
+      el.insertAdjacentHTML('beforeend', lightningSvg(SHATTER_AT) +
+        '<div class="title-wave"><i></i><i></i></div>');
       G.audio.play('thunder');
-      G.audio.play('drum');
-      setTimeout(() => el.classList.add('fadeout'), 650);
-      setTimeout(() => {
-        const m = G.$('#menu');
-        this.menu();
-        m.classList.remove('fadein');
-        void m.offsetWidth;
-        m.classList.add('fadein');
-      }, 1000);
+      G.audio.play('fire');
+      setTimeout(() => this.titleShatter(el), 280);
     };
+  },
+
+  // 標題畫面碎裂:把目前的畫面拍成快照,沿著從撞擊點放射的裂痕切成碎片往外飛,同時底下換成主選單
+  titleShatter(el) {
+    const [cx, cy] = SHATTER_AT, n = 9, rnd = (a, b) => a + Math.random() * (b - a);
+    // 裂痕:每條從撞擊點往外,中途轉折兩次;相鄰兩條裂痕夾出一塊碎片(共用邊,剛好拼滿整個畫面)
+    const edges = Array.from({ length: n }, (_, k) => {
+      const a = (k + rnd(-0.3, 0.3)) / n * Math.PI * 2;
+      return [[cx, cy], ...[rnd(12, 24), rnd(38, 60), 220].map((r, j) => {
+        const aj = a + (j < 2 ? rnd(-0.12, 0.12) : 0);
+        return [cx + Math.cos(aj) * r, cy + Math.sin(aj) * r];
+      })];
+    });
+    const pct = pts => pts.map(([x, y]) => `${x.toFixed(2)}% ${y.toFixed(2)}%`).join(',');
+    // 快照:複製標題畫面,停掉動畫並保留背景目前的鏡頭位置
+    const snap = el.cloneNode(true);
+    snap.removeAttribute('id');
+    snap.className = 'title-snap';
+    snap.querySelectorAll('[id]').forEach(x => x.removeAttribute('id'));
+    snap.querySelector('.title-bg').style.transform = getComputedStyle(el.querySelector('.title-bg')).transform;
+    const box = document.createElement('div');
+    box.className = 'shatter';
+    edges.forEach((e, k) => {
+      const next = edges[(k + 1) % n];
+      const shard = document.createElement('div');
+      shard.className = 'shard';
+      shard.style.clipPath = `polygon(${pct([...e, ...next.slice(1).reverse()])})`;
+      shard.appendChild(snap.cloneNode(true));
+      box.appendChild(shard);
+      // 往裂片中心的方向飛出去並轉動、往下掉
+      const mid = (Math.atan2(e[2][1] - cy, e[2][0] - cx) + Math.atan2(next[2][1] - cy, next[2][0] - cx)) / 2;
+      const dist = rnd(45, 80), dx = Math.cos(mid) * dist, dy = Math.sin(mid) * dist + rnd(20, 40);
+      shard.animate([
+        { transform: 'none', opacity: 1 },
+        { transform: 'none', opacity: 1, offset: 0.14 },
+        { transform: `translate(${dx}%, ${dy}%) rotate(${rnd(-50, 50)}deg) scale(${rnd(0.7, 0.95)})`, opacity: 0 },
+      ], { duration: rnd(750, 950), easing: 'cubic-bezier(.35, 0, .75, .9)', fill: 'forwards' });
+    });
+    box.insertAdjacentHTML('beforeend', '<svg class="cracks" viewBox="0 0 100 100" preserveAspectRatio="none">' +
+      edges.map(e => `<polyline points="${e.map(p => p.join(',')).join(' ')}"/>`).join('') + '</svg>');
+    el.parentNode.appendChild(box);
+    G.audio.play('break');
+    G.audio.play('boom');
+    G.haptic.buzz([0, 80, 30, 160]);
+    el.querySelectorAll('.title-wave').forEach(w => w.remove());
+    this.menu(); // 碎片底下換成主選單
+    setTimeout(() => box.remove(), 1100);
   },
 
   // ---- 主選單 ----

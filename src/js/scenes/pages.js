@@ -235,7 +235,7 @@ G.pages = {
     let n = 0;
     const line = html => `<div class="cr-line" style="animation-delay:${0.15 + (n++) * 0.12}s">${html}</div>`;
     G.$('#creditsBody').innerHTML =
-      line('<div class="cr-logo"><img src="../assets/images/ui/logo.webp" alt="鋼拳風雲錄"></div>') +
+      line('<div class="cr-logo"><img src="../assets/images/ui/logo.png" alt="鋼拳風雲錄"></div>') +
       C.roles.map(([r, name]) => line(`<span class="cr-role">${G.t(r)}</span><span class="cr-name">${name}</span>`)).join('') +
       line(`<h3 class="cr-thanks">${G.t('特別感謝')}</h3>`) +
       C.thanks.map(t => line(`<div class="cr-thank">${t}</div>`)).join('') +
@@ -247,7 +247,19 @@ G.pages = {
 
 // ---------- 事件綁定 ----------
 // 第一次玩:先進新手教學(之後可在選擇關卡的第一輪重玩)
-G.$('#btnStart').onclick = () => G.save.data.tutorialDone ? G.scenes.stages() : G.tutorial.run(false);
+// 開始遊戲(「戰」字徽章):字爆亮、火焰炸開,演出完才進選擇關卡(或第一次的新手教學)
+G.$('#btnStart').onclick = () => {
+  const b = G.$('#btnStart');
+  if (b.classList.contains('punch')) return;
+  b.classList.add('punch');
+  G.audio.play('punch');
+  G.audio.play('fire');
+  G.haptic.buzz(40);
+  setTimeout(() => {
+    b.classList.remove('punch');
+    G.save.data.tutorialDone ? G.scenes.stages() : G.tutorial.run(false);
+  }, 380);
+};
 G.$('#btnHowto').onclick = () => G.pages.howto();
 G.$('#btnSettings').onclick = () => G.pages.settings();
 G.$('#btnHistory').onclick = () => G.pages.history();

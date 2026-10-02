@@ -16,10 +16,10 @@
   <meta name="apple-mobile-web-app-title" content="鋼拳風雲錄">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Orbitron:wght@600;800&display=swap">
-  <link rel="stylesheet" href="css/style.css?v=202610030251">
-  <link rel="stylesheet" href="css/cyber-ui.css?v=202610030251">
-  <link rel="stylesheet" href="css/menu-pages.css?v=202610030251">
-  <link rel="stylesheet" href="css/wallpapers.css?v=202610030251">
+  <link rel="stylesheet" href="css/style.css?v=202610030339">
+  <link rel="stylesheet" href="css/cyber-ui.css?v=202610030339">
+  <link rel="stylesheet" href="css/menu-pages.css?v=202610030339">
+  <link rel="stylesheet" href="css/wallpapers.css?v=202610030339">
 </head>
 <body>
 <div id="app">
@@ -41,10 +41,11 @@
   <!-- 標題畫面 -->
   <section id="title" class="screen">
     <div class="title-bg"></div>
+    <div class="brand-splash"><img src="../assets/images/ui/arc-logo.webp" alt="Arc's Concept"></div>
     <div class="rain"></div>
     <div class="embers" id="embers"></div>
     <div class="bolt"></div>
-    <div class="title-logo"><img src="../assets/images/ui/logo.webp" alt="鋼拳風雲錄"></div>
+    <div class="title-logo"><img src="../assets/images/ui/logo.png" alt="鋼拳風雲錄"></div>
     <div class="title-start"><span data-i18n>點擊畫面開始</span><small>TAP TO START</small></div>
   </section>
 
@@ -53,9 +54,10 @@
     <button class="shop-btn" id="btnShop" title="商店" data-i18n-title>🛒 💰 <span id="menuCoins">0</span></button>
     <button class="ach-btn" id="btnAch" title="成就" data-i18n-title>🏆 <span id="achCount"></span></button>
     <button class="daily-btn" id="btnDaily"><span data-i18n>📅 每日</span><i class="dl-dot"></i></button>
-    <div class="menu-logo"><img src="../assets/images/ui/logo.webp" alt="鋼拳風雲錄"></div>
+    <div class="menu-logo"><img src="../assets/images/ui/logo.png" alt="鋼拳風雲錄"></div>
     <div class="menu-title" id="menuTitle"></div>
-    <button class="btn start" id="btnStart"><span data-i18n>開始遊戲</span><small>START</small></button>
+    <!-- 開始遊戲:嵌在背景火焰拱門中間的「戰」字徽章 -->
+    <button class="start-seal" id="btnStart"><span class="ss-flame"></span><span class="ss-ring"></span><span class="ss-core"><i class="ss-kanji">戰</i><small>START</small></span></button>
     <div class="menu-grid">
       <button class="btn small" id="btnUpgrade" data-i18n>💪 成長</button>
       <button class="btn small" id="btnHowto" data-i18n>🎮 操作說明</button>
@@ -277,31 +279,31 @@
   <button class="pause-btn" id="pauseBtn" title="PAUSE (Esc)">❚❚</button>
 </div>
 
-<script src="js/core.js?v=202610030251"></script>
-<script src="js/haptic.js?v=202610030251"></script>
-<script src="js/i18n.js?v=202610030251"></script>
-<script src="js/audio/engine.js?v=202610030251"></script>
-<script src="js/audio/voice.js?v=202610030251"></script>
-<script src="js/audio/bgm.js?v=202610030251"></script>
-<script src="js/data/skills.js?v=202610030251"></script>
-<script src="js/data/enemies.js?v=202610030251"></script>
-<script src="js/data/stages.js?v=202610030251"></script>
-<script src="js/data/upgrades.js?v=202610030251"></script>
-<script src="js/data/achievements.js?v=202610030251"></script>
-<script src="js/data/daily.js?v=202610030251"></script>
-<script src="js/data/dialog.js?v=202610030251"></script>
-<script src="js/data/skins.js?v=202610030251"></script>
-<script src="js/data/wallpapers.js?v=202610030251"></script>
-<script src="js/data/collection.js?v=202610030251"></script>
-<script src="js/battle/grid.js?v=202610030251"></script>
-<script src="js/battle/battle.js?v=202610030251"></script>
-<script src="js/battle/tutorial.js?v=202610030251"></script>
-<script src="js/data/pages.js?v=202610030251"></script>
-<script src="js/data/history-i18n.js?v=202610030251"></script>
-<script src="js/scenes/scenes.js?v=202610030251"></script>
-<script src="js/scenes/pages.js?v=202610030251"></script>
-<script src="js/scenes/shop.js?v=202610030251"></script>
-<script src="js/pwa.js?v=202610030251"></script>
-<script src="js/main.js?v=202610030251"></script>
+<script src="js/core.js?v=202610030339"></script>
+<script src="js/haptic.js?v=202610030339"></script>
+<script src="js/i18n.js?v=202610030339"></script>
+<script src="js/audio/engine.js?v=202610030339"></script>
+<script src="js/audio/voice.js?v=202610030339"></script>
+<script src="js/audio/bgm.js?v=202610030339"></script>
+<script src="js/data/skills.js?v=202610030339"></script>
+<script src="js/data/enemies.js?v=202610030339"></script>
+<script src="js/data/stages.js?v=202610030339"></script>
+<script src="js/data/upgrades.js?v=202610030339"></script>
+<script src="js/data/achievements.js?v=202610030339"></script>
+<script src="js/data/daily.js?v=202610030339"></script>
+<script src="js/data/dialog.js?v=202610030339"></script>
+<script src="js/data/skins.js?v=202610030339"></script>
+<script src="js/data/wallpapers.js?v=202610030339"></script>
+<script src="js/data/collection.js?v=202610030339"></script>
+<script src="js/battle/grid.js?v=202610030339"></script>
+<script src="js/battle/battle.js?v=202610030339"></script>
+<script src="js/battle/tutorial.js?v=202610030339"></script>
+<script src="js/data/pages.js?v=202610030339"></script>
+<script src="js/data/history-i18n.js?v=202610030339"></script>
+<script src="js/scenes/scenes.js?v=202610030339"></script>
+<script src="js/scenes/pages.js?v=202610030339"></script>
+<script src="js/scenes/shop.js?v=202610030339"></script>
+<script src="js/pwa.js?v=202610030339"></script>
+<script src="js/main.js?v=202610030339"></script>
 </body>
 </html>
