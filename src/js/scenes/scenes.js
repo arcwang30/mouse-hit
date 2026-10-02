@@ -300,7 +300,7 @@ G.scenes = {
     }).join('');
     // 章節與周回切換放在地圖上方固定的列,地圖往下捲也看得到
     G.$('#stageBar').innerHTML = chTabs;
-    G.$('#roundSlot').innerHTML = roundBtn; // 周回切換:標題右上角的圓形頭像按鈕
+    G.$('#roundSlot').innerHTML = roundBtn; // 周回切換:左下角(「返回」左邊)的圓形頭像按鈕
     // 輪次主題色:凡塵 青藍 / 修羅 血紅 / 天魔 暗紫(邊框、區域、路線一起換)
     const page = G.$('#stages');
     page.classList.remove('rnd-1', 'rnd-2', 'rnd-3');

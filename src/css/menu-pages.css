@@ -538,9 +538,9 @@ html:lang(en) .round-tab { font-size: 2.7cqw; letter-spacing: 0; } /* 英文名�
 /* 關卡資訊面板:墊一層該關卡的淡色背景圖 */
 .ss-box { background: linear-gradient(180deg, #1a1626b8, #0a0812e6 70%), var(--ssbg, none) center / cover no-repeat; }
 html:lang(en) .stage-bar .ch-tab b { font-size: 2.6cqw; }
-/* 周回切換:「選擇關卡」標題右上角的圓形頭像按鈕(凡塵 人頭 / 修羅 長角 / 天魔 裂嘴惡魔),點一下換下一輪 */
-#stages .pg-head { position: relative; }
-.round-slot { position: absolute; right: 1cqw; top: 50%; transform: translateY(-50%); }
+/* 周回切換:畫面左下角(「返回」左邊)的圓形頭像按鈕(凡塵 人頭 / 修羅 長角 / 天魔 裂嘴惡魔),點一下換下一輪 */
+#stages .pg-foot { position: relative; }
+.round-slot { position: absolute; left: 3cqw; bottom: 0; } /* 左下角、「返回」的左邊,單手比較好按 */
 .round-cycle { display: flex; flex-direction: column; align-items: center; gap: .6cqw; padding: 0; border: 0; background: none; color: #fff; }
 .rc-face {
   display: grid; place-items: center; width: 14cqw; height: 14cqw; border-radius: 50%; font-size: 8.5cqw; line-height: 1;
@@ -567,3 +567,7 @@ html:lang(en) .stage-bar .ch-tab b { font-size: 2.6cqw; }
 /* 切換輪次的瞬間:整頁閃一下新的主題色 */
 #stages.rnd-flash::after { content: ""; position: absolute; inset: 0; z-index: 30; pointer-events: none; background: radial-gradient(ellipse at 50% 40%, transparent 20%, var(--rt)); animation: rndFlash .6s ease-out forwards; }
 @keyframes rndFlash { from { opacity: .75; } to { opacity: 0; } }
+/* 放在左下角:頭像和文字左右並排,高度和「返回」差不多,不會蓋到地圖 */
+.round-slot { bottom: 50%; transform: translateY(50%); }
+.round-slot .round-cycle { flex-direction: row; gap: 1.4cqw; }
+.round-slot .rc-face { width: 11cqw; height: 11cqw; font-size: 6.6cqw; }
