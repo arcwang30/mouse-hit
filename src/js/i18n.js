@@ -463,6 +463,8 @@ G.I18N = {
   '幻影劇場': ['幻影劇場', 'Phantom Theater'], '傀儡舞台': ['傀儡の舞台', 'Puppet Stage'],
   '浮空碼頭': ['浮遊ドック', 'Floating Dock'], '雲海迴廊': ['雲海の回廊', 'Sea of Clouds Corridor'], '雲端特訓': ['雲上の特訓', 'Cloudtop Training'],
   '帝王之門': ['帝王の門', 'Emperor\'s Gate'], '鋼拳之巔': ['鋼拳の頂', 'Steel Fist Summit'],
+  '切換 ▸': ['切替 ▸', 'Switch ▸'], '難度': ['難易度', 'Difficulty'],
+  '第一章': ['第一章', 'Chapter 1'], '第二章': ['第二章', 'Chapter 2'], '鋼拳復仇': ['鋼拳の復讐', 'Steel Fist Vengeance'], '鋼鐵與心相的試煉': ['鋼鉄と心の試練', 'Trial of Steel and Heart'],
   '區域 {0}': ['エリア {0}', 'Area {0}'], '打倒「{0}」後開放': ['「{0}」を倒すと開放', 'Opens after defeating {0}'],
   '{0} 波敵人': ['敵 {0} ウェーブ', '{0} waves of enemies'], '出戰': ['出撃', 'Fight!'],
   '12 秒內盡量打,打越多金幣越多!狂打 {0} / {1} HIT 拿第二、三顆星。': ['12 秒間打ちまくれ。打つほどコインが増える!{0} / {1} HIT で 2・3 つ目の星。', 'Hit as much as you can for 12 s. More hits, more coins! {0} / {1} HITs earn the 2nd and 3rd stars.'],

@@ -523,3 +523,25 @@ html:lang(en) .round-tab { font-size: 2.7cqw; letter-spacing: 0; } /* 英文名�
 .cell.mirage .icon { transform: scaleX(-1); opacity: .75; animation: mirageWave 1.2s ease-in-out infinite alternate; }
 .cell.mirage .label { background: #4ad8ffd0; color: #002a3a; }
 @keyframes mirageWave { from { filter: blur(0) hue-rotate(0deg); } to { filter: blur(.25cqw) hue-rotate(40deg); } }
+/* 選擇關卡:地圖上方固定的列(章節切換 + 周回切換按鈕),地圖往下捲也看得到 */
+.stage-bar { display: flex; gap: 1.6cqw; flex-shrink: 0; margin-bottom: 2cqw; }
+.stage-bar:empty { display: none; }
+.stage-bar .ch-tabs { flex: 1; min-width: 0; }
+.stage-bar .ch-tab b { font-size: 3cqw; }
+.round-cycle { flex-shrink: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: .3cqw; min-width: 19cqw;
+  padding: 1.6cqw 2cqw; border: 0; color: #fff; clip-path: var(--chamfer); }
+.round-cycle b { font-size: 3.2cqw; white-space: nowrap; }
+.round-cycle small { font-size: 2.4cqw; opacity: .85; }
+.round-cycle.r1 { color: #001; background: linear-gradient(180deg, #7ff8ff, #19c8e0); box-shadow: inset 0 0 0 .3cqw #fff8; }
+.round-cycle.r2 { background: linear-gradient(180deg, #ff8a5c, #c0142c); box-shadow: inset 0 0 0 .3cqw #fff6; }
+.round-cycle.r3 { background: linear-gradient(180deg, #d58bff, #5a0f9c); box-shadow: inset 0 0 0 .3cqw #fff6; }
+html:lang(en) .round-cycle b, html:lang(en) .stage-bar .ch-tab b { font-size: 2.6cqw; }
+/* 難度:5 格由低到高的長條(和評價的 ★ 區分) */
+.ss-diff { display: flex; align-items: center; gap: 1.2cqw; color: #ffb08a; letter-spacing: 0; }
+.diff-bars { display: inline-flex; align-items: flex-end; gap: .5cqw; height: 3.6cqw; }
+.diff-bars i { width: 1.4cqw; background: #ffffff25; border-radius: .3cqw; }
+.diff-bars i:nth-child(1) { height: 30%; } .diff-bars i:nth-child(2) { height: 47%; } .diff-bars i:nth-child(3) { height: 64%; }
+.diff-bars i:nth-child(4) { height: 82%; } .diff-bars i:nth-child(5) { height: 100%; }
+.diff-bars i.on { background: linear-gradient(180deg, #ffd84a, #ff5a1f); box-shadow: 0 0 1cqw #ff7a1f; }
+/* 關卡資訊面板:墊一層該關卡的淡色背景圖 */
+.ss-box { background: linear-gradient(180deg, #1a1626b8, #0a0812e6 70%), var(--ssbg, none) center / cover no-repeat; }

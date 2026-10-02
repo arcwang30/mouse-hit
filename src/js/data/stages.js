@@ -240,7 +240,8 @@ const buildChapter = (id, name, sub, regions, list, bgs, curve) => {
     region: r, type, waves, events, scale: curveAt(curve, i, list.length), stars: regions[r].stars,
     name: sname, code: `${r + 1}-${i % 5 + 1}`, // 地圖上的編號,例如 1-3
   }));
-  return { id, name, sub, regions, stages };
+  const [short, title] = name.split(' '); // 章節切換按鈕用:「第二章」+「鋼鐵與心相的試煉」
+  return { id, name, short, title, sub, regions, stages };
 };
 G.CHAPTERS = [
   buildChapter(1, '第一章 鋼拳復仇', '新神州', REGIONS_1, STAGE_LIST_1, BGS, CURVE_1),

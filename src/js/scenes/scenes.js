@@ -259,16 +259,15 @@ G.scenes = {
     G.bgm.setRate(1);
     G.bgm.play('menu'); // 從結算畫面回來時音樂已經停了;已在播就不會重來
     // 周回切換:開啟第二輪後才出現;只列出已開啟的輪次(還沒開的第三輪不顯示)
+    // 改成一顆按鈕:點一下換到下一輪(凡塵 → 修羅 → 天魔 → 凡塵),和章節切換分開
     const rmax = G.chData().roundMax;
-    const opened = [1, 2, 3].filter(r => r <= rmax);
-    const tabs = rmax < 2 ? '' : `<div class="round-tabs" style="grid-template-columns:repeat(${opened.length}, 1fr)">` +
-      opened.map(r => `<button class="round-tab r${r}${r === round ? ' on' : ''}" data-round="${r}">${G.t(G.ROUNDS[r].name)}</button>`).join('') +
-      '</div>' + (cfg.desc ? `<div class="round-desc">${G.t(cfg.desc)}</div>` : '');
+    const roundBtn = rmax < 2 ? '' : `<button class="round-cycle r${round}" id="roundCycle"><b>${G.t(G.ROUNDS[round].name)}</b><small>${G.t('切換 ▸')}</small></button>`;
+    const tabs = cfg.desc ? `<div class="round-desc">${G.t(cfg.desc)}</div>` : '';
     // 章節切換:還沒開放的章節顯示 🔒(點了說明開放條件)
     const chTabs = `<div class="ch-tabs">` + G.CHAPTERS.map((c, k) => {
       const open = G.chapterOpen(k + 1);
       return `<button class="ch-tab${G.chapter() === k + 1 ? ' on' : ''}${open ? '' : ' locked'}" data-ch="${k + 1}">` +
-        `<b>${open ? '' : '🔒 '}${G.t(c.name)}</b><small>${G.t(c.sub)}</small></button>`;
+        `<b>${open ? '' : '🔒 '}${G.t(c.short)}</b><small>${G.t(c.title)}</small></button>`;
     }).join('') + '</div>';
     // 新手教學卡片:只在第一輪最上面
     const tut = round !== 1 || G.chapter() !== 1 ? '' : `<button class="stage-card tut-card" id="tutCard">${sv.tutorialClear ? '<span class="sc-clear">CLEAR</span>' : ''}` +
@@ -296,8 +295,12 @@ G.scenes = {
         `<div class="mr-field"><svg class="mr-path" viewBox="0 0 100 100" preserveAspectRatio="none"><polyline points="${path}"/></svg>${nodes}</div>` +
         (locked ? `<div class="mr-fog"><b>🔒</b>${G.t('打倒「{0}」後開放', bossName)}</div>` : '') + '</section>';
     }).join('');
-    G.$('#stageList').innerHTML = chTabs + tabs + tut + `<div class="world-map">${regions}</div>`;
-    G.$('#stageList').querySelectorAll('.ch-tab').forEach(b => { b.onclick = () => this.setChapter(+b.dataset.ch); });
+    // 章節與周回切換放在地圖上方固定的列,地圖往下捲也看得到
+    G.$('#stageBar').innerHTML = chTabs + roundBtn;
+    G.$('#stageList').innerHTML = tabs + tut + `<div class="world-map">${regions}</div>`;
+    G.$('#stageBar').querySelectorAll('.ch-tab').forEach(b => { b.onclick = () => this.setChapter(+b.dataset.ch); });
+    const rc = G.$('#roundCycle');
+    if (rc) rc.onclick = () => this.setRound(round % rmax + 1);
     G.$('#stageList').querySelectorAll('.map-node[data-i]').forEach(b => {
       b.onclick = () => this.stageSheet(+b.dataset.i);
     });
@@ -306,7 +309,6 @@ G.scenes = {
     if (curNode) setTimeout(() => curNode.scrollIntoView({ block: 'center' }), 30);
     const tc = G.$('#tutCard');
     if (tc) tc.onclick = () => { G.pages.current = null; G.tutorial.run(true); };
-    G.$('#stageList').querySelectorAll('.round-tab').forEach(b => { b.onclick = () => this.setRound(+b.dataset.round); });
     G.pages.open('stages'); // 共用選單頁面的返回按鈕與 Esc
   },
 
@@ -320,8 +322,8 @@ G.scenes = {
     }).join('');
     const st = pr.stars[i] || 0;
     G.$('#stageSheet').innerHTML =
-      `<div class="ss-box t-${s.type}"><div class="ss-head"><span class="ss-type">${type.icon} ${G.t(type.name)}</span>` +
-      `<span class="ss-diff">${'★'.repeat(s.stars)}${'☆'.repeat(5 - s.stars)}</span></div>` +
+      `<div class="ss-box t-${s.type}"${s.img ? ` style="--ssbg:url('${new URL('../assets/images/' + s.img, location.href).href}')"` : ''}><div class="ss-head"><span class="ss-type">${type.icon} ${G.t(type.name)}</span>` +
+      `<span class="ss-diff" title="${G.t('難度')}">${G.t('難度')}<i class="diff-bars">${[1, 2, 3, 4, 5].map(n => `<i class="${n <= s.stars ? 'on' : ''}"></i>`).join('')}</i></span></div>` +
       `<h3>${G.stageTitle(s)}</h3><p class="ss-region">${G.t('區域 {0}', s.region + 1)} ${G.t(G.REGIONS[s.region].name)}</p>` +
       (s.type === 'bonus' ? `<p class="ss-desc">${G.t('12 秒內盡量打,打越多金幣越多!狂打 {0} / {1} HIT 拿第二、三顆星。', 40, 70)}</p>`
         : `<p class="ss-desc">${G.t('{0} 波敵人', s.waves.length)}</p><div class="ss-foes">${foes}</div>`) +
