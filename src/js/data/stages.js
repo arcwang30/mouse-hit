@@ -108,7 +108,7 @@ G.STAGES = [
   {
     name: '第三關 未來鐘塔廣場', bg: 'tower', img: 'backgrounds/stage3.jpg', deco: ['⚡', '🌕', '🛰️'], stars: 2,
     desc: '古老鐘塔與全息投影交織,無人機在霓虹間穿梭。WAVE 4、6 有中頭目。',
-    waves: ['drunk', 'ninja+', 'lavaGolem', 'poisonQueen', 'gunner+', 'abyssCrab', 'shadowKing'],
+    waves: ['drunk', 'ninja+', 'clockBomber', 'poisonQueen', 'gunner+', 'abyssCrab', 'shadowKing'],
     events: [2, 4], scale: 1.4,
   },
   // 第四關起:bgm 指定戰鬥曲(bgm.js)
@@ -133,19 +133,19 @@ G.STAGES = [
   {
     name: '第七關 霓虹地下鐵', bg: 'subway', img: 'backgrounds/stage7.jpg', bgm: 'battle1', deco: ['🚇', '💡', '🚦', '💡', '🚇'], stars: 4,
     desc: '深夜的末班列車,無人機在隧道裡來回巡邏。WAVE 4 有中頭目。',
-    waves: ['droneOp', 'patrolBot', 'hacker+', 'ironBull', 'droneOp+', 'patrolBot+', 'thunderRonin'],
+    waves: ['droneOp', 'patrolBot', 'skater', 'ironBull', 'droneOp+', 'skater+', 'thunderRonin'],
     events: [2, 4], scale: 1.9,
   },
   {
     name: '第八關 幻影劇場', bg: 'theater', img: 'backgrounds/stage8.jpg', bgm: 'arena', deco: ['🎭', '🕯️', '🎎', '🕯️', '🎭'], stars: 4,
     desc: '早已停演的老劇院,舞台上的人偶卻自己動了起來。WAVE 4 有中頭目。',
-    waves: ['puppet', 'drunk+', 'droneOp+', 'poisonQueen', 'puppet+', 'snowMonk+', 'puppetLord'],
+    waves: ['puppet', 'magician', 'droneOp+', 'poisonQueen', 'puppet+', 'magician+', 'puppetLord'],
     events: [2, 4], scale: 2,
   },
   {
     name: '第九關 天空要塞', bg: 'sky', img: 'backgrounds/stage9.jpg', bgm: 'sky', deco: ['☁️', '🛰️', '⭐', '🛰️', '☁️'], stars: 5,
     desc: '飛行船環繞的浮空城,整片雲海都在腳下。WAVE 4 有中頭目。',
-    waves: ['droneOp+', 'cyborg+', 'puppet+', 'thunderRonin', 'sumo+', 'patrolBot+', 'skyEmpress'],
+    waves: ['droneOp+', 'cyborg+', 'puppet+', 'thunderRonin', 'clockBomber+', 'patrolBot+', 'skyEmpress'],
     events: [2, 4], scale: 2.05,
   },
   {

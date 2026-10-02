@@ -441,6 +441,16 @@ G.I18N = {
   '🗑️ 重置存檔': ['🗑️ セーブをリセット', '🗑️ Reset Save'],
   // 桌布
   '⚙️ 設定': ['⚙️ 設定', '⚙️ Settings'], '🎨 外觀': ['🎨 外観', '🎨 Appearance'],
+  // 新機制:倒數炸彈 / 滑擊拳 / 記憶拳
+  '爆破鐘匠・滴答': ['爆破時計師・チクタク', 'Tick-Tock the Bomb Clocksmith'], '疾風飛賊・閃': ['疾風の盗賊・センコウ', 'Flash the Gale Thief'],
+  '幻影魔術師・米拉': ['幻影の奇術師・ミラ', 'Mira the Phantom Magician'],
+  '倒數:💣 要在倒數歸零前點掉拆除,不然會爆炸!': ['カウントダウン:💣 は 0 になる前にタップして解除。間に合わないと爆発!', 'Countdown: tap the 💣 before it hits 0 to defuse it, or it explodes!'],
+  '疾風:帶箭頭的拳頭要往箭頭方向滑(傷害 ×1.5)': ['疾風:矢印つきの拳は矢印の方向にスワイプ(ダメージ ×1.5)', 'Gale: swipe arrow fists in the arrow direction (×1.5 damage)'],
+  '幻術:記住格子閃爍的順序,照同樣順序點回來': ['幻術:光ったマスの順番を覚えて、同じ順にタップ', 'Illusion: remember the order the cells flash, then tap them in the same order'],
+  '疾風拳!': ['疾風拳!', 'Gale Fist!'], '拆除!': ['解除!', 'Defused!'], '爆炸!': ['爆発!', 'Boom!'],
+  '幻術:記住閃爍的順序!': ['幻術:光る順番を覚えろ!', 'Illusion: remember the order!'],
+  '照同樣的順序點回來!': ['同じ順番でタップ!', 'Tap them back in the same order!'],
+  '看穿了!': ['見切った!', 'Seen through!'], '被騙了!': ['騙された!', 'Fooled!'],
   // 每日:登入獎勵與每日任務
   '📅 每日': ['📅 デイリー', '📅 Daily'], '每日': ['デイリー', 'Daily'],
   '每日任務完成!': ['デイリーミッション達成!', 'Daily Mission Complete!'],

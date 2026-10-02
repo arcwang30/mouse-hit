@@ -723,3 +723,24 @@ h2 { margin: 0; }
   box-shadow: inset 0 0 0 .6cqw #ffe680, inset 0 0 0 1cqw #c08400, 0 0 2.4cqw #ffd400c0;
 }
 .fx-coin::after { content: "$"; position: absolute; inset: 0; display: grid; place-items: center; font: 900 4cqw/1 var(--tech); color: #8a5600; }
+
+/* ---------- 新機制 ---------- */
+/* 倒數炸彈:黑紅外殼、閃紅光,角標是大大的倒數數字,最後 1 秒閃得更快 */
+.cell.timebomb .cap { background: linear-gradient(180deg, #5a5a5a, #1e1e1e 55%, #000); --edge: #000; color: #ff3a3a; animation: bombPulse .5s ease-in-out infinite alternate; }
+.cell.timebomb .badge { right: auto; left: 50%; top: auto; bottom: 6%; transform: translateX(-50%); font-size: 7cqw; color: #ff3a3a; -webkit-text-stroke: .5cqw #000; }
+.cell.timebomb .cap::after { color: #ff3a3a; }
+@keyframes bombPulse { to { box-shadow: inset 0 .9cqw 0 #ffffff30, 0 1cqw 0 var(--edge), 0 0 4cqw #ff2020; } }
+/* 滑擊拳:螢光綠外殼,大箭頭標籤朝滑動方向晃動;按下瞄準時發亮 */
+.cell.swipe .cap { background: linear-gradient(180deg, #d8ff9a, #4ad94a 55%, #127a2a); --edge: #063a12; color: #eaffd0; }
+.cell.swipe .label { top: 50%; transform: translate(-50%, -50%); font-size: 11cqw; line-height: 1; padding: 0; background: none; color: #fff;
+  -webkit-text-stroke: .6cqw #063a12; paint-order: stroke fill; text-shadow: 0 0 2cqw #b4ff4a; animation: swipeHint .6s ease-in-out infinite alternate; }
+.cell.swipe .icon { opacity: .35; }
+.cell.swipe-up .label    { --sx: 0%;    --sy: -14%; }
+.cell.swipe-down .label  { --sx: 0%;    --sy: 14%; }
+.cell.swipe-left .label  { --sx: -14%;  --sy: 0%; }
+.cell.swipe-right .label { --sx: 14%;   --sy: 0%; }
+@keyframes swipeHint { to { transform: translate(calc(-50% + var(--sx) * 4), calc(-50% + var(--sy) * 4)); } }
+.cell.aiming .cap { box-shadow: inset 0 .9cqw 0 #ffffff70, 0 1cqw 0 var(--edge), 0 0 5cqw #b4ff4a; transform: scale(1.06); }
+/* 記憶拳:閃爍的格子(金色星光) */
+.cell.mem .cap { background: linear-gradient(180deg, #fff4c0, #ffc83a 55%, #b07a00); --edge: #5a3a00; color: #fff; box-shadow: inset 0 .9cqw 0 #ffffffa0, 0 1cqw 0 var(--edge), 0 0 5cqw #ffd84a; }
+.cell.mem .cap::after { display: none; }

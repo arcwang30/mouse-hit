@@ -100,6 +100,8 @@ document.addEventListener('keydown', e => {
   if (!G.$('#battle').classList.contains('active') || e.repeat || G.clock.paused) return;
   if (e.code in KEYMAP) { G.grid.tap(KEYMAP[e.code]); e.preventDefault(); }
   else if (e.code === 'Space') { G.battle.requestUlt(); e.preventDefault(); }
+  // 滑擊拳:先按該格的按鍵瞄準,再按方向鍵出拳
+  else if (G.grid.swipeKey && e.code.startsWith('Arrow')) { G.grid.swipeKey(e.code.slice(5).toLowerCase()); e.preventDefault(); }
 });
 document.addEventListener('keyup', e => {
   if (e.code in KEYMAP) G.grid.release(KEYMAP[e.code]); // 蓄力重拳:放開按鍵出拳

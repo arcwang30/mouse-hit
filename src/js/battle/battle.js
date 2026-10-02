@@ -25,6 +25,10 @@ const MERCHANT = [
 ];
 const CHEST_ODDS = { coins: 0.45, skill: 0.25 }; // 剩下 30% 是寶箱怪(扣 20% 最大 HP)
 const DEVIL_GOLD = 100;
+// 新機制:疾風(滑擊拳傷害倍率)、倒數炸彈(秒數再乘周回的停留倍率、爆炸傷害倍率)、幻術(記憶長度依周回、每格閃爍毫秒、每格作答時間、失敗傷害倍率)
+const SWIPE_MUL = 1.5;
+const TIMEBOMB_MS = 3000, TIMEBOMB_DMG = 1.5;
+const MEMORY_LEN = { 1: 3, 2: 4, 3: 5 }, MEMORY_SHOW = 520, MEMORY_PER = 900, MEMORY_DMG = 1.5;
 
 function makePlayer() {
   const p = {
@@ -263,7 +267,7 @@ G.battle = {
       interval: Math.max(250, life * 0.45), patterns: this.patterns(),
       // 蓄力重拳:每回合其中一顆拳頭需要按住蓄力
       hold: { at: 1 + Math.floor(Math.random() * (p.attackCount - 1)), icon: '👊', label: 'HOLD', holdMs: HOLD_MS * (p.holdMaster ? 0.6 : 1) },
-      mods: { gold: GOLD_RATE * p.goldMul, hidden: m.hidden, blink: m.blink, armor: m.armor },
+      mods: { gold: GOLD_RATE * p.goldMul, hidden: m.hidden, blink: m.blink, armor: m.armor, swipe: m.swipe },
       slowFirst: p.slowmo ? SLOWMO : null,
       onReady: a => { api = a; },
       // 炸彈:第 4 波起一般敵人也會混入;部分敵人機制會更多
@@ -277,6 +281,7 @@ G.battle = {
         let d = (p.atk + combo * p.combo + counter) * mul;
         if (info.gold) { d *= GOLD_MUL; this.float('金拳!', 'tag gold'); }
         if (info.lava) { d *= 2; this.float('熔岩拳!', 'tag lava'); this.hurtPlayer(LAVA_BURN); }
+        if (info.swipe) { d *= SWIPE_MUL; this.float('疾風拳!', 'tag line'); }
         combo++;
         if (first && p.firstStrike) d *= 3;
         first = false;
@@ -331,13 +336,25 @@ G.battle = {
     this.setPhase(s ? G.t('必殺技來襲:{0}!', G.t(s.name)) : '防禦:點擊 🛡️ 擋下攻擊!', 'def');
     this.setupBoard('defend');
     const m = this.mech('def');
+    // 幻術:隔一回合改成記憶考驗(第 1、3、5… 次攻擊),答對等於全部擋下,一樣有破綻
+    if (m.memory && !s && e.turn % 2 === 1) {
+      const ok = await this.memoryTurn(dmg);
+      this.phase = null;
+      if (e.hp > 0) this.setEnemyState('idle');
+      this.render();
+      if (ok && !this.over()) await this.breakChance();
+      return;
+    }
     this.soulReady = p.comboSoul;
     let missed = 0, api = null, walled = !p.autoGuard;
     await G.molePhase({
       icon: '🛡️', cls, count, life, interval: life * 0.5, decoyRate: s ? s.decoy : 0, patterns: this.patterns(),
       slowFirst: p.slowmo ? SLOWMO : null,
       onReady: a => { api = a; },
-      mods: { blink: m.blink, ghost: m.ghost, armor: m.armor, lockon: m.lockon, heavy: m.heavy },
+      mods: { blink: m.blink, ghost: m.ghost, armor: m.armor, lockon: m.lockon, heavy: m.heavy, timebomb: m.timebomb, timebombMs: Math.round(TIMEBOMB_MS * G.roundCfg().life) },
+      // 倒數炸彈:拆除算一次漂亮的格擋;爆炸傷害比一般攻擊高,也不會有破綻
+      onDefuse: () => { this.comboHit(); this.gainUlt(p.blockUlt); G.audio.play('perfect'); this.float('拆除!', 'tag armor'); },
+      onBomb: () => { missed++; this.comboBreak(); G.audio.play('boom'); this.float('爆炸!', 'tag miss'); this.hurtPlayer(dmg * TIMEBOMB_DMG); },
       onGhost: () => { this.comboBreak(); this.float('殘影!', 'tag miss'); },
       onChip: (i, type, cleared) => this.chip(type, cleared),
       // 每個盾牌對應一發飛向玩家的攻擊,盾牌消失的瞬間正好命中
@@ -482,6 +499,62 @@ G.battle = {
     });
     G.grid.clearAll();
     grid.classList.remove('numbering');
+    return ok;
+  },
+
+  // 記憶拳(幻術):格子依序閃爍,再照同樣順序點回來。長度依周回 3 / 4 / 5 格,精英多 1 格
+  async memoryTurn(dmg) {
+    const p = this.p, len = Math.min(8, (MEMORY_LEN[G.round()] || 3) + (this.e.elite ? 1 : 0));
+    const grid = G.$('#grid');
+    grid.classList.add('numbering'); // 和破綻一樣,先藏起冰 / 觸手 / 熔岩
+    const seq = G.shuffle([...Array(9).keys()]).slice(0, len);
+    this.setPhase('幻術:記住閃爍的順序!', 'def');
+    await G.clock.wait(600);
+    for (let n = 0; n < len && !this.over(); n++) {
+      G.grid.set(seq[n], '✨', 'mem');
+      G.audio.play('note', n);
+      await G.clock.wait(MEMORY_SHOW);
+      G.grid.clear(seq[n]);
+      await G.clock.wait(160);
+    }
+    this.setPhase('照同樣的順序點回來!', 'def');
+    const ok = await new Promise(res => {
+      let idx = 0;
+      const timer = this.timebar(MEMORY_PER * len + 1500, () => { G.grid.handler = null; res(false); });
+      G.grid.handler = i => {
+        const done = seq.indexOf(i);
+        if (done >= 0 && done < idx) return; // 剛點過的格子再碰到一次不算錯
+        if (i === seq[idx]) {
+          G.audio.play('note', idx);
+          G.grid.impact(i, 'num', idx === len - 1);
+          G.grid.flash(i, 'good');
+          this.comboHit();
+          if (++idx === len) { timer.stop(); G.grid.handler = null; res(true); }
+        } else {
+          timer.stop();
+          G.grid.flash(i, 'bad');
+          G.grid.impact(i, 'bad');
+          G.grid.handler = null;
+          res(false);
+        }
+      };
+    });
+    if (!ok) seq.forEach((c, n) => G.clock.after(() => G.grid.flash(c, 'miss'), n * 120)); // 失敗時把正確順序快速閃一次
+    await G.clock.wait(ok ? 200 : 500);
+    G.grid.clearAll();
+    grid.classList.remove('numbering');
+    if (ok) {
+      G.audio.play('perfect');
+      this.float('看穿了!', 'tag armor');
+      this.setEnemyState('stagger', 500);
+      this.counterPct = Math.min(BLOCK_PCT_CAP, (this.counterPct || 0) + len * 5); // 下回合反擊力
+      this.gainUlt(p.blockUlt * len);
+      this.stats.blocks += len;
+    } else {
+      this.comboBreak();
+      this.float('被騙了!', 'tag miss');
+      this.hurtPlayer(dmg * MEMORY_DMG);
+    }
     return ok;
   },
 

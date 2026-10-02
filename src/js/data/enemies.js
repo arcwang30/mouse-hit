@@ -21,6 +21,10 @@ G.ENEMIES = {
   droneOp:     { name: '無人機兵',   icon: '🛸', img: 'enemies/drone_op.webp', shot: '🛸', hp: 70,  atk: 10, atkCount: 6, guardLife: 850 },
   puppet:      { name: '人偶刺客',   icon: '🎎', img: 'enemies/puppet.png', shot: '🗡️', hp: 75,  atk: 11, atkCount: 5, guardLife: 950 },
   patrolBot:   { name: '巡邏機兵',   icon: '🤖', img: 'enemies/patrol_bot.webp', shot: '🔴', hp: 80,  atk: 10, atkCount: 5, guardLife: 950 },
+  // ---- 新機制的代表角色:倒數炸彈 / 滑擊拳 / 記憶拳 ----
+  clockBomber: { name: '爆破鐘匠・滴答', icon: '💣', img: 'enemies/clock_bomber.webp', shot: '⏰', hp: 90, atk: 10, atkCount: 4, guardLife: 1150 },
+  skater:      { name: '疾風飛賊・閃',   icon: '🛹', img: 'enemies/skater.webp', shot: '💨', hp: 75, atk: 10, atkCount: 5, guardLife: 900 },
+  magician:    { name: '幻影魔術師・米拉', icon: '🎩', img: 'enemies/magician.webp', shot: '🃏', hp: 85, atk: 11, atkCount: 5, guardLife: 950 },
 
   // BOSS / 中頭目:每 3 次攻擊施放一次必殺技
   fatKing: {
@@ -114,7 +118,12 @@ G.MECHS = {
     rotate: [{ def: { ghost: 0.5 } }, { def: { blink: 0.45 } }, { atk: { hidden: 0.5, bomb: 0.3 }, def: { lockon: 450 } }] },
   skyEmpress:  { hint: '天穹:瞬移與鎖定交替,拳頭會先顯示 ❓',
     rotate: [{ atk: { hidden: 0.45 }, def: { blink: 0.5, lockon: 400 } }, { atk: { blink: 0.4 }, def: { ghost: 0.5, armor: 0.25 } }] },
+  clockBomber: { hint: '倒數:💣 要在倒數歸零前點掉拆除,不然會爆炸!', def: { timebomb: 0.45 } },
+  skater:      { hint: '疾風:帶箭頭的拳頭要往箭頭方向滑(傷害 ×1.5)', atk: { swipe: 0.4 } },
+  magician:    { hint: '幻術:記住格子閃爍的順序,照同樣順序點回來', def: { memory: true } },
   steelEmperor:{ hint: '帝王:歷代強敵的招式輪番上陣,熔岩格拳頭 ×2', board: 'lava',
     rotate: [{ def: { heavy: { chance: 0.35, holdMs: 420 } } }, { atk: { hidden: 0.4, bomb: 0.3 }, def: { lockon: 400 } },
-             { atk: { blink: 0.4 }, def: { ghost: 0.5, blink: 0.3 } }, { atk: { armor: 0.3 }, def: { armor: 0.35 } }] },
+             { atk: { blink: 0.4 }, def: { ghost: 0.5, blink: 0.3 } }, { atk: { armor: 0.3 }, def: { armor: 0.35 } },
+             // 新機制:疾風 + 倒數炸彈;第 6 個(第 5、11… 次攻擊,奇數回合)是幻術記憶
+             { atk: { swipe: 0.35 }, def: { timebomb: 0.35 } }, { def: { memory: true } }] },
 };

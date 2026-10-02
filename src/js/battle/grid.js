@@ -4,6 +4,8 @@ G.grid = {
   timers: [],
   handler: null,        // 按下
   releaseHandler: null, // 放開(蓄力重拳用)
+  lastDown: null,       // 這次按下的座標 { x, y }
+  swipeKey: null,       // 鍵盤方向鍵完成滑擊拳(由 molePhase 設定)
 
   init() {
     const el = G.$('#grid');
@@ -11,7 +13,8 @@ G.grid = {
       const c = document.createElement('button');
       c.className = 'cell';
       c.innerHTML = '<span class="blk"></span><span class="cap"><span class="label"></span><span class="icon"></span><span class="badge"></span></span>';
-      c.addEventListener('pointerdown', e => { e.preventDefault(); this.tap(i); });
+      // 記下按下的位置(滑擊拳要算滑動方向);鍵盤按的沒有位置
+      c.addEventListener('pointerdown', e => { e.preventDefault(); this.lastDown = { x: e.clientX, y: e.clientY }; this.tap(i); this.lastDown = null; });
       ['pointerup', 'pointercancel', 'pointerleave'].forEach(ev => c.addEventListener(ev, () => this.release(i)));
       el.appendChild(c);
       this.cells.push(c);
@@ -159,6 +162,8 @@ G.grid = {
 //     hidden 駭入:前段時間顯示成 ❓(數值 = 現形時間比例)
 //     lockon 鎖定:出現前先顯示準星(數值 = 提前毫秒數)
 //     heavy  { chance, holdMs } 重擊:要按住「頂住」才算擋下
+//     swipe  疾風:拳頭帶箭頭,要往箭頭方向滑才算打中(onHit 的 info.swipe)
+//     timebomb 倒數:每組另外冒出一顆 💣(不計入次數),timebombMs 內點掉 = 拆除(onDefuse),時間到爆炸(onBomb)
 G.molePhase = o => new Promise(resolve => {
   const mods = o.mods || {};
   const active = new Map();     // 格子 → 目前的符號
@@ -172,9 +177,51 @@ G.molePhase = o => new Promise(resolve => {
   const blockAt = i => G.grid.blocks.get(i);
   const roll = p => !!p && Math.random() < p;
 
+  // 滑擊拳:按住帶箭頭的拳頭後滑動,超過格子寬度約 1/3 就判定方向;沒滑夠就放開 = 彈開(可以再試)
+  let swiping = null; // { i, a, x, y };x 為 null 表示鍵盤按下,等方向鍵
+  const endSwipe = dir => {
+    const { i, a } = swiping;
+    swiping = null;
+    cell(i).classList.remove('aiming');
+    if (finished || active.get(i) !== a) return;
+    if (dir === a.swipe) return doHit(i, a, false, true);
+    kill(a); active.delete(i); // 滑錯方向:算失誤
+    G.grid.clear(i, 'sink');
+    G.grid.flash(i, 'bad');
+    G.grid.impact(i, 'bad');
+    o.onMiss(i);
+    settle();
+  };
+  const onMove = e => {
+    if (!swiping || swiping.x == null) return;
+    const dx = e.clientX - swiping.x, dy = e.clientY - swiping.y;
+    if (Math.hypot(dx, dy) < Math.max(12, cell(swiping.i).getBoundingClientRect().width * 0.35)) return; // 至少滑 12px,避免手指抖一下就判定
+    endSwipe(Math.abs(dx) > Math.abs(dy) ? (dx > 0 ? 'right' : 'left') : (dy > 0 ? 'down' : 'up'));
+  };
+  const onUp = () => {
+    if (!swiping || swiping.x == null) return;
+    const i = swiping.i;
+    swiping = null;
+    cell(i).classList.remove('aiming');
+    G.grid.bump(i);
+    G.grid.impact(i, 'miss');
+    G.audio.play('whiff');
+  };
+  document.addEventListener('pointermove', onMove);
+  document.addEventListener('pointerup', onUp);
+  document.addEventListener('pointercancel', onUp);
+  G.grid.swipeKey = dir => { if (swiping && swiping.x == null) endSwipe(dir); };
+
+  // 倒數炸彈還在的話,符號都處理完也要等它拆除或爆炸才結束
+  const bombsLeft = () => [...active.values()].some(a => a.kind === 'timebomb');
+
   const finish = () => {
     if (finished) return;
     finished = true;
+    document.removeEventListener('pointermove', onMove);
+    document.removeEventListener('pointerup', onUp);
+    document.removeEventListener('pointercancel', onUp);
+    G.grid.swipeKey = null;
     G.clock.cancel(spawnTimer);
     pending.forEach(G.clock.cancel);
     active.forEach(a => { kill(a); a.fx && a.fx.cancel(); });
@@ -187,8 +234,9 @@ G.molePhase = o => new Promise(resolve => {
   };
   const settle = () => {
     settled++;
-    if (settled >= o.count || o.stop()) finish();
+    if ((settled >= o.count && !bombsLeft()) || o.stop()) finish();
   };
+  const bombDone = () => { if ((settled >= o.count && !bombsLeft()) || o.stop()) finish(); };
   // 可以放符號的格子:沒被占用、沒被預約、沒被觸手蓋住
   const freeCells = () => [...Array(9).keys()].filter(i =>
     !active.has(i) && !reserved.has(i) && !(blockAt(i) && blockAt(i).type === 'tentacle'));
@@ -205,6 +253,16 @@ G.molePhase = o => new Promise(resolve => {
 
   const expire = (i, a) => {
     active.delete(i);
+    if (swiping && swiping.a === a) { swiping = null; cell(i).classList.remove('aiming'); }
+    if (a.kind === 'timebomb') { // 倒數歸零:爆炸,波及上下左右
+      G.grid.clear(i, 'press');
+      G.grid.flash(i, 'bad');
+      G.grid.impact(i, 'bad', true);
+      [i - 3, i + 3, i % 3 ? i - 1 : -1, i % 3 < 2 ? i + 1 : -1].filter(n => n >= 0 && n < 9).forEach(n => G.grid.flash(n, 'bad'));
+      o.onBomb && o.onBomb(i);
+      bombDone();
+      return;
+    }
     G.grid.clear(i, 'sink');
     if (a.kind === 'decoy' || a.kind === 'ghost') return;
     G.grid.flash(i, 'bad');
@@ -246,6 +304,16 @@ G.molePhase = o => new Promise(resolve => {
       return;
     }
 
+    if (a.kind === 'timebomb') { // 倒數炸彈:點掉就拆除
+      kill(a); active.delete(i);
+      G.grid.clear(i, 'press');
+      G.grid.flash(i, 'good');
+      G.grid.impact(i, 'guard', true);
+      o.onDefuse && o.onDefuse(i);
+      bombDone();
+      return;
+    }
+
     if (a.kind === 'decoy') {
       kill(a); active.delete(i);
       G.grid.clear(i, 'press');
@@ -280,18 +348,27 @@ G.molePhase = o => new Promise(resolve => {
       return;
     }
 
+    // 滑擊拳:按下只是瞄準,要滑動(或鍵盤再按方向鍵)才出拳
+    if (a.swipe) {
+      const p = G.grid.lastDown;
+      swiping = { i, a, x: p ? p.x : null, y: p ? p.y : null };
+      cell(i).classList.add('aiming');
+      G.audio.play('tap');
+      return;
+    }
+
     // 一般符號
     doHit(i, a, false);
   };
 
-  // 結算一次命中。auto = 由技法自動打中(連鎖、爆裂、蓄力大師)
-  const doHit = (i, a, auto) => {
+  // 結算一次命中。auto = 由技法自動打中(連鎖、爆裂、蓄力大師);swipe = 滑擊拳滑對方向
+  const doHit = (i, a, auto, swipe = false) => {
     G.grid.impact(i, o.cls.includes('guard') ? 'guard' : a.gold ? 'num' : 'fist', a.gold || auto);
     const ratio = Math.max(0, a.life - (G.clock.now() - a.born)) / a.life;
     kill(a); active.delete(i);
     G.grid.clear(i, 'press');
     G.grid.flash(i, 'good');
-    const info = { ratio, gold: a.gold, auto, lava: !!(blockAt(i) && blockAt(i).type === 'lava') };
+    const info = { ratio, gold: a.gold, auto, swipe, lava: !!(blockAt(i) && blockAt(i).type === 'lava') };
     o.onHit(i, info); // onHit 可在 info 填入 grade,交給特效顯示
     a.fx && a.fx.block(info.grade);
     groupHit(a);
@@ -342,17 +419,27 @@ G.molePhase = o => new Promise(resolve => {
     } else if (kind === 'decoy') {
       icon = o.decoyIcon || '💀';
       cls = 'decoy';
+    } else if (kind === 'timebomb') {
+      icon = '💣';
+      cls = 'timebomb';
+      life = mods.timebombMs || 3000;
     } else if (kind === 'normal') {
       if (roll(mods.gold)) { a.gold = true; cls += ' gold'; label = '×2.5'; life *= 0.6; }
       else if (roll(mods.armor)) { a.armor = 1; cls += ' crystal'; }
+      else if (roll(mods.swipe)) { // 疾風:隨機一個方向,停留時間多給一點(滑動比點擊慢)
+        a.swipe = G.pick(['up', 'down', 'left', 'right']);
+        cls += ' swipe swipe-' + a.swipe;
+        label = { up: '↑', down: '↓', left: '←', right: '→' }[a.swipe];
+        life *= 1.25;
+      }
     }
-    if (mods.lockon && kind !== 'decoy') life *= 0.8;
+    if (mods.lockon && kind !== 'decoy' && kind !== 'timebomb') life *= 0.8;
     if (o.slowFirst && G.clock.now() - phaseStart < o.slowFirst.ms) life *= o.slowFirst.mul; // 時之呼吸
     a.life = life = Math.round(life);
     a.icon = icon;
     a.born = G.clock.now();
 
-    if (kind !== 'decoy') { spawned++; setCounter(o.count - spawned); }
+    if (kind !== 'decoy' && kind !== 'timebomb') { spawned++; setCounter(o.count - spawned); }
     const hidden = mods.hidden && (kind === 'normal' || kind === 'decoy');
     G.grid.set(i, hidden ? '❓' : icon, cls + (hidden ? ' hidden' : ''), life, label);
     if (hidden) a.ts.push(G.clock.after(() => { // 駭入:一段時間後才現形
@@ -361,6 +448,10 @@ G.molePhase = o => new Promise(resolve => {
       c.querySelector('.icon').textContent = icon;
     }, life * mods.hidden));
     G.audio.play('pop');
+    if (kind === 'timebomb') { // 倒數 3、2、1 顯示在角標,每秒滴答一聲
+      const secs = Math.ceil(life / 1000);
+      for (let s = 0; s < secs; s++) a.ts.push(G.clock.after(() => { G.grid.setBadge(i, secs - s); G.audio.play('tick'); }, life - (secs - s) * 1000));
+    }
 
     if (o.onSpawn && (kind === 'normal' || a.heavy)) a.fx = o.onSpawn(i, life);
     armExpire(i, a, life);
@@ -383,7 +474,7 @@ G.molePhase = o => new Promise(resolve => {
   };
 
   const blink = (from, a) => {
-    if (finished || active.get(from) !== a || a.holding) return;
+    if (finished || active.get(from) !== a || a.holding || (swiping && swiping.a === a)) return; // 瞄準中的滑擊拳不瞬移
     const to = freeCell();
     if (to < 0) return;
     const left = a.life - (G.clock.now() - a.born);
@@ -465,6 +556,11 @@ G.molePhase = o => new Promise(resolve => {
     if (roll(o.decoyRate)) {
       const d = G.pick(free.filter(i => !cells.includes(i)));
       if (d !== undefined) spawnOne(d, 'decoy');
+    }
+    // 倒數炸彈也另外加一個,不占用次數
+    if (roll(mods.timebomb)) {
+      const t = G.pick(freeCells().filter(i => !cells.includes(i)));
+      if (t !== undefined) spawnOne(t, 'timebomb');
     }
     // 多發之後多給一點喘息時間
     if (planned < o.count) {
