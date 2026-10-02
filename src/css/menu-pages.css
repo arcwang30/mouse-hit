@@ -528,14 +528,6 @@ html:lang(en) .round-tab { font-size: 2.7cqw; letter-spacing: 0; } /* 英文名�
 .stage-bar:empty { display: none; }
 .stage-bar .ch-tabs { flex: 1; min-width: 0; }
 .stage-bar .ch-tab b { font-size: 3cqw; }
-.round-cycle { flex-shrink: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: .3cqw; min-width: 19cqw;
-  padding: 1.6cqw 2cqw; border: 0; color: #fff; clip-path: var(--chamfer); }
-.round-cycle b { font-size: 3.2cqw; white-space: nowrap; }
-.round-cycle small { font-size: 2.4cqw; opacity: .85; }
-.round-cycle.r1 { color: #001; background: linear-gradient(180deg, #7ff8ff, #19c8e0); box-shadow: inset 0 0 0 .3cqw #fff8; }
-.round-cycle.r2 { background: linear-gradient(180deg, #ff8a5c, #c0142c); box-shadow: inset 0 0 0 .3cqw #fff6; }
-.round-cycle.r3 { background: linear-gradient(180deg, #d58bff, #5a0f9c); box-shadow: inset 0 0 0 .3cqw #fff6; }
-html:lang(en) .round-cycle b, html:lang(en) .stage-bar .ch-tab b { font-size: 2.6cqw; }
 /* 難度:5 格由低到高的長條(和評價的 ★ 區分) */
 .ss-diff { display: flex; align-items: center; gap: 1.2cqw; color: #ffb08a; letter-spacing: 0; }
 .diff-bars { display: inline-flex; align-items: flex-end; gap: .5cqw; height: 3.6cqw; }
@@ -545,3 +537,19 @@ html:lang(en) .round-cycle b, html:lang(en) .stage-bar .ch-tab b { font-size: 2.
 .diff-bars i.on { background: linear-gradient(180deg, #ffd84a, #ff5a1f); box-shadow: 0 0 1cqw #ff7a1f; }
 /* 關卡資訊面板:墊一層該關卡的淡色背景圖 */
 .ss-box { background: linear-gradient(180deg, #1a1626b8, #0a0812e6 70%), var(--ssbg, none) center / cover no-repeat; }
+html:lang(en) .stage-bar .ch-tab b { font-size: 2.6cqw; }
+/* 周回切換:「選擇關卡」標題右上角的圓形頭像按鈕(凡塵 人頭 / 修羅 長角 / 天魔 裂嘴惡魔),點一下換下一輪 */
+#stages .pg-head { position: relative; }
+.round-slot { position: absolute; right: 1cqw; top: 50%; transform: translateY(-50%); }
+.round-cycle { display: flex; flex-direction: column; align-items: center; gap: .6cqw; padding: 0; border: 0; background: none; color: #fff; }
+.rc-face {
+  display: grid; place-items: center; width: 14cqw; height: 14cqw; border-radius: 50%; font-size: 8.5cqw; line-height: 1;
+  background: radial-gradient(circle at 35% 30%, var(--rc1), var(--rc2) 75%); box-shadow: 0 0 0 .6cqw var(--rc3), 0 0 3cqw var(--rc3);
+  animation: rcPulse 2s ease-in-out infinite;
+}
+.round-cycle b { font-size: 3.4cqw; letter-spacing: .1em; padding: .2cqw 2cqw; border-radius: 99px; background: #000b; box-shadow: inset 0 0 0 .3cqw var(--rc3); }
+.round-cycle:active .rc-face { transform: scale(.92); }
+.round-cycle.r1 { --rc1: #c8fbff; --rc2: #1a8aa8; --rc3: #19f0ff; }
+.round-cycle.r2 { --rc1: #ffb08a; --rc2: #8a0a1c; --rc3: #ff3a3a; }
+.round-cycle.r3 { --rc1: #e2a8ff; --rc2: #3a0866; --rc3: #b04dff; }
+@keyframes rcPulse { 50% { box-shadow: 0 0 0 .6cqw var(--rc3), 0 0 5cqw var(--rc3); } }

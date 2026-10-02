@@ -40,6 +40,8 @@ const ENDING = [
 ];
 
 // 大地圖:每區 5 個關卡節點在區域裡的位置(x%, y%),由上往下蜿蜒,BOSS 在最下面中間
+// 周回切換按鈕的頭像:凡塵 人頭 / 修羅 長角 / 天魔 裂嘴惡魔
+const ROUND_FACES = { 1: '🧑', 2: '😈', 3: '👹' };
 const MAP_POS = [[22, 10], [72, 28], [30, 48], [74, 66], [50, 84]];
 const COMICS = {
   opening: { src: '../assets/images/story/opening.jpg', w: 1408, h: 768, beats: STORY },
@@ -261,7 +263,8 @@ G.scenes = {
     // 周回切換:開啟第二輪後才出現;只列出已開啟的輪次(還沒開的第三輪不顯示)
     // 改成一顆按鈕:點一下換到下一輪(凡塵 → 修羅 → 天魔 → 凡塵),和章節切換分開
     const rmax = G.chData().roundMax;
-    const roundBtn = rmax < 2 ? '' : `<button class="round-cycle r${round}" id="roundCycle"><b>${G.t(G.ROUNDS[round].name)}</b><small>${G.t('切換 ▸')}</small></button>`;
+    const short = G.ROUNDS[round].name.split('・').pop(); // 只顯示「凡塵 / 修羅 / 天魔」
+    const roundBtn = rmax < 2 ? '' : `<button class="round-cycle r${round}" id="roundCycle" title="${G.t('切換 ▸')}"><span class="rc-face">${ROUND_FACES[round]}</span><b>${G.t(short)}</b></button>`;
     const tabs = cfg.desc ? `<div class="round-desc">${G.t(cfg.desc)}</div>` : '';
     // 章節切換:還沒開放的章節顯示 🔒(點了說明開放條件)
     const chTabs = `<div class="ch-tabs">` + G.CHAPTERS.map((c, k) => {
@@ -296,7 +299,8 @@ G.scenes = {
         (locked ? `<div class="mr-fog"><b>🔒</b>${G.t('打倒「{0}」後開放', bossName)}</div>` : '') + '</section>';
     }).join('');
     // 章節與周回切換放在地圖上方固定的列,地圖往下捲也看得到
-    G.$('#stageBar').innerHTML = chTabs + roundBtn;
+    G.$('#stageBar').innerHTML = chTabs;
+    G.$('#roundSlot').innerHTML = roundBtn; // 周回切換:標題右上角的圓形頭像按鈕
     G.$('#stageList').innerHTML = tabs + tut + `<div class="world-map">${regions}</div>`;
     G.$('#stageBar').querySelectorAll('.ch-tab').forEach(b => { b.onclick = () => this.setChapter(+b.dataset.ch); });
     const rc = G.$('#roundCycle');
