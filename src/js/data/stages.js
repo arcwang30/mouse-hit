@@ -100,10 +100,10 @@ G.prog = (r = G.round(), ch = G.chapter()) => {
 
 // 分歧選項(每次隨機出 2 個讓玩家選一個)
 G.BRANCHES = [
-  { id: 'rest',  icon: '🍵', name: '休息',       desc: '回復 40% HP' },
-  { id: 'bonus', icon: '💰', name: '狂打獎勵關', desc: '12 秒內盡量打,打越多金幣越多(不回血)' },
-  { id: 'elite', icon: '💀', name: '精英挑戰',   desc: '下一波變成精英,打倒後獲得一次技法三選一' },
-  { id: 'train', icon: '📜', name: '修行',       desc: '立刻從三個技法中選一個' },
+  { id: 'rest',  icon: '<img class="br-img" src="../assets/images/events/rest.jpg" alt="">', name: '休息',       desc: '回復 40% HP' },
+  { id: 'bonus', icon: '<img class="br-img" src="../assets/images/events/bonus.jpg" alt="">', name: '狂打獎勵關', desc: '12 秒內盡量打,打越多金幣越多(不回血)' },
+  { id: 'elite', icon: '<img class="br-img" src="../assets/images/events/elite.jpg" alt="">', name: '精英挑戰',   desc: '下一波變成精英,打倒後獲得一次技法三選一' },
+  { id: 'train', icon: '<img class="br-img" src="../assets/images/events/train.jpg" alt="">', name: '修行',       desc: '立刻從三個技法中選一個' },
   // 特殊事件(圖片在 assets/images/events/)
   { id: 'merchant', icon: '<img class="br-img" src="../assets/images/events/merchant.jpg" alt="">', name: '流浪商人', desc: '用金幣買藥水或技法卷軸' },
   { id: 'chest',    icon: '<img class="br-img" src="../assets/images/events/chest.jpg" alt="">',    name: '神秘寶箱', desc: '可能是寶物,也可能是寶箱怪……' },
