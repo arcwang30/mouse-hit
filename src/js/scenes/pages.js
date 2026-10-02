@@ -270,7 +270,7 @@ document.querySelectorAll('[data-back]').forEach(b => { b.onclick = () => G.page
 
 // 切換分頁(d = -1 上一頁 / 1 下一頁),內容從滑動的方向滑進來
 const flipPage = (cur, d) => {
-  if (cur === 'stages') return G.scenes.setRound(G.round() + d); // 選擇關卡:切換周回
+  if (cur === 'stages') return G.scenes.mapTo(G.scenes.mapPage + d); // 選擇關卡:翻到上一個 / 下一個區域
   if (cur === 'shop') return G.shop.setTab(G.shop.tab + d);       // 商店:切換分頁
   if (cur === 'settings') return G.pages.setSettingsTab(G.pages.settingsTab + d); // 設定:設定 / 外觀
   if (cur === 'howto') G.pages.turnHowto(d);
@@ -291,8 +291,8 @@ document.addEventListener('keydown', e => {
   if (d) flipPage(cur, d);
 });
 
-// 手機:手指往左滑看下一頁、往右滑看上一頁(上下捲動不受影響);選擇關卡則是切換第一 / 二 / 三輪
-['howto', 'history', 'stages', 'shop', 'settings'].forEach(id => {
+// 手機:手指往左滑看下一頁、往右滑看上一頁(上下捲動不受影響)
+['howto', 'history', 'shop', 'settings'].forEach(id => { // 選擇關卡的地圖本身就能左右拖曳翻頁,不另外偵測
   const el = G.$('#' + id);
   let x0 = null, y0 = 0, t0 = 0;
   el.addEventListener('touchstart', e => {

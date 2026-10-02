@@ -75,8 +75,20 @@ G.chData = (ch = G.chapter()) => {
   sv.ch = sv.ch || {};
   return sv.ch[ch] || (sv.ch[ch] = { rounds: {}, roundMax: 1 });
 };
-// 第 ch 章開放了沒:第一章一開始就有;之後每章要先通過前一章的第一輪(凡塵)
-G.chapterOpen = ch => ch === 1 || !!(G.save.data && ((G.chData(ch - 1).rounds[1] || {}).clear || []).includes(G.CHAPTERS[ch - 2].stages.length - 1));
+// 第 ch 章開放了沒:第一章一開始就有;之後每章要先通過前一章「修羅」(第二輪)的所有關卡
+// 改規則前已經開放(chaptersSeen)或已經在該章過關的章節維持開放,不把老玩家鎖在外面
+G.SHURA = 2;
+G.shuraLeft = ch => { // 第 ch 章的修羅還剩幾關沒過
+  const clear = ((G.chData(ch).rounds[G.SHURA] || {}).clear || []);
+  return G.CHAPTERS[ch - 1].stages.filter((_, i) => !clear.includes(i)).length;
+};
+G.chapterOpen = ch => {
+  const sv = G.save.data;
+  if (ch === 1) return true;
+  if (!sv) return false;
+  const started = (((sv.ch || {})[ch] || {}).rounds || {})[1]; // 已經在這一章過過關
+  return !!((sv.chaptersSeen || {})[ch] || (started && (started.clear || []).length) || G.shuraLeft(ch - 1) === 0);
+};
 // 目前選擇的章節(教學一律第一章;還沒開放的退回第一章)
 G.chapter = () => {
   const sv = G.save && G.save.data;

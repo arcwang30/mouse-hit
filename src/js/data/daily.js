@@ -94,6 +94,27 @@ G.daily = {
     this.render();
   },
 
+  // 目前可以領的:sum 總金幣、n 項數(登入獎勵 + 已完成未領的任務 + 全部任務領完後的加碼)
+  pending() {
+    const sv = this.ensure(), ts = this.tasks();
+    let sum = 0, n = 0;
+    const add = c => { sum += c; n++; };
+    if (!sv.login.claimed) add(G.LOGIN_REWARDS[sv.login.day - 1]);
+    ts.forEach(t => { if (this.done(t) && !sv.daily.got[t.id]) add(t.coins); });
+    if (!sv.daily.all && ts.every(t => sv.daily.got[t.id] || this.done(t))) add(G.DAILY_ALL_BONUS);
+    return { sum, n };
+  },
+  // 一次全領:把 pending() 的東西全部領掉,合併成一次入帳
+  claimEverything() {
+    const sv = this.ensure(), { sum } = this.pending();
+    if (!sum) return;
+    sv.login.claimed = true;
+    this.tasks().forEach(t => { if (this.done(t)) sv.daily.got[t.id] = true; });
+    if (this.tasks().every(t => sv.daily.got[t.id])) sv.daily.all = true;
+    this.give(sum);
+    this.render();
+  },
+
   open() {
     this.render();
     G.pages.open('daily');
@@ -122,7 +143,9 @@ G.daily = {
         (got ? `<span class="dl-done">✔</span>` : `<button class="dl-claim" data-task="${t.id}" ${ok ? '' : 'disabled'}>💰 ${t.coins}</button>`) + '</div>';
     }).join('');
     const allGot = this.tasks().every(t => sv.daily.got[t.id]);
+    const { sum, n } = this.pending(); // 可領 2 項以上才顯示「一次全領」
     G.$('#dailyBody').innerHTML =
+      (n >= 2 ? `<button class="btn dl-login dl-every" id="dlEvery">${G.t('一次全領 💰 {0}', sum)}</button>` : '') +
       `<h3 class="dl-h">${G.t('登入獎勵')}<small>${G.t('連續登入 7 天,中斷就從第 1 天重來')}</small></h3>` +
       `<div class="dl-days">${days}</div>` +
       (lg.claimed ? `<p class="dl-note">${G.t('今天已領取,明天再來!')}</p>` : `<button class="btn dl-login" id="dlLogin">${G.t('領取第 {0} 天獎勵 💰 {1}', lg.day, G.LOGIN_REWARDS[lg.day - 1])}</button>`) +
@@ -135,6 +158,8 @@ G.daily = {
     body.querySelectorAll('[data-task]').forEach(b => { b.onclick = () => this.claimTask(b.dataset.task); });
     const all = body.querySelector('#dlAll');
     if (all) all.onclick = () => this.claimAll();
+    const every = body.querySelector('#dlEvery');
+    if (every) every.onclick = () => this.claimEverything();
     G.$('#btnDaily').classList.toggle('alert', this.claimable());
   },
 };

@@ -554,7 +554,7 @@ G.I18N = {
   '第一章 鋼拳復仇': ['第一章 鋼拳の復讐', 'Chapter 1: Steel Fist Vengeance'], '新神州': ['新神州', 'New Shenzhou'],
   '第二章 鋼鐵與心相的試煉': ['第二章 鋼鉄と心の試練', 'Chapter 2: Trial of Steel and Heart'], '絕魔流沙': ['絶魔流砂', 'Demonbane Sands'],
   '{0} 開放!': ['{0} 開放!', '{0} unlocked!'], '在選擇關卡的上方切換章節': ['ステージ選択の上で章を切り替え', 'Switch chapters at the top of stage select'],
-  '通過{0}的「凡塵」後開放': ['{0}の「凡塵」をクリアすると開放', 'Unlocks after clearing the Mortal round of {0}'],
+  '通過{0}「修羅」的所有關卡後開放(還剩 {1} 關)': ['{0}の「修羅」を全ステージクリアすると開放(残り {1})', 'Unlocks after clearing every stage of {0} on Asura (left: {1})'],
   '炎鋼天道': ['炎鋼天道', 'Yan Gang\'s Heavenly Way'], '通過第二章「鋼鐵與心相的試煉」': ['第二章「鋼鉄と心の試練」をクリア', 'Clear Chapter 2: Trial of Steel and Heart'],
   // 第二章:區域
   '流沙邊境': ['流砂の辺境', 'Quicksand Frontier'], '磁暴荒原': ['磁気嵐の荒野', 'Magstorm Wastes'], '沙海遺跡': ['砂海の遺跡', 'Sand Sea Ruins'],
@@ -668,6 +668,7 @@ G.I18N = {
   '連續登入 7 天,中斷就從第 1 天重來': ['7 日連続ログイン。途切れると 1 日目から', '7-day streak. Miss a day and it restarts at Day 1'],
   '今天已領取,明天再來!': ['今日は受け取り済み。また明日!', 'Claimed for today. Come back tomorrow!'],
   '領取第 {0} 天獎勵 💰 {1}': ['{0} 日目のボーナス 💰 {1} を受け取る', 'Claim Day {0} reward 💰 {1}'],
+  '一次全領 💰 {0}': ['まとめて受け取る 💰 {0}', 'Claim all 💰 {0}'],
   '每日任務': ['デイリーミッション', 'Daily Missions'], '每天 0 點更新': ['毎日 0 時に更新', 'Resets daily at midnight'],
   '完成全部 3 個任務': ['3 つのミッションをすべて達成', 'Complete all 3 missions'],
   '過關 {0} 次': ['ステージを {0} 回クリア', 'Clear {0} stages'], '破甲 {0} 次': ['装甲破壊 {0} 回', 'Break armor {0} times'],

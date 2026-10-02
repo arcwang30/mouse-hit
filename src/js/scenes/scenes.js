@@ -256,7 +256,16 @@ G.scenes = {
   },
 
   // ---- 選擇關卡(主選單按「開始遊戲」後) ----
-  stages() {
+  // 區域翻頁:平滑翻到第 n 個區域(鍵盤 ← →、頁碼點點、箭頭共用)
+  mapTo(n) {
+    const map = G.$('#worldMap');
+    if (!map) return;
+    n = Math.max(0, Math.min(map.children.length - 1, n));
+    if (n !== this.mapPage) G.audio.play('click');
+    map.scrollTo({ left: n * map.clientWidth, behavior: 'smooth' });
+  },
+
+  stages(keepPage) {
     const sv = G.save.data, round = G.round(), pr = G.prog(), cfg = G.roundCfg();
     G.bgm.setRate(1);
     G.bgm.play('menu'); // 從結算畫面回來時音樂已經停了;已在播就不會重來
@@ -275,7 +284,7 @@ G.scenes = {
     // 新手教學卡片:只在第一輪最上面
     const tut = round !== 1 || G.chapter() !== 1 ? '' : `<button class="stage-card tut-card" id="tutCard">${sv.tutorialClear ? '<span class="sc-clear">CLEAR</span>' : ''}` +
       `<div class="sc-name">🎓 ${G.t('新手教學')}</div><div class="sc-desc">${G.t('從頭學會點擊、防禦、破綻與必殺技。')}</div></button>`;
-    // 大地圖:6 個區域由上往下排,每區 5 個關卡節點用蜿蜒的路線連起來;目前要打的關卡上站著炎鋼
+    // 大地圖:6 個區域左右翻頁,每區 5 個關卡節點用蜿蜒的路線連起來;目前要打的關卡上站著炎鋼
     const cur = Math.min(pr.unlocked, G.STAGES.length) - 1;
     const url = img => new URL('../assets/images/' + img, location.href).href; // CSS 變數裡的 url() 要完整網址
     const regions = G.REGIONS.map((g, r) => {
@@ -305,16 +314,29 @@ G.scenes = {
     const page = G.$('#stages');
     page.classList.remove('rnd-1', 'rnd-2', 'rnd-3');
     page.classList.add('rnd-' + round);
-    G.$('#stageList').innerHTML = tabs + tut + `<div class="world-map">${regions}</div>`;
+    // 區域翻頁:一頁一個區域,手指左右拖曳翻頁(原生橫向捲動 + 吸附);底下的頁碼點點可以直接跳頁
+    const dots = G.REGIONS.map((g, r) => `<button class="md-dot${g.first >= pr.unlocked ? ' locked' : ''}" data-r="${r}">${r + 1}</button>`).join('');
+    G.$('#stageList').innerHTML = tabs + tut + `<div class="world-map" id="worldMap">${regions}</div>` +
+      `<div class="map-dots"><button class="md-arrow" data-d="-1">◀</button>${dots}<button class="md-arrow" data-d="1">▶</button></div>`;
     G.$('#stageBar').querySelectorAll('.ch-tab').forEach(b => { b.onclick = () => this.setChapter(+b.dataset.ch); });
     const rc = G.$('#roundCycle');
     if (rc) rc.onclick = () => this.setRound(round % rmax + 1);
     G.$('#stageList').querySelectorAll('.map-node[data-i]').forEach(b => {
       b.onclick = () => this.stageSheet(+b.dataset.i);
     });
-    // 打開時捲到目前的關卡
-    const curNode = G.$('#stageList').querySelector('.map-node.current');
-    if (curNode) setTimeout(() => curNode.scrollIntoView({ block: 'center' }), 30);
+    // 打開時翻到目前關卡所在的區域;切換周回時(keepPage)停在原本看的那一頁
+    const map = G.$('#worldMap');
+    const startPage = keepPage != null ? keepPage : G.STAGES[Math.max(0, cur)].region;
+    this.mapPage = startPage;
+    const markDots = n => G.$('#stageList').querySelectorAll('.md-dot').forEach((d, r) => d.classList.toggle('on', r === n));
+    markDots(startPage);
+    requestAnimationFrame(() => { map.scrollLeft = startPage * map.clientWidth; });
+    map.addEventListener('scroll', () => {
+      const n = Math.round(map.scrollLeft / map.clientWidth);
+      if (n !== this.mapPage) { this.mapPage = n; markDots(n); }
+    }, { passive: true });
+    G.$('#stageList').querySelectorAll('.md-dot').forEach(d => { d.onclick = () => this.mapTo(+d.dataset.r); });
+    G.$('#stageList').querySelectorAll('.md-arrow').forEach(d => { d.onclick = () => this.mapTo(this.mapPage + +d.dataset.d); });
     const tc = G.$('#tutCard');
     if (tc) tc.onclick = () => { G.pages.current = null; G.tutorial.run(true); };
     G.pages.open('stages'); // 共用選單頁面的返回按鈕與 Esc
@@ -352,7 +374,7 @@ G.scenes = {
     if (ch === G.chapter()) return;
     if (!G.chapterOpen(ch)) {
       G.audio.play('fail');
-      G.ach.toast({ icon: '🔒', name: G.t(G.CHAPTERS[ch - 1].name), sub: G.t('通過{0}的「凡塵」後開放', G.t(G.CHAPTERS[ch - 2].name)) });
+      G.ach.toast({ icon: '🔒', name: G.t(G.CHAPTERS[ch - 1].name), sub: G.t('通過{0}「修羅」的所有關卡後開放(還剩 {1} 關)', G.t(G.CHAPTERS[ch - 2].name), G.shuraLeft(ch - 1)) });
       return;
     }
     sv.chapter = ch;
@@ -369,11 +391,11 @@ G.scenes = {
     sv.round = r;
     G.save.write();
     G.audio.play('select');
-    this.stages();
+    this.stages(this.mapPage); // 停在原本看的區域,只換掉輪次
     const list = G.$('#stageList');
-    list.classList.remove('slide-l', 'slide-r');
+    list.classList.remove('fade-in');
     void list.offsetWidth;
-    list.classList.add(r > cur ? 'slide-l' : 'slide-r');
+    list.classList.add('fade-in'); // 換輪次淡入(左右滑動留給區域翻頁)
     const page = G.$('#stages'); // 切換的瞬間整頁閃一下新的主題色
     page.classList.remove('rnd-flash');
     void page.offsetWidth;

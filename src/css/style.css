@@ -139,6 +139,7 @@ button { font: inherit; color: inherit; cursor: pointer; }
 
 /* ---- 主選單 ---- */
 #storyPick { align-items: center; justify-content: center; gap: 6cqw; }
+#pickBack { min-width: 32cqw; } /* 和其他頁面底部的「返回」一樣大 */
 #menu, #upgrade, #result { align-items: center; gap: min(3cqw, 2cqh); padding: min(6cqw, 4cqh) 6cqw; overflow-y: auto; }
 /* 選單類畫面:沿用標題背景圖,壓暗以便閱讀 */
 /* 選單類畫面:背景改由 #artBg 動態顯示,這裡只留四周淡淡的暗角,不再整片壓暗 */

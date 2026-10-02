@@ -1645,11 +1645,12 @@ G.battle = {
     if (finalWin) {
       if (ch === 1) sv.cleared = true; // 第一章破關:主選單「故事」可重看結局
       if (round === cd.roundMax && round < G.ROUND_LAST) this.newRound = cd.roundMax = round + 1; // 這一章開啟下一輪
-      if (round === 1 && G.CHAPTERS[ch] && !(sv.chaptersSeen || {})[ch + 1]) { // 第一次通過凡塵:下一章開放
-        sv.chaptersSeen = Object.assign(sv.chaptersSeen || {}, { [ch + 1]: true });
-        this.newChapter = ch + 1;
-      }
       if (ch === 2 && round === 1 && !sv.tiandao) tiandao = sv.tiandao = true; // 第二章破關:覺醒新必殺技「炎鋼天道」
+    }
+    // 修羅的關卡全部通過(打完最後一個還沒過的關卡時):下一章開放
+    if (win && round === G.SHURA && G.CHAPTERS[ch] && !(sv.chaptersSeen || {})[ch + 1] && G.shuraLeft(ch) === 0) {
+      sv.chaptersSeen = Object.assign(sv.chaptersSeen || {}, { [ch + 1]: true });
+      this.newChapter = ch + 1;
     }
     sv.life.breaks += s.breaks || 0; // 累計紀錄(成就用)
     sv.life.ults += s.ults || 0;
