@@ -571,3 +571,10 @@ html:lang(en) .stage-bar .ch-tab b { font-size: 2.6cqw; }
 .round-slot { bottom: 50%; transform: translateY(50%); }
 .round-slot .round-cycle { flex-direction: row; gap: 1.4cqw; }
 .round-slot .rc-face { width: 11cqw; height: 11cqw; font-size: 6.6cqw; }
+/* 圖鑑:已購買的卡片下方標示,點一下看詳細資料 */
+.dex-owned::before { content: "✔ "; }
+.dex-card.owned { cursor: pointer; }
+/* 左下角的周回按鈕:「凡塵 / 修羅 / 天魔」字樣壓在圓形頭像的下緣,不往右邊擠到「返回」 */
+.round-slot .round-cycle { flex-direction: column; gap: 0; }
+.round-slot .rc-face { width: 12cqw; height: 12cqw; font-size: 7.2cqw; }
+.round-slot .round-cycle b { margin-top: -2.6cqw; position: relative; font-size: 2.8cqw; padding: .1cqw 1.6cqw; }

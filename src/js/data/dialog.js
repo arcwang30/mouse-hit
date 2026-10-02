@@ -184,7 +184,8 @@ G.dialog = {
         // heroAwake:第二章結尾覺醒後的炎鋼(立繪到了以前先用原本的頭像)
         const awake = who === 'heroAwake', hero = who === 'hero' || awake, nar = who === 'narrator', sys = who === 'system', e = G.ENEMIES[who];
         const img = awake ? (G.HERO_AWAKE_IMG || 'fx/credit_hero.png') : hero ? 'fx/credit_hero.png' : e && e.img;
-        el.className = 'dialog show' + (awake ? ' hero awake' : hero ? ' hero' : nar ? ' narrator' : sys ? ' system' : ' enemy');
+        // 樣式名稱一律加 dlg- 前綴(避免和戰鬥畫面的 .enemy 等樣式撞名)
+        el.className = 'dialog show' + (awake ? ' dlg-hero dlg-awake' : hero ? ' dlg-hero' : nar ? ' dlg-narrator' : sys ? ' dlg-system' : ' dlg-enemy');
         face.style.backgroundImage = img ? `url('../assets/images/${img}')` : '';
         face.textContent = !img && e ? e.icon : ''; // 立繪還沒到的角色先用 emoji
         name.textContent = awake ? G.t('炎鋼・天道') : hero ? G.t('炎鋼') : nar ? '' : sys ? G.t(extra || '') : e ? G.t(e.name) : '';

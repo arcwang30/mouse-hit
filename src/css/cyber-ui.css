@@ -869,19 +869,19 @@ html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; } /* 手機瀏覽
 .dlg-name { display: block; margin-bottom: 1.4cqw; font-size: 4.4cqw; color: var(--neon-c); text-shadow: 0 0 1.4cqw var(--neon-c); }
 .dlg-text { margin: 0; font-size: 4.2cqw; line-height: 1.6; color: #fff; white-space: pre-line; }
 .dlg-hint { margin-top: 2.4cqw; text-align: center; font-size: 3cqw; color: #ffffff90; animation: dlBlink 1s ease-in-out infinite alternate; }
-.dialog.enemy .dlg-box { flex-direction: row-reverse; box-shadow: inset 0 0 0 .4cqw var(--neon-r); }
-.dialog.enemy .dlg-face { box-shadow: 0 0 0 .4cqw var(--neon-r), 0 0 3cqw #ff3a5a60; background-size: 160% auto; background-position: center 25%; }
-.dialog.enemy .dlg-name { color: #ff6a7a; text-shadow: 0 0 1.4cqw #ff3a5a; text-align: right; }
-.dialog.hero .dlg-name { color: var(--fire-2); text-shadow: 0 0 1.4cqw #ff7a1f; }
-.dialog.hero .dlg-face { box-shadow: 0 0 0 .4cqw var(--fire-2), 0 0 3cqw #ff7a1f80; }
-.dialog.narrator .dlg-face, .dialog.system .dlg-face { display: none; }
-.dialog.narrator .dlg-text { font-style: italic; color: #e8e0ff; }
-.dialog.system .dlg-box { box-shadow: inset 0 0 0 .5cqw var(--neon-y), 0 0 4cqw #ffd40060; }
-.dialog.system .dlg-name { color: var(--neon-y); text-shadow: 0 0 1.4cqw var(--neon-y); font-size: 5cqw; }
-.dialog.system .dlg-text { font-size: 3.8cqw; }
+.dialog.dlg-enemy .dlg-box { flex-direction: row-reverse; box-shadow: inset 0 0 0 .4cqw var(--neon-r); }
+.dialog.dlg-enemy .dlg-face { box-shadow: 0 0 0 .4cqw var(--neon-r), 0 0 3cqw #ff3a5a60; background-size: 160% auto; background-position: center 25%; }
+.dialog.dlg-enemy .dlg-name { color: #ff6a7a; text-shadow: 0 0 1.4cqw #ff3a5a; text-align: right; }
+.dialog.dlg-hero .dlg-name { color: var(--fire-2); text-shadow: 0 0 1.4cqw #ff7a1f; }
+.dialog.dlg-hero .dlg-face { box-shadow: 0 0 0 .4cqw var(--fire-2), 0 0 3cqw #ff7a1f80; }
+.dialog.dlg-narrator .dlg-face, .dialog.dlg-system .dlg-face { display: none; }
+.dialog.dlg-narrator .dlg-text { font-style: italic; color: #e8e0ff; }
+.dialog.dlg-system .dlg-box { box-shadow: inset 0 0 0 .5cqw var(--neon-y), 0 0 4cqw #ffd40060; }
+.dialog.dlg-system .dlg-name { color: var(--neon-y); text-shadow: 0 0 1.4cqw var(--neon-y); font-size: 5cqw; }
+.dialog.dlg-system .dlg-text { font-size: 3.8cqw; }
 .dlg-face { display: grid; place-items: center; font-size: 14cqw; line-height: 1; }
 /* 炎鋼・天道覺醒:立繪是整張場景圖,頭像框放大對準臉部 */
-.dialog.awake .dlg-face { background-size: 210% auto; background-position: 50% 44%; box-shadow: 0 0 0 .4cqw #ffd84a, 0 0 4cqw #ff7a1fc0; }
+.dialog.dlg-awake .dlg-face { background-size: 210% auto; background-position: 50% 44%; box-shadow: 0 0 0 .4cqw #ffd84a, 0 0 4cqw #ff7a1fc0; }
 
 /* ---------- 商店新造型 ---------- */
 /* 翡翠:溫潤的綠玉外框、金色螺栓 */

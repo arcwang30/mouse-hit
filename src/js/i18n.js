@@ -464,6 +464,7 @@ G.I18N = {
   '浮空碼頭': ['浮遊ドック', 'Floating Dock'], '雲海迴廊': ['雲海の回廊', 'Sea of Clouds Corridor'], '雲端特訓': ['雲上の特訓', 'Cloudtop Training'],
   '帝王之門': ['帝王の門', 'Emperor\'s Gate'], '鋼拳之巔': ['鋼拳の頂', 'Steel Fist Summit'],
   '切換 ▸': ['切替 ▸', 'Switch ▸'], '難度': ['難易度', 'Difficulty'],
+  '已購買': ['購入済み', 'Owned'],
   '翡翠': ['翡翠', 'Jade'], '黑曜': ['黒曜', 'Obsidian'], '夕陽': ['夕陽', 'Sunset'], '電路': ['回路', 'Circuit'],
   '凡塵': ['凡塵', 'Mortal'],
   '第一章': ['第一章', 'Chapter 1'], '第二章': ['第二章', 'Chapter 2'], '鋼拳復仇': ['鋼拳の復讐', 'Steel Fist Vengeance'], '鋼鐵與心相的試煉': ['鋼鉄と心の試練', 'Trial of Steel and Heart'],

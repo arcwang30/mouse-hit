@@ -64,7 +64,7 @@ G.shop = {
           const pic = e.kind === 'hero' ? heroPic(e) : enemyPic(e);
           return `<div class="dex-card${owned ? ' owned' : ' locked'}${e.kind === 'boss' ? ' boss' : ''}" data-key="${key}">` +
             `<div class="ht-pic dex-pic">${pic}${owned ? '' : '<span class="ht-q">?</span>'}</div>` +
-            `<b>${owned ? dexName(e) : '？？？'}</b>${owned ? '' : this.buyBtn('dex:' + key, e.price, false)}</div>`;
+            `<b>${owned ? dexName(e) : '？？？'}</b>${owned ? `<span class="shop-owned dex-owned">${G.t('已購買')}</span>` : this.buyBtn('dex:' + key, e.price, false)}</div>`;
         }).join('') + '</div>';
       body.querySelectorAll('.dex-pic img').forEach(img => img.complete ? fitPic(img) : img.onload = () => fitPic(img));
       body.querySelectorAll('.dex-card.owned').forEach(c => { c.onclick = () => this.detail(c.dataset.key); });
@@ -101,7 +101,8 @@ G.shop = {
   // 圖鑑詳細資料
   detail(key) {
     const e = G.dexAll().find(x => G.dexKey(x) === key);
-    const st = G.stageAt(e.stage), ch = G.CHAPTERS[Math.floor(e.stage / 100)], lines = [];
+    // 主角圖鑑沒有登場關卡,只有敵人才查「首次登場」
+    const enemy = e.kind !== 'hero', st = enemy ? G.stageAt(e.stage) : null, ch = enemy ? G.CHAPTERS[Math.floor(e.stage / 100)] : null, lines = [];
     let pic;
     if (e.kind === 'hero') {
       pic = heroPic(e);
