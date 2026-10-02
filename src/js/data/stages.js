@@ -111,7 +111,8 @@ G.BRANCHES = [
 ];
 
 // ---- 第一章「鋼拳復仇」:大地圖 6 區 × 5 關 = 30 關 ----
-// 每區固定節奏:一般(3 波)→ 一般(4 波,中途分歧)→ 特訓(狂打賺金幣)→ 精英(全是精英)→ BOSS
+// 每區固定節奏:一般(3 波)→ 一般(4 波,中途分歧)→ 一般(4 波)→ 精英(全是精英)→ BOSS
+// (原本第 3 關是狂打賺金幣的特訓關,可以重複刷金幣,改成一般戰鬥;狂打獎勵關只剩分歧路線會遇到)
 // 機制漸進:打倒區域 BOSS 後,unlock 裡的九宮格機制才會出現在之後的敵人身上(只限第一輪「凡塵」)
 // 背景組合:bg 漸層、img 背景圖、bgm 戰鬥音樂、deco 沒有圖時的裝飾
 const BGS = {
@@ -146,32 +147,32 @@ G.STAGE_TYPES = {
 const STAGE_LIST_1 = [
   [0, 'normal', '紅磚街角', 'park',    ['monk', 'goblin', 'agent'], []],
   [0, 'normal', '風箏公園', 'park',    ['agent', 'monk', 'goblin', 'drunk'], [1]],
-  [0, 'bonus',  '港口特訓', 'harbor',  [], []],
+  [0, 'normal', '漁港市場', 'harbor',  ['drunk', 'goblin', 'agent', 'monk'], []],
   [0, 'elite',  '碼頭倉庫', 'harbor',  ['monk+', 'goblin+', 'agent+'], [0]],
   [0, 'boss',   '漁港決戰', 'harbor',  ['goblin', 'agent', 'monk+', 'lavaGolem', 'fatKing'], [1, 3]],
   [1, 'normal', '全息廣場', 'tower',   ['streetBoxer', 'goblin', 'ninja'], []],
   [1, 'normal', '鐘塔迴廊', 'tower',   ['gunner', 'sumo', 'streetBoxer', 'goblin'], [1]],
-  [1, 'bonus',  '屋頂特訓', 'tower',   [], []],
+  [1, 'normal', '霓虹天台', 'tower',   ['ninja', 'streetBoxer', 'gunner', 'sumo'], []],
   [1, 'elite',  '地下擂台', 'arena',   ['streetBoxer+', 'sumo+', 'goblin+'], [0]],
   [1, 'boss',   '鋼鐵指揮塔', 'arena', ['ninja', 'gunner', 'ironBull', 'sumo', 'mechGeneral'], [1, 3]],
   [2, 'normal', '煉鋼廠大門', 'forge',  ['gunner', 'clockBomber', 'sumo'], []],
   [2, 'normal', '輸送帶走廊', 'forge',  ['patrolBot', 'cyborg', 'clockBomber', 'gunner'], [1]],
-  [2, 'bonus',  '鍛造特訓', 'forge',    [], []],
+  [2, 'normal', '鑄模車間', 'forge',    ['clockBomber', 'patrolBot', 'cyborg', 'gunner'], []],
   [2, 'elite',  '熔岩坑道', 'forge',    ['clockBomber+', 'gunner+', 'patrolBot+'], [0]],
   [2, 'boss',   '熔爐核心', 'forge',    ['lavaGolem', 'cyborg', 'patrolBot', 'sumo+', 'forgeMaster'], [1, 3]],
   [3, 'normal', '雪原山道', 'snow',     ['snowMonk', 'ninja', 'skater'], []],
   [3, 'normal', '冰封石階', 'snow',     ['droneOp', 'cyborg', 'skater', 'lavaGolem'], [1]],
-  [3, 'bonus',  '古寺特訓', 'snow',     [], []],
+  [3, 'normal', '古寺山門', 'snow',     ['skater', 'snowMonk', 'droneOp', 'ninja'], []],
   [3, 'elite',  '鐘樓迴廊', 'snow',     ['ninja+', 'skater+', 'droneOp+'], [0]],
   [3, 'boss',   '白魔之巔', 'snow',     ['snowMonk', 'lavaGolem+', 'thunderRonin', 'cyborg+', 'snowWitch'], [1, 3]],
   [4, 'normal', '末班列車', 'subway',   ['drunk', 'puppet', 'snowMonk'], []],
   [4, 'normal', '地鐵隧道', 'subway',   ['puppet', 'magician', 'drunk', 'droneOp'], [1]],
-  [4, 'bonus',  '月台特訓', 'subway',   [], []],
+  [4, 'normal', '無人月台', 'subway',   ['magician', 'puppet', 'droneOp', 'drunk'], []],
   [4, 'elite',  '幻影劇場', 'theater',  ['snowMonk+', 'puppet+', 'frostKnight'], [0]],
   [4, 'boss',   '傀儡舞台', 'theater',  ['puppet', 'drunk+', 'shadowKing', 'magician', 'puppetLord'], [1, 3]],
   [5, 'normal', '浮空碼頭', 'sky',      ['hacker', 'magician', 'agent'], []],
   [5, 'normal', '雲海迴廊', 'sky',      ['magician', 'hacker+', 'puppet+', 'droneOp+'], [1]],
-  [5, 'bonus',  '雲端特訓', 'sky',      [], []],
+  [5, 'normal', '雲端甲板', 'sky',      ['hacker', 'magician', 'puppet+', 'agent+'], []],
   [5, 'elite',  '帝王之門', 'summit',   ['hacker+', 'abyssCrab', 'magician+'], [0]],
   [5, 'boss',   '鋼拳之巔', 'summit',   ['sumo+', 'poisonQueen', 'clockBomber+', 'skyEmpress', 'skater+', 'cyborg+', 'steelEmperor'], [2, 4]],
 ];
@@ -196,32 +197,32 @@ const REGIONS_2 = [
 const STAGE_LIST_2 = [
   [0, 'normal', '前哨廢墟', 'frontier', ['sandBandit', 'scrapBot', 'sandBandit+'], []],
   [0, 'normal', '流沙谷', 'frontier',   ['scrapBot', 'sandBandit', 'cyborg+', 'scrapBot+'], [1]],
-  [0, 'bonus',  '沙丘特訓', 'frontier', [], []],
+  [0, 'normal', '沙丘哨站', 'frontier', ['sandBandit', 'scrapBot', 'sandBandit+', 'scrapBot'], []],
   [0, 'elite',  '沙盜營地', 'frontier', ['sandBandit+', 'scrapBot+', 'sandBandit+'], [0]],
   [0, 'boss',   '烈日王座', 'frontier', ['sandBandit', 'scrapBot+', 'patrolBot+', 'sandBandit+', 'sandKing'], [1, 3]],
   [1, 'normal', '雷鳴沙原', 'storm',    ['stormRanger', 'scorpion', 'scrapBot+'], []],
   [1, 'normal', '廢棄雷達站', 'storm',  ['scorpion', 'stormRanger', 'sandBandit+', 'stormRanger+'], [1]],
-  [1, 'bonus',  '磁暴特訓', 'storm',    [], []],
+  [1, 'normal', '磁暴通道', 'storm',    ['stormRanger', 'scorpion', 'stormRanger', 'scrapBot+'], []],
   [1, 'elite',  '蠍巢', 'storm',        ['scorpion+', 'stormRanger+', 'droneOp+'], [0]],
   [1, 'boss',   '磁暴核心', 'storm',    ['stormRanger', 'scorpion+', 'thunderRonin', 'stormRanger+', 'stormLord'], [1, 3]],
   [2, 'normal', '沉沙神殿', 'ruins',    ['ruinGuard', 'scorpion', 'stormRanger+'], []],
   [2, 'normal', '壁畫迴廊', 'ruins',    ['ruinGuard', 'sandBandit+', 'ruinGuard+', 'scorpion+'], [1]],
-  [2, 'bonus',  '遺跡特訓', 'ruins',    [], []],
+  [2, 'normal', '遺跡石廊', 'ruins',    ['ruinGuard', 'scorpion+', 'ruinGuard', 'stormRanger'], []],
   [2, 'elite',  '機關墓室', 'ruins',    ['ruinGuard+', 'scorpion+', 'ruinGuard+'], [0]],
   [2, 'boss',   '巨像大殿', 'ruins',    ['ruinGuard', 'stormRanger+', 'forgeMaster', 'ruinGuard+', 'colossus'], [1, 3]],
   [3, 'normal', '月影泉', 'oasis',      ['dunesDancer', 'ruinGuard', 'dunesDancer'], []],
   [3, 'normal', '幻沙市集', 'oasis',    ['dunesDancer', 'scorpion+', 'dunesDancer+', 'magician+'], [1]],
-  [3, 'bonus',  '綠洲特訓', 'oasis',    [], []],
+  [3, 'normal', '綠洲渡口', 'oasis',    ['dunesDancer', 'ruinGuard+', 'dunesDancer', 'scorpion+'], []],
   [3, 'elite',  '鏡湖', 'oasis',        ['dunesDancer+', 'ruinGuard+', 'snowWitch'], [0]],
   [3, 'boss',   '蜃樓宮', 'oasis',      ['dunesDancer', 'magician+', 'dunesDancer+', 'puppetLord', 'mirageFairy'], [1, 3]],
   [4, 'normal', '試煉石階', 'sect',     ['sectDisciple', 'particleMonk', 'sectDisciple'], []],
   [4, 'normal', '粒子演武場', 'sect',   ['particleMonk', 'sectDisciple+', 'dunesDancer+', 'particleMonk+'], [1]],
-  [4, 'bonus',  '山門特訓', 'sect',     [], []],
+  [4, 'normal', '山門石林', 'sect',     ['sectDisciple', 'particleMonk', 'sectDisciple', 'dunesDancer+'], []],
   [4, 'elite',  '護法殿', 'sect',       ['sectDisciple+', 'particleMonk+', 'skyEmpress'], [0]],
   [4, 'boss',   '天沙大殿', 'sect',     ['sectDisciple', 'particleMonk+', 'sectDisciple+', 'colossus', 'sectGuardian'], [1, 3]],
   [5, 'normal', '風牆', 'eye',          ['particleMonk+', 'sectDisciple+', 'stormRanger+'], []],
   [5, 'normal', '日月迴廊', 'eye',      ['sectDisciple+', 'dunesDancer+', 'particleMonk+', 'ruinGuard+'], [1]],
-  [5, 'bonus',  '風眼特訓', 'eye',      [], []],
+  [5, 'normal', '風暴迴廊', 'eye',      ['particleMonk', 'sectDisciple+', 'dunesDancer+', 'stormRanger+'], []],
   [5, 'elite',  '心相之門', 'eye',      ['sectDisciple+', 'mirageFairy', 'particleMonk+'], [0]],
   [5, 'boss',   '無相祭壇', 'eye',      ['sectDisciple+', 'stormLord', 'particleMonk+', 'mirageFairy', 'dunesDancer+', 'sectGuardian', 'sectMaster'], [2, 4]],
 ];
@@ -250,7 +251,7 @@ G.CHAPTERS = [
 // G.STAGES / G.REGIONS:目前選擇的章節(大部分程式只需要看目前這一章)
 Object.defineProperty(G, 'STAGES', { get: () => G.CHAPTERS[G.chapter() - 1].stages, configurable: true });
 Object.defineProperty(G, 'REGIONS', { get: () => G.CHAPTERS[G.chapter() - 1].regions, configurable: true });
-// 關卡在地圖與結算上的顯示名稱:「1-3 港口特訓」
+// 關卡在地圖與結算上的顯示名稱:「1-3 漁港市場」
 G.stageTitle = s => `${s.code} ${G.t(s.name)}`;
 
 // ---- 機制漸進解鎖 ----

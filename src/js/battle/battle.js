@@ -296,6 +296,7 @@ G.battle = {
     this.render();
 
     const m = this.mech('atk'), rc = G.roundCfg();
+    await this.mechTips(m);
     const life = Math.round(p.moleLife * rc.fistLife); // 周回:拳頭停留時間縮短
     this.soulReady = p.comboSoul; // 連擊之魂:每回合擋一次失誤
     let api = null;
@@ -375,6 +376,7 @@ G.battle = {
     this.setPhase(s ? G.t('必殺技來襲:{0}!', G.t(s.name)) : '防禦:點擊 🛡️ 擋下攻擊!', 'def');
     this.setupBoard('defend');
     const m = this.mech('def');
+    await this.mechTips(m);
     // 幻術:隔一回合改成記憶考驗(第 1、3、5… 次攻擊),答對等於全部擋下,一樣有破綻
     if (m.memory && !s && e.turn % 2 === 1) {
       const ok = await this.memoryTurn(dmg);
@@ -769,8 +771,12 @@ G.battle = {
     const grid = G.$('#grid');
     grid.classList.add('numbering'); // 和破綻一樣,先藏起冰 / 觸手 / 熔岩
     const seq = G.shuffle([...Array(9).keys()]).slice(0, len);
+    // 先說明再停頓一下,讓玩家準備好才開始播放閃爍順序
+    await G.tips.show('memory'); // 第一次遇到才說明
     this.setPhase('幻術:記住閃爍的順序!', 'def');
-    await G.clock.wait(600);
+    await G.banner('幻術!', G.t('記住格子閃爍的順序,之後照同樣順序點回來'), 1300);
+    this.float('仔細看…', 'tag line');
+    await G.clock.wait(900);
     for (let n = 0; n < len && !this.over(); n++) {
       G.grid.set(seq[n], '✨', 'mem');
       G.audio.play('note', n);
@@ -1011,6 +1017,13 @@ G.battle = {
     const ok = this.allowedNow;
     if (ok) Object.keys(out).forEach(k => { if (G.MECH_INFO[k] && !ok.has(k)) delete out[k]; });
     return out;
+  },
+
+  // 第一次遇到第二章的九宮格機制時跳出說明卡(遊戲時間暫停);在 setupBoard 之後、符號出現之前呼叫
+  async mechTips(m) {
+    if ([...G.grid.blocks.values()].some(b => b.type === 'sand')) await G.tips.show('sand');
+    if (m.spin) await G.tips.show('spin');
+    if (m.mirror) await G.tips.show('mirror');
   },
 
   // 回合開始時依敵人機制佈置格子

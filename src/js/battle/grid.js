@@ -13,7 +13,7 @@ G.grid = {
     for (let i = 0; i < 9; i++) {
       const c = document.createElement('button');
       c.className = 'cell';
-      c.innerHTML = '<span class="blk"></span><span class="cap"><span class="label"></span><span class="icon"></span><span class="badge"></span></span>';
+      c.innerHTML = '<span class="blk"></span><span class="cap"><span class="label"></span><span class="icon"></span><span class="badge"></span></span><span class="stag"></span>';
       // 記下按下的位置(滑擊拳要算滑動方向);鍵盤按的沒有位置
       c.addEventListener('pointerdown', e => { e.preventDefault(); this.lastDown = { x: e.clientX, y: e.clientY }; this.tap(i); this.lastDown = null; });
       ['pointerup', 'pointercancel', 'pointerleave'].forEach(ev => c.addEventListener(ev, () => this.release(i)));
@@ -133,6 +133,7 @@ G.grid = {
     const el = this.cells[i].querySelector('.blk');
     el.className = 'blk' + (b ? ' ' + b.type : '');
     el.textContent = b && b.type === 'tentacle' ? '🐙' : '';
+    this.cells[i].querySelector('.stag').textContent = b && b.type === 'sand' ? '⏬ ' + G.t('流沙') : ''; // 流沙格標示:上面的符號沉得快
     el.dataset.hp = b && b.hp > 1 ? '×' + b.hp : '';
   },
 
