@@ -4,6 +4,7 @@ G.applyI18n();
 // 必殺技按鈕位置(左 / 右手)
 G.applyUltSide = () => G.$('#battle').classList.toggle('ult-left', G.save.data.ultSide === 'left');
 G.applyUltSide();
+G.skin.grantLegacy(); // 改成販售的造型:老玩家已達成原條件的直接送
 G.skin.apply(); // 九宮格造型
 G.wall.apply(); // 桌布
 G.grid.init();

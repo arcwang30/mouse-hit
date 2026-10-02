@@ -882,3 +882,33 @@ html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; } /* 手機瀏覽
 .dlg-face { display: grid; place-items: center; font-size: 14cqw; line-height: 1; }
 /* 炎鋼・天道覺醒:立繪是整張場景圖,頭像框放大對準臉部 */
 .dialog.awake .dlg-face { background-size: 210% auto; background-position: 50% 44%; box-shadow: 0 0 0 .4cqw #ffd84a, 0 0 4cqw #ff7a1fc0; }
+
+/* ---------- 商店新造型 ---------- */
+/* 翡翠:溫潤的綠玉外框、金色螺栓 */
+.skin-jade {
+  --sk-frame: linear-gradient(145deg, #b8f0c8, #3aa86a 38%, #146a3a 62%, #8ae0a8);
+  --sk-socket: radial-gradient(ellipse at 50% 60%, #04140a 40%, #0c2a18);
+  --sk-ring: #c8ffd8b0; --sk-bolt: #ffd84a;
+  --sk-board: radial-gradient(ellipse at 50% 0%, #3aa86a30, transparent 60%), linear-gradient(180deg, #0a2014, #030a06);
+}
+/* 黑曜:漆黑發亮的火山玻璃,紫色內圈 */
+.skin-obsidian {
+  --sk-frame: linear-gradient(145deg, #5a5a6a, #14141c 38%, #050508 62%, #3a3a48);
+  --sk-socket: radial-gradient(ellipse at 50% 60%, #000 45%, #120a1e);
+  --sk-ring: #b04dffc0; --sk-bolt: #d8b0ff;
+  --sk-board: radial-gradient(ellipse at 30% 20%, #b04dff20, transparent 50%), linear-gradient(180deg, #0c0812, #020104);
+}
+/* 夕陽:橘紅到紫的漸層外框 */
+.skin-sunset {
+  --sk-frame: linear-gradient(160deg, #ffd08a, #ff7a3a 35%, #c0306a 65%, #5a2a8a);
+  --sk-socket: radial-gradient(ellipse at 50% 60%, #1a0612 40%, #3a0e2a);
+  --sk-ring: #ffc0a0c0; --sk-bolt: #fff0c8;
+  --sk-board: linear-gradient(180deg, #3a1428, #1a0818 50%, #08030c);
+}
+/* 電路:綠色電路板與銅色走線 */
+.skin-circuit {
+  --sk-frame: repeating-linear-gradient(90deg, #d8a04a 0 .3cqw, transparent .3cqw 2.4cqw), linear-gradient(145deg, #2a6a3a, #0e3a1c 45%, #062a12 62%, #1e5a2e);
+  --sk-socket: radial-gradient(ellipse at 50% 60%, #020a04 45%, #0a2010);
+  --sk-ring: #4aff8aa0; --sk-bolt: #d8a04a; --sk-radius: .8cqw; --sk-radius-in: .5cqw;
+  --sk-board: linear-gradient(90deg, #d8a04a18 1px, transparent 1px) 0 0 / 6cqw 6cqw, linear-gradient(0deg, #d8a04a18 1px, transparent 1px) 0 0 / 6cqw 6cqw, linear-gradient(180deg, #0a2410, #030c05);
+}

@@ -2,22 +2,28 @@
 // check(sv) 回傳是否已解鎖;沒有 check 的一開始就能用
 G.SKINS = [
   { id: 'steel',  name: '鋼鐵', desc: '預設造型' },
-  { id: 'neon',   name: '霓虹', desc: '通過第一關',          check: sv => cleared(sv, 1, 0) },
-  { id: 'bamboo', name: '竹林', desc: '通過第 10 關',        check: sv => cleared(sv, 1, 9) },
-  { id: 'lava',   name: '熔岩', desc: '通過第 15 關',        check: sv => cleared(sv, 1, 14) },
-  { id: 'ice',    name: '寒冰', desc: '通過第 20 關',        check: sv => cleared(sv, 1, 19) },
+  // 破關紀念:打倒各輪最終 BOSS 才能拿到
   { id: 'mecha',  name: '機甲', desc: '打倒第一輪的最終 BOSS', check: sv => cleared(sv, 1, G.CHAPTERS[0].stages.length - 1) },
-  { id: 'gold',   name: '黃金', desc: '任一關拿到 ★★★',
-    check: sv => Object.values(sv.rounds).some(r => Object.values(r.stars || {}).some(n => n >= 3)) },
-  { id: 'pixel',  name: '像素', desc: '達成 8 個成就',        check: sv => Object.keys(sv.ach).length >= 8 },
   { id: 'asura',  name: '修羅', desc: '打倒第二輪的最終 BOSS', check: sv => cleared(sv, 2, G.CHAPTERS[0].stages.length - 1) },
   { id: 'demon',  name: '天魔', desc: '打倒第三輪的最終 BOSS', check: sv => cleared(sv, 3, G.CHAPTERS[0].stages.length - 1) },
   // 以下在商店用金幣購買(price)
-  { id: 'sakura',  name: '櫻花', desc: '在商店購買', price: 500 },
-  { id: 'ocean',   name: '深海', desc: '在商店購買', price: 500 },
-  { id: 'candy',   name: '糖果', desc: '在商店購買', price: 600 },
-  { id: 'carbon',  name: '碳纖', desc: '在商店購買', price: 700 },
-  { id: 'rainbow', name: '彩虹', desc: '在商店購買', price: 900 },
+  // legacy:原本靠條件解鎖、後來改成販售的造型;老玩家已經達成條件的直接送(見 G.skin.grantLegacy)
+  { id: 'neon',     name: '霓虹', desc: '在商店購買', price: 280, legacy: sv => cleared(sv, 1, 0) },
+  { id: 'bamboo',   name: '竹林', desc: '在商店購買', price: 280, legacy: sv => cleared(sv, 1, 9) },
+  { id: 'lava',     name: '熔岩', desc: '在商店購買', price: 320, legacy: sv => cleared(sv, 1, 14) },
+  { id: 'ice',      name: '寒冰', desc: '在商店購買', price: 320, legacy: sv => cleared(sv, 1, 19) },
+  { id: 'pixel',    name: '像素', desc: '在商店購買', price: 350, legacy: sv => Object.keys(sv.ach).length >= 8 },
+  { id: 'gold',     name: '黃金', desc: '在商店購買', price: 450,
+    legacy: sv => Object.values(sv.rounds).some(r => Object.values(r.stars || {}).some(n => n >= 3)) },
+  { id: 'sakura',   name: '櫻花', desc: '在商店購買', price: 350 },
+  { id: 'ocean',    name: '深海', desc: '在商店購買', price: 350 },
+  { id: 'jade',     name: '翡翠', desc: '在商店購買', price: 380 },
+  { id: 'sunset',   name: '夕陽', desc: '在商店購買', price: 380 },
+  { id: 'candy',    name: '糖果', desc: '在商店購買', price: 420 },
+  { id: 'obsidian', name: '黑曜', desc: '在商店購買', price: 420 },
+  { id: 'circuit',  name: '電路', desc: '在商店購買', price: 420 },
+  { id: 'carbon',   name: '碳纖', desc: '在商店購買', price: 490 },
+  { id: 'rainbow',  name: '彩虹', desc: '在商店購買', price: 630 },
 ];
 
 G.skin = {
@@ -31,6 +37,15 @@ G.skin = {
     const bt = G.$('#battle');
     G.SKINS.forEach(x => bt.classList.remove('skin-' + x.id));
     bt.classList.add('skin-' + id);
+  },
+
+  // 改成販售的造型:改版前已經達成原本條件的老玩家,直接當作已購買(只做一次)
+  grantLegacy() {
+    const sv = G.save.data;
+    if (sv.skinsLegacy) return;
+    sv.skinsLegacy = true;
+    G.SKINS.forEach(s => { if (s.legacy && s.legacy(sv)) sv.owned.skins[s.id] = true; });
+    G.save.write();
   },
 
   // 新解鎖的造型跳出提示(和成就共用提示框);第一次執行只記錄,不提示已經擁有的

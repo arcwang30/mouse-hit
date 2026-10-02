@@ -60,7 +60,7 @@ G.I18N = {
   '尚未遇見': ['未遭遇', 'Not yet encountered'],
   // ---- 商店 / 圖鑑收藏 ----
   '商店': ['ショップ', 'Shop'], '🎨 造型': ['🎨 デザイン', '🎨 Styles'], '主角圖鑑': ['主人公図鑑', 'Heroes'], '小兵圖鑑': ['雑魚図鑑', 'Minions'], 'BOSS 圖鑑': ['BOSS 図鑑', 'Bosses'],
-  '買下的造型可在「設定」中更換。其他造型由通關、星級與成就解鎖。': ['購入したデザインは「設定」で変更できる。その他はクリア・星・実績で解放。', 'Bought styles can be switched in Settings. Others unlock through clears, stars and achievements.'],
+  '買下的造型可在「設定」中更換。另外 3 款破關紀念造型,打倒各輪的最終 BOSS 就能獲得。': ['購入したデザインは「設定」で変更できる。クリア記念の 3 種は、各周回の最終 BOSS を倒すと手に入る。', 'Change bought styles in Settings. The 3 victory styles are earned by defeating each round\'s final boss.'],
   '收藏 {0}/{1}・點一下已購買的項目查看詳細資料': ['収集 {0}/{1}・購入済みをタップで詳細', 'Collected {0}/{1} · Tap an owned entry for details'],
   '已擁有': ['所持済み', 'Owned'], '確定購買?': ['購入する?', 'Buy?'], '點一下關閉': ['タップで閉じる', 'Tap to close'],
   '首次登場': ['初登場', 'First appears'], '基礎 HP・攻擊': ['基本 HP・攻撃', 'Base HP · ATK'], '必殺技「{0}」': ['必殺技「{0}」', 'Special "{0}"'],
@@ -464,6 +464,7 @@ G.I18N = {
   '浮空碼頭': ['浮遊ドック', 'Floating Dock'], '雲海迴廊': ['雲海の回廊', 'Sea of Clouds Corridor'], '雲端特訓': ['雲上の特訓', 'Cloudtop Training'],
   '帝王之門': ['帝王の門', 'Emperor\'s Gate'], '鋼拳之巔': ['鋼拳の頂', 'Steel Fist Summit'],
   '切換 ▸': ['切替 ▸', 'Switch ▸'], '難度': ['難易度', 'Difficulty'],
+  '翡翠': ['翡翠', 'Jade'], '黑曜': ['黒曜', 'Obsidian'], '夕陽': ['夕陽', 'Sunset'], '電路': ['回路', 'Circuit'],
   '凡塵': ['凡塵', 'Mortal'],
   '第一章': ['第一章', 'Chapter 1'], '第二章': ['第二章', 'Chapter 2'], '鋼拳復仇': ['鋼拳の復讐', 'Steel Fist Vengeance'], '鋼鐵與心相的試煉': ['鋼鉄と心の試練', 'Trial of Steel and Heart'],
   '區域 {0}': ['エリア {0}', 'Area {0}'], '打倒「{0}」後開放': ['「{0}」を倒すと開放', 'Opens after defeating {0}'],

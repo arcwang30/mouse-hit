@@ -37,7 +37,7 @@ G.shop = {
       `<button class="pg-tab${i === this.tab ? ' on' : ''}" data-tab="${i}">${G.t(t)}</button>`).join('');
     const body = G.$('#shopBody');
     if (kind === 'skins') {
-      body.innerHTML = `<p class="shop-tip">${G.t('買下的造型可在「設定」中更換。其他造型由通關、星級與成就解鎖。')}</p><div class="shop-skins">` +
+      body.innerHTML = `<p class="shop-tip">${G.t('買下的造型可在「設定」中更換。另外 3 款破關紀念造型,打倒各輪的最終 BOSS 就能獲得。')}</p><div class="shop-skins">` +
         G.SKINS.filter(s => s.price).map(s => {
           const owned = !!sv.owned.skins[s.id];
           return `<div class="shop-skin skin-${s.id}"><span class="skin-mini">${'<i></i>'.repeat(9)}</span><b>${G.t(s.name)}</b>` +
