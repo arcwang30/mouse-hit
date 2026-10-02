@@ -188,7 +188,7 @@ html:lang(en) .menu-grid .btn { padding-left: 1cqw; padding-right: 1cqw; letter-
 /* 開始遊戲:最醒目的主按鈕 */
 .btn.start {
   /* 固定在畫面正中央(不佔排版位置) */
-  position: absolute; left: 50%; top: 53%; transform: translate(-50%, -50%); /* 比正中央略低,和上方的 LOGO、稱號拉開距離 */
+  position: absolute; left: 50%; top: 58%; transform: translate(-50%, -50%); /* 盡量往下,但不壓到背景下方的卷軸(卷軸上緣約在畫面高 64%) */
   width: 78%; padding: 3.6cqw 0 3cqw; flex-shrink: 0;
   display: flex; flex-direction: column; align-items: center; line-height: 1.15;
   background:
