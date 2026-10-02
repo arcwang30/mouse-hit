@@ -301,6 +301,10 @@ G.scenes = {
     // 章節與周回切換放在地圖上方固定的列,地圖往下捲也看得到
     G.$('#stageBar').innerHTML = chTabs;
     G.$('#roundSlot').innerHTML = roundBtn; // 周回切換:標題右上角的圓形頭像按鈕
+    // 輪次主題色:凡塵 青藍 / 修羅 血紅 / 天魔 暗紫(邊框、區域、路線一起換)
+    const page = G.$('#stages');
+    page.classList.remove('rnd-1', 'rnd-2', 'rnd-3');
+    page.classList.add('rnd-' + round);
     G.$('#stageList').innerHTML = tabs + tut + `<div class="world-map">${regions}</div>`;
     G.$('#stageBar').querySelectorAll('.ch-tab').forEach(b => { b.onclick = () => this.setChapter(+b.dataset.ch); });
     const rc = G.$('#roundCycle');
@@ -370,6 +374,10 @@ G.scenes = {
     list.classList.remove('slide-l', 'slide-r');
     void list.offsetWidth;
     list.classList.add(r > cur ? 'slide-l' : 'slide-r');
+    const page = G.$('#stages'); // 切換的瞬間整頁閃一下新的主題色
+    page.classList.remove('rnd-flash');
+    void page.offsetWidth;
+    page.classList.add('rnd-flash');
     return true;
   },
 

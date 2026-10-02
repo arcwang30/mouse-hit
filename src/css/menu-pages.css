@@ -188,7 +188,7 @@ html:lang(en) .menu-grid .btn { padding-left: 1cqw; padding-right: 1cqw; letter-
 /* 開始遊戲:最醒目的主按鈕 */
 .btn.start {
   /* 固定在畫面正中央(不佔排版位置) */
-  position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%);
+  position: absolute; left: 50%; top: 53%; transform: translate(-50%, -50%); /* 比正中央略低,和上方的 LOGO、稱號拉開距離 */
   width: 78%; padding: 3.6cqw 0 3cqw; flex-shrink: 0;
   display: flex; flex-direction: column; align-items: center; line-height: 1.15;
   background:
@@ -437,8 +437,8 @@ html:lang(en) .round-tab { font-size: 2.7cqw; letter-spacing: 0; } /* 英文名�
 .world-map { display: flex; flex-direction: column; gap: 3cqw; padding-bottom: 4cqw; }
 .map-region {
   position: relative; flex-shrink: 0; padding: 3cqw 3cqw 0; overflow: hidden; clip-path: var(--chamfer);
-  background: linear-gradient(180deg, #0a0812d0, #0a0812a0 30%, #0a0812d0), var(--rbg) center / cover no-repeat;
-  box-shadow: inset 0 0 0 .35cqw #19f0ff50;
+  background: linear-gradient(180deg, var(--rt-dk, #0a0812d0), var(--rt-md, #0a0812a0) 30%, var(--rt-dk, #0a0812d0)), var(--rbg) center / cover no-repeat;
+  box-shadow: inset 0 0 0 .35cqw var(--rt-a, #19f0ff50);
 }
 .mr-head { position: relative; z-index: 1; display: flex; justify-content: space-between; align-items: baseline; }
 .mr-head b { font-size: 4.8cqw; color: var(--fire-2); text-shadow: 0 .3cqw 0 #000, 0 0 2cqw #000; }
@@ -446,7 +446,7 @@ html:lang(en) .round-tab { font-size: 2.7cqw; letter-spacing: 0; } /* 英文名�
 .mr-desc { position: relative; z-index: 1; margin: 1cqw 0 0; font-size: 3cqw; line-height: 1.5; color: #e8eef6; text-shadow: 0 .3cqw .6cqw #000; }
 .mr-field { position: relative; height: 96cqw; margin: 0 2cqw; }
 .mr-path { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; }
-.mr-path polyline { fill: none; stroke: #ffd84ad0; stroke-width: 1.4; stroke-dasharray: 3 2.4; vector-effect: non-scaling-stroke; stroke-width: .9cqw; filter: drop-shadow(0 0 .6cqw #000); }
+.mr-path polyline { fill: none; stroke: var(--rt-path, #ffd84ad0); stroke-width: 1.4; stroke-dasharray: 3 2.4; vector-effect: non-scaling-stroke; stroke-width: .9cqw; filter: drop-shadow(0 0 .6cqw #000); }
 .map-node {
   position: absolute; z-index: 1; width: 17cqw; height: 17cqw; margin: -8.5cqw 0 0 -8.5cqw; padding: 0; border: 0; border-radius: 50%;
   display: flex; flex-direction: column; align-items: center; justify-content: center; color: #fff;
@@ -553,3 +553,17 @@ html:lang(en) .stage-bar .ch-tab b { font-size: 2.6cqw; }
 .round-cycle.r2 { --rc1: #ffb08a; --rc2: #8a0a1c; --rc3: #ff3a3a; }
 .round-cycle.r3 { --rc1: #e2a8ff; --rc2: #3a0866; --rc3: #b04dff; }
 @keyframes rcPulse { 50% { box-shadow: 0 0 0 .6cqw var(--rc3), 0 0 5cqw var(--rc3); } }
+/* ---------- 輪次主題色(選擇關卡頁):凡塵 青藍 / 修羅 血紅 / 天魔 暗紫 ---------- */
+#stages.rnd-1 { --rt: #19f0ff; --rt-a: #19f0ff50; --rt-dk: #0a0812d0; --rt-md: #0a0812a0; --rt-path: #ffd84ad0; }
+#stages.rnd-2 { --rt: #ff3a4a; --rt-a: #ff3a4a90; --rt-dk: #2a0610d8; --rt-md: #1e040ca8; --rt-path: #ff5a5ad8; }
+#stages.rnd-3 { --rt: #c05aff; --rt-a: #c05aff90; --rt-dk: #1a0830d8; --rt-md: #12052aa8; --rt-path: #d08aff; }
+/* 頁面四周的主題色邊框與暈光(修羅、天魔比較明顯) */
+#stages.rnd-1 { box-shadow: inset 0 0 0 .5cqw #19f0ff40; }
+#stages.rnd-2 { box-shadow: inset 0 0 0 .7cqw #ff3a4ab0, inset 0 0 14cqw #c0102890; }
+#stages.rnd-3 { box-shadow: inset 0 0 0 .7cqw #c05affb0, inset 0 0 14cqw #6a10b090; }
+#stages .pg-sub { color: var(--rt, var(--neon-c)); text-shadow: 0 0 1.2cqw var(--rt, var(--neon-c)); }
+#stages .ss-box:not(.t-boss):not(.t-elite):not(.t-bonus) { box-shadow: inset 0 0 0 .4cqw var(--rt, var(--neon-c)); }
+#stages .mr-head b { text-shadow: 0 .3cqw 0 #000, 0 0 2cqw var(--rt-a, #000); }
+/* 切換輪次的瞬間:整頁閃一下新的主題色 */
+#stages.rnd-flash::after { content: ""; position: absolute; inset: 0; z-index: 30; pointer-events: none; background: radial-gradient(ellipse at 50% 40%, transparent 20%, var(--rt)); animation: rndFlash .6s ease-out forwards; }
+@keyframes rndFlash { from { opacity: .75; } to { opacity: 0; } }
