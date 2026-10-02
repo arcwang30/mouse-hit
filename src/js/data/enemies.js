@@ -81,6 +81,42 @@ G.ENEMIES = {
     name: '鋼拳帝王', icon: '👊', img: 'enemies/steel_emperor.webp', shot: '👊', boss: true, hp: 330, atk: 17, atkCount: 7, guardLife: 900,
     skill: { name: '鋼拳天崩', desc: '帝王的全力一擊!所有招式一次襲來!', count: 3, decoy: 0.3, dmgMul: 2, lifeMul: 0.75 },
   },
+
+  // ---- 第二章「絕魔流沙」:一般敵人 ----
+  sandBandit:   { name: '沙盜・禿鷹', icon: '🗡️', img: 'enemies/sand_bandit.webp', shot: '🌪️', hp: 85,  atk: 12, atkCount: 5, guardLife: 950 },
+  scrapBot:     { name: '拾荒機兵',   icon: '🔧', img: 'enemies/scrap_bot.webp', shot: '🔩', hp: 100, atk: 11, atkCount: 4, guardLife: 1100 },
+  stormRanger:  { name: '磁暴遊俠',   icon: '🌩️', img: 'enemies/storm_ranger.webp', shot: '⚡', hp: 90,  atk: 13, atkCount: 5, guardLife: 900 },
+  scorpion:     { name: '沙蠍戰士',   icon: '🦂', img: 'enemies/scorpion.webp', shot: '🦂', hp: 105, atk: 13, atkCount: 5, guardLife: 1000 },
+  ruinGuard:    { name: '遺跡守衛',   icon: '🏛️', img: 'enemies/ruin_guard.webp', shot: '🪨', hp: 125, atk: 13, atkCount: 4, guardLife: 1150 },
+  dunesDancer:  { name: '幻沙舞姬',   icon: '💃', img: 'enemies/dunes_dancer.webp', shot: '✨', hp: 90,  atk: 13, atkCount: 6, guardLife: 900 },
+  sectDisciple: { name: '天沙宗弟子', icon: '🥋', img: 'enemies/sect_disciple.webp', shot: '💫', hp: 100, atk: 14, atkCount: 6, guardLife: 900 },
+  particleMonk: { name: '粒子武僧',   icon: '🔆', img: 'enemies/particle_monk.webp', shot: '🔆', hp: 105, atk: 14, atkCount: 5, guardLife: 950 },
+
+  // ---- 第二章 區域 BOSS ----
+  sandKing: {
+    name: '沙盜王・烈日', icon: '☀️', img: 'enemies/sand_king.webp', shot: '🪓', boss: true, hp: 240, atk: 15, atkCount: 6, guardLife: 1000,
+    skill: { name: '烈日斷頭斧', desc: '戰斧掀起沙暴,流沙吞沒整片戰場!', count: 3, dmgMul: 1.5 },
+  },
+  stormLord: {
+    name: '磁暴領主', icon: '🧲', img: 'enemies/storm_lord.webp', shot: '⚡', boss: true, hp: 250, atk: 15, atkCount: 6, guardLife: 950,
+    skill: { name: '電磁天旋', desc: '磁場翻轉,符號急速閃現!', count: 2, lifeMul: 0.65, dmgMul: 1.3 },
+  },
+  colossus: {
+    name: '沙海巨像', icon: '⛰️', img: 'enemies/colossus.webp', shot: '🪨', boss: true, hp: 300, atk: 16, atkCount: 5, guardLife: 1100,
+    skill: { name: '古神震地', desc: '巨拳砸地,每一擊都要頂住!', count: 3, dmgMul: 1.7 },
+  },
+  mirageFairy: {
+    name: '蜃樓仙姬', icon: '🌙', img: 'enemies/mirage_fairy.webp', shot: '🪞', boss: true, hp: 270, atk: 16, atkCount: 6, guardLife: 950,
+    skill: { name: '鏡花水月', desc: '幻影遮蔽視線,真假難辨!', count: 2, fade: true, decoy: 0.2, dmgMul: 1.4 },
+  },
+  sectGuardian: {
+    name: '天沙宗護法', icon: '💪', img: 'enemies/sect_guardian.webp', shot: '🌟', boss: true, hp: 310, atk: 17, atkCount: 6, guardLife: 950,
+    skill: { name: '粒子金剛拳', desc: '金色巨拳連環轟擊!', count: 3, dmgMul: 1.6, lifeMul: 0.8 },
+  },
+  sectMaster: {
+    name: '天沙宗主・無相', icon: '☯️', img: 'enemies/sect_master.webp', shot: '🌀', boss: true, hp: 380, atk: 18, atkCount: 7, guardLife: 900,
+    skill: { name: '日月無相', desc: '日月雙輪轉動,天地萬象一齊襲來!', count: 3, decoy: 0.3, dmgMul: 2, lifeMul: 0.75 },
+  },
 };
 
 // 敵人專屬機制(第二階段):讓每種敵人玩起來不一樣
@@ -121,6 +157,22 @@ G.MECHS = {
   clockBomber: { hint: '倒數:💣 要在倒數歸零前點掉拆除,不然會爆炸!', def: { timebomb: 0.45 } },
   skater:      { hint: '疾風:帶箭頭的拳頭要往箭頭方向滑(傷害 ×1.5)', atk: { swipe: 0.4 } },
   magician:    { hint: '幻術:記住格子閃爍的順序,照同樣順序點回來', def: { memory: true } },
+  // 第二章:sand 流沙(格子狀態)、spin 磁暴(九宮格旋轉)、mirror 蜃樓(要點鏡像格)
+  sandBandit:   { hint: '沙盜:拳頭會瞬移,流沙格上的符號沉得快', board: 'sand', atk: { blink: 0.3 } },
+  scrapBot:     { hint: '拾荒:拳頭混著 💣,盾牌帶著鋼甲', atk: { bomb: 0.3 }, def: { armor: 0.3 } },
+  stormRanger:  { hint: '磁暴:準星鎖定,九宮格還會旋轉', def: { lockon: 450, spin: true } },
+  scorpion:     { hint: '毒蠍:拳頭先顯示 ❓,盾牌要頂住', atk: { hidden: 0.35 }, def: { heavy: { chance: 0.3, holdMs: 400 } } },
+  ruinGuard:    { hint: '石衛:流沙格加上晶盾', board: 'sand', def: { armor: 0.35 } },
+  dunesDancer:  { hint: '幻舞:殘影與蜃樓交錯', def: { ghost: 0.4, mirror: 0.35 } },
+  sectDisciple: { hint: '宗門:拳頭要滑,盾牌裡混著倒數炸彈', atk: { swipe: 0.4 }, def: { timebomb: 0.3 } },
+  particleMonk: { hint: '粒子:拳頭會瞬移,還會考驗記憶', atk: { blink: 0.35 }, def: { memory: true } },
+  sandKing:     { hint: '流沙:流沙格上的符號沉得特別快;盾牌要頂住', board: 'sand', def: { heavy: { chance: 0.3, holdMs: 420 } } },
+  stormLord:    { hint: '磁暴:九宮格會整個旋轉,準星一亮盾牌就到', def: { spin: true, lockon: 420 }, atk: { blink: 0.3 } },
+  colossus:     { hint: '巨像:流沙格,重拳要頂住,發亮的要點兩下', board: 'sand', def: { heavy: { chance: 0.4, holdMs: 450 }, armor: 0.3 } },
+  mirageFairy:  { hint: '蜃樓:帶 ⇋ 的是幻影,要點左右對稱的另一格', def: { mirror: 0.45, ghost: 0.3 } },
+  sectGuardian: { hint: '護法:拳頭要滑還帶晶盾,盾牌裡混著倒數炸彈', atk: { swipe: 0.35, armor: 0.3 }, def: { timebomb: 0.35, heavy: { chance: 0.25, holdMs: 400 } } },
+  sectMaster:   { hint: '無相:流沙之上,蜃樓、磁暴、幻術輪番上陣', board: 'sand',
+    rotate: [{ def: { mirror: 0.4 } }, { atk: { swipe: 0.3 }, def: { spin: true } }, { atk: { hidden: 0.4 }, def: { lockon: 400 } }, { def: { memory: true } }] },
   steelEmperor:{ hint: '帝王:歷代強敵的招式輪番上陣,熔岩格拳頭 ×2', board: 'lava',
     rotate: [{ def: { heavy: { chance: 0.35, holdMs: 420 } } }, { atk: { hidden: 0.4, bomb: 0.3 }, def: { lockon: 400 } },
              { atk: { blink: 0.4 }, def: { ghost: 0.5, blink: 0.3 } }, { atk: { armor: 0.3 }, def: { armor: 0.35 } },

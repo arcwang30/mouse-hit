@@ -31,6 +31,7 @@ const TIMEBOMB_MS = 3000, TIMEBOMB_DMG = 1.5;
 const MEMORY_LEN = { 1: 3, 2: 4, 3: 5 }, MEMORY_SHOW = 520, MEMORY_PER = 900, MEMORY_DMG = 1.5;
 const BONUS_STARS = [40, 70]; // 特訓關:狂打幾 HIT 拿第二、第三顆星
 const CHAPTER_COINS = 300;    // 章節通關獎勵(每一輪第一次打倒最終 BOSS)
+const TIANDAO_MUL = 1.5, TIANDAO_HEAL = 0.2; // 炎鋼天道(第二章破關後的必殺技):威力倍率、回復比例
 
 function makePlayer() {
   const p = {
@@ -169,6 +170,7 @@ G.battle = {
     G.$('#deco').innerHTML = bgImg ? '' : this.stage.deco.map((d, i) =>
       `<span style="left:${8 + i * 90 / this.stage.deco.length}%;animation-delay:${i * 0.4}s">${d}</span>`).join('');
     G.grid.clearAll();
+    G.grid.resetRot();
     // 先預載本關所有敵人立繪,避免出場時才載入閃一下
     this.stage.waves.forEach(s => {
       const d = G.ENEMIES[s.replace('+', '')];
@@ -236,6 +238,7 @@ G.battle = {
         : keys.filter(k => ok.has(k)).map(k => G.t(G.MECH_INFO[k].name) + ':' + G.t(G.MECH_INFO[k].hint)).join('\n');
       const hint = base + (extra ? (base ? '\n' : '') + G.t('追加:{0}', extra) : '');
       G.grid.clearBlocks();
+      G.grid.resetRot(); // 磁暴轉過的九宮格,換敵人時轉回來
       await G.banner(`WAVE ${w + 1}`, intro + this.e.name + (hint ? '\n' + hint : ''), hint ? 1900 : 1200);
 
       while (!this.over()) {
@@ -299,7 +302,9 @@ G.battle = {
       interval: Math.max(250, life * 0.45), patterns: this.patterns(),
       // 蓄力重拳:每回合其中一顆拳頭需要按住蓄力
       hold: { at: 1 + Math.floor(Math.random() * (p.attackCount - 1)), icon: '👊', label: 'HOLD', holdMs: HOLD_MS * (p.holdMaster ? 0.6 : 1) },
-      mods: { gold: GOLD_RATE * p.goldMul, hidden: m.hidden, blink: m.blink, armor: m.armor, swipe: m.swipe },
+      mods: { gold: GOLD_RATE * p.goldMul, hidden: m.hidden, blink: m.blink, armor: m.armor, swipe: m.swipe, mirror: m.mirror, spin: m.spin },
+      onMirage: () => { combo = 0; this.comboBreak(); this.float('蜃樓!', 'tag miss'); },
+      onSpin: () => this.spinFx(),
       slowFirst: p.slowmo ? SLOWMO : null,
       onReady: a => { api = a; },
       // 炸彈:第 4 波起一般敵人也會混入;部分敵人機制會更多
@@ -383,7 +388,9 @@ G.battle = {
       icon: '🛡️', cls, count, life, interval: life * 0.5, decoyRate: s ? s.decoy : 0, patterns: this.patterns(),
       slowFirst: p.slowmo ? SLOWMO : null,
       onReady: a => { api = a; },
-      mods: { blink: m.blink, ghost: m.ghost, armor: m.armor, lockon: m.lockon, heavy: m.heavy, timebomb: m.timebomb, timebombMs: Math.round(TIMEBOMB_MS * G.roundCfg().life) },
+      mods: { blink: m.blink, ghost: m.ghost, armor: m.armor, lockon: m.lockon, heavy: m.heavy, timebomb: m.timebomb, timebombMs: Math.round(TIMEBOMB_MS * G.roundCfg().life), mirror: m.mirror, spin: m.spin },
+      onMirage: () => { this.comboBreak(); this.float('蜃樓!', 'tag miss'); },
+      onSpin: () => this.spinFx(),
       // 倒數炸彈:拆除算一次漂亮的格擋;爆炸傷害比一般攻擊高,也不會有破綻
       onDefuse: () => { this.comboHit(); this.gainUlt(p.blockUlt); G.audio.play('perfect'); this.float('拆除!', 'tag armor'); },
       onBomb: () => { missed++; this.comboBreak(); G.audio.play('boom'); this.float('爆炸!', 'tag miss'); this.hurtPlayer(dmg * TIMEBOMB_DMG); },
@@ -599,8 +606,11 @@ G.battle = {
     p.ult = 0;
     this.stats.ults++;
     this.render();
-    await this.cutIn();
-    await this.barrage(Math.round(p.atk * p.ultMult));
+    // 第二章破關後覺醒「炎鋼天道」:威力 ×1.5,發動時回復 20% HP
+    const tiandao = !!G.save.data.tiandao;
+    await this.cutIn(tiandao);
+    if (tiandao) this.healPlayer(Math.round(p.maxHp * TIANDAO_HEAL));
+    await this.barrage(Math.round(p.atk * p.ultMult * (tiandao ? TIANDAO_MUL : 1)));
     await G.clock.wait(700);
   },
 
@@ -622,8 +632,14 @@ G.battle = {
     el.classList.remove('show');
   },
 
-  async cutIn() {
+  async cutIn(tiandao = false) {
     const el = G.$('#cutin');
+    // 炎鋼天道:金色火焰、換招式名(過場圖到了以前沿用原本的圖)
+    el.classList.toggle('tiandao', tiandao);
+    el.classList.toggle('has-art', tiandao && !!G.TIANDAO_ART);
+    el.querySelector('.cutin-title').textContent = G.t(tiandao ? '炎鋼天道・焚天' : '烈焰鋼拳・焚天');
+    el.querySelector('.cutin-sub').textContent = G.t(tiandao ? '鋼鐵意志與不滅烈焰,合而為一!' : '額上烈焰烙痕,燃盡一切!');
+    el.querySelector('.cutin-art').src = '../assets/images/' + (tiandao && G.TIANDAO_ART ? G.TIANDAO_ART : 'fx/ult_cutin_fist.webp');
     // 出拳命中時從拳頭位置四射的火星:兩波,每次方向、距離、大小都隨機
     G.$('#cutinEmbers').innerHTML = Array.from({ length: 36 }, (_, k) => {
       const a = Math.random() * Math.PI * 2, r = 18 + Math.random() * 38;
@@ -634,7 +650,7 @@ G.battle = {
     void el.offsetWidth;
     el.classList.add('show');
     G.audio.play('cutin');
-    G.voice.say('hero', 'hero_ult', '烈焰鋼拳・焚天'); // 喊招
+    G.voice.say('hero', 'hero_ult', tiandao ? '炎鋼天道・焚天' : '烈焰鋼拳・焚天'); // 喊招
     G.clock.after(() => G.audio.play('boom'), 450); // 命中瞬間
     G.haptic.buzz([0, 450, 80]);
     await G.clock.wait(1700);
@@ -790,6 +806,10 @@ G.battle = {
       G.shuffle(open()).slice(0, n).forEach(i => g.setBlock(i, 'ice'));
       G.audio.play('block');
     }
+    if (type === 'sand') { // 流沙:每個階段換 3 格
+      g.clearBlocks('sand');
+      G.shuffle(open()).slice(0, 3).forEach(i => g.setBlock(i, 'sand'));
+    }
     if (type === 'tentacle' && phase === 'defend') { // 每次攻擊長出 2 條觸手,最多 4 條
       const have = [...g.blocks.values()].filter(b => b.type === 'tentacle').length;
       G.shuffle(open()).slice(0, Math.min(2, 4 - have)).forEach(i => g.setBlock(i, 'tentacle', 3));
@@ -851,6 +871,14 @@ G.battle = {
       bg.style.backgroundImage = before.bg;
     };
   },
+  // 磁暴:九宮格轉動時的提示
+  spinFx() {
+    G.audio.play('whiff');
+    G.audio.play('chip');
+    this.float('磁暴!', 'tag line');
+    G.haptic.buzz(30);
+  },
+
   // 事件場景的特效(ev-shake 震動 / ev-bite 閃紅),重複觸發也會重播
   sceneFx(cls) {
     const view = G.$('#stageView');
@@ -1336,6 +1364,7 @@ G.battle = {
 
   finish(win) {
     G.grid.clearBlocks();
+    G.grid.resetRot();
     this.endFever();
     const p = this.p, s = this.stats;
     const sv = G.save.data, round = G.round(), pr = G.prog(), i = this.stageIdx;
@@ -1369,25 +1398,34 @@ G.battle = {
       this.coins += s.chapterCoins;
     }
     // 第一次打倒區域 BOSS(第一輪):結算後播放區域通關對話與新招式解鎖
-    if (win && this.stage.type === 'boss' && round === 1 && !(sv.regionsCleared || {})[this.stage.region]) {
-      sv.regionsCleared = Object.assign(sv.regionsCleared || {}, { [this.stage.region]: true });
+    if (win && this.stage.type === 'boss' && round === 1 && !(sv.regionsCleared || {})[G.regionKey(this.stage.region)]) {
+      sv.regionsCleared = Object.assign(sv.regionsCleared || {}, { [G.regionKey(this.stage.region)]: true });
       this.regionCleared = this.stage.region;
     }
     sv.coins += this.coins;
-    const finalWin = win && i === G.STAGES.length - 1;
+    const finalWin = win && i === G.STAGES.length - 1, ch = G.chapter(), cd = G.chData(ch);
     this.newRound = 0;
+    this.newChapter = 0;
+    let tiandao = false;
     if (finalWin) {
-      sv.cleared = true; // 破關:主選單「故事」可重看結局
-      if (round === sv.roundMax && round < G.ROUND_LAST) this.newRound = sv.roundMax = round + 1; // 開啟下一輪
+      if (ch === 1) sv.cleared = true; // 第一章破關:主選單「故事」可重看結局
+      if (round === cd.roundMax && round < G.ROUND_LAST) this.newRound = cd.roundMax = round + 1; // 這一章開啟下一輪
+      if (round === 1 && G.CHAPTERS[ch] && !(sv.chaptersSeen || {})[ch + 1]) { // 第一次通過凡塵:下一章開放
+        sv.chaptersSeen = Object.assign(sv.chaptersSeen || {}, { [ch + 1]: true });
+        this.newChapter = ch + 1;
+      }
+      if (ch === 2 && round === 1 && !sv.tiandao) tiandao = sv.tiandao = true; // 第二章破關:覺醒新必殺技「炎鋼天道」
     }
     sv.life.breaks += s.breaks || 0; // 累計紀錄(成就用)
     sv.life.ults += s.ults || 0;
     G.daily.record({ s, win, rate }); // 每日任務進度
     G.save.write();
-    this.endingNext = finalWin; // 打倒最終 BOSS:結算後播放結局
+    this.endingNext = finalWin && ch === 1; // 第一章打倒最終 BOSS:結算後播放結局漫畫
     G.scenes.result(win, score, points, s, p);
-    // 區域通關:結算畫面出來後接著播通關對話與新招式解鎖(最終區域由結局漫畫收尾)
-    if (this.regionCleared >= 0 && this.regionCleared < G.REGIONS.length - 1) { const r = this.regionCleared; setTimeout(() => G.dialog.cleared(r), 900); }
+    // 區域通關:結算畫面出來後接著播通關對話與新招式解鎖(第一章最終區域由結局漫畫收尾)
+    const lastRegion = this.regionCleared === G.REGIONS.length - 1;
+    if (this.regionCleared >= 0 && !(lastRegion && ch === 1)) { const r = this.regionCleared; setTimeout(() => G.dialog.cleared(r), 900); }
+    if (tiandao) setTimeout(() => G.dialog.awaken(), 900); // 第二章結局:覺醒對話
     G.ach.check(s, win); // 結算畫面上跳出這場達成的成就
   },
 };

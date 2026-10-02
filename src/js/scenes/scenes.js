@@ -247,7 +247,7 @@ G.scenes = {
       G.save.write();
     }
     // 點數夠升級(而且還沒到上限)時,「成長」按鈕閃爍提示
-    const sv = G.save.data, max = G.ROUNDS[sv.roundMax].upMax;
+    const sv = G.save.data, max = G.upMax();
     G.$('#btnUpgrade').classList.toggle('can-up', G.UPGRADES.some(u => sv.up[u.id] < max && sv.points >= G.upgradeCost(sv.up[u.id])));
     G.show('menu');
     G.bgm.play('menu');
@@ -259,12 +259,19 @@ G.scenes = {
     G.bgm.setRate(1);
     G.bgm.play('menu'); // 從結算畫面回來時音樂已經停了;已在播就不會重來
     // 周回切換:開啟第二輪後才出現;只列出已開啟的輪次(還沒開的第三輪不顯示)
-    const opened = [1, 2, 3].filter(r => r <= sv.roundMax);
-    const tabs = sv.roundMax < 2 ? '' : `<div class="round-tabs" style="grid-template-columns:repeat(${opened.length}, 1fr)">` +
+    const rmax = G.chData().roundMax;
+    const opened = [1, 2, 3].filter(r => r <= rmax);
+    const tabs = rmax < 2 ? '' : `<div class="round-tabs" style="grid-template-columns:repeat(${opened.length}, 1fr)">` +
       opened.map(r => `<button class="round-tab r${r}${r === round ? ' on' : ''}" data-round="${r}">${G.t(G.ROUNDS[r].name)}</button>`).join('') +
       '</div>' + (cfg.desc ? `<div class="round-desc">${G.t(cfg.desc)}</div>` : '');
+    // 章節切換:還沒開放的章節顯示 🔒(點了說明開放條件)
+    const chTabs = `<div class="ch-tabs">` + G.CHAPTERS.map((c, k) => {
+      const open = G.chapterOpen(k + 1);
+      return `<button class="ch-tab${G.chapter() === k + 1 ? ' on' : ''}${open ? '' : ' locked'}" data-ch="${k + 1}">` +
+        `<b>${open ? '' : '🔒 '}${G.t(c.name)}</b><small>${G.t(c.sub)}</small></button>`;
+    }).join('') + '</div>';
     // 新手教學卡片:只在第一輪最上面
-    const tut = round !== 1 ? '' : `<button class="stage-card tut-card" id="tutCard">${sv.tutorialClear ? '<span class="sc-clear">CLEAR</span>' : ''}` +
+    const tut = round !== 1 || G.chapter() !== 1 ? '' : `<button class="stage-card tut-card" id="tutCard">${sv.tutorialClear ? '<span class="sc-clear">CLEAR</span>' : ''}` +
       `<div class="sc-name">🎓 ${G.t('新手教學')}</div><div class="sc-desc">${G.t('從頭學會點擊、防禦、破綻與必殺技。')}</div></button>`;
     // 大地圖:6 個區域由上往下排,每區 5 個關卡節點用蜿蜒的路線連起來;目前要打的關卡上站著炎鋼
     const cur = Math.min(pr.unlocked, G.STAGES.length) - 1;
@@ -282,13 +289,15 @@ G.scenes = {
       }).join('');
       const path = MAP_POS.map(([x, y]) => `${x},${y}`).join(' ');
       const bossName = r ? G.t(G.ENEMIES[G.REGIONS[r - 1].boss].name) : '';
-      return `<section class="map-region${locked ? ' locked' : ''}" style="--rbg:url('${url(G.STAGES[g.first + 2].img)}')">` +
+      const art = G.STAGES[g.first + 2].img; // 背景圖還沒到的區域用漸層代替
+      return `<section class="map-region${locked ? ' locked' : ''}" style="--rbg:${art ? `url('${url(art)}')` : 'linear-gradient(160deg, #6a4a20, #2a1a0a 60%, #120a04)'}">` +
         `<header class="mr-head"><b>${G.t('區域 {0}', r + 1)} ${G.t(g.name)}</b><span>★ ${got}/15</span></header>` +
         `<p class="mr-desc">${G.t(g.desc)}</p>` +
         `<div class="mr-field"><svg class="mr-path" viewBox="0 0 100 100" preserveAspectRatio="none"><polyline points="${path}"/></svg>${nodes}</div>` +
         (locked ? `<div class="mr-fog"><b>🔒</b>${G.t('打倒「{0}」後開放', bossName)}</div>` : '') + '</section>';
     }).join('');
-    G.$('#stageList').innerHTML = tabs + tut + `<div class="world-map">${regions}</div>`;
+    G.$('#stageList').innerHTML = chTabs + tabs + tut + `<div class="world-map">${regions}</div>`;
+    G.$('#stageList').querySelectorAll('.ch-tab').forEach(b => { b.onclick = () => this.setChapter(+b.dataset.ch); });
     G.$('#stageList').querySelectorAll('.map-node[data-i]').forEach(b => {
       b.onclick = () => this.stageSheet(+b.dataset.i);
     });
@@ -327,11 +336,26 @@ G.scenes = {
     el.onclick = e => { if (e.target === el) el.classList.remove('show'); };
   },
 
+  // 切換章節:還沒開放的只提示條件
+  setChapter(ch) {
+    const sv = G.save.data;
+    if (ch === G.chapter()) return;
+    if (!G.chapterOpen(ch)) {
+      G.audio.play('fail');
+      G.ach.toast({ icon: '🔒', name: G.t(G.CHAPTERS[ch - 1].name), sub: G.t('通過{0}的「凡塵」後開放', G.t(G.CHAPTERS[ch - 2].name)) });
+      return;
+    }
+    sv.chapter = ch;
+    G.save.write();
+    G.audio.play('select');
+    this.stages();
+  },
+
   // 切換周回(點分頁、左右滑或 ← →);只能切到已開啟的輪次,不循環。回傳是否有切換
   setRound(r) {
     const sv = G.save.data, cur = G.round();
-    r = Math.max(1, Math.min(sv.roundMax, r));
-    if (sv.roundMax < 2 || r === cur) return false;
+    r = Math.max(1, Math.min(G.chData().roundMax, r));
+    if (G.chData().roundMax < 2 || r === cur) return false;
     sv.round = r;
     G.save.write();
     G.audio.play('select');
@@ -349,7 +373,7 @@ G.scenes = {
     G.$('#upPoints').textContent = sv.points;
     G.$('#upList').innerHTML = G.UPGRADES.map(u => {
       const lv = sv.up[u.id];
-      const max = G.ROUNDS[sv.roundMax].upMax; // 周回開啟後上限提高
+      const max = G.upMax(); // 周回、章節開啟後上限提高
       const maxed = lv >= max;
       const cost = G.upgradeCost(lv);
       return `<div class="up-item">
@@ -455,6 +479,7 @@ G.scenes = {
       <div class="score">${G.t('積分')}<b>${score}</b></div>
       <div class="score">${G.t('獲得成長點數')}<b>${G.PT} +${points}</b></div>` +
       `<div class="score coins">${G.t('獲得金幣')}<b>💰 +${G.battle.coins || 0}${s.bonusCoins ? `<small class="coin-bonus">${G.t('(狂打 +{0})', s.bonusCoins)}</small>` : ''}${s.eventCoins ? `<small class="coin-bonus">${G.t('(事件 +{0})', s.eventCoins)}</small>` : ''}${s.chapterCoins ? `<small class="coin-bonus">${G.t('(章節通關 +{0})', s.chapterCoins)}</small>` : ''}</b></div>` +
+      (G.battle.newChapter ? `<div class="new-round">${G.t('{0} 開放!', G.t(G.CHAPTERS[G.battle.newChapter - 1].name))}<small>${G.t('在選擇關卡的上方切換章節')}</small></div>` : '') +
       (G.battle.newRound ? `<div class="new-round">${G.t('{0} 開啟!', G.t(G.ROUNDS[G.battle.newRound].name))}<small>${G.t('成長上限提升至 Lv{0}', G.ROUNDS[G.battle.newRound].upMax)}</small></div>` : '');
     G.show('result');
   },

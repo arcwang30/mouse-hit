@@ -110,7 +110,7 @@ G.save = {
     // 舊存檔只有第一輪的 unlocked / best,這裡搬進 rounds[1]
     const sv = this.data;
     if (!sv.rounds) {
-      const unlocked = sv.unlocked || 1, last = G.STAGES.length - 1;
+      const unlocked = sv.unlocked || 1, last = G.CHAPTERS[0].stages.length - 1;
       const clear = [...Array(unlocked - 1).keys()];
       if (sv.cleared) clear.push(last);
       sv.rounds = { 1: { unlocked, best: sv.best || {}, clear } };
@@ -128,14 +128,14 @@ G.save = {
         r0.clear = [...clear].sort((a, b) => a - b);
         r0.stars = stars;
         r0.starsInit = true;
-        r0.unlocked = Math.min(G.STAGES.length, Math.max(((r0.unlocked || 1) - 1) * 3 + 1, ...r0.clear.map(i => i + 2)));
+        r0.unlocked = Math.min(G.CHAPTERS[0].stages.length, Math.max(((r0.unlocked || 1) - 1) * 3 + 1, ...r0.clear.map(i => i + 2)));
         r0.best = {};
       });
       // 已經走過的區域:不再播開場 / BOSS / 通關對話,也算已解鎖新招式
       const c1 = (sv.rounds[1] || {}).clear || [];
       sv.regionsCleared = sv.regionsCleared || {};
       sv.dialogSeen = sv.dialogSeen || {};
-      G.REGIONS.forEach((g, r) => {
+      G.CHAPTERS[0].regions.forEach((g, r) => {
         if (c1.some(i => i >= g.first && i <= g.last)) sv.dialogSeen['r' + r] = true;
         if (c1.includes(g.last)) { sv.regionsCleared[r] = true; sv.dialogSeen['b' + r] = sv.dialogSeen['c' + r] = true; }
       });
@@ -156,7 +156,7 @@ G.save = {
     if (!sv.seen) {
       sv.seen = {};
       Object.values(sv.rounds).forEach(r => r.clear.forEach(i =>
-        G.STAGES[i].waves.forEach(w => { sv.seen[w.replace('+', '')] = true; })));
+        G.CHAPTERS[0].stages[i].waves.forEach(w => { sv.seen[w.replace('+', '')] = true; })));
     }
   },
   write() {

@@ -42,7 +42,7 @@
 
       // 戰鬥畫面:沿用 battle 的 HUD、特效與音效
       b.stageIdx = 0;
-      b.stage = G.STAGES[0];
+      b.stage = G.CHAPTERS[0].stages[0];
       b.p = makePlayer();
       b.p.feverAt = 999; // 教學中不進 FEVER(第一次在正式關卡遇到時才說明)
       b.stats = { dmg: 0, hits: 0, blocks: 0, perfects: 0, breaks: 0, waves: 0, ults: 0, maxCombo: 0, fevers: 0 };

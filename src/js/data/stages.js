@@ -67,11 +67,31 @@ G.roundExtras = (id, r = G.round()) => {
 G.ROUND_LAST = 3;
 // 星級評價:過關一顆星,另外「過關時 HP 剩 hp 比例以上」「最高連擊達 combo」各一顆星
 G.STAR_RULES = { hp: 0.5, combo: 30 };
-// 目前選擇的輪次(不會超過已開啟的)與該輪的進度
-G.round = () => G.tutorial && G.tutorial.active ? 1 : Math.min(G.save.data.round || 1, G.save.data.roundMax); // 教學一律當第一輪
+// ---- 章節 ----
+// 第一章的進度沿用舊存檔欄位(sv.rounds / sv.roundMax),第二章起放在 sv.ch[章] = { rounds, roundMax }
+G.chData = (ch = G.chapter()) => {
+  const sv = G.save.data;
+  if (ch === 1) return sv;
+  sv.ch = sv.ch || {};
+  return sv.ch[ch] || (sv.ch[ch] = { rounds: {}, roundMax: 1 });
+};
+// 第 ch 章開放了沒:第一章一開始就有;之後每章要先通過前一章的第一輪(凡塵)
+G.chapterOpen = ch => ch === 1 || !!(G.save.data && ((G.chData(ch - 1).rounds[1] || {}).clear || []).includes(G.CHAPTERS[ch - 2].stages.length - 1));
+// 目前選擇的章節(教學一律第一章;還沒開放的退回第一章)
+G.chapter = () => {
+  const sv = G.save && G.save.data;
+  if (!sv || (G.tutorial && G.tutorial.active)) return 1;
+  const c = Math.min(sv.chapter || 1, G.CHAPTERS.length);
+  return G.chapterOpen(c) ? c : 1;
+};
+// 永久成長的等級上限:看所有已開放章節裡開到第幾輪(每多一章上限再 +5)
+G.upMax = () => Math.max(...G.CHAPTERS.map((c, k) => G.chapterOpen(k + 1) ? G.ROUNDS[G.chData(k + 1).roundMax].upMax + k * 5 : 0));
+
+// 目前選擇的輪次(不會超過這一章已開啟的)與該輪的進度
+G.round = () => G.tutorial && G.tutorial.active ? 1 : Math.min(G.save.data.round || 1, G.chData().roundMax); // 教學一律當第一輪
 G.roundCfg = (r = G.round()) => G.ROUNDS[r];
-G.prog = (r = G.round()) => {
-  const all = G.save.data.rounds;
+G.prog = (r = G.round(), ch = G.chapter()) => {
+  const all = G.chData(ch).rounds;
   const r0 = all[r] || (all[r] = { unlocked: 1, best: {}, clear: [] });
   r0.stars = r0.stars || {}; // 舊存檔沒有星級:已通關的先算一顆星
   if (!r0.starsInit) { r0.clear.forEach(i => { r0.stars[i] = Math.max(r0.stars[i] || 0, 1); }); r0.starsInit = true; }
@@ -107,7 +127,7 @@ const BGS = {
   summit:  { bg: 'summit',  img: 'backgrounds/stage10.jpg', bgm: 'sky',     deco: ['⚡', '🌕', '👊', '🌕', '⚡'] },
 };
 // 區域:name 名稱、desc 說明、boss 區域 BOSS、unlock 打倒 BOSS 後解鎖的機制、stars 難度
-G.REGIONS = [
+const REGIONS_1 = [
   { name: '山腳小鎮', desc: '炎鋼下山後的第一站。紅磚老街與漁港,地痞流氓橫行。', boss: 'fatKing', unlock: ['heavy', 'armor'], stars: 1 },
   { name: '未來都心', desc: '全息投影與古老鐘塔交錯的市中心,地下擂台的喧囂徹夜不息。', boss: 'mechGeneral', unlock: ['lockon', 'timebomb'], stars: 2 },
   { name: '鋼鐵熔爐', desc: '日夜不息的煉鋼廠,改造戰士在火光中列隊。', boss: 'forgeMaster', unlock: ['lava', 'blink', 'swipe'], stars: 3 },
@@ -123,7 +143,7 @@ G.STAGE_TYPES = {
   boss:   { icon: '👑', name: 'BOSS' },
 };
 // [區域, 類型, 名稱, 背景, 波次, 分歧在第幾波之後]
-const STAGE_LIST = [
+const STAGE_LIST_1 = [
   [0, 'normal', '紅磚街角', 'park',    ['monk', 'goblin', 'agent'], []],
   [0, 'normal', '風箏公園', 'park',    ['agent', 'monk', 'goblin', 'drunk'], [1]],
   [0, 'bonus',  '港口特訓', 'harbor',  [], []],
@@ -155,17 +175,80 @@ const STAGE_LIST = [
   [5, 'elite',  '帝王之門', 'summit',   ['hacker+', 'abyssCrab', 'magician+'], [0]],
   [5, 'boss',   '鋼拳之巔', 'summit',   ['sumo+', 'poisonQueen', 'clockBomber+', 'skyEmpress', 'skater+', 'cyborg+', 'steelEmperor'], [2, 4]],
 ];
-// 難度(敵人強度倍率):沿用舊版 10 關的曲線,依 30 關的位置內插
-const OLD_SCALE = [1, 1.2, 1.4, 1.55, 1.7, 1.8, 1.9, 2, 2.05, 2.1];
-const scaleAt = i => {
-  const x = i / (STAGE_LIST.length - 1) * (OLD_SCALE.length - 1), k = Math.floor(x), f = x - k;
-  return +(OLD_SCALE[k] + ((OLD_SCALE[k + 1] || OLD_SCALE[k]) - OLD_SCALE[k]) * f).toFixed(2);
+// ---- 第二章「鋼鐵與心相的試煉」:絕魔流沙 ----
+// 背景:assets/images/backgrounds/ch2_*.jpg
+const BGS_2 = {
+  frontier: { bg: 'forge',   img: 'backgrounds/ch2_frontier.jpg', bgm: 'battle1', deco: ['🏜️', '🌵', '☀️', '🌵', '🏜️'] },
+  storm:    { bg: 'subway',  img: 'backgrounds/ch2_storm.jpg', bgm: 'battle2', deco: ['🌩️', '⚡', '🌪️', '⚡', '🌩️'] },
+  ruins:    { bg: 'arena',   img: 'backgrounds/ch2_ruins.jpg', bgm: 'arena',   deco: ['🏛️', '🏺', '🌙', '🏺', '🏛️'] },
+  oasis:    { bg: 'theater', img: 'backgrounds/ch2_oasis.jpg', bgm: 'snow',    deco: ['🌴', '💧', '🌙', '💧', '🌴'] },
+  sect:     { bg: 'snow',    img: 'backgrounds/ch2_sect.jpg', bgm: 'battle0', deco: ['⛩️', '🔥', '☯️', '🔥', '⛩️'] },
+  eye:      { bg: 'sky',     img: 'backgrounds/ch2_eye.jpg', bgm: 'sky',     deco: ['🌪️', '☀️', '🌑', '☀️', '🌪️'] },
 };
-G.STAGES = STAGE_LIST.map(([r, type, name, bg, waves, events], i) => Object.assign({}, BGS[bg], {
-  region: r, type, waves, events, scale: scaleAt(i), stars: G.REGIONS[r].stars,
-  name, code: `${r + 1}-${i % 5 + 1}`, // 地圖上的編號,例如 1-3
-}));
-G.REGIONS.forEach((g, r) => { g.first = r * 5; g.last = r * 5 + 4; });
+const REGIONS_2 = [
+  { name: '流沙邊境', desc: '荒漠邊緣的廢棄科技前哨站。拾荒者與沙盜盤據,腳下的流沙會吞噬一切。', boss: 'sandKing', unlock: ['sand'], stars: 3 },
+  { name: '磁暴荒原', desc: '電磁風暴肆虐的荒原,所有機械都會失靈。額上的烙痕第一次產生了共鳴。', boss: 'stormLord', unlock: ['spin'], stars: 3 },
+  { name: '沙海遺跡', desc: '半埋在沙海裡的古代神殿,牆上刻著古武源流的壁畫。', boss: 'colossus', unlock: [], stars: 4 },
+  { name: '蜃樓綠洲', desc: '水光搖曳的綠洲與海市蜃樓。真假難辨,隱世宗門的使者在此試探來者的心。', boss: 'mirageFairy', unlock: ['mirror'], stars: 4 },
+  { name: '天沙宗山門', desc: '隱世宗門「天沙宗」的修練場。弟子們能將肉身與粒子能量合而為一。', boss: 'sectGuardian', unlock: [], stars: 5 },
+  { name: '風暴之眼', desc: '風暴中心的古老祭壇。宗主「無相」靜候著繼承古武源流的人。', boss: 'sectMaster', unlock: [], stars: 5 },
+];
+const STAGE_LIST_2 = [
+  [0, 'normal', '前哨廢墟', 'frontier', ['sandBandit', 'scrapBot', 'sandBandit+'], []],
+  [0, 'normal', '流沙谷', 'frontier',   ['scrapBot', 'sandBandit', 'cyborg+', 'scrapBot+'], [1]],
+  [0, 'bonus',  '沙丘特訓', 'frontier', [], []],
+  [0, 'elite',  '沙盜營地', 'frontier', ['sandBandit+', 'scrapBot+', 'sandBandit+'], [0]],
+  [0, 'boss',   '烈日王座', 'frontier', ['sandBandit', 'scrapBot+', 'patrolBot+', 'sandBandit+', 'sandKing'], [1, 3]],
+  [1, 'normal', '雷鳴沙原', 'storm',    ['stormRanger', 'scorpion', 'scrapBot+'], []],
+  [1, 'normal', '廢棄雷達站', 'storm',  ['scorpion', 'stormRanger', 'sandBandit+', 'stormRanger+'], [1]],
+  [1, 'bonus',  '磁暴特訓', 'storm',    [], []],
+  [1, 'elite',  '蠍巢', 'storm',        ['scorpion+', 'stormRanger+', 'droneOp+'], [0]],
+  [1, 'boss',   '磁暴核心', 'storm',    ['stormRanger', 'scorpion+', 'thunderRonin', 'stormRanger+', 'stormLord'], [1, 3]],
+  [2, 'normal', '沉沙神殿', 'ruins',    ['ruinGuard', 'scorpion', 'stormRanger+'], []],
+  [2, 'normal', '壁畫迴廊', 'ruins',    ['ruinGuard', 'sandBandit+', 'ruinGuard+', 'scorpion+'], [1]],
+  [2, 'bonus',  '遺跡特訓', 'ruins',    [], []],
+  [2, 'elite',  '機關墓室', 'ruins',    ['ruinGuard+', 'scorpion+', 'ruinGuard+'], [0]],
+  [2, 'boss',   '巨像大殿', 'ruins',    ['ruinGuard', 'stormRanger+', 'forgeMaster', 'ruinGuard+', 'colossus'], [1, 3]],
+  [3, 'normal', '月影泉', 'oasis',      ['dunesDancer', 'ruinGuard', 'dunesDancer'], []],
+  [3, 'normal', '幻沙市集', 'oasis',    ['dunesDancer', 'scorpion+', 'dunesDancer+', 'magician+'], [1]],
+  [3, 'bonus',  '綠洲特訓', 'oasis',    [], []],
+  [3, 'elite',  '鏡湖', 'oasis',        ['dunesDancer+', 'ruinGuard+', 'snowWitch'], [0]],
+  [3, 'boss',   '蜃樓宮', 'oasis',      ['dunesDancer', 'magician+', 'dunesDancer+', 'puppetLord', 'mirageFairy'], [1, 3]],
+  [4, 'normal', '試煉石階', 'sect',     ['sectDisciple', 'particleMonk', 'sectDisciple'], []],
+  [4, 'normal', '粒子演武場', 'sect',   ['particleMonk', 'sectDisciple+', 'dunesDancer+', 'particleMonk+'], [1]],
+  [4, 'bonus',  '山門特訓', 'sect',     [], []],
+  [4, 'elite',  '護法殿', 'sect',       ['sectDisciple+', 'particleMonk+', 'skyEmpress'], [0]],
+  [4, 'boss',   '天沙大殿', 'sect',     ['sectDisciple', 'particleMonk+', 'sectDisciple+', 'colossus', 'sectGuardian'], [1, 3]],
+  [5, 'normal', '風牆', 'eye',          ['particleMonk+', 'sectDisciple+', 'stormRanger+'], []],
+  [5, 'normal', '日月迴廊', 'eye',      ['sectDisciple+', 'dunesDancer+', 'particleMonk+', 'ruinGuard+'], [1]],
+  [5, 'bonus',  '風眼特訓', 'eye',      [], []],
+  [5, 'elite',  '心相之門', 'eye',      ['sectDisciple+', 'mirageFairy', 'particleMonk+'], [0]],
+  [5, 'boss',   '無相祭壇', 'eye',      ['sectDisciple+', 'stormLord', 'particleMonk+', 'mirageFairy', 'dunesDancer+', 'sectGuardian', 'sectMaster'], [2, 4]],
+];
+
+// ---- 建立章節 ----
+// 難度(敵人強度倍率)曲線:第一章沿用舊版 10 關的曲線,第二章接著往上;依 30 關的位置內插
+const CURVE_1 = [1, 1.2, 1.4, 1.55, 1.7, 1.8, 1.9, 2, 2.05, 2.1];
+const CURVE_2 = [2.15, 2.3, 2.45, 2.55, 2.65, 2.75, 2.82, 2.9, 2.95, 3];
+const curveAt = (curve, i, n) => {
+  const x = i / (n - 1) * (curve.length - 1), k = Math.floor(x), f = x - k;
+  return +(curve[k] + ((curve[k + 1] || curve[k]) - curve[k]) * f).toFixed(2);
+};
+const buildChapter = (id, name, sub, regions, list, bgs, curve) => {
+  regions.forEach((g, r) => { g.first = r * 5; g.last = r * 5 + 4; });
+  const stages = list.map(([r, type, sname, bg, waves, events], i) => Object.assign({}, bgs[bg], {
+    region: r, type, waves, events, scale: curveAt(curve, i, list.length), stars: regions[r].stars,
+    name: sname, code: `${r + 1}-${i % 5 + 1}`, // 地圖上的編號,例如 1-3
+  }));
+  return { id, name, sub, regions, stages };
+};
+G.CHAPTERS = [
+  buildChapter(1, '第一章 鋼拳復仇', '新神州', REGIONS_1, STAGE_LIST_1, BGS, CURVE_1),
+  buildChapter(2, '第二章 鋼鐵與心相的試煉', '絕魔流沙', REGIONS_2, STAGE_LIST_2, BGS_2, CURVE_2),
+];
+// G.STAGES / G.REGIONS:目前選擇的章節(大部分程式只需要看目前這一章)
+Object.defineProperty(G, 'STAGES', { get: () => G.CHAPTERS[G.chapter() - 1].stages, configurable: true });
+Object.defineProperty(G, 'REGIONS', { get: () => G.CHAPTERS[G.chapter() - 1].regions, configurable: true });
 // 關卡在地圖與結算上的顯示名稱:「1-3 港口特訓」
 G.stageTitle = s => `${s.code} ${G.t(s.name)}`;
 
@@ -184,12 +267,17 @@ G.MECH_INFO = {
   tentacle: { name: '觸手', hint: '觸手蓋住的格子,敲 3 下清掉' },
   hidden:   { name: '駭入', hint: '拳頭先顯示 ❓,裡面可能藏著 💣' },
   memory:   { name: '幻術', hint: '記住格子閃爍的順序,照順序點回來' },
+  // 第二章
+  sand:     { name: '流沙', hint: '流沙格上的符號沉得特別快,要先點' },
+  spin:     { name: '磁暴', hint: '九宮格會整個旋轉,符號跟著位置跑' },
+  mirror:   { name: '蜃樓', hint: '帶 ⇋ 的符號是幻影,要點左右對稱的另一格' },
 };
-// 第 i 關可以出現的機制:第一輪只有前面區域 BOSS 解鎖的;第二、三輪全部開放(回傳 null = 不限制)
-G.mechAllowed = (i, round = G.round()) => {
+// 第 i 關可以出現的機制:第一輪只有之前章節全部 + 本章前面區域 BOSS 解鎖的;第二、三輪全部開放(回傳 null = 不限制)
+G.mechAllowed = (i, round = G.round(), ch = G.chapter()) => {
   if (round > 1) return null;
-  const s = G.STAGES[i];
-  return new Set(G.REGIONS.slice(0, s ? s.region : 0).flatMap(g => g.unlock));
+  const c = G.CHAPTERS[ch - 1], s = c.stages[i];
+  const before = G.CHAPTERS.slice(0, ch - 1).flatMap(x => x.regions.flatMap(g => g.unlock));
+  return new Set([...before, ...c.regions.slice(0, s ? s.region : 0).flatMap(g => g.unlock)]);
 };
 // 某個敵人用到的所有機制(含輪換與格子狀態)
 G.mechKeysOf = id => {
@@ -209,3 +297,8 @@ G.BREAK_STYLES = [
 // 骰子 n 點:3×3 的點位,亮哪幾格
 const DICE_PIPS = [[4], [0, 8], [0, 4, 8], [0, 2, 6, 8], [0, 2, 4, 6, 8], [0, 2, 3, 5, 6, 8]];
 G.diceHtml = n => '<span class="die">' + [...Array(9).keys()].map(k => `<i${DICE_PIPS[n - 1].includes(k) ? ' class="on"' : ''}></i>`).join('') + '</span>';
+// 區域在存檔裡的代號(通關紀錄、對話是否看過):第一章沿用舊的數字,之後的章節加上章節編號
+G.regionKey = (r, ch = G.chapter()) => ch === 1 ? String(r) : `${ch}-${r}`;
+// 第二章的美術:到了之後填上路徑(assets/images/ 底下),沒有的話沿用原本的圖
+G.HERO_AWAKE_IMG = 'fx/hero_awake.webp'; // 炎鋼・天道覺醒立繪
+G.TIANDAO_ART = 'fx/ult_tiandao.webp';  // 新必殺技「炎鋼天道」過場圖

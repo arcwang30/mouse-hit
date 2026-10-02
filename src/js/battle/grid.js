@@ -6,6 +6,7 @@ G.grid = {
   releaseHandler: null, // 放開(蓄力重拳用)
   lastDown: null,       // 這次按下的座標 { x, y }
   swipeKey: null,       // 鍵盤方向鍵完成滑擊拳(由 molePhase 設定)
+  rot: 0,               // 磁暴:九宮格目前旋轉的角度
 
   init() {
     const el = G.$('#grid');
@@ -135,6 +136,16 @@ G.grid = {
     el.dataset.hp = b && b.hp > 1 ? '×' + b.hp : '';
   },
 
+  // 磁暴:整個九宮格旋轉(用 CSS 的 rotate 屬性,不會和震動動畫的 transform 衝突);符號、標籤、角標反向轉回來保持正向
+  rotateBy(deg) {
+    this.rot = (this.rot + deg) % 360;
+    G.$('#grid').style.setProperty('--grot', this.rot + 'deg');
+  },
+  resetRot() {
+    this.rot = 0;
+    G.$('#grid').style.setProperty('--grot', '0deg');
+  },
+
   bump(i) {
     const c = this.cells[i];
     c.classList.remove('bump');
@@ -164,6 +175,10 @@ G.grid = {
 //     heavy  { chance, holdMs } 重擊:要按住「頂住」才算擋下
 //     swipe  疾風:拳頭帶箭頭,要往箭頭方向滑才算打中(onHit 的 info.swipe)
 //     timebomb 倒數:每組另外冒出一顆 💣(不計入次數),timebombMs 內點掉 = 拆除(onDefuse),時間到爆炸(onBomb)
+//     mirror 蜃樓:符號是幻影(標 ⇋),要點左右對稱的鏡像格才算打中;點幻影本身 = onMirage
+//     spin   磁暴:階段中途九宮格整個旋轉(onSpin)
+//   流沙格(格子狀態 sand)上的符號停留時間 ×SAND_LIFE
+const SAND_LIFE = 0.55; // 流沙格上符號的停留時間倍率
 G.molePhase = o => new Promise(resolve => {
   const mods = o.mods || {};
   const active = new Map();     // 格子 → 目前的符號
@@ -215,6 +230,19 @@ G.molePhase = o => new Promise(resolve => {
   // 倒數炸彈還在的話,符號都處理完也要等它拆除或爆炸才結束
   const bombsLeft = () => [...active.values()].some(a => a.kind === 'timebomb');
 
+  // 蜃樓:鏡像目標格 → 幻影所在格(目標格保留起來,不讓別的符號出現在那裡)
+  const mirrorAt = new Map();
+  const mirrorOf = i => Math.floor(i / 3) * 3 + (2 - i % 3);
+  const unMirror = a => { if (a.mirror !== undefined) { reserved.delete(a.mirror); mirrorAt.delete(a.mirror); } };
+
+  // 磁暴:階段開始後轉兩次(每次 90 / 180 / 270 度)
+  const spinTimers = [];
+  if (mods.spin) [900, 2700].forEach(ms => spinTimers.push(G.clock.after(() => {
+    if (finished) return;
+    G.grid.rotateBy(G.pick([90, 180, 270]));
+    o.onSpin && o.onSpin();
+  }, ms)));
+
   const finish = () => {
     if (finished) return;
     finished = true;
@@ -224,6 +252,7 @@ G.molePhase = o => new Promise(resolve => {
     G.grid.swipeKey = null;
     G.clock.cancel(spawnTimer);
     pending.forEach(G.clock.cancel);
+    spinTimers.forEach(G.clock.cancel);
     active.forEach(a => { kill(a); a.fx && a.fx.cancel(); });
     active.clear();
     reserved.forEach(i => cell(i).classList.remove('target'));
@@ -253,6 +282,7 @@ G.molePhase = o => new Promise(resolve => {
 
   const expire = (i, a) => {
     active.delete(i);
+    unMirror(a);
     if (swiping && swiping.a === a) { swiping = null; cell(i).classList.remove('aiming'); }
     if (a.kind === 'timebomb') { // 倒數歸零:爆炸,波及上下左右
       G.grid.clear(i, 'press');
@@ -273,6 +303,9 @@ G.molePhase = o => new Promise(resolve => {
   const armExpire = (i, a, ms) => a.ts.push(G.clock.after(() => expire(i, a), ms));
 
   G.grid.handler = i => {
+    // 蜃樓:點到幻影的鏡像格 = 打中幻影
+    let viaMirror = false;
+    if (mirrorAt.has(i) && active.get(mirrorAt.get(i))) { i = mirrorAt.get(i); viaMirror = true; }
     const b = blockAt(i);
     // 觸手:敲 hp 下清掉
     if (b && b.type === 'tentacle') {
@@ -295,6 +328,13 @@ G.molePhase = o => new Promise(resolve => {
 
     const a = active.get(i);
     if (!a) { G.grid.flash(i, 'miss'); G.grid.impact(i, 'miss'); G.audio.play('tap'); return; }
+    if (a.mirror !== undefined && !viaMirror) { // 直接點幻影本身:撲空(幻影還在,可以再點對的格子)
+      G.grid.bump(i);
+      G.grid.impact(i, 'miss');
+      G.audio.play('whiff');
+      o.onMirage && o.onMirage(i);
+      return;
+    }
 
     if (a.kind === 'ghost') { // 殘影:點了就消失,中斷連擊
       kill(a); active.delete(i);
@@ -365,6 +405,8 @@ G.molePhase = o => new Promise(resolve => {
   const doHit = (i, a, auto, swipe = false) => {
     G.grid.impact(i, o.cls.includes('guard') ? 'guard' : a.gold ? 'num' : 'fist', a.gold || auto);
     const ratio = Math.max(0, a.life - (G.clock.now() - a.born)) / a.life;
+    if (a.mirror !== undefined) G.grid.flash(a.mirror, 'good'); // 蜃樓:鏡像格也亮一下
+    unMirror(a);
     kill(a); active.delete(i);
     G.grid.clear(i, 'press');
     G.grid.flash(i, 'good');
@@ -432,7 +474,14 @@ G.molePhase = o => new Promise(resolve => {
         label = { up: '↑', down: '↓', left: '←', right: '→' }[a.swipe];
         life *= 1.25;
       }
+      // 蜃樓:中間那一行沒有鏡像,左右兩行才會出現;鏡像格要空著
+      if (!a.gold && !a.armor && !a.swipe && i % 3 !== 1 && roll(mods.mirror)) {
+        const m = mirrorOf(i);
+        if (!active.has(m) && !reserved.has(m)) { a.mirror = m; reserved.add(m); mirrorAt.set(m, i); cls += ' mirage'; label = '⇋'; }
+      }
     }
+    // 流沙格:符號沉得特別快
+    if (blockAt(i) && blockAt(i).type === 'sand' && kind !== 'timebomb') life *= SAND_LIFE;
     if (mods.lockon && kind !== 'decoy' && kind !== 'timebomb') life *= 0.8;
     if (o.slowFirst && G.clock.now() - phaseStart < o.slowFirst.ms) life *= o.slowFirst.mul; // 時之呼吸
     a.life = life = Math.round(life);
@@ -469,7 +518,7 @@ G.molePhase = o => new Promise(resolve => {
         }
       }
       // 瞬移:存活到一半時跳到別格
-      if (roll(mods.blink)) a.ts.push(G.clock.after(() => blink(i, a), life * 0.45));
+      if (a.mirror === undefined && roll(mods.blink)) a.ts.push(G.clock.after(() => blink(i, a), life * 0.45)); // 蜃樓不瞬移
     }
   };
 

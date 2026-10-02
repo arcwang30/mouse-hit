@@ -879,3 +879,4 @@ html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; } /* 手機瀏覽
 .dialog.system .dlg-box { box-shadow: inset 0 0 0 .5cqw var(--neon-y), 0 0 4cqw #ffd40060; }
 .dialog.system .dlg-name { color: var(--neon-y); text-shadow: 0 0 1.4cqw var(--neon-y); font-size: 5cqw; }
 .dialog.system .dlg-text { font-size: 3.8cqw; }
+.dlg-face { display: grid; place-items: center; font-size: 14cqw; line-height: 1; }

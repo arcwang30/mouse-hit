@@ -501,3 +501,25 @@ html:lang(en) .round-tab { font-size: 2.7cqw; letter-spacing: 0; } /* 英文名�
 .ss-go { background: linear-gradient(180deg, #ff7a1a, #b52a05 60%, #5a1000); box-shadow: inset 0 0 0 .5cqw var(--fire-2); font-size: 5cqw; }
 .map-region.locked .mr-head { z-index: 3; }
 .map-region.locked .mr-head b { color: #cfd8e6; }
+/* 章節切換(大地圖最上面) */
+.ch-tabs { display: grid; grid-template-columns: 1fr 1fr; gap: 2cqw; flex-shrink: 0; }
+.ch-tab { display: flex; flex-direction: column; align-items: center; gap: .4cqw; padding: 2cqw 1cqw; border: 0; color: #fff;
+  background: #0009; clip-path: var(--chamfer); box-shadow: inset 0 0 0 .3cqw #ffffff30; }
+.ch-tab b { font-size: 3.4cqw; }
+.ch-tab small { font-size: 2.6cqw; color: var(--steel-hi); }
+.ch-tab.on { background: linear-gradient(180deg, var(--fire-2), var(--fire)); box-shadow: inset 0 0 0 .4cqw #ffe08a; }
+.ch-tab.on b, .ch-tab.on small { color: #2a0800; }
+.ch-tab.locked { opacity: .55; }
+/* 流沙格:沙色漩渦,緩緩轉動 */
+.blk.sand { display: block; position: absolute; inset: 8%; z-index: 0; border-radius: 22%; pointer-events: none;
+  background: repeating-conic-gradient(from 0deg, #d8a84a90 0 18deg, #8a5a1a90 18deg 36deg); animation: sandSwirl 3s linear infinite; }
+@keyframes sandSwirl { to { transform: rotate(360deg); } }
+.cell:has(.blk.sand) { box-shadow: 0 0 0 .5cqw #d8a84a, 0 0 4cqw #d8a84a90; }
+#grid.numbering .blk.sand { display: none; }
+/* 磁暴:九宮格整個轉動;符號、標籤、角標反向轉回來保持正向 */
+#grid { rotate: var(--grot, 0deg); transition: rotate .5s cubic-bezier(.3, 1.3, .5, 1); }
+#grid .cell .cap { rotate: calc(var(--grot, 0deg) * -1); transition: rotate .5s cubic-bezier(.3, 1.3, .5, 1); }
+/* 蜃樓:幻影符號左右翻轉、水波般晃動,標籤 ⇋ 提示要點對稱格 */
+.cell.mirage .icon { transform: scaleX(-1); opacity: .75; animation: mirageWave 1.2s ease-in-out infinite alternate; }
+.cell.mirage .label { background: #4ad8ffd0; color: #002a3a; }
+@keyframes mirageWave { from { filter: blur(0) hue-rotate(0deg); } to { filter: blur(.25cqw) hue-rotate(40deg); } }

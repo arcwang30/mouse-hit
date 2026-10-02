@@ -10,19 +10,29 @@ G.DEX_HERO = [
     bio: '十六歲,依照門規下山。背起行囊,迎向霓虹閃爍的未來都市。' },
   { id: 'ult',     name: '烈焰鋼拳・焚天', img: 'fx/ult_cutin_fist.webp', price: 400,
     bio: '神拳門終極絕學。燃盡額上烙痕的烈火,化為百烈拳的究極一擊。' },
+  // 第二章破關後
+  { id: 'awake',   name: '炎鋼・天道', img: 'fx/hero_awake.webp', price: 500,
+    bio: '在風暴之眼覺醒的炎鋼。神拳門至高拳法與體內的烈火異能熔煉為一,為了守護與傳承而揮拳。' },
+  { id: 'ult2',    name: '炎鋼天道・焚天', img: 'fx/ult_tiandao.webp', price: 600,
+    bio: '鋼鐵意志與不滅烈焰合而為一的究極奧義。威力更勝焚天,還能在戰鬥中重新燃起生命之火。' },
 ];
 
-// 每個敵人第一次出現在第幾關(0 起算);狂打獎勵關的木樁算第一關
+// 每個敵人第一次出現的關卡,依章節排下去:回傳序號 = (章節 - 1) × 100 + 關卡(0 起算);狂打獎勵關的木樁算第一關
 G.dexFirstStage = id => {
-  const i = G.STAGES.findIndex(s => s.waves.some(w => w.replace('+', '') === id));
-  return i < 0 ? 0 : i;
+  for (const c of G.CHAPTERS) {
+    const i = c.stages.findIndex(s => s.waves.some(w => w.replace('+', '') === id));
+    if (i >= 0) return (c.id - 1) * 100 + i;
+  }
+  return 0;
 };
+// 序號換回關卡
+G.stageAt = ord => G.CHAPTERS[Math.floor(ord / 100)].stages[ord % 100];
 G.dexList = kind => {
   if (kind === 'hero') return G.DEX_HERO.map(h => Object.assign({ kind }, h));
   const ids = Object.keys(G.ENEMIES).filter(id => !!G.ENEMIES[id].boss === (kind === 'boss'))
     .sort((a, b) => G.dexFirstStage(a) - G.dexFirstStage(b));
   const list = ids.map(id => {
-    const st = G.dexFirstStage(id), reg = (G.STAGES[st] || {}).region || 0; // 價格依第一次出現的區域
+    const st = G.dexFirstStage(id), reg = G.stageAt(st).region + Math.floor(st / 100) * 6; // 價格依第一次出現的區域(每章 +6 區)
     return { kind, id, enemy: G.ENEMIES[id], stage: st, price: kind === 'boss' ? 150 + reg * 54 : 60 + reg * 18 };
   });
   if (kind === 'minion') list.push({ kind, id: 'dummy', dummy: true, stage: 0, price: 50 }); // 狂打獎勵關的木樁
