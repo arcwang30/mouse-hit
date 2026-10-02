@@ -14,8 +14,8 @@ const LAVA_BURN = 4;       // 打熔岩格的燙傷
 const LINE_MUL = 3;        // 三連擊額外傷害(攻擊力倍數)
 const SLOWMO = { ms: 2500, mul: 1.6 }; // 時之呼吸:每回合前 2.5 秒符號停留 ×1.6
 const BONUS_MS = 12000;    // 狂打獎勵關長度
-const BONUS_COIN_PER = 2;  // 狂打獎勵關:每幾 HIT 換 1 金幣
-const BONUS_COIN_MAX = 40; // 狂打獎勵關:一次最多幾枚(第二、三輪再乘倍率)
+const BONUS_COIN_PER = 1;  // 狂打獎勵關:每幾 HIT 換 1 金幣
+const BONUS_COIN_MAX = 60; // 狂打獎勵關:一次最多幾枚(第二、三輪再乘倍率)
 
 function makePlayer() {
   const p = {
@@ -750,7 +750,7 @@ G.battle = {
     timer.stop();
     G.clock.cancel(endT);
     this.phase = null;
-    // 獎勵:每 2 HIT 1 金幣(上限 40),第二、三輪 ×1.5 / ×2;結算時和過關金幣一起入帳
+    // 獎勵:每 1 HIT 1 金幣(上限 60),第二、三輪 ×1.5 / ×2;結算時和過關金幣一起入帳
     const coins = coinsOf(hits);
     this.stats.bonusCoins = (this.stats.bonusCoins || 0) + coins;
     G.audio.play('levelup');
