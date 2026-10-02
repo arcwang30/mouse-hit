@@ -22,8 +22,8 @@ G.dexList = kind => {
   const ids = Object.keys(G.ENEMIES).filter(id => !!G.ENEMIES[id].boss === (kind === 'boss'))
     .sort((a, b) => G.dexFirstStage(a) - G.dexFirstStage(b));
   const list = ids.map(id => {
-    const st = G.dexFirstStage(id);
-    return { kind, id, enemy: G.ENEMIES[id], stage: st, price: kind === 'boss' ? 150 + st * 30 : 60 + st * 10 };
+    const st = G.dexFirstStage(id), reg = (G.STAGES[st] || {}).region || 0; // 價格依第一次出現的區域
+    return { kind, id, enemy: G.ENEMIES[id], stage: st, price: kind === 'boss' ? 150 + reg * 54 : 60 + reg * 18 };
   });
   if (kind === 'minion') list.push({ kind, id: 'dummy', dummy: true, stage: 0, price: 50 }); // 狂打獎勵關的木樁
   return list;

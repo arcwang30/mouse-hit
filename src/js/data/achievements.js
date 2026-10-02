@@ -7,10 +7,10 @@ G.ACHIEVEMENTS = [
   // 進度
   { id: 'tutorial', icon: '🎓', name: '神拳門入門', desc: '完成新手教學', pts: 10, check: c => !!c.sv.tutorialClear },
   { id: 'first',    icon: '👊', name: '初出茅廬',   desc: '通過第一關',   pts: 10, check: c => cleared(c.sv, 1, 0) },
-  { id: 'stage5',   icon: '🏙️', name: '闖蕩江湖',   desc: '通過第五關',   pts: 20, check: c => cleared(c.sv, 1, 4) },
-  { id: 'r1',       icon: '🏆', name: '凡塵霸主',   desc: '打倒第一輪的最終 BOSS', pts: 50,  check: c => cleared(c.sv, 1, 9) },
-  { id: 'r2',       icon: '👹', name: '修羅',       desc: '打倒第二輪的最終 BOSS', pts: 80,  check: c => cleared(c.sv, 2, 9) },
-  { id: 'r3',       icon: '😈', name: '天魔降伏',   desc: '打倒第三輪的最終 BOSS', pts: 120, check: c => cleared(c.sv, 3, 9) },
+  { id: 'stage5',   icon: '🏙️', name: '闖蕩江湖',   desc: '通過第 15 關',   pts: 20, check: c => cleared(c.sv, 1, 14) },
+  { id: 'r1',       icon: '🏆', name: '凡塵霸主',   desc: '打倒第一輪的最終 BOSS', pts: 50,  check: c => cleared(c.sv, 1, G.STAGES.length - 1) },
+  { id: 'r2',       icon: '👹', name: '修羅',       desc: '打倒第二輪的最終 BOSS', pts: 80,  check: c => cleared(c.sv, 2, G.STAGES.length - 1) },
+  { id: 'r3',       icon: '😈', name: '天魔降伏',   desc: '打倒第三輪的最終 BOSS', pts: 120, check: c => cleared(c.sv, 3, G.STAGES.length - 1) },
   // 單場挑戰
   { id: 'nodmg',    icon: '🛡️', name: '毫髮無傷',   desc: '一次都沒被打中就過關', pts: 40, check: c => !!(c.run && c.win && !c.run.hurt) },
   { id: 'combo50',  icon: '🔥', name: '連擊達人',   desc: '單場最高連擊達到 50',  pts: 20, check: c => !!(c.run && c.run.maxCombo >= 50) },

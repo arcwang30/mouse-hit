@@ -29,6 +29,8 @@ const DEVIL_GOLD = 100;
 const SWIPE_MUL = 1.5;
 const TIMEBOMB_MS = 3000, TIMEBOMB_DMG = 1.5;
 const MEMORY_LEN = { 1: 3, 2: 4, 3: 5 }, MEMORY_SHOW = 520, MEMORY_PER = 900, MEMORY_DMG = 1.5;
+const BONUS_STARS = [40, 70]; // 特訓關:狂打幾 HIT 拿第二、第三顆星
+const CHAPTER_COINS = 300;    // 章節通關獎勵(每一輪第一次打倒最終 BOSS)
 
 function makePlayer() {
   const p = {
@@ -179,6 +181,28 @@ G.battle = {
     this.bgmBase = G.roundCfg().bgmRate;
     G.bgm.setRate(this.bgmBase);
     G.show('battle');
+    // 機制漸進解鎖:這一關能出現的九宮格機制(第一輪才限制;null = 全開)
+    this.allowedBase = G.mechAllowed(stageIdx);
+    this.allowedNow = this.allowedBase;
+    this.regionCleared = -1;
+
+    // 第一次來到新區域:先播區域開場對話(第一輪才有);敵人還沒出場,先清掉上一場留下的立繪與名字
+    G.$('#enemySprite').innerHTML = '';
+    G.$('#enemyName').textContent = '';
+    G.$('#waveTag').textContent = '';
+    if (G.round() === 1 && this.stage.type !== 'bonus') await G.dialog.region(this.stage);
+    if (run !== this.run) return;
+
+    // 特訓關:只有一場狂打獎勵關,不會輸
+    if (this.stage.type === 'bonus') {
+      this.wave = 0;
+      G.$('#waveTag').textContent = (G.roundCfg().tag ? G.roundCfg().tag + ' ' : '') + 'BONUS';
+      G.bgm.play(this.stage.bgm || 'battle0');
+      await this.bonusRound();
+      if (run !== this.run) return;
+      this.stats.waves = 1;
+      return this.finish(true);
+    }
 
     const total = this.stage.waves.length;
     for (let w = 0; w < total; w++) {
@@ -190,7 +214,12 @@ G.battle = {
       this.eliteNext = false;
       this.e = makeEnemy(spec, this.stage.scale, w);
       if (!G.save.data.seen[this.e.id]) { G.save.data.seen[this.e.id] = true; G.save.write(); } // 敵人圖鑑:遇過才顯示
+      // 區域 BOSS 會先使出自己的招式(打倒後這些招式才開放給之後的敵人)
+      const regionBoss = this.stage.type === 'boss' && this.e.id === G.REGIONS[this.stage.region].boss;
+      this.allowedNow = this.allowedBase && regionBoss ? new Set([...this.allowedBase, ...G.mechKeysOf(this.e.id)]) : this.allowedBase;
       if (this.e.boss && w === total - 1) await this.bossWarning(this.e); // 最終 BOSS 前的警報演出
+      if (run !== this.run) return;
+      if (regionBoss && G.round() === 1) await G.dialog.boss(this.stage, this.e.id); // BOSS 登場對話
       if (run !== this.run) return;
       const tag = G.roundCfg().tag; // 周回:WAVE 前面標上 Ⅱ / Ⅲ
       G.$('#waveTag').textContent = (tag ? tag + ' ' : '') + `WAVE ${w + 1}/${total}`;
@@ -198,10 +227,13 @@ G.battle = {
       G.$('#enemyName').textContent = (this.e.boss ? G.t('【BOSS】') : '') + this.e.name;
       this.setEnemyState('idle');
       this.render();
-      G.bgm.play(this.e.boss ? 'boss' : this.stage.bgm || 'battle' + stageIdx);
+      G.bgm.play(this.e.boss ? 'boss' : this.stage.bgm || 'battle0');
       const intro = G.t(this.e.boss ? (w === total - 1 ? '魔王降臨!' : '中頭目出現!') : this.e.elite ? '精英來襲!' : '');
       const extra = (this.e.extras || []).map(x => G.t(x.name)).join('、'); // 周回追加的機制也寫在提示裡
-      const base = G.t((G.MECHS[this.e.id] || {}).hint || '');
+      // 提示:機制都解鎖了就用敵人自己的說明;只解鎖一部分就列出那幾個機制;都沒解鎖就不顯示
+      const keys = G.mechKeysOf(this.e.id), ok = this.allowedNow;
+      const base = !ok || keys.every(k => ok.has(k)) ? G.t((G.MECHS[this.e.id] || {}).hint || '')
+        : keys.filter(k => ok.has(k)).map(k => G.t(G.MECH_INFO[k].name) + ':' + G.t(G.MECH_INFO[k].hint)).join('\n');
       const hint = base + (extra ? (base ? '\n' : '') + G.t('追加:{0}', extra) : '');
       G.grid.clearBlocks();
       await G.banner(`WAVE ${w + 1}`, intro + this.e.name + (hint ? '\n' + hint : ''), hint ? 1900 : 1200);
@@ -718,7 +750,7 @@ G.battle = {
   patterns() {
     const t = this.wave / Math.max(1, this.stage.waves.length - 1);   // 本關進度 0 → 1
     const pr = G.roundCfg().pattern;                                  // 周回:一開始就更常多發 / 連線
-    const k = Math.min(1.5 + pr, t + this.stageIdx * 0.3 + pr);      // 第二、三關起點較高
+    const k = Math.min(1.5 + pr, t + this.stageIdx / Math.max(1, G.STAGES.length - 1) * 2.7 + pr); // 越後面的關卡起點越高
     const ln = this.p.lineMaster ? 2 : 1;                            // 連線大師:連線 / 掃射加倍出現
     return {
       single: Math.max(0.6, 6 - 3 * k),
@@ -736,13 +768,17 @@ G.battle = {
     const m = G.MECHS[this.e.id] || {};
     const cur = m.rotate ? m.rotate[this.e.turn % m.rotate.length] : m;
     // 周回追加的機制墊在底下,敵人原本的機制優先
-    return Object.assign({}, ...(this.e.extras || []).map(x => x[phase] || {}), cur[phase] || {});
+    const out = Object.assign({}, ...(this.e.extras || []).map(x => x[phase] || {}), cur[phase] || {});
+    // 機制漸進解鎖:還沒解鎖的機制拿掉(炸彈等基本內容不受影響)
+    const ok = this.allowedNow;
+    if (ok) Object.keys(out).forEach(k => { if (G.MECH_INFO[k] && !ok.has(k)) delete out[k]; });
+    return out;
   },
 
   // 回合開始時依敵人機制佈置格子
   setupBoard(phase) {
     const type = (G.MECHS[this.e.id] || {}).board;
-    if (!type) return;
+    if (!type || (this.allowedNow && !this.allowedNow.has(type))) return; // 還沒解鎖的格子狀態不放
     const g = G.grid;
     const open = () => [...Array(9).keys()].filter(i => !g.blocks.has(i));
     if (type === 'lava' && phase === 'attack') { // 每回合換 2 格熔岩
@@ -1313,15 +1349,31 @@ G.battle = {
     }
     pr.best[i] = Math.max(pr.best[i] || 0, score);
     // 星級評價:過關 / HP 剩 50% 以上 / 最高連擊 30 以上,各一顆星;保留最好的紀錄
-    const rate = this.rating = { clear: win, hp: win && p.hp >= p.maxHp * G.STAR_RULES.hp, combo: win && (s.maxCombo || 0) >= G.STAR_RULES.combo };
+    // 特訓關:過關 / 狂打達 BONUS_STARS[0] HIT / 達 BONUS_STARS[1] HIT
+    const bonusStage = this.stage.type === 'bonus', hits = s.bonusHits || 0;
+    const rate = this.rating = bonusStage
+      ? { clear: win, hp: hits >= BONUS_STARS[0], combo: hits >= BONUS_STARS[1], labels: ['過關', G.t('狂打 {0} HIT 以上', BONUS_STARS[0]), G.t('狂打 {0} HIT 以上', BONUS_STARS[1])] }
+      : { clear: win, hp: win && p.hp >= p.maxHp * G.STAR_RULES.hp, combo: win && (s.maxCombo || 0) >= G.STAR_RULES.combo };
     rate.stars = [rate.clear, rate.hp, rate.combo].filter(Boolean).length;
     pr.stars = pr.stars || {};
     rate.newBest = rate.stars > (pr.stars[i] || 0);
     if (rate.newBest) pr.stars[i] = rate.stars;
-    // 金幣:過關 20 + 每關 6 + 每顆星 10;沒過關每擊倒一波 2;第二、三輪 ×1.5 / ×2
+    // 金幣:過關 15 + 每關 2 + 每顆星 8(精英 ×1.5、BOSS ×2);沒過關每擊倒一波 2;第二、三輪 ×1.5 / ×2
     // 狂打獎勵關(s.bonusCoins)和特殊事件(s.eventCoins)賺到的金幣不論輸贏都入帳
-    const coins = this.coins = Math.round((win ? 20 + i * 6 + rate.stars * 10 : s.waves * 2) * G.roundCfg().points) + (s.bonusCoins || 0) + (s.eventCoins || 0);
-    sv.coins += coins;
+    const typeMul = { elite: 1.5, boss: 2 }[this.stage.type] || 1;
+    const coins = this.coins = Math.round((win ? (15 + i * 2 + rate.stars * 8) * typeMul : s.waves * 2) * G.roundCfg().points) + (s.bonusCoins || 0) + (s.eventCoins || 0);
+    // 章節通關獎勵:每一輪第一次打倒最終 BOSS,額外 300 金幣(再乘周回倍率)
+    if (win && i === G.STAGES.length - 1 && !pr.chapterDone) {
+      pr.chapterDone = true;
+      s.chapterCoins = Math.round(CHAPTER_COINS * G.roundCfg().points);
+      this.coins += s.chapterCoins;
+    }
+    // 第一次打倒區域 BOSS(第一輪):結算後播放區域通關對話與新招式解鎖
+    if (win && this.stage.type === 'boss' && round === 1 && !(sv.regionsCleared || {})[this.stage.region]) {
+      sv.regionsCleared = Object.assign(sv.regionsCleared || {}, { [this.stage.region]: true });
+      this.regionCleared = this.stage.region;
+    }
+    sv.coins += this.coins;
     const finalWin = win && i === G.STAGES.length - 1;
     this.newRound = 0;
     if (finalWin) {
@@ -1334,6 +1386,8 @@ G.battle = {
     G.save.write();
     this.endingNext = finalWin; // 打倒最終 BOSS:結算後播放結局
     G.scenes.result(win, score, points, s, p);
+    // 區域通關:結算畫面出來後接著播通關對話與新招式解鎖(最終區域由結局漫畫收尾)
+    if (this.regionCleared >= 0 && this.regionCleared < G.REGIONS.length - 1) { const r = this.regionCleared; setTimeout(() => G.dialog.cleared(r), 900); }
     G.ach.check(s, win); // 結算畫面上跳出這場達成的成就
   },
 };

@@ -39,6 +39,8 @@ const ENDING = [
     text: '他的眼中不再有仇恨，只有對武道巔峰的追求。烈火淬煉完畢，這顆孤星將在更廣闊的世界，展開全新的修練旅程。' },
 ];
 
+// 大地圖:每區 5 個關卡節點在區域裡的位置(x%, y%),由上往下蜿蜒,BOSS 在最下面中間
+const MAP_POS = [[22, 10], [72, 28], [30, 48], [74, 66], [50, 84]];
 const COMICS = {
   opening: { src: '../assets/images/story/opening.jpg', w: 1408, h: 768, beats: STORY },
   ending:  { src: '../assets/images/story/ending.jpg',  w: 1380, h: 752, beats: ENDING },
@@ -264,26 +266,65 @@ G.scenes = {
     // 新手教學卡片:只在第一輪最上面
     const tut = round !== 1 ? '' : `<button class="stage-card tut-card" id="tutCard">${sv.tutorialClear ? '<span class="sc-clear">CLEAR</span>' : ''}` +
       `<div class="sc-name">🎓 ${G.t('新手教學')}</div><div class="sc-desc">${G.t('從頭學會點擊、防禦、破綻與必殺技。')}</div></button>`;
-    G.$('#stageList').innerHTML = tabs + tut + G.STAGES.map((s, i) => {
-      const locked = i >= pr.unlocked, clear = pr.clear.includes(i);
-      const best = pr.best[i] ? G.t('最高分 {0}', pr.best[i]) : '';
-      // CSS 變數裡的 url() 會以 style.css 的位置解析相對路徑,所以這裡先轉成完整網址
-      const art = s.img ? ` style="--card-bg:url('${new URL('../assets/images/' + s.img, location.href).href}')"` : '';
-      return `<button class="stage-card round-${round} bg-${s.bg}${s.img ? ' has-art' : ''}" data-i="${i}"${art} ${locked ? 'disabled' : ''}>
-        ${clear ? '<span class="sc-clear">CLEAR</span>' : ''}
-        <div class="sc-name">${locked ? '🔒 ' : ''}${G.t(s.name)} <span class="sc-stars">${'★'.repeat(s.stars)}${'☆'.repeat(5 - s.stars)}</span></div>
-        <div class="sc-desc">${G.t(locked ? '通過上一關後解鎖' : s.desc)}</div>
-        ${locked ? '' : `<div class="sc-rate" title="${G.t('評價')}">${[1, 2, 3].map(k => `<span class="${k <= (pr.stars[i] || 0) ? 'on' : ''}">★</span>`).join('')}</div>`}
-        <div class="sc-best">${best}</div>
-      </button>`;
+    // 大地圖:6 個區域由上往下排,每區 5 個關卡節點用蜿蜒的路線連起來;目前要打的關卡上站著炎鋼
+    const cur = Math.min(pr.unlocked, G.STAGES.length) - 1;
+    const url = img => new URL('../assets/images/' + img, location.href).href; // CSS 變數裡的 url() 要完整網址
+    const regions = G.REGIONS.map((g, r) => {
+      const locked = g.first >= pr.unlocked;
+      const got = G.STAGES.slice(g.first, g.last + 1).reduce((n, s, k) => n + (pr.stars[g.first + k] || 0), 0);
+      const nodes = G.STAGES.slice(g.first, g.last + 1).map((s, k) => {
+        const i = g.first + k, [x, y] = MAP_POS[k], st = pr.stars[i] || 0;
+        const cls = ['map-node', 't-' + s.type, i >= pr.unlocked ? 'locked' : '', pr.clear.includes(i) ? 'clear' : '', i === cur ? 'current' : ''].join(' ');
+        return `<button class="${cls}" data-i="${i}" style="left:${x}%;top:${y}%" ${i >= pr.unlocked ? 'disabled' : ''}>` +
+          `<span class="mn-icon">${G.STAGE_TYPES[s.type].icon}</span><span class="mn-code">${s.code}</span>` +
+          `<span class="mn-stars">${[1, 2, 3].map(n => `<i class="${n <= st ? 'on' : ''}">★</i>`).join('')}</span>` +
+          (i === cur ? `<span class="mn-hero" style="background-image:url('${url('fx/credit_hero.png')}')"></span>` : '') + '</button>';
+      }).join('');
+      const path = MAP_POS.map(([x, y]) => `${x},${y}`).join(' ');
+      const bossName = r ? G.t(G.ENEMIES[G.REGIONS[r - 1].boss].name) : '';
+      return `<section class="map-region${locked ? ' locked' : ''}" style="--rbg:url('${url(G.STAGES[g.first + 2].img)}')">` +
+        `<header class="mr-head"><b>${G.t('區域 {0}', r + 1)} ${G.t(g.name)}</b><span>★ ${got}/15</span></header>` +
+        `<p class="mr-desc">${G.t(g.desc)}</p>` +
+        `<div class="mr-field"><svg class="mr-path" viewBox="0 0 100 100" preserveAspectRatio="none"><polyline points="${path}"/></svg>${nodes}</div>` +
+        (locked ? `<div class="mr-fog"><b>🔒</b>${G.t('打倒「{0}」後開放', bossName)}</div>` : '') + '</section>';
     }).join('');
-    G.$('#stageList').querySelectorAll('.stage-card[data-i]').forEach(b => {
-      b.onclick = () => { G.pages.current = null; G.battle.start(+b.dataset.i); };
+    G.$('#stageList').innerHTML = tabs + tut + `<div class="world-map">${regions}</div>`;
+    G.$('#stageList').querySelectorAll('.map-node[data-i]').forEach(b => {
+      b.onclick = () => this.stageSheet(+b.dataset.i);
     });
+    // 打開時捲到目前的關卡
+    const curNode = G.$('#stageList').querySelector('.map-node.current');
+    if (curNode) setTimeout(() => curNode.scrollIntoView({ block: 'center' }), 30);
     const tc = G.$('#tutCard');
     if (tc) tc.onclick = () => { G.pages.current = null; G.tutorial.run(true); };
     G.$('#stageList').querySelectorAll('.round-tab').forEach(b => { b.onclick = () => this.setRound(+b.dataset.round); });
     G.pages.open('stages'); // 共用選單頁面的返回按鈕與 Esc
+  },
+
+  // 地圖上點了關卡:下方跳出關卡資訊與「出戰」按鈕
+  stageSheet(i) {
+    const s = G.STAGES[i], pr = G.prog(), sv = G.save.data, type = G.STAGE_TYPES[s.type];
+    const foes = [...new Set(s.waves.map(w => w.replace('+', '')))].map(id => {
+      const e = G.ENEMIES[id], seen = sv.seen[id];
+      return `<span class="ss-foe${e.boss ? ' boss' : ''}" title="${seen ? G.t(e.name) : '?'}">${seen && e.img
+        ? `<i style="background-image:url('../assets/images/${e.img}')"></i>` : '<b>?</b>'}</span>`;
+    }).join('');
+    const st = pr.stars[i] || 0;
+    G.$('#stageSheet').innerHTML =
+      `<div class="ss-box t-${s.type}"><div class="ss-head"><span class="ss-type">${type.icon} ${G.t(type.name)}</span>` +
+      `<span class="ss-diff">${'★'.repeat(s.stars)}${'☆'.repeat(5 - s.stars)}</span></div>` +
+      `<h3>${G.stageTitle(s)}</h3><p class="ss-region">${G.t('區域 {0}', s.region + 1)} ${G.t(G.REGIONS[s.region].name)}</p>` +
+      (s.type === 'bonus' ? `<p class="ss-desc">${G.t('12 秒內盡量打,打越多金幣越多!狂打 {0} / {1} HIT 拿第二、三顆星。', 40, 70)}</p>`
+        : `<p class="ss-desc">${G.t('{0} 波敵人', s.waves.length)}</p><div class="ss-foes">${foes}</div>`) +
+      `<div class="ss-rate">${[1, 2, 3].map(n => `<span class="${n <= st ? 'on' : ''}">★</span>`).join('')}` +
+      `${pr.best[i] ? `<small>${G.t('最高分 {0}', pr.best[i])}</small>` : ''}</div>` +
+      `<div class="ss-btns"><button class="btn small" id="ssCancel">${G.t('返回')}</button><button class="btn ss-go" id="ssGo">${G.t('出戰')}</button></div></div>`;
+    const el = G.$('#stageSheet');
+    el.classList.add('show');
+    G.audio.play('select');
+    G.$('#ssGo').onclick = () => { el.classList.remove('show'); G.pages.current = null; G.battle.start(i); };
+    G.$('#ssCancel').onclick = () => { el.classList.remove('show'); G.audio.play('click'); };
+    el.onclick = e => { if (e.target === el) el.classList.remove('show'); };
   },
 
   // 切換周回(點分頁、左右滑或 ← →);只能切到已開啟的輪次,不循環。回傳是否有切換
@@ -397,7 +438,8 @@ G.scenes = {
     const skills = p.skills.map(id => G.SKILLS.find(k => k.id === id).icon).join(' ') || '—';
     // 星級評價:三顆星依序亮起,下面列出三個條件是否達成
     const rt = G.battle.rating || {}, R = G.STAR_RULES;
-    const conds = [[G.t('過關'), rt.clear], [G.t('HP 剩 {0}% 以上', R.hp * 100), rt.hp], [G.t('最高連擊 {0} 以上', R.combo), rt.combo]];
+    const lb = rt.labels || [G.t('過關'), G.t('HP 剩 {0}% 以上', R.hp * 100), G.t('最高連擊 {0} 以上', R.combo)]; // 特訓關有自己的條件
+    const conds = [[G.t(lb[0]), rt.clear], [lb[1], rt.hp], [lb[2], rt.combo]];
     const starHtml = `<div class="rs-stars">${conds.map(([, ok], k) => `<span class="rs-star${ok ? ' on' : ''}" style="--d:${0.3 + k * 0.3}s">★</span>`).join('')}` +
       (rt.newBest && rt.stars ? `<em>${G.t('新紀錄!')}</em>` : '') + '</div>' +
       `<div class="rs-conds">${conds.map(([t, ok]) => `<span class="${ok ? 'ok' : ''}">${ok ? '✔' : '✘'} ${t}</span>`).join('')}</div>`;
@@ -408,11 +450,11 @@ G.scenes = {
       <div>${G.t('迅擋 / 破甲')}<b>${s.perfects || 0} / ${s.breaks || 0}</b></div>
       <div>${G.t('最高連擊 / FEVER')}<b>${G.t('{0} / {1} 次', s.maxCombo || 0, s.fevers || 0)}</b></div>
       <div>${G.t('必殺技次數')}<b>${s.ults}</b></div>
-      <div>${G.t('擊倒 WAVE')}<b>${s.waves} / ${G.battle.stage.waves.length}</b></div>
+      <div>${G.t('擊倒 WAVE')}<b>${s.waves} / ${Math.max(1, G.battle.stage.waves.length)}</b></div>
       <div>${G.t('取得技能')}<b>${skills}</b></div>
       <div class="score">${G.t('積分')}<b>${score}</b></div>
       <div class="score">${G.t('獲得成長點數')}<b>${G.PT} +${points}</b></div>` +
-      `<div class="score coins">${G.t('獲得金幣')}<b>💰 +${G.battle.coins || 0}${s.bonusCoins ? `<small class="coin-bonus">${G.t('(狂打 +{0})', s.bonusCoins)}</small>` : ''}${s.eventCoins ? `<small class="coin-bonus">${G.t('(事件 +{0})', s.eventCoins)}</small>` : ''}</b></div>` +
+      `<div class="score coins">${G.t('獲得金幣')}<b>💰 +${G.battle.coins || 0}${s.bonusCoins ? `<small class="coin-bonus">${G.t('(狂打 +{0})', s.bonusCoins)}</small>` : ''}${s.eventCoins ? `<small class="coin-bonus">${G.t('(事件 +{0})', s.eventCoins)}</small>` : ''}${s.chapterCoins ? `<small class="coin-bonus">${G.t('(章節通關 +{0})', s.chapterCoins)}</small>` : ''}</b></div>` +
       (G.battle.newRound ? `<div class="new-round">${G.t('{0} 開啟!', G.t(G.ROUNDS[G.battle.newRound].name))}<small>${G.t('成長上限提升至 Lv{0}', G.ROUNDS[G.battle.newRound].upMax)}</small></div>` : '');
     G.show('result');
   },

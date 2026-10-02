@@ -43,7 +43,7 @@ window.simRun = function (stageIdx, skill, upLv) {
     eliteNext = false;
     const e = makeEnemy(spec, st.scale, w);
     // 出現模式越複雜,真人命中率略降(後段最多 -6%)
-    const patK = Math.min(1.5 + rc.pattern, w / Math.max(1, st.waves.length - 1) + stageIdx * 0.3 + rc.pattern);
+    const patK = Math.min(1.5 + rc.pattern, w / Math.max(1, st.waves.length - 1) + stageIdx / Math.max(1, G.STAGES.length - 1) * 2.7 + rc.pattern);
     const patPenalty = 0.04 * patK;
     // 第二階段:敵人機制讓真人命中率下降(估計值)
     const mech = G.MECHS[e.id] || {};

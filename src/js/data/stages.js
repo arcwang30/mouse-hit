@@ -90,71 +90,114 @@ G.BRANCHES = [
   { id: 'devil',    icon: '<img class="br-img" src="../assets/images/events/devil.jpg" alt="">',    name: '惡魔交易', desc: '用 HP 換取技法或金幣' },
 ];
 
-// img:戰鬥時敵人背後的背景(assets/images/ 底下);沒有圖時用 bg 漸層 + deco 裝飾
-// events:在第幾波(從 0 起算)打完之後出現分歧
-G.STAGES = [
-  {
-    name: '第一關 街角公園', bg: 'garden', img: 'backgrounds/stage1.jpg', deco: ['🎋', '🌲', '🎋', '🐟', '🌊'], stars: 1,
-    desc: '山腳下的小鎮公園,紅磚老屋旁孩子們放著風箏。',
-    waves: ['monk', 'goblin', 'agent', 'lavaGolem', 'monk+', 'agent+', 'fatKing'],
-    events: [2, 4], scale: 1,
-  },
-  {
-    name: '第二關 海港小鎮', bg: 'city', img: 'backgrounds/stage2.jpg', deco: ['🏙️', '💡', '🌃', '🚥'], stars: 1,
-    desc: '船隻往來的港灣,咖啡店與衝浪店林立。WAVE 4 有中頭目。',
-    waves: ['agent', 'ninja', 'gunner', 'frostKnight', 'ninja+', 'gunner+', 'mechGeneral'],
-    events: [2, 4], scale: 1.2,
-  },
-  {
-    name: '第三關 未來鐘塔廣場', bg: 'tower', img: 'backgrounds/stage3.jpg', deco: ['⚡', '🌕', '🛰️'], stars: 2,
-    desc: '古老鐘塔與全息投影交織,無人機在霓虹間穿梭。WAVE 4、6 有中頭目。',
-    waves: ['drunk', 'ninja+', 'clockBomber', 'poisonQueen', 'gunner+', 'abyssCrab', 'shadowKing'],
-    events: [2, 4], scale: 1.4,
-  },
-  // 第四關起:bgm 指定戰鬥曲(bgm.js)
-  {
-    name: '第四關 地下拳場', bg: 'arena', img: 'backgrounds/stage4.jpg', bgm: 'arena', deco: ['🥊', '💡', '🍺', '💵', '🥊'], stars: 2,
-    desc: '廢棄停車場改成的地下擂台,賭客的叫囂震耳欲聾。WAVE 4、6 有中頭目。',
-    waves: ['streetBoxer', 'hacker', 'drunk+', 'fatKing', 'streetBoxer+', 'abyssCrab', 'ironBull'],
-    events: [2, 4], scale: 1.55,
-  },
-  {
-    name: '第五關 鋼鐵熔爐', bg: 'forge', img: 'backgrounds/stage5.jpg', bgm: 'forge', deco: ['🏭', '⚙️', '🔥', '⚙️', '🏭'], stars: 3,
-    desc: '日夜不息的煉鋼廠,改造戰士在火光中列隊。WAVE 4 有中頭目。',
-    waves: ['cyborg', 'lavaGolem+', 'sumo', 'mechGeneral', 'cyborg+', 'sumo+', 'forgeMaster'],
-    events: [2, 4], scale: 1.7,
-  },
-  {
-    name: '第六關 雪嶺古寺', bg: 'snow', img: 'backgrounds/stage6.jpg', bgm: 'snow', deco: ['🏔️', '❄️', '⛩️', '❄️', '🌲'], stars: 3,
-    desc: '終年積雪的山頂古寺,寒風裡傳來誦經與拳風。WAVE 4 有中頭目。',
-    waves: ['snowMonk', 'monk+', 'goblin+', 'frostKnight', 'snowMonk+', 'cyborg+', 'snowWitch'],
-    events: [2, 4], scale: 1.8,
-  },
-  {
-    name: '第七關 霓虹地下鐵', bg: 'subway', img: 'backgrounds/stage7.jpg', bgm: 'battle1', deco: ['🚇', '💡', '🚦', '💡', '🚇'], stars: 4,
-    desc: '深夜的末班列車,無人機在隧道裡來回巡邏。WAVE 4 有中頭目。',
-    waves: ['droneOp', 'patrolBot', 'skater', 'ironBull', 'droneOp+', 'skater+', 'thunderRonin'],
-    events: [2, 4], scale: 1.9,
-  },
-  {
-    name: '第八關 幻影劇場', bg: 'theater', img: 'backgrounds/stage8.jpg', bgm: 'arena', deco: ['🎭', '🕯️', '🎎', '🕯️', '🎭'], stars: 4,
-    desc: '早已停演的老劇院,舞台上的人偶卻自己動了起來。WAVE 4 有中頭目。',
-    waves: ['puppet', 'magician', 'droneOp+', 'poisonQueen', 'puppet+', 'magician+', 'puppetLord'],
-    events: [2, 4], scale: 2,
-  },
-  {
-    name: '第九關 天空要塞', bg: 'sky', img: 'backgrounds/stage9.jpg', bgm: 'sky', deco: ['☁️', '🛰️', '⭐', '🛰️', '☁️'], stars: 5,
-    desc: '飛行船環繞的浮空城,整片雲海都在腳下。WAVE 4 有中頭目。',
-    waves: ['droneOp+', 'cyborg+', 'puppet+', 'thunderRonin', 'clockBomber+', 'patrolBot+', 'skyEmpress'],
-    events: [2, 4], scale: 2.05,
-  },
-  {
-    name: '第十關 鋼拳之巔', bg: 'summit', img: 'backgrounds/stage10.jpg', bgm: 'sky', deco: ['⚡', '🌕', '👊', '🌕', '⚡'], stars: 5,
-    desc: '一切的終點。歷代強敵擋在帝王之前。WAVE 3、5 有中頭目。',
-    waves: ['sumo+', 'puppet+', 'shadowKing', 'droneOp+', 'snowWitch', 'cyborg+', 'steelEmperor'],
-    events: [2, 4], scale: 2.1,
-  },
+// ---- 第一章「鋼拳復仇」:大地圖 6 區 × 5 關 = 30 關 ----
+// 每區固定節奏:一般(3 波)→ 一般(4 波,中途分歧)→ 特訓(狂打賺金幣)→ 精英(全是精英)→ BOSS
+// 機制漸進:打倒區域 BOSS 後,unlock 裡的九宮格機制才會出現在之後的敵人身上(只限第一輪「凡塵」)
+// 背景組合:bg 漸層、img 背景圖、bgm 戰鬥音樂、deco 沒有圖時的裝飾
+const BGS = {
+  park:    { bg: 'garden',  img: 'backgrounds/stage1.jpg',  bgm: 'battle0', deco: ['🎋', '🌲', '🎋', '🐟', '🌊'] },
+  harbor:  { bg: 'city',    img: 'backgrounds/stage2.jpg',  bgm: 'battle1', deco: ['🏙️', '💡', '🌃', '🚥'] },
+  tower:   { bg: 'tower',   img: 'backgrounds/stage3.jpg',  bgm: 'battle2', deco: ['⚡', '🌕', '🛰️'] },
+  arena:   { bg: 'arena',   img: 'backgrounds/stage4.jpg',  bgm: 'arena',   deco: ['🥊', '💡', '🍺', '💵', '🥊'] },
+  forge:   { bg: 'forge',   img: 'backgrounds/stage5.jpg',  bgm: 'forge',   deco: ['🏭', '⚙️', '🔥', '⚙️', '🏭'] },
+  snow:    { bg: 'snow',    img: 'backgrounds/stage6.jpg',  bgm: 'snow',    deco: ['🏔️', '❄️', '⛩️', '❄️', '🌲'] },
+  subway:  { bg: 'subway',  img: 'backgrounds/stage7.jpg',  bgm: 'battle1', deco: ['🚇', '💡', '🚦', '💡', '🚇'] },
+  theater: { bg: 'theater', img: 'backgrounds/stage8.jpg',  bgm: 'arena',   deco: ['🎭', '🕯️', '🎎', '🕯️', '🎭'] },
+  sky:     { bg: 'sky',     img: 'backgrounds/stage9.jpg',  bgm: 'sky',     deco: ['☁️', '🛰️', '⭐', '🛰️', '☁️'] },
+  summit:  { bg: 'summit',  img: 'backgrounds/stage10.jpg', bgm: 'sky',     deco: ['⚡', '🌕', '👊', '🌕', '⚡'] },
+};
+// 區域:name 名稱、desc 說明、boss 區域 BOSS、unlock 打倒 BOSS 後解鎖的機制、stars 難度
+G.REGIONS = [
+  { name: '山腳小鎮', desc: '炎鋼下山後的第一站。紅磚老街與漁港,地痞流氓橫行。', boss: 'fatKing', unlock: ['heavy', 'armor'], stars: 1 },
+  { name: '未來都心', desc: '全息投影與古老鐘塔交錯的市中心,地下擂台的喧囂徹夜不息。', boss: 'mechGeneral', unlock: ['lockon', 'timebomb'], stars: 2 },
+  { name: '鋼鐵熔爐', desc: '日夜不息的煉鋼廠,改造戰士在火光中列隊。', boss: 'forgeMaster', unlock: ['lava', 'blink', 'swipe'], stars: 3 },
+  { name: '雪嶺古寺', desc: '終年積雪的山頂古寺,寒風裡傳來誦經與拳風。', boss: 'snowWitch', unlock: ['ice', 'ghost'], stars: 3 },
+  { name: '霓虹夜城', desc: '末班列車與停演的老劇院,人偶在月台上獨自起舞。', boss: 'puppetLord', unlock: ['tentacle', 'hidden', 'memory'], stars: 4 },
+  { name: '天空要塞', desc: '飛行船環繞的浮空城。一切的終點,鋼拳帝王在雲端等待。', boss: 'steelEmperor', unlock: [], stars: 5 },
 ];
+// 關卡類型:normal 一般 / bonus 特訓(只有狂打獎勵關)/ elite 精英 / boss 區域 BOSS
+G.STAGE_TYPES = {
+  normal: { icon: '⚔️', name: '一般' },
+  bonus:  { icon: '💰', name: '特訓' },
+  elite:  { icon: '💀', name: '精英' },
+  boss:   { icon: '👑', name: 'BOSS' },
+};
+// [區域, 類型, 名稱, 背景, 波次, 分歧在第幾波之後]
+const STAGE_LIST = [
+  [0, 'normal', '紅磚街角', 'park',    ['monk', 'goblin', 'agent'], []],
+  [0, 'normal', '風箏公園', 'park',    ['agent', 'monk', 'goblin', 'drunk'], [1]],
+  [0, 'bonus',  '港口特訓', 'harbor',  [], []],
+  [0, 'elite',  '碼頭倉庫', 'harbor',  ['monk+', 'goblin+', 'agent+'], [0]],
+  [0, 'boss',   '漁港決戰', 'harbor',  ['goblin', 'agent', 'monk+', 'lavaGolem', 'fatKing'], [1, 3]],
+  [1, 'normal', '全息廣場', 'tower',   ['streetBoxer', 'goblin', 'ninja'], []],
+  [1, 'normal', '鐘塔迴廊', 'tower',   ['gunner', 'sumo', 'streetBoxer', 'goblin'], [1]],
+  [1, 'bonus',  '屋頂特訓', 'tower',   [], []],
+  [1, 'elite',  '地下擂台', 'arena',   ['streetBoxer+', 'sumo+', 'goblin+'], [0]],
+  [1, 'boss',   '鋼鐵指揮塔', 'arena', ['ninja', 'gunner', 'ironBull', 'sumo', 'mechGeneral'], [1, 3]],
+  [2, 'normal', '煉鋼廠大門', 'forge',  ['gunner', 'clockBomber', 'sumo'], []],
+  [2, 'normal', '輸送帶走廊', 'forge',  ['patrolBot', 'cyborg', 'clockBomber', 'gunner'], [1]],
+  [2, 'bonus',  '鍛造特訓', 'forge',    [], []],
+  [2, 'elite',  '熔岩坑道', 'forge',    ['clockBomber+', 'gunner+', 'patrolBot+'], [0]],
+  [2, 'boss',   '熔爐核心', 'forge',    ['lavaGolem', 'cyborg', 'patrolBot', 'sumo+', 'forgeMaster'], [1, 3]],
+  [3, 'normal', '雪原山道', 'snow',     ['snowMonk', 'ninja', 'skater'], []],
+  [3, 'normal', '冰封石階', 'snow',     ['droneOp', 'cyborg', 'skater', 'lavaGolem'], [1]],
+  [3, 'bonus',  '古寺特訓', 'snow',     [], []],
+  [3, 'elite',  '鐘樓迴廊', 'snow',     ['ninja+', 'skater+', 'droneOp+'], [0]],
+  [3, 'boss',   '白魔之巔', 'snow',     ['snowMonk', 'lavaGolem+', 'thunderRonin', 'cyborg+', 'snowWitch'], [1, 3]],
+  [4, 'normal', '末班列車', 'subway',   ['drunk', 'puppet', 'snowMonk'], []],
+  [4, 'normal', '地鐵隧道', 'subway',   ['puppet', 'magician', 'drunk', 'droneOp'], [1]],
+  [4, 'bonus',  '月台特訓', 'subway',   [], []],
+  [4, 'elite',  '幻影劇場', 'theater',  ['snowMonk+', 'puppet+', 'frostKnight'], [0]],
+  [4, 'boss',   '傀儡舞台', 'theater',  ['puppet', 'drunk+', 'shadowKing', 'magician', 'puppetLord'], [1, 3]],
+  [5, 'normal', '浮空碼頭', 'sky',      ['hacker', 'magician', 'agent'], []],
+  [5, 'normal', '雲海迴廊', 'sky',      ['magician', 'hacker+', 'puppet+', 'droneOp+'], [1]],
+  [5, 'bonus',  '雲端特訓', 'sky',      [], []],
+  [5, 'elite',  '帝王之門', 'summit',   ['hacker+', 'abyssCrab', 'magician+'], [0]],
+  [5, 'boss',   '鋼拳之巔', 'summit',   ['sumo+', 'poisonQueen', 'clockBomber+', 'skyEmpress', 'skater+', 'cyborg+', 'steelEmperor'], [2, 4]],
+];
+// 難度(敵人強度倍率):沿用舊版 10 關的曲線,依 30 關的位置內插
+const OLD_SCALE = [1, 1.2, 1.4, 1.55, 1.7, 1.8, 1.9, 2, 2.05, 2.1];
+const scaleAt = i => {
+  const x = i / (STAGE_LIST.length - 1) * (OLD_SCALE.length - 1), k = Math.floor(x), f = x - k;
+  return +(OLD_SCALE[k] + ((OLD_SCALE[k + 1] || OLD_SCALE[k]) - OLD_SCALE[k]) * f).toFixed(2);
+};
+G.STAGES = STAGE_LIST.map(([r, type, name, bg, waves, events], i) => Object.assign({}, BGS[bg], {
+  region: r, type, waves, events, scale: scaleAt(i), stars: G.REGIONS[r].stars,
+  name, code: `${r + 1}-${i % 5 + 1}`, // 地圖上的編號,例如 1-3
+}));
+G.REGIONS.forEach((g, r) => { g.first = r * 5; g.last = r * 5 + 4; });
+// 關卡在地圖與結算上的顯示名稱:「1-3 港口特訓」
+G.stageTitle = s => `${s.code} ${G.t(s.name)}`;
+
+// ---- 機制漸進解鎖 ----
+// 九宮格機制:name 名稱、hint 說明(敵人只有部分機制解鎖時,用這些說明組合提示)
+G.MECH_INFO = {
+  heavy:    { name: '重擊', hint: '「頂住」的盾牌要按住到集滿' },
+  armor:    { name: '晶盾', hint: '發亮的符號要點兩下' },
+  lockon:   { name: '鎖定', hint: '紅色準星亮起後盾牌才出現' },
+  timebomb: { name: '倒數炸彈', hint: '💣 要在倒數歸零前點掉拆除' },
+  lava:     { name: '熔岩', hint: '燒紅格子的拳頭傷害 ×2,但會燙傷自己' },
+  blink:    { name: '瞬移', hint: '符號會跳到別格' },
+  swipe:    { name: '疾風', hint: '帶箭頭的拳頭要往箭頭方向滑' },
+  ice:      { name: '冰封', hint: '結冰的格子要先敲破冰' },
+  ghost:    { name: '殘影', hint: '點到半透明殘影會中斷連擊' },
+  tentacle: { name: '觸手', hint: '觸手蓋住的格子,敲 3 下清掉' },
+  hidden:   { name: '駭入', hint: '拳頭先顯示 ❓,裡面可能藏著 💣' },
+  memory:   { name: '幻術', hint: '記住格子閃爍的順序,照順序點回來' },
+};
+// 第 i 關可以出現的機制:第一輪只有前面區域 BOSS 解鎖的;第二、三輪全部開放(回傳 null = 不限制)
+G.mechAllowed = (i, round = G.round()) => {
+  if (round > 1) return null;
+  const s = G.STAGES[i];
+  return new Set(G.REGIONS.slice(0, s ? s.region : 0).flatMap(g => g.unlock));
+};
+// 某個敵人用到的所有機制(含輪換與格子狀態)
+G.mechKeysOf = id => {
+  const m = G.MECHS[id] || {}, keys = new Set();
+  [m, ...(m.rotate || [])].forEach(x => ['atk', 'def'].forEach(ph => Object.keys(x[ph] || {}).forEach(k => G.MECH_INFO[k] && keys.add(k))));
+  if (m.board) keys.add(m.board);
+  return [...keys];
+};
 
 // 破綻輸入的符號樣式:每次破綻隨機選一種,依序點第 1 → N 個
 // dice 骰子的點數用 G.diceHtml 畫成圓點(全部同色,不像實體骰子 1、4 點是紅的)

@@ -112,7 +112,7 @@ G.shop = {
     } else {
       const d = e.enemy, m = G.MECHS[e.id];
       pic = enemyPic(e);
-      lines.push(`<div class="dd-row"><span>${G.t('首次登場')}</span><b>${G.t(st.name)}</b></div>`);
+      lines.push(`<div class="dd-row"><span>${G.t('首次登場')}</span><b>${G.stageTitle(st)}</b></div>`);
       lines.push(`<div class="dd-row"><span>${G.t('基礎 HP・攻擊')}</span><b>${d.hp}・${d.atk}</b></div>`);
       lines.push(`<p>${G.t(m ? m.hint : '沒有特殊機制,適合熟悉操作')}</p>`);
       if (d.skill) lines.push(`<p class="dd-skill">${G.t('必殺技「{0}」', G.t(d.skill.name))}<br>${G.t(d.skill.desc)}</p>`);

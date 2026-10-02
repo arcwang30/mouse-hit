@@ -118,6 +118,29 @@ G.save = {
       delete sv.best;
     }
     sv.roundMax = sv.roundMax || (sv.cleared ? 2 : 1);
+    // 大地圖改版(舊版 10 關 → 第一章 30 關):舊第 k 關的進度換成新的第 3k ~ 3k+2 關,星級沿用,最高分重新計算
+    if (sv.mapVer !== 2) {
+      Object.values(sv.rounds).forEach(r0 => {
+        const clear = new Set(), stars = {};
+        (r0.clear || []).forEach(k => {
+          for (let j = k * 3; j < k * 3 + 3; j++) { clear.add(j); stars[j] = Math.max(stars[j] || 0, (r0.stars || {})[k] || 1); }
+        });
+        r0.clear = [...clear].sort((a, b) => a - b);
+        r0.stars = stars;
+        r0.starsInit = true;
+        r0.unlocked = Math.min(G.STAGES.length, Math.max(((r0.unlocked || 1) - 1) * 3 + 1, ...r0.clear.map(i => i + 2)));
+        r0.best = {};
+      });
+      // 已經走過的區域:不再播開場 / BOSS / 通關對話,也算已解鎖新招式
+      const c1 = (sv.rounds[1] || {}).clear || [];
+      sv.regionsCleared = sv.regionsCleared || {};
+      sv.dialogSeen = sv.dialogSeen || {};
+      G.REGIONS.forEach((g, r) => {
+        if (c1.some(i => i >= g.first && i <= g.last)) sv.dialogSeen['r' + r] = true;
+        if (c1.includes(g.last)) { sv.regionsCleared[r] = true; sv.dialogSeen['b' + r] = sv.dialogSeen['c' + r] = true; }
+      });
+      sv.mapVer = 2;
+    }
     // 金幣(商店用,和成長點數分開)。舊存檔第一次:依已通關的關卡數發「商店開幕禮」
     if (sv.coins === undefined) {
       const clears = Object.values(sv.rounds).reduce((n, r) => n + r.clear.length, 0);
