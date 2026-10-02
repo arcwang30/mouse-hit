@@ -32,10 +32,10 @@ document.addEventListener('pointerdown', e => {
 });
 
 G.$('#btnUpgrade').onclick = () => G.scenes.upgrade();
-// 故事:破關後可選擇看開場或結局,否則直接播開場
-G.$('#btnStory').onclick = () => G.save.data.cleared ? G.show('storyPick') : G.scenes.story();
+// 故事:破關後可選擇看開場或結局,否則直接播開場;看完(或跳過)都回到主選單
+G.$('#btnStory').onclick = () => G.save.data.cleared ? G.show('storyPick') : G.scenes.story('opening', () => G.scenes.menu());
 G.$('#pickOpening').onclick = () => G.scenes.story('opening', () => G.scenes.menu());
-G.$('#pickEnding').onclick = () => G.scenes.story('ending', () => G.show('storyPick'));
+G.$('#pickEnding').onclick = () => G.scenes.story('ending', () => G.scenes.menu());
 G.$('#pickBack').onclick = () => G.scenes.menu();
 G.$('#upBack').onclick = () => G.scenes.menu();
 G.$('#resultBack').onclick = () => {
