@@ -730,16 +730,21 @@ h2 { margin: 0; }
 .cell.timebomb .badge { right: auto; left: 50%; top: auto; bottom: 6%; transform: translateX(-50%); font-size: 7cqw; color: #ff3a3a; -webkit-text-stroke: .5cqw #000; }
 .cell.timebomb .cap::after { color: #ff3a3a; }
 @keyframes bombPulse { to { box-shadow: inset 0 .9cqw 0 #ffffff30, 0 1cqw 0 var(--edge), 0 0 4cqw #ff2020; } }
-/* 滑擊拳:螢光綠外殼,大箭頭標籤朝滑動方向晃動;按下瞄準時發亮 */
+/* 滑擊拳:螢光綠外殼,中間一個實心粗箭頭(程式畫的,依方向旋轉),朝滑動方向來回晃;按下瞄準時發亮
+   標籤裡的 ↑↓←→ 文字只留著給無障礙讀取,畫面上隱藏 */
 .cell.swipe .cap { background: linear-gradient(180deg, #d8ff9a, #4ad94a 55%, #127a2a); --edge: #063a12; color: #eaffd0; }
-.cell.swipe .label { top: 50%; transform: translate(-50%, -50%); font-size: 11cqw; line-height: 1; padding: 0; background: none; color: #fff;
-  -webkit-text-stroke: .6cqw #063a12; paint-order: stroke fill; text-shadow: 0 0 2cqw #b4ff4a; animation: swipeHint .6s ease-in-out infinite alternate; }
+.cell.swipe .label {
+  top: 50%; width: 13cqw; height: 13cqw; padding: 0; font-size: 0; color: transparent; border-radius: 0;
+  background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M2.5 8h10.5V2.5L22.5 12 13 21.5V16H2.5z' fill='%23fff' stroke='%23063a12' stroke-width='1.6' stroke-linejoin='round'/%3E%3C/svg%3E") center / contain no-repeat;
+  filter: drop-shadow(0 0 1.4cqw #b4ff4a);
+  transform: translate(-50%, -50%) rotate(var(--rot)); animation: swipeHint .6s ease-in-out infinite alternate;
+}
 .cell.swipe .icon { opacity: .35; }
-.cell.swipe-up .label    { --sx: 0%;    --sy: -14%; }
-.cell.swipe-down .label  { --sx: 0%;    --sy: 14%; }
-.cell.swipe-left .label  { --sx: -14%;  --sy: 0%; }
-.cell.swipe-right .label { --sx: 14%;   --sy: 0%; }
-@keyframes swipeHint { to { transform: translate(calc(-50% + var(--sx) * 4), calc(-50% + var(--sy) * 4)); } }
+.cell.swipe-up .label    { --rot: -90deg; --sx: 0%;   --sy: -22%; }
+.cell.swipe-down .label  { --rot: 90deg;  --sx: 0%;   --sy: 22%; }
+.cell.swipe-left .label  { --rot: 180deg; --sx: -22%; --sy: 0%; }
+.cell.swipe-right .label { --rot: 0deg;   --sx: 22%;  --sy: 0%; }
+@keyframes swipeHint { to { transform: translate(calc(-50% + var(--sx)), calc(-50% + var(--sy))) rotate(var(--rot)); } }
 .cell.aiming .cap { box-shadow: inset 0 .9cqw 0 #ffffff70, 0 1cqw 0 var(--edge), 0 0 5cqw #b4ff4a; transform: scale(1.06); }
 /* 記憶拳:閃爍的格子(金色星光) */
 .cell.mem .cap { background: linear-gradient(180deg, #fff4c0, #ffc83a 55%, #b07a00); --edge: #5a3a00; color: #fff; box-shadow: inset 0 .9cqw 0 #ffffffa0, 0 1cqw 0 var(--edge), 0 0 5cqw #ffd84a; }
