@@ -23,8 +23,11 @@ document.addEventListener('touchend', e => {
 }, { passive: false });
 
 // ---- 音效 ----
-// 瀏覽器要求使用者互動後才能播放聲音
-['pointerdown', 'keydown'].forEach(ev => document.addEventListener(ev, () => G.audio.unlock(), true));
+// 瀏覽器規定:通常要等玩家第一次點擊/按鍵後才能發出聲音(iPhone 一律如此)。
+// 開啟時先試著直接啟動:允許自動播放的環境(例如 Android 加到主畫面的 App)音樂會立刻響起;
+// 不允許的話聲音引擎會停在暫停狀態,等第一次點擊再恢復。iPhone 要在 touchend / click 恢復才算數,所以也一起監聽
+['pointerdown', 'touchend', 'click', 'keydown'].forEach(ev => document.addEventListener(ev, () => G.audio.unlock(), true));
+G.audio.unlock();
 
 // 一般按鈕的點擊音(技能卡另有選取音)
 document.addEventListener('pointerdown', e => {
