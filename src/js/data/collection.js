@@ -11,7 +11,7 @@ G.DEX_HERO = [
   { id: 'ult',     name: '烈焰鋼拳・焚天', img: 'fx/ult_cutin_fist.webp', price: 400,
     bio: '神拳門終極絕學。燃盡額上烙痕的烈火,化為百烈拳的究極一擊。' },
   // 第二章破關後
-  { id: 'awake',   name: '炎鋼・天道', img: 'fx/hero_awake.webp', price: 500,
+  { id: 'awake',   name: '炎鋼・天道', img: 'fx/hero_awake.jpg', price: 500,
     bio: '在風暴之眼覺醒的炎鋼。神拳門至高拳法與體內的烈火異能熔煉為一,為了守護與傳承而揮拳。' },
   { id: 'ult2',    name: '炎鋼天道・焚天', img: 'fx/ult_tiandao.webp', price: 600,
     bio: '鋼鐵意志與不滅烈焰合而為一的究極奧義。威力更勝焚天,還能在戰鬥中重新燃起生命之火。' },

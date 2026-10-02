@@ -301,5 +301,5 @@ G.diceHtml = n => '<span class="die">' + [...Array(9).keys()].map(k => `<i${DICE
 // 區域在存檔裡的代號(通關紀錄、對話是否看過):第一章沿用舊的數字,之後的章節加上章節編號
 G.regionKey = (r, ch = G.chapter()) => ch === 1 ? String(r) : `${ch}-${r}`;
 // 第二章的美術:到了之後填上路徑(assets/images/ 底下),沒有的話沿用原本的圖
-G.HERO_AWAKE_IMG = 'fx/hero_awake.webp'; // 炎鋼・天道覺醒立繪
+G.HERO_AWAKE_IMG = 'fx/hero_awake.jpg'; // 炎鋼・天道覺醒立繪
 G.TIANDAO_ART = 'fx/ult_tiandao.webp';  // 新必殺技「炎鋼天道」過場圖
