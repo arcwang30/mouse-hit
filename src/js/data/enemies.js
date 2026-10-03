@@ -118,6 +118,8 @@ G.ENEMIES = {
     skill: { name: '日月無相', desc: '日月雙輪轉動,天地萬象一齊襲來!', count: 3, decoy: 0.3, dmgMul: 2, lifeMul: 0.75 },
   },
 };
+// 寶箱怪:神秘寶箱事件才會出現的敵人(不在關卡裡,所以不放進 G.ENEMIES);強度跟著當下的關卡與波次
+G.MIMIC = { name: '寶箱怪', icon: '🧰', img: 'enemies/mimic.webp', shot: '💰', hp: 70, atk: 9, atkCount: 5, guardLife: 1000 };
 
 // 敵人專屬機制(第二階段):讓每種敵人玩起來不一樣
 // hint:登場時的提示;atk:你的攻擊回合;def:敵人攻擊回合;board:放在格子上的狀態(ice / tentacle / lava)
@@ -136,7 +138,7 @@ G.MECHS = {
   abyssCrab:   { hint: '觸手:觸手蓋住的格子,敲 3 下清掉', board: 'tentacle' },
   poisonQueen: { hint: '毒瓶:小心混在拳頭裡的 🧪', atk: { bomb: 0.3, bombIcon: '🧪' } },
   // 寶箱怪(神秘寶箱事件,不列入圖鑑):攻擊回合混著假金幣陷阱,防禦時旁邊有殘影
-  mimic:       { hint: '寶箱怪:小心混在拳頭裡的假金幣 🪙', atk: { bomb: 0.25, bombIcon: '🪙' }, def: { ghost: 0.35 } },
+  mimic:       { hint: '寶箱怪:小心混在拳頭裡的假錢袋 💰', atk: { bomb: 0.25, bombIcon: '💰' }, def: { ghost: 0.35 } },
   shadowKing:  { hint: '暗影:瞬移、殘影、鎖定輪番上陣', rotate: [{ def: { blink: 0.5 } }, { def: { ghost: 0.5 } }, { def: { lockon: 450 } }] },
 
   // 第四關之後

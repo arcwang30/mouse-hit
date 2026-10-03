@@ -990,3 +990,42 @@ html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; } /* 手機瀏覽
   filter: drop-shadow(0 0 2cqw #7fe9ff);
 }
 .fx-tornado.big { filter: drop-shadow(0 0 3cqw #fff) drop-shadow(0 0 5cqw #2ee6ff); }
+
+/* ===== 旋風破綻:風級(轉滿最低圈數後越轉越強)===== */
+.dial.tier-0 .dial-disc { border-color: #7fe9ff; }
+.dial.tier-1 .dial-disc { border-color: #ffb03c; box-shadow: 0 0 calc(5cqw + var(--heat) * 9cqw) #ff9a2a, inset 0 0 6cqw #000c; }
+.dial.tier-1 .dial-pt { background: #ffe2b0; box-shadow: 0 0 1.5cqw #ff9a2a; }
+.dial.tier-1 .dial-count { text-shadow: 0 0 2cqw #ff9a2a, 0 .4cqw 0 #000; color: #ffe2b0; }
+.dial.tier-2 .dial-disc { border-color: #ff4ad8; box-shadow: 0 0 calc(6cqw + var(--heat) * 10cqw) #c84dff, inset 0 0 6cqw #000c; animation: tierPulse .5s ease-in-out infinite alternate; }
+.dial.tier-2 .dial-pt { background: #ffd0f6; box-shadow: 0 0 1.8cqw #ff4ad8; }
+.dial.tier-2 .dial-count { text-shadow: 0 0 2.4cqw #ff4ad8, 0 .4cqw 0 #000; color: #ffd0f6; }
+@keyframes tierPulse { to { transform: scale(1.03); } }
+
+/* ===== 旋風破綻:繞著敵人越聚越大的風暴 ===== */
+.storm-orbit { position: absolute; z-index: 3; width: 0; height: 0; pointer-events: none; --grow: 1; --spd: 1.1s; }
+.storm-orbit > i, .storm-orbit .so-ring { position: absolute; left: 0; top: 0; }
+/* 整團繞著敵人轉:容器旋轉,每個小龍捲依 --a 角度、--r 半徑排開,再反向轉回來保持直立 */
+.storm-orbit { animation: orbitSpin var(--spd) linear infinite; scale: var(--grow); transition: scale .35s ease-out; }
+@keyframes orbitSpin { to { rotate: 360deg; } }
+.storm-orbit > i {
+  font-style: normal; font-size: 9cqw; line-height: 1; filter: drop-shadow(0 0 1.6cqw #7fe9ff);
+  transform: rotate(var(--a)) translateX(var(--r)) rotate(calc(var(--a) * -1)) translate(-50%, -50%);
+  animation: orbIn .3s ease-out both;
+}
+@keyframes orbIn { from { opacity: 0; } }
+/* 中間的旋風氣流:淡淡的漩渦,跟著圈數變大 */
+.storm-orbit .so-ring {
+  width: 56cqw; height: 56cqw; margin: -28cqw 0 0 -28cqw; border-radius: 50%; opacity: .55;
+  background: repeating-conic-gradient(#dffbff00 0deg, #dffbff66 10deg, #dffbff00 22deg);
+  -webkit-mask: radial-gradient(circle closest-side, transparent 0 30%, #000 50%, transparent 100%);
+  mask: radial-gradient(circle closest-side, transparent 0 30%, #000 50%, transparent 100%);
+}
+/* 失敗:風暴散去 */
+.storm-orbit.fade { transition: opacity .4s, scale .4s; opacity: 0; scale: 1.6; }
+/* 合體:小龍捲收攏到中心,氣流變成巨型颶風(風級越高顏色越烈) */
+.storm-orbit.merge > i { transition: transform .45s cubic-bezier(.5, 0, .9, .6), opacity .45s; transform: translate(-50%, -50%) scale(.4); opacity: 0; }
+.storm-orbit.merge { --spd: .25s; scale: calc(var(--grow) * 1.35); }
+.storm-orbit.merge .so-ring { opacity: .95; animation: soBig .75s ease-out forwards; }
+.storm-orbit.merge.tier-1 .so-ring { background: repeating-conic-gradient(#ffe2b000 0deg, #ffb03caa 10deg, #ffe2b000 22deg); }
+.storm-orbit.merge.tier-2 .so-ring { background: repeating-conic-gradient(#ffd0f600 0deg, #ff4ad8bb 10deg, #ffd0f600 22deg); }
+@keyframes soBig { from { scale: .6; } to { scale: 1.5; } }

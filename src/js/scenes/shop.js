@@ -110,6 +110,12 @@ G.shop = {
     } else if (e.dummy) {
       pic = enemyPic(e);
       lines.push(`<p>${G.t('分歧選「狂打獎勵關」時登場。不會反擊,12 秒內盡量打!')}</p>`);
+    } else if (e.mimic) {
+      pic = enemyPic(e);
+      lines.push(`<div class="dd-row"><span>${G.t('首次登場')}</span><b>${G.t('分歧事件「神秘寶箱」')}</b></div>`);
+      lines.push(`<div class="dd-row"><span>${G.t('基礎 HP・攻擊')}</span><b>${e.enemy.hp}・${e.enemy.atk}</b></div>`);
+      lines.push(`<p>${G.t('打開神秘寶箱時有機率跳出來。強度跟著當下的關卡變化;打倒牠能搶回金幣與一個隨機技能,打不過牠也只會吃飽逃走。')}</p>`);
+      lines.push(`<p>${G.t(G.MECHS.mimic.hint)}</p>`);
     } else {
       const d = e.enemy, m = G.MECHS[e.id];
       pic = enemyPic(e);

@@ -36,7 +36,8 @@ G.dexList = kind => {
     // 價格:原本的 7 折,取整到 10
     return { kind, id, enemy: G.ENEMIES[id], stage: st, price: Math.round((kind === 'boss' ? 150 + reg * 54 : 60 + reg * 18) * 0.7 / 10) * 10 };
   });
-  if (kind === 'minion') list.push({ kind, id: 'dummy', dummy: true, stage: 0, price: 40 }); // 狂打獎勵關的木樁
+  if (kind === 'minion') list.push({ kind, id: 'dummy', dummy: true, stage: 0, price: 40 }, // 狂打獎勵關的木樁
+    { kind, id: 'mimic', mimic: true, enemy: G.MIMIC, stage: 0, price: 100 });      // 神秘寶箱的寶箱怪
   return list;
 };
 G.DEX_KINDS = ['hero', 'minion', 'boss'];

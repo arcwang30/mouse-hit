@@ -24,8 +24,6 @@ const MERCHANT = [
   { id: 'leave',  icon: '🚶', name: '離開',     desc: '什麼都不買' },
 ];
 const CHEST_ODDS = { coins: 0.4, skill: 0.3 }; // 剩下 30% 是寶箱怪(要打一場,打贏一樣有寶物)
-// 寶箱怪:不列入圖鑑的事件敵人;強度跟著目前這一關與波次
-const MIMIC = { name: '寶箱怪', icon: '🧰', img: 'enemies/mimic.webp', shot: '🪙', hp: 70, atk: 9, atkCount: 5, guardLife: 1000 };
 const SKILL_RULE_CHANCE = 0.25; // 寶箱開出的隨機技能:有這個機率是技法(還有沒拿過的才會出現)
 const HEAL_SKILLS = ['steel', 'pill', 'leech', 'regen', 'bell']; // HP 偏低時比較容易開到的保命技能
 const DEVIL_GOLD = 100;
@@ -34,7 +32,9 @@ const SWIPE_MUL = 1.5;
 const TIMEBOMB_MS = 3000, TIMEBOMB_DMG = 1.5;
 const MEMORY_LEN = { 1: 3, 2: 4, 3: 5 }, MEMORY_SHOW = 520, MEMORY_PER = 900, MEMORY_DMG = 1.5;
 // 旋風破綻:出現機率、指針最多轉幾圈、缺口兩側寬容角度、畫圈限時、需要的圈數(一般 / 精英 / BOSS)
-const DIAL_CHANCE = 0.4, DIAL_LAPS = 3, DIAL_GRACE = 6, DIAL_SPIN_MS = 4000, DIAL_TURNS = [3, 4, 5];
+const DIAL_CHANCE = 0.4, DIAL_LAPS = 3, DIAL_GRACE = 6, DIAL_SPIN_MS = 5000, DIAL_TURNS = [3, 4, 5];
+// 旋風破綻的風級:轉滿最低圈數後,每多轉 extra 圈升一級,破甲傷害乘上 mul(畫圈限時內一直轉,轉越多越痛)
+const DIAL_TIERS = [{ extra: 0, name: '旋風', mul: 1 }, { extra: 2, name: '暴風', mul: 1.5 }, { extra: 4, name: '颶風', mul: 2 }];
 const BONUS_STARS = [40, 70]; // 特訓關:狂打幾 HIT 拿第二、第三顆星
 const CHAPTER_COINS = 300;    // 章節通關獎勵(每一輪第一次打倒最終 BOSS)
 const TIANDAO_MUL = 1.5, TIANDAO_HEAL = 0.2; // 炎鋼天道(第二章破關後的必殺技):威力倍率、回復比例
@@ -501,16 +501,17 @@ G.battle = {
     this.render();
   },
 
-  // 破甲結算(兩種破綻共用):成功打出攻擊力 ×4,下一回合傷害提高;tornado 時最後一擊由龍捲風代替拳頭特效
-  breakResult(broken, tornado) {
+  // 破甲結算(兩種破綻共用):成功打出攻擊力 ×4,下一回合傷害提高
+  // tier:旋風破綻的風級(最後一擊由颶風摔落代替拳頭特效,傷害再乘風級倍率)
+  breakResult(broken, tier) {
     if (broken) {
       this.stats.breaks++;
       this.brokenNext = true;
       this.comboHit();
       G.audio.play('break');
-      if (!tornado) this.punchFx(1, { crit: true, final: true, dur: 200 });
-      this.float(tornado ? '旋風破甲!' : '破甲!', 'tag armor');
-      this.hurtEnemy(this.p.atk * 4, true);
+      if (!tier) this.punchFx(1, { crit: true, final: true, dur: 200 });
+      this.float(tier ? G.t('{0}破甲!', G.t(tier.name)) + (tier.mul > 1 ? ` ×${tier.mul}` : '') : '破甲!', 'tag armor');
+      this.hurtEnemy(this.p.atk * 4 * (tier ? tier.mul : 1), true);
       this.hitStop(130); // 破甲:最重的一下
     } else {
       this.float('破甲失敗', 'tag miss');
@@ -540,12 +541,16 @@ G.battle = {
       this.render();
       return;
     }
-    this.setPhase(G.t('旋風:在圓盤上畫圈旋轉 {0} 圈!', turns), 'atk');
+    this.setPhase(G.t('旋風:{0} 秒內畫圈,至少 {1} 圈,轉越多越強!', DIAL_SPIN_MS / 1000, turns), 'atk');
     G.audio.play('ready');
-    const broken = await this.dialSpin(d, turns);
+    const storm = this.stormOpen();
+    const laps = await this.dialSpin(d, turns, storm);
     d.close();
+    const broken = laps >= turns && !this.over();
+    const tier = broken ? this.dialTier(laps - turns) : null;
+    await this.stormFinale(storm, tier); // 颶風摔落(成功)或龍捲風散去(失敗);成功時在摔落的瞬間結算破甲
     this.phase = null;
-    this.breakResult(broken, true);
+    if (!broken) this.breakResult(false);
     await G.clock.wait(500);
     if (e.hp > 0) this.setEnemyState('idle');
     this.render();
@@ -619,22 +624,39 @@ G.battle = {
     });
   },
 
-  // 在圓盤上畫圈:以圓心算手指角度的變化並累加(來回抖動會互相抵銷),每滿一圈一道龍捲風
-  // 圓盤上的龍捲風粒子隨手指轉速變強;鍵盤每按一下算 90 度
-  dialSpin(d, turns) {
+  // 風級:轉滿最低圈數後多轉了 extra 圈
+  dialTier(extra) { return [...DIAL_TIERS].reverse().find(t => extra >= t.extra); },
+
+  // 在圓盤上畫圈:以圓心算手指角度的變化並累加(來回抖動會互相抵銷),每滿一圈一道龍捲風捲向敵人、繞在牠身邊
+  // 限時 DIAL_SPIN_MS 一直可以轉:轉滿 turns 圈算成功,之後多轉的圈數讓風級往上升(旋風 → 暴風 → 颶風)
+  // 圓盤上的龍捲風粒子隨手指轉速變強;鍵盤每按一下算 90 度;時間到回傳總圈數
+  dialSpin(d, turns, storm) {
     d.el.classList.add('spin');
     d.count.textContent = '0 / ' + turns;
     return new Promise(res => {
-      let total = 0, rot = 0, heat = 0, laps = 0, last = null, lastPt = 0, lastGust = 0, done = false, raf;
-      const end = ok => {
+      let total = 0, rot = 0, heat = 0, laps = 0, last = null, lastPt = 0, lastGust = 0, done = false, raf, tierAt = -1;
+      const end = () => {
         if (done) return;
         done = true;
         timer.stop();
         cancelAnimationFrame(raf);
         G.grid.handler = null;
-        res(ok);
+        res(laps);
       };
-      const timer = this.timebar(DIAL_SPIN_MS, () => end(false));
+      const timer = this.timebar(DIAL_SPIN_MS, end);
+      // 風級顯示:還沒轉滿顯示「圈數 / 需要」,轉滿後顯示風級與倍率,升級時圓盤換色並在敵人身上跳字
+      const showTier = () => {
+        if (laps < turns) { d.count.textContent = laps + ' / ' + turns; return; }
+        const k = DIAL_TIERS.indexOf(this.dialTier(laps - turns)), t = DIAL_TIERS[k];
+        d.count.textContent = `${G.t(t.name)} ×${t.mul}`;
+        if (k === tierAt) return;
+        tierAt = k;
+        d.el.classList.remove('tier-0', 'tier-1', 'tier-2');
+        d.el.classList.add('tier-' + k);
+        this.float(`${G.t(t.name)}!` + (t.mul > 1 ? ` ×${t.mul}` : ''), 'tag line');
+        G.audio.play(k ? 'perfect' : 'ready');
+        G.haptic.buzz(k ? [0, 40, 30, 60] : 40);
+      };
       const angleOf = ev => {
         const r = d.disc.getBoundingClientRect();
         return Math.atan2(ev.clientY - (r.top + r.height / 2), ev.clientX - (r.left + r.width / 2)) * 180 / Math.PI;
@@ -648,16 +670,16 @@ G.battle = {
         const now = performance.now();
         if (now - lastPt > 25) { lastPt = now; this.dialParticle(d, Math.sign(delta)); this.dialParticle(d, Math.sign(delta)); }
         if (now - lastGust > 120) { lastGust = now; G.audio.play('gust', heat); } // 強風聲:轉越快越響
-        while (laps < turns && Math.abs(total) >= (laps + 1) * 360) {
+        while (Math.abs(total) >= (laps + 1) * 360) {
           laps++;
-          d.count.textContent = laps + ' / ' + turns;
+          showTier();
           d.disc.classList.remove('lap'); void d.disc.offsetWidth; d.disc.classList.add('lap');
-          G.audio.play('note', laps);
+          G.audio.play('note', Math.min(laps, 12));
           G.haptic.buzz(25);
           this.comboHit();
-          this.tornadoFx(laps === turns);
+          this.tornadoFx(() => this.stormAdd(storm, laps));
         }
-        if (laps >= turns) end(true);
+        if (this.over()) end();
       };
       d.el.addEventListener('pointerdown', ev => {
         ev.preventDefault();
@@ -701,36 +723,123 @@ G.battle = {
     ], { duration: 520 + Math.random() * 260, easing: 'cubic-bezier(.3, .1, .6, 1)' }).onfinish = () => p.remove();
   },
 
-  // 龍捲風從畫面下方捲向敵人;big 是最後一道(更大、命中時爆開)
-  tornadoFx(big) {
+  // 敵人身體中心(戰鬥畫面座標)
+  enemyCenter() {
+    const stage = G.$('#stageView'), sr = stage.getBoundingClientRect(), r = G.$('#enemySprite').getBoundingClientRect();
+    return r.width ? [r.left + r.width / 2 - sr.left, r.top + r.height / 2 - sr.top] : [stage.clientWidth * 0.5, stage.clientHeight * 0.48];
+  },
+
+  // 龍捲風從畫面下方捲向敵人,命中後呼叫 onArrive(加入繞著敵人轉的風暴)
+  tornadoFx(onArrive) {
     const stage = G.$('#stageView');
     const W = stage.clientWidth, H = stage.clientHeight;
-    if (!W) return;
+    if (!W) return onArrive && onArrive();
+    const [cx, cy] = this.enemyCenter();
     const sx = W * (0.15 + Math.random() * 0.7), sy = H * 1.1;
-    const ex = W * 0.5 + (Math.random() - 0.5) * W * 0.16, ey = H * 0.5 + (Math.random() - 0.5) * H * 0.12;
+    const ex = cx + (Math.random() - 0.5) * W * 0.16, ey = cy + (Math.random() - 0.5) * H * 0.12;
     const mx = (sx + ex) / 2 + (Math.random() - 0.5) * W * 0.35; // 中途左右甩一下,像捲過去
-    const s0 = big ? 4.2 : 2.6, s1 = big ? 2.2 : 1.1;
     const f = document.createElement('div');
-    f.className = 'fx-tornado' + (big ? ' big' : '');
+    f.className = 'fx-tornado';
     f.textContent = '🌪️';
     G.audio.play('tornado'); // 龍捲風呼嘯而出
     stage.appendChild(f);
     f.animate([
-      { transform: `translate(${sx}px, ${sy}px) translate(-50%, -50%) scale(${s0})`, opacity: 0.7 },
-      { transform: `translate(${mx}px, ${(sy + ey) / 2}px) translate(-50%, -50%) scale(${(s0 + s1) / 2})`, opacity: 1, offset: 0.5 },
-      { transform: `translate(${ex}px, ${ey}px) translate(-50%, -50%) scale(${s1})`, opacity: 1 },
-    ], { duration: big ? 420 : 340, easing: 'ease-in' }).onfinish = () => {
+      { transform: `translate(${sx}px, ${sy}px) translate(-50%, -50%) scale(2.6)`, opacity: 0.7 },
+      { transform: `translate(${mx}px, ${(sy + ey) / 2}px) translate(-50%, -50%) scale(1.8)`, opacity: 1, offset: 0.5 },
+      { transform: `translate(${ex}px, ${ey}px) translate(-50%, -50%) scale(1.1)`, opacity: 1 },
+    ], { duration: 340, easing: 'ease-in' }).onfinish = () => {
       f.remove();
       G.audio.play('punch');
       this.setEnemyState('hit', 220);
       const b = document.createElement('div');
-      b.className = 'fx-impact' + (big ? ' final' : '');
-      b.textContent = big ? '💥' : '💨';
+      b.className = 'fx-impact';
+      b.textContent = '💨';
       b.style.left = ex + 'px';
       b.style.top = ey + 'px';
       stage.appendChild(b);
-      G.clock.after(() => b.remove(), big ? 600 : 320);
+      G.clock.after(() => b.remove(), 320);
+      if (onArrive) onArrive();
     };
+  },
+
+  // ---- 旋風破綻:繞著敵人越聚越大的風暴 ----
+  // 一個以敵人為中心旋轉的容器,每捲來一道龍捲風就多一個繞圈的小龍捲(最多 8 個,之後改成整團變大);
+  // 敵人被風捲著往上浮、左右搖晃,圈數越多浮得越高
+  stormOpen() {
+    const stage = G.$('#stageView'), [cx, cy] = this.enemyCenter();
+    const el = document.createElement('div');
+    el.className = 'storm-orbit';
+    el.style.left = cx + 'px';
+    el.style.top = cy + 'px';
+    el.innerHTML = '<div class="so-ring"></div>';
+    stage.appendChild(el);
+    return { el, n: 0, sway: null };
+  },
+  stormAdd(storm, laps) {
+    if (!storm || storm.closed || !storm.el.isConnected) return; // 收尾後才捲到的龍捲風不再加入
+    const W = G.$('#stageView').clientWidth || 300;
+    if (storm.n < 8) {
+      const t = document.createElement('i');
+      t.textContent = '🌪️';
+      t.style.setProperty('--a', (storm.n * 137) % 360 + 'deg'); // 黃金角散開,不會疊在一起
+      t.style.setProperty('--r', W * (0.16 + (storm.n % 3) * 0.035) + 'px');
+      storm.el.appendChild(t);
+      storm.n++;
+    }
+    storm.el.style.setProperty('--grow', Math.min(1.9, 1 + laps * 0.08).toFixed(2));
+    storm.el.style.setProperty('--spd', Math.max(0.35, 1.1 - laps * 0.07).toFixed(2) + 's');
+    // 敵人被捲起來:往上浮 + 搖晃(用獨立的 translate / rotate 屬性,不會被受擊動畫蓋掉)
+    const en = G.$('#enemy'), lift = Math.min(laps * 3.5, 26);
+    en.style.transition = 'translate .35s ease-out';
+    en.style.translate = `0 -${lift}%`;
+    if (!storm.sway) storm.sway = en.animate([{ rotate: '-6deg' }, { rotate: '6deg' }], { duration: 420, iterations: Infinity, direction: 'alternate', easing: 'ease-in-out' });
+    storm.sway.playbackRate = 1 + laps * 0.15;
+  },
+  // 收尾:成功 → 小龍捲合體成巨型颶風,把敵人捲上高空轉圈後重重摔下(摔落瞬間結算破甲);失敗 → 風暴散去,敵人落回原位
+  async stormFinale(storm, tier) {
+    const en = G.$('#enemy'), stage = G.$('#stageView');
+    storm.closed = true;
+    const cleanup = () => {
+      if (storm.sway) storm.sway.cancel();
+      storm.el.remove();
+      en.style.transition = 'translate .25s ease-in';
+      en.style.translate = '';
+      G.clock.after(() => { en.style.transition = ''; }, 300);
+    };
+    if (!tier) {
+      storm.el.classList.add('fade');
+      await G.clock.wait(450);
+      return cleanup();
+    }
+    // 1. 合體:小龍捲往中心收攏,出現巨型颶風,敵人被捲上高空高速旋轉
+    storm.el.classList.add('merge', 'tier-' + DIAL_TIERS.indexOf(tier));
+    G.audio.play('tornado');
+    G.audio.play('gust', 1);
+    if (storm.sway) storm.sway.cancel();
+    en.style.transition = 'translate .6s cubic-bezier(.3, 0, .4, 1)';
+    en.style.translate = '0 -45%';
+    const spin = en.animate([{ rotate: '0deg' }, { rotate: `${720 + DIAL_TIERS.indexOf(tier) * 360}deg` }], { duration: 750, easing: 'cubic-bezier(.4, 0, .6, 1)' });
+    this.setEnemyState('stagger');
+    await G.clock.wait(760);
+    spin.cancel();
+    // 2. 摔落:一瞬間砸回地面,畫面重震,結算破甲
+    en.style.transition = 'translate .12s cubic-bezier(.7, 0, 1, .5)';
+    en.style.translate = '';
+    await G.clock.wait(120);
+    storm.el.remove();
+    G.audio.play('boom');
+    G.haptic.buzz([0, 80, 40, 160]);
+    const [cx, cy] = this.enemyCenter();
+    const b = document.createElement('div');
+    b.className = 'fx-impact final';
+    b.textContent = '💥';
+    b.style.left = cx + 'px';
+    b.style.top = (cy + stage.clientHeight * 0.08) + 'px';
+    stage.appendChild(b);
+    G.clock.after(() => b.remove(), 700);
+    if (G.save.data.shake) { const app = G.$('#app'); app.classList.remove('shake'); void app.offsetWidth; app.classList.add('shake'); }
+    this.breakResult(true, tier);
+    G.clock.after(() => { en.style.transition = ''; }, 200);
   },
 
   // 在九宮格亮出第 1 → len 個符號(style 見 G.BREAK_STYLES),ms 內依序點完回傳 true;按錯或超時 false
@@ -1195,7 +1304,7 @@ G.battle = {
   async mimicFight() {
     const placeholder = this.e, view = G.$('#stageView'), bg = G.$('#stageBg'), run = this.run;
     const evCls = view.className, evBg = bg.style.backgroundImage;
-    const e = this.e = makeEnemy('mimic', this.stage.scale, this.wave || 0, MIMIC);
+    const e = this.e = makeEnemy('mimic', this.stage.scale, this.wave || 0, G.MIMIC);
     e.mimic = true;
     view.className = this.evBefore.cls;
     bg.style.backgroundImage = this.evBefore.bg;
