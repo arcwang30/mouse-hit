@@ -1029,3 +1029,11 @@ html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; } /* 手機瀏覽
 .storm-orbit.merge.tier-1 .so-ring { background: repeating-conic-gradient(#ffe2b000 0deg, #ffb03caa 10deg, #ffe2b000 22deg); }
 .storm-orbit.merge.tier-2 .so-ring { background: repeating-conic-gradient(#ffd0f600 0deg, #ff4ad8bb 10deg, #ffd0f600 22deg); }
 @keyframes soBig { from { scale: .6; } to { scale: 1.5; } }
+
+/* 代價技能:暗紅外框,標籤「代價」(效果強但有缺點) */
+.skill-card.risk { background: var(--brushed), linear-gradient(135deg, #3a0a12, var(--steel-0)); box-shadow: inset 0 0 0 .5cqw #ff3a4a, inset .8cqw 0 0 #ff3a4a; }
+.skill-card.risk b { color: #ffd0d0; }
+.rule-tag.risk { background: #ff3a4a; color: #fff; }
+/* 選擇關卡:天魔還沒開放的提示 / 結算畫面的天魔星數 */
+.round-desc.lock { color: #d8b0ff; }
+.result-box .new-round.lock { background: linear-gradient(90deg, transparent, #3a0866c0, transparent); font-size: 4.2cqw; }

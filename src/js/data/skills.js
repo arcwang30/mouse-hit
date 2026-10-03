@@ -24,6 +24,12 @@ G.SKILLS = [
   { id: 'absorb',   icon: '🌀', name: '格擋蓄氣', desc: '成功防禦時必殺值 +3',               apply: p => { p.blockUlt += 3; } },
   { id: 'bounty',   icon: '💰', name: '賞金獵人', desc: '結算積分 +50%',                     apply: p => { p.scoreMul += 0.5; } },
 
+  // ---- 代價技能(risk):效果強,但同時有缺點,每種只能拿一次;寶箱不會開到(不能強迫玩家吃下代價)----
+  { id: 'berserk',  risk: true, unique: true, icon: '😡', name: '狂戰士',   desc: '出拳傷害 ×1.5,但受到的傷害 +30%',            apply: p => { p.atk = Math.round(p.atk * 1.5); p.armor -= 0.3; } },
+  { id: 'glass',    risk: true, unique: true, icon: '🗡️', name: '玻璃大砲', desc: '暴擊率 +25%、暴擊傷害 +0.8,但最大 HP -25%',  apply: p => { p.crit += 0.25; p.critMul += 0.8; p.maxHp -= Math.round(p.maxHp * 0.25); p.hp = Math.min(p.hp, p.maxHp); } },
+  { id: 'reckless', risk: true, unique: true, icon: '🌪️', name: '捨身連打', desc: '攻擊回合拳頭 +4,但拳頭停留時間 -200ms',      apply: p => { p.attackCount += 4; p.moleLife -= 200; } },
+  { id: 'burnlife', risk: true, unique: true, icon: '🕯️', name: '燃命',     desc: '必殺集氣 ×1.8,但最大 HP -15%',               apply: p => { p.ultGain *= 1.8; p.maxHp -= Math.round(p.maxHp * 0.15); p.hp = Math.min(p.hp, p.maxHp); } },
+
   // ---- 技法:改變規則 ----
   { id: 'chain',    rule: true, icon: '🔗', name: '連鎖拳',   desc: '打中拳頭時,相鄰的一顆拳頭也會被打中',       apply: p => { p.chain = true; } },
   { id: 'burst',    rule: true, icon: '💥', name: '爆裂拳',   desc: '每打中 6 拳引爆一次,清掉同一排的拳頭',       apply: p => { p.burstEvery = 6; } },

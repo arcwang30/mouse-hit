@@ -642,3 +642,16 @@ html:lang(en) .stage-bar .ch-tab b { font-size: 2.6cqw; }
 #stages .tut-card .sc-name { font-size: 4cqw; }
 #stages .tut-card .sc-desc { display: none; }
 #stages .tut-card .sc-clear { top: 50%; transform: translateY(-50%); }
+/* 天魔:封印格(這一回合不會冒符號;點了算點空格,會反噬)——暗紫鎖鏈罩住整格 */
+.blk.seal {
+  display: grid; place-items: center; position: absolute; inset: 6%; z-index: 2; border-radius: 1.8cqw; pointer-events: none;
+  font-size: 9cqw; line-height: 1; filter: drop-shadow(0 0 1.4cqw #b04dff);
+  background: repeating-linear-gradient(45deg, #1a0a2ae6 0 2.2cqw, #2a1040e6 2.2cqw 4.4cqw);
+  box-shadow: inset 0 0 0 .4cqw #b04dff90, inset 0 0 4cqw #000;
+  animation: sealIn .25s ease-out;
+}
+@keyframes sealIn { from { transform: scale(1.3); opacity: 0; } }
+#grid.numbering .blk.seal { display: none; }
+#grid .cell .blk.seal { rotate: calc(var(--grot, 0deg) * -1); } /* 磁暴轉動時鎖頭保持正向 */
+/* 完美(符號一出現就點中):小字跳出 */
+.float.perfect { font-size: 4.6cqw; font-weight: 900; color: #fff6a0; text-shadow: 0 0 1.6cqw #ffb800, 0 .3cqw 0 #000; }

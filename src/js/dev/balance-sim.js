@@ -98,7 +98,7 @@ window.simRun = function (stageIdx, skill, upLv) {
       // 敵人回合:停留時間越短越難擋
       e.turn++;
       const s = e.skill && e.turn % (e.skillEvery || 3) === 0 ? e.skill : null;
-      let count = e.atkCount, life = e.guardLife + p.guardBonus * rc.life, dmg = e.atk, fade = 0, decoy = 0;
+      let count = e.atkCount, life = e.guardLife + p.guardBonus * rc.life, dmg = e.atk * (1 + Math.min(5, Math.max(0, e.turn - 2)) * (rc.enrage || 0)), fade = 0, decoy = 0; // 修羅以上:狂暴(最多 5 層)
       if (s) {
         count += s.count || 0; life *= s.lifeMul || 1; dmg *= s.dmgMul || 1;
         fade = s.fade ? 0.1 : 0; decoy = s.decoy || 0;

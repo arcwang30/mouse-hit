@@ -132,7 +132,7 @@ G.grid = {
     const b = this.blocks.get(i);
     const el = this.cells[i].querySelector('.blk');
     el.className = 'blk' + (b ? ' ' + b.type : '');
-    el.textContent = b && b.type === 'tentacle' ? '🐙' : '';
+    el.textContent = b && b.type === 'tentacle' ? '🐙' : b && b.type === 'seal' ? '🔒' : '';
     this.cells[i].querySelector('.stag').textContent = b && b.type === 'sand' ? '⏬ ' + G.t('流沙') : ''; // 流沙格標示:上面的符號沉得快
     el.dataset.hp = b && b.hp > 1 ? '×' + b.hp : '';
   },
@@ -156,7 +156,7 @@ G.grid = {
 };
 
 // 打地鼠階段:依序在空格冒出符號,點中為 hit,時間到為 miss。
-// 基本選項:count, icon, cls, life, interval, onHit(i, info), onMiss(i), stop()
+// 基本選項:count, icon, cls, life, interval, onHit(i, info), onMiss(i), stop();onEmpty(i) 點到空格(剛消失的格子不算)
 //   info:{ ratio 點中時剩餘時間比例(1 = 一出現就點), gold 金拳, lava 在熔岩格上, hold/charged/heavy 按住類 }
 //   onHit 回傳 false 代表這下不算成功(例如「頂住」沒按滿),會改成播放被打中的特效
 // 進階選項:
@@ -269,7 +269,7 @@ G.molePhase = o => new Promise(resolve => {
   const bombDone = () => { if ((settled >= o.count && !bombsLeft()) || o.stop()) finish(); };
   // 可以放符號的格子:沒被占用、沒被預約、沒被觸手蓋住
   const freeCells = () => [...Array(9).keys()].filter(i =>
-    !active.has(i) && !reserved.has(i) && !(blockAt(i) && blockAt(i).type === 'tentacle'));
+    !active.has(i) && !reserved.has(i) && !(blockAt(i) && ['tentacle', 'seal'].includes(blockAt(i).type))); // 觸手、封印格不冒符號
   const freeCell = () => { const f = freeCells(); return f.length ? G.pick(f) : -1; };
 
   // 連線 / 掃射:整條打中就觸發獎勵
@@ -281,7 +281,9 @@ G.molePhase = o => new Promise(resolve => {
     if (g.hit.length === g.size && o.onLine) o.onLine(g.hit);
   };
 
+  const goneAt = {}; // 每格的符號最後一次消失 / 被打中的時間:剛結束的格子再點一下不算點空(反噬的寬容)
   const expire = (i, a) => {
+    goneAt[i] = G.clock.now();
     active.delete(i);
     unMirror(a);
     if (swiping && swiping.a === a) { swiping = null; cell(i).classList.remove('aiming'); }
@@ -328,7 +330,11 @@ G.molePhase = o => new Promise(resolve => {
     }
 
     const a = active.get(i);
-    if (!a) { G.grid.flash(i, 'miss'); G.grid.impact(i, 'miss'); G.audio.play('tap'); return; }
+    if (!a) {
+      G.grid.flash(i, 'miss'); G.grid.impact(i, 'miss'); G.audio.play('tap');
+      if (o.onEmpty && !(G.clock.now() - (goneAt[i] || -1e9) < 350)) o.onEmpty(i); // 點空格(天魔:反噬)
+      return;
+    }
     if (a.mirror !== undefined && !viaMirror) { // 直接點幻影本身:撲空(幻影還在,可以再點對的格子)
       G.grid.bump(i);
       G.grid.impact(i, 'miss');
@@ -338,6 +344,7 @@ G.molePhase = o => new Promise(resolve => {
     }
 
     if (a.kind === 'ghost') { // 殘影:點了就消失,中斷連擊
+      goneAt[i] = G.clock.now();
       kill(a); active.delete(i);
       G.grid.clear(i, 'sink');
       G.grid.impact(i, 'miss');
@@ -404,6 +411,7 @@ G.molePhase = o => new Promise(resolve => {
 
   // 結算一次命中。auto = 由技法自動打中(連鎖、爆裂、蓄力大師);swipe = 滑擊拳滑對方向
   const doHit = (i, a, auto, swipe = false) => {
+    goneAt[i] = G.clock.now();
     G.grid.impact(i, o.cls.includes('guard') ? 'guard' : a.gold ? 'num' : 'fist', a.gold || auto);
     const ratio = Math.max(0, a.life - (G.clock.now() - a.born)) / a.life;
     if (a.mirror !== undefined) G.grid.flash(a.mirror, 'good'); // 蜃樓:鏡像格也亮一下

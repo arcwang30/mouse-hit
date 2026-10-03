@@ -3,7 +3,9 @@ G.UPGRADES = [
   { id: 'hp',    icon: '❤️', name: '體魄', desc: '最大 HP +10',        apply: (p, lv) => { p.maxHp += 10 * lv; } },
   { id: 'atk',   icon: '👊', name: '拳力', desc: '出拳傷害 +1',        apply: (p, lv) => { p.atk += lv; } },
   { id: 'ult',   icon: '🔥', name: '心法', desc: '命中必殺值 +0.5',    apply: (p, lv) => { p.ultGain += 0.5 * lv; } },
-  { id: 'react', icon: '👁️', name: '反應', desc: '符號停留時間 +60ms', apply: (p, lv) => { p.moleLife += 60 * lv; p.guardBonus += 60 * lv; } },
+  { id: 'react', icon: '👁️', name: '反應', desc: '符號停留時間 +50ms', apply: (p, lv) => { p.moleLife += 50 * lv; p.guardBonus += 50 * lv; } },
 ];
 
-G.upgradeCost = lv => 5 + lv * 5;
+// 升級成本:Lv8 以前每級 +5(和以前一樣),之後越來越貴,沒辦法四項同時練滿,要決定優先順序
+// (Lv10 → 71、Lv15 → 276、Lv19 → 584)
+G.upgradeCost = lv => 5 + lv * 5 + Math.max(0, lv - 8) ** 2 * 4;

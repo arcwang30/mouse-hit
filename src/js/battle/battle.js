@@ -35,6 +35,9 @@ const MEMORY_LEN = { 1: 3, 2: 4, 3: 5 }, MEMORY_SHOW = 520, MEMORY_PER = 900, ME
 const DIAL_CHANCE = 0.4, DIAL_LAPS = 3, DIAL_GRACE = 6, DIAL_SPIN_MS = 5000, DIAL_TURNS = [3, 4, 5];
 // 旋風破綻的風級:轉滿最低圈數後,每多轉 extra 圈升一級,破甲傷害乘上 mul(畫圈限時內一直轉,轉越多越痛)
 const DIAL_TIERS = [{ extra: 0, name: '旋風', mul: 1 }, { extra: 2, name: '暴風', mul: 1.5 }, { extra: 4, name: '颶風', mul: 2 }];
+// 完美:符號出現後的前 30% 時間內點中(剩餘比例 ≥ PERFECT_AT),傷害 ×PERFECT_MUL、必殺值多 PERFECT_ULT
+const PERFECT_AT = 0.7, PERFECT_MUL = 1.3, PERFECT_ULT = 2;
+const ENRAGE_FROM = 3, ENRAGE_MAX = 5; // 修羅以上:敵人第幾次攻擊起開始狂暴(每次再加 G.ROUNDS 的 enrage,最多疊幾層)
 const BONUS_STARS = [40, 70]; // 特訓關:狂打幾 HIT 拿第二、第三顆星
 const CHAPTER_COINS = 300;    // 章節通關獎勵(每一輪第一次打倒最終 BOSS)
 const TIANDAO_MUL = 1.5, TIANDAO_HEAL = 0.2; // 炎鋼天道(第二章破關後的必殺技):威力倍率、回復比例
@@ -212,6 +215,11 @@ G.battle = {
       return this.finish(true);
     }
 
+    // 第一次遇到才說明:完美判定、修羅 / 天魔的新規則(說明期間遊戲時間暫停)
+    if (!G.tutorial.active) await G.tips.show('perfect');
+    if (G.round() >= 2) await G.tips.show('shura');
+    if (G.round() >= 3) await G.tips.show('tianmo');
+    if (run !== this.run) return;
     const total = this.stage.waves.length;
     for (let w = 0; w < total; w++) {
       this.wave = w;
@@ -312,6 +320,7 @@ G.battle = {
       mods: { gold: GOLD_RATE * p.goldMul, hidden: m.hidden, blink: m.blink, armor: m.armor, swipe: m.swipe, mirror: m.mirror, spin: m.spin },
       onMirage: () => { combo = 0; this.comboBreak(); this.float('蜃樓!', 'tag miss'); },
       onSpin: () => this.spinFx(),
+      onEmpty: () => this.backlash(), // 天魔:點空格反噬
       slowFirst: p.slowmo ? SLOWMO : null,
       onReady: a => { api = a; },
       // 炸彈:第 4 波起一般敵人也會混入;部分敵人機制會更多
@@ -326,6 +335,9 @@ G.battle = {
         if (info.gold) { d *= GOLD_MUL; this.float('金拳!', 'tag gold'); }
         if (info.lava) { d *= 2; this.float('熔岩拳!', 'tag lava'); this.hurtPlayer(LAVA_BURN); }
         if (info.swipe) { d *= SWIPE_MUL; this.float('疾風拳!', 'tag line'); }
+        // 完美:一出現就點中(自動命中、蓄力不算)
+        const perfect = !info.auto && !info.hold && info.ratio >= PERFECT_AT;
+        if (perfect) { d *= PERFECT_MUL; this.stats.perfectHits = (this.stats.perfectHits || 0) + 1; this.float('完美', 'perfect'); this.gainUlt(PERFECT_ULT); }
         combo++;
         if (first && p.firstStrike) d *= 3;
         first = false;
@@ -362,6 +374,9 @@ G.battle = {
     const s = e.skill && e.turn % (e.skillEvery || 3) === 0 ? e.skill : null;
     // 盾牌停留:敵人基礎值已含周回倍率,「反應」升級的加成也跟著縮短
     let count = e.atkCount, life = e.guardLife + p.guardBonus * G.roundCfg().life, dmg = e.atk, cls = 'guard';
+    // 修羅以上:敵人狂暴,第 ENRAGE_FROM 次攻擊起每次攻擊力再 +enrage(累積),拖越久越危險
+    const rage = Math.min(ENRAGE_MAX, Math.max(0, e.turn - ENRAGE_FROM + 1)) * G.roundCfg().enrage;
+    if (rage > 0) { dmg = Math.round(dmg * (1 + rage)); this.float(G.t('狂暴 +{0}%', Math.round(rage * 100)), 'tag lava'); }
     if (s) {
       this.setEnemyState('ult');
       G.audio.play('bossSkill');
@@ -399,6 +414,7 @@ G.battle = {
       mods: { blink: m.blink, ghost: m.ghost, armor: m.armor, lockon: m.lockon, heavy: m.heavy, timebomb: m.timebomb, timebombMs: Math.round(TIMEBOMB_MS * G.roundCfg().life), mirror: m.mirror, spin: m.spin },
       onMirage: () => { this.comboBreak(); this.float('蜃樓!', 'tag miss'); },
       onSpin: () => this.spinFx(),
+      onEmpty: () => this.backlash(), // 天魔:點空格反噬
       // 倒數炸彈:拆除算一次漂亮的格擋;爆炸傷害比一般攻擊高,也不會有破綻
       onDefuse: () => { this.comboHit(); this.gainUlt(p.blockUlt); G.audio.play('perfect'); this.float('拆除!', 'tag armor'); },
       onBomb: () => { missed++; this.comboBreak(); G.audio.play('boom'); this.float('爆炸!', 'tag miss'); this.hurtPlayer(dmg * TIMEBOMB_DMG); },
@@ -1143,10 +1159,16 @@ G.battle = {
 
   // 回合開始時依敵人機制佈置格子
   setupBoard(phase) {
-    const type = (G.MECHS[this.e.id] || {}).board;
-    if (!type || (this.allowedNow && !this.allowedNow.has(type))) return; // 還沒解鎖的格子狀態不放
     const g = G.grid;
     const open = () => [...Array(9).keys()].filter(i => !g.blocks.has(i));
+    // 天魔:每回合換一批封印格(不冒符號,點了算點空格)
+    const seal = G.roundCfg().seal;
+    if (seal) {
+      g.clearBlocks('seal');
+      G.shuffle(open()).slice(0, seal).forEach(i => g.setBlock(i, 'seal'));
+    }
+    const type = (G.MECHS[this.e.id] || {}).board;
+    if (!type || (this.allowedNow && !this.allowedNow.has(type))) return; // 還沒解鎖的格子狀態不放
     if (type === 'lava' && phase === 'attack') { // 每回合換 2 格熔岩
       g.clearBlocks('lava');
       G.shuffle(open()).slice(0, 2).forEach(i => g.setBlock(i, 'lava'));
@@ -1222,6 +1244,14 @@ G.battle = {
       bg.style.backgroundImage = before.bg;
     };
   },
+  // 天魔:點到空格(或封印格)反噬,扣最大 HP 一小部分並中斷連擊;不會因此倒下
+  backlash() {
+    const r = G.roundCfg().backlash;
+    if (!r || this.over()) return;
+    this.comboBreak();
+    this.float('反噬!', 'tag miss');
+    this.safeHurt(this.p.maxHp * r);
+  },
   // 磁暴:九宮格轉動時的提示
   spinFx() {
     G.audio.play('whiff');
@@ -1288,7 +1318,7 @@ G.battle = {
     if (rules.length && Math.random() < SKILL_RULE_CHANCE) s = G.pick(rules);
     else {
       const hpRate = p.hp / p.maxHp;
-      const pool = G.SKILLS.filter(x => !x.rule && !owned(x)).map(x => ({ x,
+      const pool = G.SKILLS.filter(x => !x.rule && !x.risk && !owned(x)).map(x => ({ x,
         w: x.id === 'pill' && hpRate > 0.8 ? 0.15 : HEAL_SKILLS.includes(x.id) && hpRate < 0.5 ? 3 : 1 }));
       let r = Math.random() * pool.reduce((n, o) => n + o.w, 0);
       s = (pool.find(o => (r -= o.w) < 0) || pool[0]).x;
@@ -1539,6 +1569,14 @@ G.battle = {
       this.float('連擊守護!', 'tag line');
       return;
     }
+    // 修羅以上:連擊 3 以上中斷時扣掉一部分必殺值
+    const loss = G.roundCfg().comboLoss, p = this.p;
+    if (loss && p && this.comboN >= 3 && p.ult > 0 && p.ult < p.ultMax) {
+      const lost = Math.min(p.ult, Math.round(p.ultMax * loss));
+      p.ult -= lost;
+      this.float(G.t('必殺 -{0}%', Math.round(lost / p.ultMax * 100)), 'hurt', true);
+      this.render();
+    }
     if (this.comboN >= 5) {
       const el = G.$('#combo');
       el.classList.remove('broke');
@@ -1782,6 +1820,7 @@ G.battle = {
     this.endFever();
     const p = this.p, s = this.stats;
     const sv = G.save.data, round = G.round(), pr = G.prog(), i = this.stageIdx;
+    const availBefore = G.roundAvail(); // 結算前能選到第幾輪(天魔可能因為這場拿到的星星而開放)
     let score = s.dmg + p.hp * 5 + s.waves * 300 + (win ? 1000 : 0);
     score = Math.round(score * p.scoreMul * G.roundCfg().points); // 周回:積分倍率
     const points = Math.floor(score / 100);
@@ -1823,9 +1862,14 @@ G.battle = {
     let tiandao = false;
     if (finalWin) {
       if (ch === 1) sv.cleared = true; // 第一章破關:主選單「故事」可重看結局
-      if (round === cd.roundMax && round < G.ROUND_LAST) this.newRound = cd.roundMax = round + 1; // 這一章開啟下一輪
+      if (round === cd.roundMax && round < G.ROUND_LAST) cd.roundMax = round + 1; // 這一章開啟下一輪(天魔另外要看修羅的星數)
       if (ch === 2 && round === 1 && !sv.tiandao) tiandao = sv.tiandao = true; // 第二章破關:覺醒新必殺技「炎鋼天道」
     }
+    // 新的一輪開放:破關開了下一輪,或修羅的星星剛好湊夠開了天魔
+    const availAfter = G.roundAvail(ch);
+    if (availAfter > availBefore) this.newRound = availAfter;
+    // 修羅破關了但天魔還差星星:結算畫面提示還要幾顆
+    this.tianmoNeed = round === 2 && cd.roundMax >= 3 && !G.tianmoOpen(ch) ? [G.starsOf(ch, 2), G.tianmoNeed(ch)] : null;
     // 修羅的關卡全部通過(打完最後一個還沒過的關卡時):下一章開放
     if (win && round === G.SHURA && G.CHAPTERS[ch] && !(sv.chaptersSeen || {})[ch + 1] && G.shuraLeft(ch) === 0) {
       sv.chaptersSeen = Object.assign(sv.chaptersSeen || {}, { [ch + 1]: true });

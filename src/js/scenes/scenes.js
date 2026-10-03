@@ -340,10 +340,13 @@ G.scenes = {
     G.bgm.play('menu'); // 從結算畫面回來時音樂已經停了;已在播就不會重來
     // 周回切換:開啟第二輪後才出現;只列出已開啟的輪次(還沒開的第三輪不顯示)
     // 改成一顆按鈕:點一下換到下一輪(凡塵 → 修羅 → 天魔 → 凡塵),和章節切換分開
-    const rmax = G.chData().roundMax;
+    const rmax = G.roundAvail(); // 天魔的星數門檻沒過時只能選到修羅
     const short = G.ROUNDS[round].name.split('・').pop(); // 只顯示「凡塵 / 修羅 / 天魔」
     const roundBtn = rmax < 2 ? '' : `<button class="round-cycle r${round}" id="roundCycle" title="${G.t('切換 ▸')}"><span class="rc-face">${ROUND_FACES[round]}</span><b>${G.t(short)}</b></button>`;
-    const tabs = cfg.desc ? `<div class="round-desc">${G.t(cfg.desc)}</div>` : '';
+    // 天魔還沒開放(破了修羅但星星不夠)時,在修羅的說明下面提示還差多少星
+    const ch = G.chapter(), tmLock = round === 2 && G.chData(ch).roundMax >= 3 && !G.tianmoOpen(ch);
+    const tabs = (cfg.desc ? `<div class="round-desc">${G.t(cfg.desc)}</div>` : '') +
+      (tmLock ? `<div class="round-desc lock">${G.t('🔒 天魔:修羅拿到 ★{0} 後開啟(目前 ★{1})', G.tianmoNeed(ch), G.starsOf(ch, 2))}</div>` : '');
     // 章節切換:還沒開放的章節顯示 🔒(點了說明開放條件)
     const chTabs = `<div class="ch-tabs">` + G.CHAPTERS.map((c, k) => {
       const open = G.chapterOpen(k + 1);
@@ -455,8 +458,8 @@ G.scenes = {
   // 切換周回(點分頁、左右滑或 ← →);只能切到已開啟的輪次,不循環。回傳是否有切換
   setRound(r) {
     const sv = G.save.data, cur = G.round();
-    r = Math.max(1, Math.min(G.chData().roundMax, r));
-    if (G.chData().roundMax < 2 || r === cur) return false;
+    r = Math.max(1, Math.min(G.roundAvail(), r));
+    if (G.roundAvail() < 2 || r === cur) return false;
     sv.round = r;
     G.save.write();
     G.audio.play('select');
@@ -542,8 +545,8 @@ G.scenes = {
       G.$('#skillPick h2').textContent = G.t(rulesOnly ? '修得一項技法' : '選擇一項技能');
       const box = G.$('#skillCards');
       box.innerHTML = choices.map((s, i) =>
-        `<button class="skill-card${s.rule ? ' rule' : ''}" data-i="${i}"><span class="kb-key">${i + 1}</span><div class="sk-icon">${s.icon}</div>` +
-        `<b>${s.rule ? '<span class="rule-tag">' + G.t('技法') + '</span>' : ''}${G.t(s.name)}</b><div>${G.t(s.desc)}</div></button>`).join('');
+        `<button class="skill-card${s.rule ? ' rule' : ''}${s.risk ? ' risk' : ''}" data-i="${i}"><span class="kb-key">${i + 1}</span><div class="sk-icon">${s.icon}</div>` +
+        `<b>${s.rule ? '<span class="rule-tag">' + G.t('技法') + '</span>' : ''}${s.risk ? '<span class="rule-tag risk">' + G.t('代價') + '</span>' : ''}${G.t(s.name)}</b><div>${G.t(s.desc)}</div></button>`).join('');
       const el = G.$('#skillPick');
       el.classList.add('show');
       box.querySelectorAll('.skill-card').forEach(b => {
@@ -585,7 +588,8 @@ G.scenes = {
       <div class="score">${G.t('獲得成長點數')}<b>${G.PT} +${points}</b></div>` +
       `<div class="score coins">${G.t('獲得金幣')}<b>💰 +${G.battle.coins || 0}${s.bonusCoins ? `<small class="coin-bonus">${G.t('(狂打 +{0})', s.bonusCoins)}</small>` : ''}${s.eventCoins ? `<small class="coin-bonus">${G.t('(事件 +{0})', s.eventCoins)}</small>` : ''}${s.chapterCoins ? `<small class="coin-bonus">${G.t('(章節通關 +{0})', s.chapterCoins)}</small>` : ''}</b></div>` +
       (G.battle.newChapter ? `<div class="new-round">${G.t('{0} 開放!', G.t(G.CHAPTERS[G.battle.newChapter - 1].name))}<small>${G.t('在選擇關卡的上方切換章節')}</small></div>` : '') +
-      (G.battle.newRound ? `<div class="new-round">${G.t('{0} 開啟!', G.t(G.ROUNDS[G.battle.newRound].name))}<small>${G.t('成長上限提升至 Lv{0}', G.ROUNDS[G.battle.newRound].upMax)}</small></div>` : '');
+      (G.battle.newRound ? `<div class="new-round">${G.t('{0} 開啟!', G.t(G.ROUNDS[G.battle.newRound].name))}<small>${G.t('成長上限提升至 Lv{0}', G.ROUNDS[G.battle.newRound].upMax)}</small></div>` : '') +
+      (G.battle.tianmoNeed ? `<div class="new-round lock">${G.t('天魔:修羅 ★{0} / {1}', ...G.battle.tianmoNeed)}<small>${G.t('修羅拿到足夠的星星才能挑戰天魔')}</small></div>` : '');
     G.show('result');
   },
 };
