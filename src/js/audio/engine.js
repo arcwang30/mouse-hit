@@ -181,6 +181,12 @@ const SFX = {
     a.noise(0.15, { filter: 'highpass', freq: 4000, vol: 0.25 });
   },
   whiff:   a => a.noise(0.18, { filter: 'bandpass', freq: 800, to: 2500, q: 2, vol: 0.25 }),
+  // 旋風破綻:畫圈時的強風(heat 0~1 = 手指轉速,越快風聲越高越大)、每圈放出的龍捲風呼嘯
+  gust:    (a, t, heat = 0.5) => a.noise(0.28, { filter: 'bandpass', freq: 250 + heat * 700, to: 500 + heat * 1600, q: 1.4, vol: 0.12 + heat * 0.3 }),
+  tornado: a => {
+    a.noise(0.7, { filter: 'bandpass', freq: 300, to: 2600, q: 1.1, vol: 0.5 });
+    a.tone(90, 0.6, { to: 45, vol: 0.45 });
+  },
   block:   a => {
     a.tone(1400, 0.25, { type: 'triangle', vol: 0.3 });
     a.tone(2100, 0.2, { vol: 0.15 });

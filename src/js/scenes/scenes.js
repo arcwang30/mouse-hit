@@ -224,7 +224,7 @@ G.scenes = {
       setTimeout(() => G.audio.play('thunder'), 150);
       this._bolt = setTimeout(strike, 4000 + Math.random() * 5000);
     };
-    // 開場時間軸(毫秒):1100 鏡頭開始仰望 → 3500 落雷 + LOGO 砸下(太鼓、震動)→ 4400 出現「點擊畫面開始」
+    // 開場時間軸(毫秒):0~2800 品牌 LOGO → 2400 鏡頭開始仰望 → 4800 落雷 + LOGO 砸下(太鼓、震動)→ 5700 出現「點擊畫面開始」
     // 演出中點一下 = 直接跳到最後
     const slam = () => {
       strike(true);
@@ -239,7 +239,7 @@ G.scenes = {
       el.classList.add('ready');
       this._bolt = setTimeout(strike, 4000 + Math.random() * 4000); // 之後隨機落雷
     };
-    this._introT = [setTimeout(slam, 3500), setTimeout(ready, 4400)];
+    this._introT = [setTimeout(slam, 4800), setTimeout(ready, 5700)];
 
     // 點一下(或按 Enter / 空白鍵)開始
     // 轉場:一道閃電劈在畫面中央、炸出一圈火焰衝擊波 → 畫面像玻璃碎裂飛散,露出主選單

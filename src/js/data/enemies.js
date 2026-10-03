@@ -135,6 +135,8 @@ G.MECHS = {
   frostKnight: { hint: '冰封:結冰的格子要先敲破冰', board: 'ice' },
   abyssCrab:   { hint: '觸手:觸手蓋住的格子,敲 3 下清掉', board: 'tentacle' },
   poisonQueen: { hint: '毒瓶:小心混在拳頭裡的 🧪', atk: { bomb: 0.3, bombIcon: '🧪' } },
+  // 寶箱怪(神秘寶箱事件,不列入圖鑑):攻擊回合混著假金幣陷阱,防禦時旁邊有殘影
+  mimic:       { hint: '寶箱怪:小心混在拳頭裡的假金幣 🪙', atk: { bomb: 0.25, bombIcon: '🪙' }, def: { ghost: 0.35 } },
   shadowKing:  { hint: '暗影:瞬移、殘影、鎖定輪番上陣', rotate: [{ def: { blink: 0.5 } }, { def: { ghost: 0.5 } }, { def: { lockon: 450 } }] },
 
   // 第四關之後

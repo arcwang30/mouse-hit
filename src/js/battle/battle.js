@@ -23,7 +23,11 @@ const MERCHANT = [
   { id: 'scroll', icon: '📜', name: '技法卷軸', desc: '從三個技法中選一個',   price: 90 },
   { id: 'leave',  icon: '🚶', name: '離開',     desc: '什麼都不買' },
 ];
-const CHEST_ODDS = { coins: 0.45, skill: 0.25 }; // 剩下 30% 是寶箱怪(扣 20% 最大 HP)
+const CHEST_ODDS = { coins: 0.4, skill: 0.3 }; // 剩下 30% 是寶箱怪(要打一場,打贏一樣有寶物)
+// 寶箱怪:不列入圖鑑的事件敵人;強度跟著目前這一關與波次
+const MIMIC = { name: '寶箱怪', icon: '🧰', img: 'enemies/mimic.webp', shot: '🪙', hp: 70, atk: 9, atkCount: 5, guardLife: 1000 };
+const SKILL_RULE_CHANCE = 0.25; // 寶箱開出的隨機技能:有這個機率是技法(還有沒拿過的才會出現)
+const HEAL_SKILLS = ['steel', 'pill', 'leech', 'regen', 'bell']; // HP 偏低時比較容易開到的保命技能
 const DEVIL_GOLD = 100;
 // 新機制:疾風(滑擊拳傷害倍率)、倒數炸彈(秒數再乘周回的停留倍率、爆炸傷害倍率)、幻術(記憶長度依周回、每格閃爍毫秒、每格作答時間、失敗傷害倍率)
 const SWIPE_MUL = 1.5;
@@ -51,11 +55,11 @@ function makePlayer() {
   return p;
 }
 
-// spec:敵人 id,結尾 '+' 為精英;w:WAVE 索引(0 起算),越後面越強
-function makeEnemy(spec, scale, w) {
+// spec:敵人 id,結尾 '+' 為精英;w:WAVE 索引(0 起算),越後面越強;data:不在 G.ENEMIES 裡的敵人(寶箱怪)直接給資料
+function makeEnemy(spec, scale, w, data) {
   const elite = spec.endsWith('+');
   const id = elite ? spec.slice(0, -1) : spec;
-  const d = G.ENEMIES[id], g = G.WAVE_GROWTH, r = G.roundCfg(); // r:周回強化
+  const d = data || G.ENEMIES[id], g = G.WAVE_GROWTH, r = G.roundCfg(); // r:周回強化
   scale += r.scale; // 周回:每關的基礎強度整體往上墊
   const hp = Math.round(d.hp * G.ENEMY_HP_MUL * scale * (1 + w * g.hp) * (elite ? 1.5 : 1) * r.hp);
   return Object.assign({}, d, {
@@ -73,7 +77,7 @@ function makeEnemy(spec, scale, w) {
 G.battle = {
   p: null, e: null, phase: null, ultRequested: false,
 
-  over() { return this.e.hp <= 0 || this.p.hp <= 0; },
+  over() { return this.e.hp <= 0 || this.p.hp <= 0 || !!this.e.fled; }, // fled:寶箱怪吃飽逃走
 
   // ---- PAUSE ----
   pause() {
@@ -621,7 +625,7 @@ G.battle = {
     d.el.classList.add('spin');
     d.count.textContent = '0 / ' + turns;
     return new Promise(res => {
-      let total = 0, rot = 0, heat = 0, laps = 0, last = null, lastPt = 0, done = false, raf;
+      let total = 0, rot = 0, heat = 0, laps = 0, last = null, lastPt = 0, lastGust = 0, done = false, raf;
       const end = ok => {
         if (done) return;
         done = true;
@@ -643,6 +647,7 @@ G.battle = {
         d.storm.style.transform = `rotate(${rot * 2}deg)`;
         const now = performance.now();
         if (now - lastPt > 25) { lastPt = now; this.dialParticle(d, Math.sign(delta)); this.dialParticle(d, Math.sign(delta)); }
+        if (now - lastGust > 120) { lastGust = now; G.audio.play('gust', heat); } // 強風聲:轉越快越響
         while (laps < turns && Math.abs(total) >= (laps + 1) * 360) {
           laps++;
           d.count.textContent = laps + ' / ' + turns;
@@ -708,6 +713,7 @@ G.battle = {
     const f = document.createElement('div');
     f.className = 'fx-tornado' + (big ? ' big' : '');
     f.textContent = '🌪️';
+    G.audio.play('tornado'); // 龍捲風呼嘯而出
     stage.appendChild(f);
     f.animate([
       { transform: `translate(${sx}px, ${sy}px) translate(-50%, -50%) scale(${s0})`, opacity: 0.7 },
@@ -1094,6 +1100,7 @@ G.battle = {
   eventStage(img, name) {
     const realEnemy = this.e, view = G.$('#stageView'), bg = G.$('#stageBg');
     const before = { cls: view.className, bg: bg.style.backgroundImage };
+    this.evBefore = before; // 寶箱怪戰要暫時換回一般戰鬥畫面
     this.e = { id: 'event', name: G.t(name), icon: '❔', hp: 1, maxHp: 1, turn: 0 };
     view.className = 'stage has-bg event-scene';
     bg.style.backgroundImage = `url('${ENEMY_IMG_DIR + img}')`;
@@ -1163,7 +1170,61 @@ G.battle = {
     restore();
   },
 
-  // 神秘寶箱:打開可能是金幣、技能,也可能是寶箱怪
+  // 寶箱開出的隨機技能:直接獲得(不用選),有 SKILL_RULE_CHANCE 的機率是技法;
+  // HP 低於一半時保命技能機率 ×3,HP 快滿時「回氣丹」幾乎不會出現(開到也浪費)
+  async treasureSkill() {
+    const p = this.p, owned = s => (s.unique || s.rule) && p.skills.includes(s.id);
+    const rules = G.SKILLS.filter(s => s.rule && !owned(s));
+    let s;
+    if (rules.length && Math.random() < SKILL_RULE_CHANCE) s = G.pick(rules);
+    else {
+      const hpRate = p.hp / p.maxHp;
+      const pool = G.SKILLS.filter(x => !x.rule && !owned(x)).map(x => ({ x,
+        w: x.id === 'pill' && hpRate > 0.8 ? 0.15 : HEAL_SKILLS.includes(x.id) && hpRate < 0.5 ? 3 : 1 }));
+      let r = Math.random() * pool.reduce((n, o) => n + o.w, 0);
+      s = (pool.find(o => (r -= o.w) < 0) || pool[0]).x;
+    }
+    s.apply(p);
+    p.skills.push(s.id);
+    G.audio.play(s.rule ? 'perfect' : 'levelup');
+    this.render();
+    await G.banner(G.t(s.rule ? '獲得技法!' : '獲得技能!'), `${s.icon} ${G.t(s.name)}\n${G.t(s.desc)}`, 1800);
+  },
+
+  // 寶箱怪:跳出來打一場(暫時換回這一關的戰鬥背景,顯示寶箱怪立繪);打贏回傳 true,牠逃走(玩家只剩 1 HP)回傳 false
+  async mimicFight() {
+    const placeholder = this.e, view = G.$('#stageView'), bg = G.$('#stageBg'), run = this.run;
+    const evCls = view.className, evBg = bg.style.backgroundImage;
+    const e = this.e = makeEnemy('mimic', this.stage.scale, this.wave || 0, MIMIC);
+    e.mimic = true;
+    view.className = this.evBefore.cls;
+    bg.style.backgroundImage = this.evBefore.bg;
+    this.showSprite(e);
+    G.$('#enemyName').textContent = e.name;
+    this.setEnemyState('idle');
+    this.render();
+    await G.banner('寶箱怪!', G.t('寶箱張開大嘴撲了上來!打倒牠就能搶走寶物') + '\n' + G.t(G.MECHS.mimic.hint), 1800);
+    while (!this.over()) {
+      await this.playerTurn();
+      if (run !== this.run) return false;
+      if (this.ultRequested && !this.over()) await this.ultimate();
+      if (this.over()) break;
+      await this.enemyTurn();
+      if (run !== this.run) return false;
+    }
+    G.grid.clearBlocks();
+    G.grid.resetRot();
+    const won = e.hp <= 0;
+    if (won) { this.setEnemyState('dead'); G.audio.play('ko'); await G.clock.wait(900); }
+    view.className = evCls; // 回到寶箱的事件場景
+    bg.style.backgroundImage = evBg;
+    this.e = placeholder;
+    G.$('#enemyName').textContent = placeholder.name;
+    this.render();
+    return won;
+  },
+
+  // 神秘寶箱:打開可能是金幣、隨機技能,也可能是寶箱怪(要打一場,打贏一樣能拿到寶物)
   async chest() {
     const p = this.p, mul = G.roundCfg().points;
     const restore = this.eventStage('events/chest.jpg', '神秘寶箱');
@@ -1182,14 +1243,21 @@ G.battle = {
         this.eventCoins(coins);
         await G.banner('寶物!', G.t('獲得金幣 💰 +{0}', coins), 1300);
       } else if (r < CHEST_ODDS.coins + CHEST_ODDS.skill) {
-        G.audio.play('levelup');
-        await G.banner('寶物!', G.t('獲得一個技能'), 1000);
-        await G.scenes.pickSkill(p);
+        await this.treasureSkill();
       } else {
-        this.sceneFx('ev-bite');  // 場景閃紅:被咬了
+        this.sceneFx('ev-bite');  // 場景閃紅:寶箱咬過來了
         G.audio.play('bossSkill');
-        await G.banner('寶箱怪!', G.t('被狠狠咬了一口!'), 1000);
-        this.safeHurt(p.maxHp * 0.2);
+        const won = await this.mimicFight();
+        if (this.p.hp <= 0) return; // 保險:不會發生(寶箱怪打不死人)
+        if (won) {
+          // 打贏:寶箱怪肚子裡的寶物 = 金幣 + 隨機技能
+          const coins = Math.round((30 + Math.random() * 30) * mul);
+          this.eventCoins(coins);
+          await G.banner('擊退寶箱怪!', G.t('搶回寶物:金幣 💰 +{0}', coins), 1200);
+          await this.treasureSkill();
+        } else {
+          await G.banner('寶箱怪逃走了…', G.t('牠吃飽就溜了,什麼也沒留下'), 1300);
+        }
       }
     }
     restore();
@@ -1471,6 +1539,8 @@ G.battle = {
       app.classList.add('shake');
     }
     G.haptic.buzz(40);
+    // 寶箱怪不會把人打死:剩 1 HP 時牠吃飽就逃走(事件的代價不該直接 Game Over,也不消耗浴火重生)
+    if (p.hp <= 0 && this.e && this.e.mimic) { p.hp = 1; this.e.fled = true; }
     if (p.hp <= 0 && p.revive > 0) {
       p.revive = 0;
       p.hp = Math.round(p.maxHp / 2);
