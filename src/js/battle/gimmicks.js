@@ -1,26 +1,48 @@
-// BOSS 專屬小遊戲:區域 BOSS 的 HP 第一次掉到一半時,進入牠的專屬階段(每場一次)
-//   clash 對拳拼勁(胖大王):左右兩顆拳頭交替狂點,把力量條推過去
-//   shell 三仙歸洞(傀儡王):記住真身躲在哪一格,洗牌後點出來
-//   path  一筆畫(雪魔女):手指不放開,一筆走過所有冰晶,不能踩裂冰、不能走回頭
+// BOSS 專屬小遊戲:區域 BOSS 的 HP 掉到一半時,進入牠的專屬階段(每場一次)
+//   第一章 clash 對拳拼勁(胖子魔王)/ wire 拆彈剪線(機甲將軍)/ rhythm 打鐵節奏(熔爐巨匠)
+//          path 一筆畫(白魔雪女)/ shell 三仙歸洞(千面傀儡師)
+//   第二章 slide 流沙拼圖(沙盜王)/ lights 熄燈解鎖(磁暴領主)/ twin 雙指齊按(沙海巨像)
+//          cards 翻牌配對(蜃樓仙姬)/ tictac 井字智鬥(天沙宗護法)
+//   章節最終 BOSS 的 gimmick 是陣列(連環考驗):HP 66% 和 33% 時各從陣列裡抽一種不重複的
 // 成功 → 攻擊力 ×WIN_DMG 的重擊並破防(下回合傷害提高);失敗 → 吃一記敵人攻擊 ×LOSE_DMG
 // 難度依周回(凡塵 / 修羅 / 天魔);BOSS 用哪一種寫在 enemies.js 的 gimmick
 (() => {
-  const GIMMICK_AT = 0.5;
+  const GIMMICK_AT = [0.5], MIX_AT = [0.66, 0.33];
   const WIN_DMG = 6, LOSE_DMG = 2;
   const CLASH = { 1: { drain: 9, ms: 7000 }, 2: { drain: 12, ms: 6500 }, 3: { drain: 15, ms: 6000 } }; // drain:每秒被推回幾 %
   const CLASH_STEP = 4; // 每次左右交替點擊推進幾 %(同一邊連點不算)
   const SHELL = { 1: { n: 3, swaps: 5, ms: 430 }, 2: { n: 3, swaps: 7, ms: 350 }, 3: { n: 4, swaps: 9, ms: 290 } }; // n 個殼、洗幾次、每次幾毫秒
   const SHELL_PICK_MS = 4000; // 洗完之後要在幾毫秒內點出真身
   const PATH = { 1: { len: 5, ms: 7000, hint: true }, 2: { len: 6, ms: 6500, hint: true }, 3: { len: 7, ms: 6000, hint: false } }; // 冰晶數、限時、起點提示
+  const WIRE = { 1: { n: 4, ms: 6500 }, 2: { n: 5, ms: 6000 }, 3: { n: 6, ms: 6000 } }; // 電線數、限時
+  const RHYTHM = { 1: { beats: 8, gap: 620, win: 140 }, 2: { beats: 10, gap: 540, win: 120 }, 3: { beats: 12, gap: 470, win: 100 } }; // 拍數、每拍間隔、判定寬容(毫秒)
+  const RHYTHM_PASS = 0.7; // 打中七成以上的拍子算成功
+  const LIGHTS = { 1: { presses: 2, ms: 9000 }, 2: { presses: 3, ms: 8500 }, 3: { presses: 4, ms: 8000 } }; // 打亂時按幾下(= 最少要按幾下)、限時
+  const TWIN = { 1: { pairs: 5, life: 1600, win: 300 }, 2: { pairs: 6, life: 1350, win: 250 }, 3: { pairs: 7, life: 1150, win: 200 } }; // 幾組、每組停留、兩指間隔上限
+  const CARDS = { 1: { peek: 1600, ms: 14000 }, 2: { peek: 1200, ms: 12000 }, 3: { peek: 900, ms: 10000 } }; // 一開始能看牌面多久、限時
+  const SLIDE = { 1: { moves: 8, ms: 16000 }, 2: { moves: 11, ms: 15000 }, 3: { moves: 14, ms: 14000 } }; // 打亂步數、限時
+  const TICTAC = { 1: { smart: 0.5, think: 4000 }, 2: { smart: 0.8, think: 3500 }, 3: { smart: 1, think: 3000 } }; // 敵人下最佳步的機率、每步思考時間
+  const WIRE_COLORS = [{ id: 'red', name: '紅' }, { id: 'yellow', name: '黃' }, { id: 'blue', name: '藍' }, { id: 'green', name: '綠' }, { id: 'purple', name: '紫' }, { id: 'white', name: '白' }];
+  const CFG = { clash: CLASH, shell: SHELL, path: PATH, wire: WIRE, rhythm: RHYTHM, lights: LIGHTS, twin: TWIN, cards: CARDS, slide: SLIDE, tictac: TICTAC };
 
-  const NAMES = { clash: '對拳拼勁', shell: '三仙歸洞', path: '一筆畫' };
+  const NAMES = {
+    clash: '對拳拼勁', shell: '三仙歸洞', path: '一筆畫', wire: '拆彈剪線', rhythm: '打鐵節奏',
+    lights: '熄燈解鎖', twin: '雙指齊按', cards: '翻牌配對', slide: '流沙拼圖', tictac: '井字智鬥',
+  };
   const near = (a, b) => Math.abs(a % 3 - b % 3) + Math.abs(Math.floor(a / 3) - Math.floor(b / 3)) === 1; // 上下左右相鄰
+  const nbrs = i => [...Array(9).keys()].filter(j => near(i, j));
+  const LINES = [[0, 1, 2], [3, 4, 5], [6, 7, 8], [0, 3, 6], [1, 4, 7], [2, 5, 8], [0, 4, 8], [2, 4, 6]];
+  // 格子中心(相對 .grid-wrap)
+  const center = i => {
+    const r = G.grid.cells[i].getBoundingClientRect(), w = G.$('.grid-wrap').getBoundingClientRect();
+    return [r.left + r.width / 2 - w.left, r.top + r.height / 2 - w.top];
+  };
   // 隨機走一條 len 格、上下左右相鄰、不重複的路
   const walk = len => {
     const p = [Math.floor(Math.random() * 9)];
     const go = () => {
       if (p.length === len) return true;
-      for (const j of G.shuffle([...Array(9).keys()].filter(j => near(p[p.length - 1], j) && !p.includes(j)))) {
+      for (const j of G.shuffle(nbrs(p[p.length - 1]).filter(j => !p.includes(j)))) {
         p.push(j);
         if (go()) return true;
         p.pop();
@@ -31,12 +53,17 @@
   };
 
   Object.assign(G.battle, {
-    // 回合之間檢查:BOSS 有專屬小遊戲、HP 掉到一半以下、這場還沒玩過 → 進入
+    // 回合之間檢查:BOSS 有專屬小遊戲、HP 掉到門檻以下、這個門檻還沒玩過 → 進入
     async maybeGimmick() {
       const e = this.e;
-      if (!e || !e.gimmick || e.gimmickDone || e.hp <= 0 || e.hp > e.maxHp * GIMMICK_AT || this.over()) return;
-      e.gimmickDone = true;
-      const cfg = { clash: CLASH, shell: SHELL, path: PATH }[e.gimmick][G.round()];
+      if (!e || !e.gimmick || e.hp <= 0 || this.over()) return;
+      const mix = Array.isArray(e.gimmick), at = mix ? MIX_AT : GIMMICK_AT;
+      e.gmStep = e.gmStep || 0;
+      if (e.gmStep >= at.length || e.hp > e.maxHp * at[e.gmStep]) return;
+      e.gmStep++;
+      let kind = e.gimmick;
+      if (mix) { kind = G.pick(e.gimmick.filter(k => k !== e.gmLast)); e.gmLast = kind; } // 連環考驗:不連續抽到同一種
+      const cfg = CFG[kind][G.round()];
       const grid = G.$('#grid');
       G.grid.clearAll();
       G.grid.resetRot();
@@ -44,7 +71,8 @@
       this.phase = 'gimmick';
       this.setEnemyState('ult');
       G.audio.play('bossSkill');
-      const won = await this['gm_' + e.gimmick](cfg, e);
+      if (mix) await G.banner('連環考驗!', G.t('{0}的第 {1} 道考驗:{2}', e.name, e.gmStep, G.t(NAMES[kind])), 1300);
+      const won = await this['gm_' + kind](cfg, e);
       G.grid.handler = null;
       G.grid.clearAll();
       grid.classList.remove('numbering', 'gimmick');
@@ -55,13 +83,13 @@
         this.comboHit();
         G.audio.play('break');
         this.punchFx(1, { crit: true, final: true, dur: 200 });
-        this.float(G.t('{0}成功!', G.t(NAMES[e.gimmick])), 'tag armor');
+        this.float(G.t('{0}成功!', G.t(NAMES[kind])), 'tag armor');
         this.hurtEnemy(Math.round(this.p.atk * WIN_DMG), true, true);
         this.hitStop(130);
         if (e.hp > 0) this.setEnemyState('stagger', 700);
       } else {
         G.audio.play('bossSkill');
-        this.float(G.t('{0}失敗', G.t(NAMES[e.gimmick])), 'tag miss');
+        this.float(G.t('{0}失敗', G.t(NAMES[kind])), 'tag miss');
         this.comboBreak();
         this.hurtPlayer(e.atk * LOSE_DMG);
       }
@@ -211,12 +239,25 @@
       }
       G.audio.play('ready');
       return new Promise(res => {
-        let trail = [], dragging = false, done = false;
+        let trail = [], dragging = false, done = false, tip = null;
+        // 筆畫連接線:走過的格子中心連成一條發光的線,拖曳中再從最後一格連到手指的位置
+        const wrap = G.$('.grid-wrap'), wr = wrap.getBoundingClientRect();
+        const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+        svg.setAttribute('class', 'gm-trail');
+        svg.setAttribute('viewBox', `0 0 ${wr.width || 1} ${wr.height || 1}`);
+        svg.innerHTML = '<polyline class="gt-glow"/><polyline class="gt-core"/>';
+        wrap.appendChild(svg);
+        const drawTrail = () => {
+          const pts = trail.map(center);
+          if (dragging && tip && trail.length) pts.push(tip);
+          const s = pts.map(p => p.join(',')).join(' ');
+          svg.querySelectorAll('polyline').forEach(l => l.setAttribute('points', s));
+        };
         const cellAt = (x, y) => G.grid.cells.findIndex(c => {
           const r = c.getBoundingClientRect();
           return x >= r.left && x <= r.right && y >= r.top && y <= r.bottom;
         });
-        const reset = () => { trail.forEach(i => G.grid.cells[i].classList.remove('path-done')); trail = []; };
+        const reset = () => { trail.forEach(i => G.grid.cells[i].classList.remove('path-done')); trail = []; drawTrail(); };
         const end = ok => {
           if (done) return;
           done = true;
@@ -225,6 +266,7 @@
           document.removeEventListener('pointermove', onMove);
           document.removeEventListener('pointerup', onUp);
           document.removeEventListener('pointercancel', onUp);
+          setTimeout(() => svg.remove(), ok ? 500 : 0);
           res(ok);
         };
         // 走一格:必須是冰晶、沒走過、和上一格相鄰;不合規則就整筆作廢
@@ -240,6 +282,7 @@
           }
           trail.push(i);
           G.grid.cells[i].classList.add('path-done');
+          drawTrail();
           G.audio.play('note', trail.length);
           if (trail.length === lit.size) end(true);
           return true;
@@ -247,12 +290,16 @@
         const onMove = ev => {
           if (!dragging || done) return;
           const i = cellAt(ev.clientX, ev.clientY);
+          const w = wrap.getBoundingClientRect();
+          tip = [ev.clientX - w.left, ev.clientY - w.top];
           if (i >= 0) step(i);
+          drawTrail();
         };
         const onUp = () => {
           if (!dragging) return;
           dragging = false;
           if (!done && trail.length) reset(); // 手指放開:這一筆沒走完就重來
+          drawTrail();
         };
         const timer = this.timebar(ms, () => end(false));
         document.addEventListener('pointermove', onMove);
@@ -260,9 +307,264 @@
         document.addEventListener('pointercancel', onUp);
         // 手指按下 = 從這一格開始新的一筆;鍵盤沒有拖曳,每按一格就往下走一步
         G.grid.handler = i => {
-          if (G.grid.lastDown) { reset(); dragging = true; step(i); } else step(i);
+          if (G.grid.lastDown) {
+            reset();
+            dragging = true;
+            const w = wrap.getBoundingClientRect();
+            tip = [G.grid.lastDown.x - w.left, G.grid.lastDown.y - w.top];
+            step(i);
+          } else step(i);
         };
       });
+    },
+
+    // ---- 拆彈剪線:幾個格子是不同顏色的電線,照上方提示的順序剪斷;剪錯就爆炸 ----
+    async gm_wire({ n, ms }, e) {
+      await G.banner('拆彈剪線!', G.t('{0}啟動了自爆裝置!照上方的顏色順序剪斷電線!', e.name), 1700);
+      this.setPhase('剪線順序:', 'def');
+      const colors = G.shuffle(WIRE_COLORS).slice(0, n), cells = G.shuffle([...Array(9).keys()]).slice(0, n);
+      const order = G.shuffle(colors.slice());
+      colors.forEach((c, k) => G.grid.set(cells[k], '✂️', 'wire w-' + c.id, 0, G.t(c.name)));
+      const strip = document.createElement('span'); // 剪線順序放在九宮格上方的提示列,不擋格子
+      strip.className = 'gm-strip';
+      strip.innerHTML = order.map(c => `<i class="w-${c.id}">${G.t(c.name)}</i>`).join('<b>›</b>');
+      G.$('#phase').appendChild(strip);
+      G.audio.play('siren');
+      return new Promise(res => {
+        let idx = 0;
+        const cut = new Set();
+        const end = ok => { timer.stop(); G.grid.handler = null; strip.classList.add(ok ? 'win' : 'lose'); res(ok); };
+        const timer = this.timebar(ms, () => { G.audio.play('boom'); end(false); });
+        G.grid.handler = i => {
+          const k = cells.indexOf(i);
+          if (k < 0 || cut.has(i)) return; // 空格、已剪斷的不算
+          if (colors[k] !== order[idx]) { // 剪錯:爆炸
+            G.grid.flash(i, 'bad');
+            G.grid.impact(i, 'bad');
+            G.audio.play('boom');
+            G.haptic.buzz([0, 80, 40, 120]);
+            end(false);
+            return;
+          }
+          G.grid.clear(i, 'press');
+          G.grid.flash(i, 'good');
+          G.audio.play('chip');
+          strip.querySelectorAll('i')[idx].classList.add('cut');
+          cut.add(i);
+          if (++idx === n) { G.audio.play('perfect'); end(true); }
+        };
+      });
+    },
+
+    // ---- 打鐵節奏:跟著節拍,光圈縮到鐵鎚上時點擊;打中七成以上的拍子算成功 ----
+    async gm_rhythm({ beats, gap, win }, e) {
+      await G.banner('打鐵節奏!', G.t('跟著{0}打鐵的節拍,光圈縮到鐵鎚上的瞬間點擊!', e.name), 1700);
+      this.setPhase('跟著節拍點擊!', 'atk');
+      const wrap = G.$('.grid-wrap'), lead = gap * 2, notes = [];
+      const size = G.grid.cells[0].getBoundingClientRect().width || 90;
+      let hits = 0, judged = 0;
+      const recent = []; // 最近兩拍用過的格子:光圈要提早兩拍出現,同一格不能重疊
+      const t0 = G.clock.now() + 500;
+      const total = 500 + lead + gap * (beats - 1) + win;
+      return new Promise(res => {
+        const timer = this.timebar(total, () => {});
+        const judge = (note, ok) => {
+          note.judged = true;
+          judged++;
+          G.grid.clear(note.i, ok ? 'press' : 'sink');
+          if (note.ring) note.ring.remove();
+          if (ok) { hits++; G.grid.flash(note.i, 'good'); G.grid.impact(note.i, 'num'); G.audio.play('block'); this.setEnemyState('recoil', 150); }
+          else { G.grid.flash(note.i, 'bad'); G.audio.play('whiff'); }
+          if (judged === beats) { timer.stop(); G.grid.handler = null; res(hits >= Math.ceil(beats * RHYTHM_PASS)); }
+        };
+        for (let k = 0; k < beats; k++) {
+          let i;
+          do { i = Math.floor(Math.random() * 9); } while (recent.includes(i));
+          recent.push(i);
+          if (recent.length > 2) recent.shift();
+          const note = { i, target: t0 + lead + k * gap, judged: false };
+          notes.push(note);
+          // 提早 lead 毫秒冒出鐵鎚,外圈光圈慢慢縮到格子上
+          G.clock.after(() => {
+            G.grid.set(i, '🔨', 'rhythm');
+            const [x, y] = center(i), ring = document.createElement('i');
+            ring.className = 'gm-ring';
+            ring.style.left = x + 'px';
+            ring.style.top = y + 'px';
+            ring.style.width = ring.style.height = size * 0.9 + 'px';
+            wrap.appendChild(ring);
+            ring.animate([{ transform: 'translate(-50%, -50%) scale(2.4)', opacity: 0.2 }, { transform: 'translate(-50%, -50%) scale(1)', opacity: 1 }],
+              { duration: lead, easing: 'linear', fill: 'forwards' });
+            note.ring = ring;
+          }, Math.max(0, note.target - lead - G.clock.now()));
+          G.clock.after(() => G.audio.play('drum'), Math.max(0, note.target - G.clock.now())); // 節拍聲
+          G.clock.after(() => { if (!note.judged) judge(note, false); }, Math.max(0, note.target + win - G.clock.now())); // 錯過
+        }
+        G.grid.handler = i => {
+          const now = G.clock.now();
+          const note = notes.find(n => n.i === i && !n.judged && Math.abs(now - n.target) <= win * 2.5);
+          if (note) judge(note, Math.abs(now - note.target) <= win); // 太早 / 太晚(超出寬容)算失誤
+        };
+      });
+    },
+
+    // ---- 熄燈解鎖:點一格會切換它和上下左右的燈,把亮著的電路全部關掉 ----
+    async gm_lights({ presses, ms }, e) {
+      await G.banner('熄燈解鎖!', G.t('點一格會同時切換它和上下左右的燈,把{0}的電路全部關掉!', e.name), 1800);
+      this.setPhase('把燈全部關掉!', 'def');
+      const on = Array(9).fill(false);
+      const toggle = i => [i, ...nbrs(i)].forEach(j => { on[j] = !on[j]; });
+      G.shuffle([...Array(9).keys()]).slice(0, presses).forEach(toggle); // 從全暗反推:按這幾格就能解開
+      const draw = list => list.forEach(j => G.grid.set(j, on[j] ? '⚡' : '', on[j] ? 'light-on' : 'light-off'));
+      draw([...Array(9).keys()]);
+      return new Promise(res => {
+        const timer = this.timebar(ms, () => { G.grid.handler = null; res(false); });
+        G.grid.handler = i => {
+          toggle(i);
+          draw([i, ...nbrs(i)]);
+          G.audio.play('chip');
+          if (on.every(x => !x)) { timer.stop(); G.grid.handler = null; G.audio.play('perfect'); res(true); }
+        };
+      });
+    },
+
+    // ---- 雙指齊按:兩個弱點同時亮起,要用兩根手指(幾乎)同時按下;最多失手一組 ----
+    async gm_twin({ pairs, life, win }, e) {
+      await G.banner('雙指齊按!', G.t('{0}的兩個弱點 💎 同時亮起,用兩根手指同時按下!', e.name), 1700);
+      this.setPhase('兩指同時按下弱點!', 'atk');
+      let hits = 0;
+      for (let k = 0; k < pairs && !this.over(); k++) {
+        const [a, b] = G.shuffle([...Array(9).keys()]).slice(0, 2);
+        G.grid.set(a, '💎', 'twin', life);
+        G.grid.set(b, '💎', 'twin', life);
+        const ok = await new Promise(res => {
+          let first = null, t = null;
+          const fin = r => { G.clock.cancel(t); G.grid.handler = null; res(r); };
+          t = G.clock.after(() => fin(false), life);
+          G.grid.handler = i => {
+            if (i !== a && i !== b) return;
+            const now = G.clock.now();
+            if (!first) { first = { i, now }; G.grid.bump(i); return; }
+            if (i === first.i) return;
+            fin(now - first.now <= win);
+          };
+        });
+        G.grid.clear(a, ok ? 'press' : 'sink');
+        G.grid.clear(b, ok ? 'press' : 'sink');
+        if (ok) { hits++; G.grid.impact(a, 'num'); G.grid.impact(b, 'num'); G.audio.play('crit'); this.setEnemyState('hit', 200); }
+        else { G.audio.play('whiff'); this.float('失手', 'tag miss'); }
+        await G.clock.wait(280);
+      }
+      return hits >= pairs - 1;
+    },
+
+    // ---- 翻牌配對:先看一下牌面,蓋起來後翻出四組相同的圖案;翻到幻象 💀 就失敗 ----
+    async gm_cards({ peek, ms }, e) {
+      await G.banner('翻牌配對!', G.t('記住牌面,翻出四組相同的圖案!小心{0}的幻象 💀,翻到就失敗。', e.name), 1800);
+      this.setPhase('記住牌面!', 'def');
+      const faces = G.shuffle(['🌙', '🌙', '⭐', '⭐', '🌸', '🌸', '💎', '💎', '💀']);
+      faces.forEach((f, i) => G.grid.set(i, f, 'card up'));
+      await G.clock.wait(peek);
+      faces.forEach((f, i) => G.grid.set(i, '❔', 'card down'));
+      this.setPhase('翻出四組相同的圖案!', 'def');
+      return new Promise(res => {
+        const matched = new Set();
+        let open = [], lock = false;
+        const end = ok => { timer.stop(); G.grid.handler = null; res(ok); };
+        const timer = this.timebar(ms, () => end(false));
+        G.grid.handler = i => {
+          if (lock || matched.has(i) || open.includes(i)) return;
+          G.grid.set(i, faces[i], 'card up');
+          G.audio.play('tap');
+          if (faces[i] === '💀') { G.grid.flash(i, 'bad'); G.audio.play('poison'); lock = true; G.clock.after(() => end(false), 500); return; }
+          open.push(i);
+          if (open.length < 2) return;
+          const [x, y] = open;
+          if (faces[x] === faces[y]) {
+            matched.add(x).add(y);
+            open = [];
+            G.grid.flash(x, 'good');
+            G.grid.flash(y, 'good');
+            G.audio.play('perfect');
+            if (matched.size === 8) end(true);
+          } else {
+            lock = true;
+            G.clock.after(() => { G.grid.set(x, '❔', 'card down'); G.grid.set(y, '❔', 'card down'); open = []; lock = false; }, 450);
+          }
+        };
+      });
+    },
+
+    // ---- 流沙拼圖:八塊沙板一個空位,點空位旁邊的板子滑過去,排回 1 → 8 ----
+    async gm_slide({ moves, ms }, e) {
+      await G.banner('流沙拼圖!', G.t('{0}把沙板打亂了!點空位旁邊的板子滑動,排回 1 → 8 的順序。', e.name), 1800);
+      this.setPhase('排回 1 → 8!', 'atk');
+      const board = [1, 2, 3, 4, 5, 6, 7, 8, 0];
+      const solved = () => board.every((v, i) => v === (i + 1) % 9);
+      let blank = 8;
+      do { // 從完成的樣子隨機往回滑(不走回頭),保證有解
+        let prev = -1;
+        for (let k = 0; k < moves; k++) {
+          const j = G.pick(nbrs(blank).filter(x => x !== prev));
+          [board[blank], board[j]] = [board[j], board[blank]];
+          prev = blank;
+          blank = j;
+        }
+      } while (solved());
+      const draw = i => (board[i] ? G.grid.set(i, String(board[i]), 'tile' + (board[i] === i + 1 ? ' ok' : '')) : G.grid.clear(i));
+      board.forEach((v, i) => draw(i));
+      return new Promise(res => {
+        const timer = this.timebar(ms, () => { G.grid.handler = null; res(false); });
+        G.grid.handler = i => {
+          if (!near(i, blank)) { G.grid.bump(i); return; }
+          [board[blank], board[i]] = [board[i], board[blank]];
+          draw(blank);
+          draw(i);
+          blank = i;
+          G.audio.play('whiff');
+          if (solved()) { timer.stop(); G.grid.handler = null; G.audio.play('perfect'); res(true); }
+        };
+      });
+    },
+
+    // ---- 井字智鬥:和敵人輪流下井字棋,炎鋼先手;贏或和局都算守住,輸了才失敗;每步有思考時間 ----
+    async gm_tictac({ smart, think }, e) {
+      await G.banner('井字智鬥!', G.t('和{0}輪流下棋,先連成一線就贏!和局也算守住,每一步都有時間限制。', e.name), 1900);
+      const b = Array(9).fill(null);
+      const lineOf = (bd, who) => LINES.some(l => l.every(i => bd[i] === who));
+      const empty = bd => [...Array(9).keys()].filter(i => !bd[i]);
+      // 敵人的最佳步(minimax):敵人 O、炎鋼 X
+      const score = (bd, turn) => {
+        if (lineOf(bd, 'O')) return 1;
+        if (lineOf(bd, 'X')) return -1;
+        const free = empty(bd);
+        if (!free.length) return 0;
+        const vals = free.map(i => { bd[i] = turn; const v = score(bd, turn === 'O' ? 'X' : 'O'); bd[i] = null; return v; });
+        return turn === 'O' ? Math.max(...vals) : Math.min(...vals);
+      };
+      const best = () => {
+        let top = -2, pick = [];
+        empty(b).forEach(i => { b[i] = 'O'; const v = score(b, 'X'); b[i] = null; if (v > top) { top = v; pick = [i]; } else if (v === top) pick.push(i); });
+        return G.pick(pick);
+      };
+      const put = (i, who) => { b[i] = who; G.grid.set(i, who === 'X' ? '👊' : '🌟', who === 'X' ? 'ttt-me' : 'ttt-foe'); G.audio.play(who === 'X' ? 'punch' : 'chip'); };
+      const glow = (who, cls) => LINES.find(l => l.every(k => b[k] === who)).forEach(k => G.grid.flash(k, cls));
+      for (;;) {
+        this.setPhase('輪到你:下一步!', 'atk');
+        const i = await new Promise(res => {
+          const timer = this.timebar(think, () => { G.grid.handler = null; res(-1); });
+          G.grid.handler = j => { if (b[j]) return; timer.stop(); G.grid.handler = null; res(j); };
+        });
+        if (i < 0) { this.float('超時', 'tag miss'); return false; }
+        put(i, 'X');
+        if (lineOf(b, 'X')) { glow('X', 'good'); G.audio.play('perfect'); await G.clock.wait(500); return true; }
+        if (!empty(b).length) { this.float('和局', 'tag line'); await G.clock.wait(500); return true; }
+        this.setPhase(G.t('{0}思考中…', e.name), 'def');
+        await G.clock.wait(450);
+        put(Math.random() < smart ? best() : G.pick(empty(b)), 'O');
+        if (lineOf(b, 'O')) { glow('O', 'bad'); await G.clock.wait(500); return false; }
+        if (!empty(b).length) { this.float('和局', 'tag line'); await G.clock.wait(500); return true; }
+      }
     },
   });
 })();

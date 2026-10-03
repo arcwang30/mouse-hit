@@ -1081,3 +1081,44 @@ html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; } /* 手機瀏覽
     radial-gradient(ellipse at 50% 55%, #4a6a84 0%, #22384a 60%, #142430);
   box-shadow: inset 0 0 0 .3cqw #9fd8ff50, inset 0 0 3cqw #000a;
 }
+/* 一筆畫:筆畫連接線(走過的格子中心連成發光的線,拖曳中連到手指) */
+.gm-trail { position: absolute; inset: 0; width: 100%; height: 100%; z-index: 5; pointer-events: none; overflow: visible; }
+.gm-trail polyline { fill: none; stroke-linecap: round; stroke-linejoin: round; }
+.gm-trail .gt-glow { stroke: #7fe9ff; stroke-width: 5cqw; opacity: .35; filter: blur(.8cqw); }
+.gm-trail .gt-core { stroke: #ffffff; stroke-width: 1.6cqw; filter: drop-shadow(0 0 1.2cqw #7fe9ff); }
+
+/* 拆彈剪線:電線顏色(格子按鈕上色 + 小字標色名,色弱也分得出來)與上方的剪線順序 */
+.cell.wire .cap { --edge: #000a; color: #000; }
+.cell.wire .label { font-size: 3.6cqw; font-weight: 900; color: #000; background: #fffc; }
+.w-red    { --wc: #ff3a4a; } .w-yellow { --wc: #ffd84a; } .w-blue  { --wc: #3aa0ff; }
+.w-green  { --wc: #3ddc84; } .w-purple { --wc: #c84dff; } .w-white { --wc: #e8eef6; }
+.cell.wire .cap { background: linear-gradient(180deg, #fff8, transparent 40%), var(--wc); }
+.gm-strip { display: inline-flex; align-items: center; gap: .8cqw; margin-left: 1cqw; vertical-align: middle; font-size: 3.4cqw; font-weight: 900; }
+.gm-strip i { font-style: normal; padding: .3cqw 1.6cqw; border-radius: 1cqw; background: var(--wc); color: #000; }
+.gm-strip i.cut { opacity: .3; text-decoration: line-through; }
+.gm-strip b { color: #fff8; }
+.gm-strip.win i { opacity: .3; } .gm-strip.lose i { box-shadow: 0 0 0 .4cqw #ff3a4a; }
+
+/* 打鐵節奏:鐵鎚格 + 縮過來的光圈 */
+.cell.rhythm .cap { background: linear-gradient(180deg, #ffd0a0, #ff7a1a 55%, #8a3000); --edge: #4a1800; }
+.gm-ring { position: absolute; z-index: 6; border-radius: 50%; pointer-events: none; box-shadow: 0 0 0 .7cqw #ffd84a, 0 0 3cqw #ffb03c; }
+
+/* 熄燈解鎖:亮著的電路格 / 已關掉的格子 */
+.cell.light-on .cap { background: linear-gradient(180deg, #fffbe0, #ffd84a 55%, #c08a00); --edge: #5a3a00; box-shadow: 0 0 4cqw #ffd84a; }
+.cell.light-off .cap { background: linear-gradient(180deg, #2a3440, #141a22); --edge: #000; }
+
+/* 雙指齊按:弱點 */
+.cell.twin .cap { background: linear-gradient(180deg, #e0fbff, #4ad0ff 55%, #0a6a9a); --edge: #043044; animation: rise .2s cubic-bezier(.3, 1.7, .5, 1), clashPulse .4s ease-in-out infinite alternate; }
+
+/* 翻牌配對:牌面 / 牌背 */
+.cell.card.up .cap { background: linear-gradient(180deg, #fff, #e8e0ff); --edge: #6a4a9a; }
+.cell.card.down .cap { background: repeating-linear-gradient(45deg, #3a2a6a 0 2cqw, #2a1a4a 2cqw 4cqw); --edge: #150a30; color: #c8b8ff; }
+
+/* 流沙拼圖:沙板,放對位置的變金色 */
+.cell.tile .cap { background: linear-gradient(180deg, #f0d8a0, #c8964a 55%, #7a5420); --edge: #3a2408; color: #3a2408; }
+.cell.tile .icon { font-family: var(--tech); font-weight: 900; font-size: 11cqw; filter: none; }
+.cell.tile.ok .cap { background: linear-gradient(180deg, #fffbe0, #ffd84a 55%, #c08a00); }
+
+/* 井字智鬥:炎鋼 👊 / 敵人 🌟 */
+.cell.ttt-me .cap { background: linear-gradient(180deg, #ffb36b, #ff5a1f 55%, #c2300a); --edge: #7a1c04; }
+.cell.ttt-foe .cap { background: linear-gradient(180deg, #e0d0ff, #8a5aff 55%, #3a1a8a); --edge: #1a0a40; }

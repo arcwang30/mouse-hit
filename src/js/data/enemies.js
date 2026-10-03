@@ -34,6 +34,7 @@ G.ENEMIES = {
   },
   mechGeneral: {
     name: '機甲將軍', icon: '🤖', img: 'enemies/mech_general.webp', shot: '🚀', boss: true, hp: 200, atk: 13, atkCount: 6, guardLife: 1000,
+    gimmick: 'wire', // HP 剩一半時:拆彈剪線(gimmicks.js)
     skill: { name: '飽和轟炸', desc: '符號閃現速度大幅提升!', count: 2, lifeMul: 0.6 },
   },
   frostKnight: {
@@ -60,6 +61,7 @@ G.ENEMIES = {
   },
   forgeMaster: {
     name: '熔爐巨匠', icon: '🔨', img: 'enemies/forge_master.webp', shot: '⚒️', boss: true, hp: 250, atk: 14, atkCount: 5, guardLife: 1100,
+    gimmick: 'rhythm', // HP 剩一半時:打鐵節奏
     skill: { name: '千錘百煉', desc: '鐵鎚如雨落下!', count: 4, dmgMul: 1.3 },
   },
   snowWitch: {
@@ -82,6 +84,7 @@ G.ENEMIES = {
   },
   steelEmperor: {
     name: '鋼拳帝王', icon: '👊', img: 'enemies/steel_emperor.webp', shot: '👊', boss: true, hp: 330, atk: 17, atkCount: 7, guardLife: 900,
+    gimmick: ['clash', 'wire', 'rhythm', 'path', 'shell'], // 連環考驗:HP 66% / 33% 各抽一種第一章的小遊戲
     skill: { name: '鋼拳天崩', desc: '帝王的全力一擊!所有招式一次襲來!', count: 3, decoy: 0.3, dmgMul: 2, lifeMul: 0.75 },
   },
 
@@ -98,26 +101,32 @@ G.ENEMIES = {
   // ---- 第二章 區域 BOSS ----
   sandKing: {
     name: '沙盜王・烈日', icon: '☀️', img: 'enemies/sand_king.webp', shot: '🪓', boss: true, hp: 240, atk: 15, atkCount: 6, guardLife: 1000,
+    gimmick: 'slide', // HP 剩一半時:流沙拼圖
     skill: { name: '烈日斷頭斧', desc: '戰斧掀起沙暴,流沙吞沒整片戰場!', count: 3, dmgMul: 1.5 },
   },
   stormLord: {
     name: '磁暴領主', icon: '🧲', img: 'enemies/storm_lord.webp', shot: '⚡', boss: true, hp: 250, atk: 15, atkCount: 6, guardLife: 950,
+    gimmick: 'lights', // HP 剩一半時:熄燈解鎖
     skill: { name: '電磁天旋', desc: '磁場翻轉,符號急速閃現!', count: 2, lifeMul: 0.65, dmgMul: 1.3 },
   },
   colossus: {
     name: '沙海巨像', icon: '⛰️', img: 'enemies/colossus.webp', shot: '🪨', boss: true, hp: 300, atk: 16, atkCount: 5, guardLife: 1100,
+    gimmick: 'twin', // HP 剩一半時:雙指齊按
     skill: { name: '古神震地', desc: '巨拳砸地,每一擊都要頂住!', count: 3, dmgMul: 1.7 },
   },
   mirageFairy: {
     name: '蜃樓仙姬', icon: '🌙', img: 'enemies/mirage_fairy.webp', shot: '🪞', boss: true, hp: 270, atk: 16, atkCount: 6, guardLife: 950,
+    gimmick: 'cards', // HP 剩一半時:翻牌配對
     skill: { name: '鏡花水月', desc: '幻影遮蔽視線,真假難辨!', count: 2, fade: true, decoy: 0.2, dmgMul: 1.4 },
   },
   sectGuardian: {
     name: '天沙宗護法', icon: '💪', img: 'enemies/sect_guardian.webp', shot: '🌟', boss: true, hp: 310, atk: 17, atkCount: 6, guardLife: 950,
+    gimmick: 'tictac', // HP 剩一半時:井字智鬥
     skill: { name: '粒子金剛拳', desc: '金色巨拳連環轟擊!', count: 3, dmgMul: 1.6, lifeMul: 0.8 },
   },
   sectMaster: {
     name: '天沙宗主・無相', icon: '☯️', img: 'enemies/sect_master.webp', shot: '🌀', boss: true, hp: 380, atk: 18, atkCount: 7, guardLife: 900,
+    gimmick: ['slide', 'lights', 'twin', 'cards', 'tictac'], // 連環考驗:HP 66% / 33% 各抽一種第二章的小遊戲
     skill: { name: '日月無相', desc: '日月雙輪轉動,天地萬象一齊襲來!', count: 3, decoy: 0.3, dmgMul: 2, lifeMul: 0.75 },
   },
 };
