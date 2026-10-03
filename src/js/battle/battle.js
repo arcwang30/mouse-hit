@@ -259,6 +259,8 @@ G.battle = {
         await this.playerTurn();
         if (run !== this.run) return;
         if (this.ultRequested && !this.over()) await this.ultimate();
+        await this.maybeGimmick(); // 區域 BOSS 的 HP 第一次掉到一半:進入專屬小遊戲
+        if (run !== this.run) return;
         if (this.over()) break;
         await this.enemyTurn();
         if (run !== this.run) return;

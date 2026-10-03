@@ -29,6 +29,7 @@ G.ENEMIES = {
   // BOSS / 中頭目:每 3 次攻擊施放一次必殺技
   fatKing: {
     name: '胖子魔王', icon: '👹', img: 'enemies/fat_king.webp', shot: '🐉', boss: true, hp: 170, atk: 11, atkCount: 5, guardLife: 1200,
+    gimmick: 'clash', // HP 剩一半時:對拳拼勁(gimmicks.js)
     skill: { name: '肉山壓頂', desc: '防禦符號大量湧現!', count: 4, dmgMul: 1.5 },
   },
   mechGeneral: {
@@ -63,6 +64,7 @@ G.ENEMIES = {
   },
   snowWitch: {
     name: '白魔雪女', icon: '🌨️', img: 'enemies/snow_witch.webp', shot: '❄️', boss: true, hp: 240, atk: 14, atkCount: 6, guardLife: 1000,
+    gimmick: 'path',  // HP 剩一半時:一筆畫
     skill: { name: '白夜吹雪', desc: '暴風雪遮蔽視線,符號若隱若現!', count: 2, fade: true, lifeMul: 0.8 },
   },
   thunderRonin: {
@@ -71,6 +73,7 @@ G.ENEMIES = {
   },
   puppetLord: {
     name: '千面傀儡師', icon: '🎭', img: 'enemies/puppet_lord.webp', shot: '🧵', boss: true, hp: 260, atk: 15, atkCount: 6, guardLife: 950,
+    gimmick: 'shell', // HP 剩一半時:三仙歸洞
     skill: { name: '百鬼夜行', desc: '人偶大軍湧現,小心混在其中的 💀!', count: 3, decoy: 0.3, dmgMul: 1.4 },
   },
   skyEmpress: {

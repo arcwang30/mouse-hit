@@ -1037,3 +1037,47 @@ html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; } /* 手機瀏覽
 /* 選擇關卡:天魔還沒開放的提示 / 結算畫面的天魔星數 */
 .round-desc.lock { color: #d8b0ff; }
 .result-box .new-round.lock { background: linear-gradient(90deg, transparent, #3a0866c0, transparent); font-size: 4.2cqw; }
+
+/* ===== BOSS 專屬小遊戲(gimmicks.js)===== */
+/* 對拳拼勁:九宮格上方的拔河力量條(--pos 0~100%,炎鋼在左、BOSS 在右),中排左右兩顆大拳頭 */
+.gm-clash {
+  position: absolute; left: 4%; right: 4%; top: 6%; z-index: 6; display: flex; align-items: center; gap: 2cqw;
+  font-size: 3.2cqw; font-weight: 900; color: #fff; text-shadow: 0 .3cqw 0 #000; --pos: 50%; pointer-events: none;
+}
+.gm-clash .gc-track { position: relative; flex: 1; height: 5cqw; border-radius: 99px; overflow: visible;
+  background: linear-gradient(90deg, #ff3a4a, #6a0a14); box-shadow: inset 0 0 0 .4cqw #000a, 0 0 2cqw #000; }
+.gm-clash .gc-fill { position: absolute; left: 0; top: 0; bottom: 0; width: var(--pos); border-radius: 99px;
+  background: linear-gradient(90deg, #ffd84a, #ff7a1a); box-shadow: 0 0 2cqw #ff9a2a; }
+.gm-clash .gc-mark { position: absolute; left: var(--pos); top: 50%; transform: translate(-50%, -50%); font-size: 8cqw; filter: drop-shadow(0 0 1.4cqw #fff); }
+.gm-clash .gc-track::after { content: ''; position: absolute; left: 50%; top: -1cqw; bottom: -1cqw; width: .5cqw; background: #fff8; } /* 中線 */
+.gm-clash .gc-me { color: #ffd84a; } .gm-clash .gc-foe { color: #ff8a8a; }
+.gm-clash.win .gc-track { animation: clashWin .5s ease-out; } .gm-clash.lose { animation: clashLose .5s ease-out forwards; }
+@keyframes clashWin { 50% { transform: scale(1.08); filter: brightness(1.8); } }
+@keyframes clashLose { to { opacity: 0; transform: translateX(-8%); } }
+.cell.clash-btn .cap { background: linear-gradient(180deg, #ffb36b, #ff5a1f 55%, #c2300a); --edge: #7a1c04; animation: clashPulse .5s ease-in-out infinite alternate; }
+.cell.clash-btn .label { font-size: 4.4cqw; }
+@keyframes clashPulse { to { filter: brightness(1.25) drop-shadow(0 0 2cqw #ff9a2a); } }
+#grid.gimmick .cell:not(.on):not(.path-crack) { opacity: .45; }
+
+/* 三仙歸洞:浮在九宮格上的傀儡;真身 👺 發紅光,點錯的傀儡化成煙 */
+.gm-shell { position: absolute; inset: 0; z-index: 6; pointer-events: none; }
+.gs-doll { position: absolute; left: 0; top: 0; display: grid; place-items: center; border-radius: 50%; line-height: 1;
+  background: radial-gradient(circle at 50% 40%, #3a2a4a, #150a20 70%); box-shadow: 0 0 0 .5cqw #c84dff80, 0 1cqw 2cqw #000c; }
+.gs-doll.real { box-shadow: 0 0 0 .6cqw #ff3a4a, 0 0 5cqw #ff3a4a; animation: dollReal .4s ease-in-out infinite alternate; }
+.gs-doll.wrong { opacity: .5; box-shadow: none; }
+@keyframes dollReal { to { filter: brightness(1.4); } }
+.cell.shell-pick::before { box-shadow: inset 0 0 0 .5cqw #ffd84a, inset 0 0 4cqw #ffd84a80 !important; }
+
+/* 一筆畫:冰晶格發藍光,走過的變亮;裂冰格(不能踩)灰白龜裂;凡塵 / 修羅的起點有提示光圈 */
+.cell.path-cell .cap { background: linear-gradient(180deg, #e8fbff, #7fd8ff 55%, #2a8ac0); --edge: #0b3a66; }
+.cell.path-cell.path-done .cap { background: linear-gradient(180deg, #ffffff, #b8f4ff 55%, #4ad0ff); filter: brightness(1.2) drop-shadow(0 0 2.4cqw #7fe9ff); transform: translateY(6%); }
+.cell.path-start .cap { animation: pathStart .6s ease-in-out infinite alternate; }
+@keyframes pathStart { to { box-shadow: 0 0 0 .7cqw #ffd84a, 0 0 4cqw #ffd84a; } }
+.cell.path-crack::before { /* 裂冰:灰藍冰面加上白色裂痕,一看就知道不能踩 */
+  background:
+    linear-gradient(35deg, transparent 44%, #ffffffb0 45% 47%, transparent 48%),
+    linear-gradient(-58deg, transparent 38%, #ffffff90 39% 41%, transparent 42%),
+    linear-gradient(100deg, transparent 60%, #ffffff70 61% 62.5%, transparent 63.5%),
+    radial-gradient(ellipse at 50% 55%, #4a6a84 0%, #22384a 60%, #142430);
+  box-shadow: inset 0 0 0 .3cqw #9fd8ff50, inset 0 0 3cqw #000a;
+}
