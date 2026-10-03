@@ -764,12 +764,13 @@ h2 { margin: 0; }
 /* 品牌 LOGO:黑底浮出再淡出,露出底下已經就位的鏡頭 */
 .brand-splash { position: absolute; inset: 0; z-index: 8; display: grid; place-items: center; background: #000; opacity: 0; pointer-events: none; }
 .brand-splash img { width: 46%; opacity: 0; }
-#title.intro .brand-splash { animation: brandOut 2.8s ease-in both; }
-#title.intro .brand-splash img { animation: brandIn 2.8s ease-out both; }
-@keyframes brandOut { 0%, 76% { opacity: 1; } 100% { opacity: 0; } } /* 浮出 0.5 秒、停留約 1.6 秒、淡出 0.7 秒 */
-@keyframes brandIn { 0% { opacity: 0; transform: scale(.9); } 18% { opacity: 1; transform: scale(1); } 74% { opacity: 1; transform: scale(1.02); } 100% { opacity: 0; transform: scale(1.06); } }
+#title.intro .brand-splash { animation: brandOut 3.6s ease-in both; }
+#title.intro .brand-splash img { animation: brandIn 3.6s ease-out both; }
+/* LOGO 浮出 0.5 秒、停留 1.5 秒、淡出 0.6 秒;LOGO 完全消失後全黑停 0.5 秒,黑底才淡出(避免 LOGO 像殘影疊在畫面上) */
+@keyframes brandOut { 0%, 86% { opacity: 1; } 100% { opacity: 0; } }
+@keyframes brandIn { 0% { opacity: 0; transform: scale(.9); } 14% { opacity: 1; transform: scale(1); } 56% { opacity: 1; transform: scale(1.02); } 72%, 100% { opacity: 0; transform: scale(1.05); } }
 /* 鏡頭仰望:放大後從畫面下方(炎鋼背影)沿著火焰柱往上拉到鐵拳,再拉遠成全景 */
-#title.intro .title-bg { animation: camTilt 2.6s cubic-bezier(.45, 0, .35, 1) 2.4s both; } /* 品牌 LOGO 淡出時開始仰望 */
+#title.intro .title-bg { animation: camTilt 2.6s cubic-bezier(.45, 0, .35, 1) 3.2s both; } /* 黑底淡出時開始仰望 */
 @keyframes camTilt {
   0%   { transform: scale(1.75) translateY(-21%); }
   62%  { transform: scale(1.75) translateY(21%); }
