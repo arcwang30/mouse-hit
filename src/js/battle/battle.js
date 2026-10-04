@@ -12,6 +12,8 @@ const GOLD_MUL = 2.5;      // 金拳傷害倍率
 const BOMB_RATE = 0.12;    // 第 4 波起一般敵人攻擊回合混入炸彈的機率
 const LAVA_BURN = 4;       // 打熔岩格的燙傷
 const LINE_MUL = 3;        // 三連擊額外傷害(攻擊力倍數)
+const LINER_MUL = 1.5;     // 技法「連線大師」:連線 / 掃射出現機率與三連擊傷害的倍率
+const DEFUSE_MUL = 1.5;    // 技法「拆彈專家」:點到炸彈改成造成攻擊力 ×1.5
 const SLOWMO = { ms: 2500, mul: 1.6 }; // 時之呼吸:每回合前 2.5 秒符號停留 ×1.6
 const BONUS_MS = 12000;    // 狂打獎勵關長度
 const BONUS_COIN_PER = 1;  // 狂打獎勵關:每幾 HIT 換 1 金幣
@@ -456,7 +458,8 @@ G.battle = {
           return false;
         }
         // 越快擋下,累積的反擊力越多(下回合每拳傷害加成);頂住成功給固定值
-        const ratio = info.heavy ? 0.7 : info.ratio;
+        // 鐵壁的自動格擋(info.auto)算一般格擋,不給迅擋的最高反擊力
+        const ratio = info.heavy ? 0.7 : info.auto ? Math.min(info.ratio, 0.4) : info.ratio; // FEVER 中也不會達到迅擋
         const pct = Math.round(BLOCK_PCT_MAX * ratio * (this.fever() ? FEVER_MUL : 1));
         this.comboHit();
         this.counterPct = Math.min(BLOCK_PCT_CAP, (this.counterPct || 0) + pct);
@@ -1162,7 +1165,7 @@ G.battle = {
     const t = this.wave / Math.max(1, this.stage.waves.length - 1);   // 本關進度 0 → 1
     const pr = G.roundCfg().pattern;                                  // 周回:一開始就更常多發 / 連線
     const k = Math.min(1.5 + pr, t + this.stageIdx / Math.max(1, G.STAGES.length - 1) * 2.7 + pr); // 越後面的關卡起點越高
-    const ln = this.p.lineMaster ? 2 : 1;                            // 連線大師:連線 / 掃射加倍出現
+    const ln = this.p.lineMaster ? LINER_MUL : 1;                    // 連線大師:連線 / 掃射更常出現
     return {
       single: Math.max(0.6, 6 - 3 * k),
       pair: 1 + 1.4 * k,
@@ -1355,7 +1358,7 @@ G.battle = {
   // 寶箱開出的隨機技能:直接獲得(不用選),有 SKILL_RULE_CHANCE 的機率是技法;
   // HP 低於一半時保命技能機率 ×3,HP 快滿時「回氣丹」幾乎不會出現(開到也浪費)
   async treasureSkill() {
-    const p = this.p, owned = s => (s.unique || s.rule) && p.skills.includes(s.id);
+    const p = this.p, owned = s => !G.skillAvailable(s, p);
     const rules = G.SKILLS.filter(s => s.rule && !owned(s));
     let s;
     if (rules.length && Math.random() < SKILL_RULE_CHANCE) s = G.pick(rules);
@@ -1575,7 +1578,7 @@ G.battle = {
   defuseBomb() {
     this.float('拆彈反擊!', 'tag charge');
     this.punchFx(1, { crit: true });
-    this.hurtEnemy(this.p.atk * 3, true);
+    this.hurtEnemy(Math.round(this.p.atk * DEFUSE_MUL), true);
   },
 
   // 點到炸彈
@@ -1602,7 +1605,7 @@ G.battle = {
     this.float('三連擊!', 'tag line');
     G.audio.play('levelup');
     this.punchFx(1, { crit: true, dur: 180 });
-    this.hurtEnemy(Math.round(this.p.atk * LINE_MUL * (this.p.lineMaster ? 2 : 1) * (this.fever() ? FEVER_MUL : 1)), true);
+    this.hurtEnemy(Math.round(this.p.atk * LINE_MUL * (this.p.lineMaster ? LINER_MUL : 1) * (this.fever() ? FEVER_MUL : 1)), true);
   },
 
   // ---- 連擊 & FEVER ----

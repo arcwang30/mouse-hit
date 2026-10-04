@@ -30,7 +30,7 @@ window.simRun = function (stageIdx, skill, upLv) {
   const sim = { dmg: 1, hit: 0, freeBlock: 0, noBomb: 0 };
   const learn = s => { s.apply(p); p.skills.push(s.id); const r = RULE_SIM[s.id]; if (r) { sim.dmg *= r.dmg || 1; sim.hit += r.hit || 0; sim.freeBlock += r.freeBlock || 0; sim.noBomb += r.noBomb || 0; } };
   const pickSkill = rulesOnly => { // 和遊戲相同:一般三選一有 RULE_CHANCE 機率混入一張技法,從三個裡隨機選
-    const pool = G.SKILLS.filter(s => !((s.unique || s.rule) && p.skills.includes(s.id)));
+    const pool = G.SKILLS.filter(s => G.skillAvailable(s, p));
     const rules = G.shuffle(pool.filter(s => s.rule));
     const withRule = rules.length && Math.random() < G.RULE_CHANCE;
     const choices = rulesOnly && rules.length ? rules.slice(0, 3) : G.shuffle(pool.filter(s => !s.rule)).slice(0, withRule ? 2 : 3).concat(withRule ? rules.slice(0, 1) : []);

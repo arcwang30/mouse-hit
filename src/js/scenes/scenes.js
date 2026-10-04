@@ -545,7 +545,7 @@ G.scenes = {
   pickSkill(p, rulesOnly = false) {
     return new Promise(resolve => {
       // 技法和 unique 技能只能拿一次
-      const pool = G.SKILLS.filter(s => !((s.unique || s.rule) && p.skills.includes(s.id)));
+      const pool = G.SKILLS.filter(s => G.skillAvailable(s, p)); // 技法 / unique 只能一次,有次數或數值上限的拿滿就不再出現
       const rules = G.shuffle(pool.filter(s => s.rule));
       let choices;
       if (rulesOnly && rules.length) {
