@@ -19,7 +19,8 @@
   const RHYTHM_PASS = 0.7; // 打中七成以上的拍子算成功
   const LIGHTS = { 1: { presses: 2, ms: 9000 }, 2: { presses: 3, ms: 8500 }, 3: { presses: 4, ms: 8000 } }; // 打亂時按幾下(= 最少要按幾下)、限時
   const TWIN = { 1: { pairs: 5, life: 1600, win: 300 }, 2: { pairs: 6, life: 1350, win: 250 }, 3: { pairs: 7, life: 1150, win: 200 } }; // 幾組、每組停留、兩指間隔上限
-  const CARDS = { 1: { peek: 1600, ms: 14000 }, 2: { peek: 1200, ms: 12000 }, 3: { peek: 900, ms: 10000 } }; // 一開始能看牌面多久、限時
+  const CARDS = { 1: { peek: 2000, ms: 14000 }, 2: { peek: 1600, ms: 12000 }, 3: { peek: 1200, ms: 10000 } }; // 一開始能看牌面多久、限時
+  const CARDS_PASS = 3, CARDS_PERFECT = 1.3, CARDS_BONUS = 1500, CARDS_TRAP = 3000; // 過關組數、完美倍率、配對加時、幻象扣時(毫秒)
   const SLIDE = { 1: { moves: 8, ms: 16000 }, 2: { moves: 11, ms: 15000 }, 3: { moves: 14, ms: 14000 } }; // 打亂步數、限時
   const TICTAC = { 1: { smart: 0.5, think: 4000 }, 2: { smart: 0.8, think: 3500 }, 3: { smart: 1, think: 3000 } }; // 敵人下最佳步的機率、每步思考時間
   const WIRE_COLORS = [{ id: 'red', name: '紅' }, { id: 'yellow', name: '黃' }, { id: 'blue', name: '藍' }, { id: 'green', name: '綠' }, { id: 'purple', name: '紫' }, { id: 'white', name: '白' }];
@@ -72,7 +73,9 @@
       this.setEnemyState('ult');
       G.audio.play('bossSkill');
       if (mix) await G.banner('連環考驗!', G.t('{0}的第 {1} 道考驗:{2}', e.name, e.gmStep, G.t(NAMES[kind])), 1300);
-      const won = await this['gm_' + kind](cfg, e);
+      // 小遊戲回傳 true / false,或是成功時的傷害倍率(例如翻牌全部配對 = 完美 ×1.3)
+      const res = await this['gm_' + kind](cfg, e);
+      const won = !!res, mul = typeof res === 'number' ? res : 1;
       G.grid.handler = null;
       G.grid.clearAll();
       grid.classList.remove('numbering', 'gimmick');
@@ -83,8 +86,8 @@
         this.comboHit();
         G.audio.play('break');
         this.punchFx(1, { crit: true, final: true, dur: 200 });
-        this.float(G.t('{0}成功!', G.t(NAMES[kind])), 'tag armor');
-        this.hurtEnemy(Math.round(this.p.atk * WIN_DMG), true, true);
+        this.float(G.t(mul > 1 ? '{0}完美!' : '{0}成功!', G.t(NAMES[kind])) + (mul > 1 ? ` ×${mul}` : ''), 'tag armor');
+        this.hurtEnemy(Math.round(this.p.atk * WIN_DMG * mul), true, true);
         this.hitStop(130);
         if (e.hp > 0) this.setEnemyState('stagger', 700);
       } else {
@@ -468,25 +471,53 @@
       return hits >= pairs - 1;
     },
 
-    // ---- 翻牌配對:先看一下牌面,蓋起來後翻出四組相同的圖案;翻到幻象 💀 就失敗 ----
+    // ---- 翻牌配對:先看一下牌面,蓋起來後翻出相同的圖案(4 組)
+    //   找到 CARDS_PASS 組就算成功,4 組全找到 = 完美(傷害 ×CARDS_PERFECT);每配對一組限時 +CARDS_BONUS 毫秒
+    //   翻到幻象 💀:扣 CARDS_TRAP 毫秒、受一點傷,💀 就此翻開不再蓋回,可以繼續找 ----
     async gm_cards({ peek, ms }, e) {
-      await G.banner('翻牌配對!', G.t('記住牌面,翻出四組相同的圖案!小心{0}的幻象 💀,翻到就失敗。', e.name), 1800);
+      await G.banner('翻牌配對!', G.t('記住牌面,找出相同的圖案!找到 3 組就過關,4 組全中是完美。小心{0}的幻象 💀,翻到會扣時間。', e.name), 2000);
       this.setPhase('記住牌面!', 'def');
       const faces = G.shuffle(['🌙', '🌙', '⭐', '⭐', '🌸', '🌸', '💎', '💎', '💀']);
       faces.forEach((f, i) => G.grid.set(i, f, 'card up'));
       await G.clock.wait(peek);
       faces.forEach((f, i) => G.grid.set(i, '❔', 'card down'));
-      this.setPhase('翻出四組相同的圖案!', 'def');
+      const pairs = () => matched.size / 2;
+      const phase = () => this.setPhase(G.t('配對 {0} / 4(3 組過關)', pairs()), 'def');
+      const matched = new Set();
+      phase();
       return new Promise(res => {
-        const matched = new Set();
-        let open = [], lock = false;
-        const end = ok => { timer.stop(); G.grid.handler = null; res(ok); };
-        const timer = this.timebar(ms, () => end(false));
+        let open = [], lock = false, done = false, deadline = G.clock.now() + ms, raf;
+        const fill = G.$('#timeFill');
+        // 可以加減時間的倒數條(配對成功加時、翻到幻象扣時;暫停時跟著遊戲時鐘停)
+        const tick = () => {
+          if (done) return;
+          const left = deadline - G.clock.now();
+          fill.style.width = Math.max(0, Math.min(1, left / ms)) * 100 + '%';
+          if (left <= 0) { end(); return; }
+          raf = requestAnimationFrame(tick);
+        };
+        const end = () => {
+          if (done) return;
+          done = true;
+          cancelAnimationFrame(raf);
+          fill.style.width = '0';
+          G.grid.handler = null;
+          const n = pairs();
+          res(n === 4 ? CARDS_PERFECT : n >= CARDS_PASS); // 4 組 = 完美倍率,3 組 = 成功
+        };
+        tick();
         G.grid.handler = i => {
-          if (lock || matched.has(i) || open.includes(i)) return;
+          if (lock || matched.has(i) || open.includes(i) || faces[i] === '💀' && G.grid.cells[i].classList.contains('up')) return;
           G.grid.set(i, faces[i], 'card up');
           G.audio.play('tap');
-          if (faces[i] === '💀') { G.grid.flash(i, 'bad'); G.audio.play('poison'); lock = true; G.clock.after(() => end(false), 500); return; }
+          if (faces[i] === '💀') { // 幻象:扣時間、受一點傷,繼續找
+            G.grid.flash(i, 'bad');
+            G.audio.play('poison');
+            deadline -= CARDS_TRAP;
+            this.float(G.t('幻象!-{0} 秒', CARDS_TRAP / 1000), 'tag miss');
+            this.safeHurt(e.atk * 0.5); // 不會因此倒下
+            return;
+          }
           open.push(i);
           if (open.length < 2) return;
           const [x, y] = open;
@@ -496,7 +527,10 @@
             G.grid.flash(x, 'good');
             G.grid.flash(y, 'good');
             G.audio.play('perfect');
-            if (matched.size === 8) end(true);
+            deadline += CARDS_BONUS; // 配對成功:加時間
+            this.float(`+${CARDS_BONUS / 1000}s`, 'tag line');
+            phase();
+            if (pairs() === 4) end();
           } else {
             lock = true;
             G.clock.after(() => { G.grid.set(x, '❔', 'card down'); G.grid.set(y, '❔', 'card down'); open = []; lock = false; }, 450);
