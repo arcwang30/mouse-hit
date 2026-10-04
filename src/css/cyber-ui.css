@@ -1173,3 +1173,19 @@ body.kb .grid-wrap:has(.cell.kick.on:not(.hidden)) .kb-kick { display: block; an
   padding: .4cqw 2cqw; border-radius: 3cqw; font-size: 3.6cqw; color: #fff4b8; background: #000a;
 }
 body.kb .dial-kb { display: block; }
+
+/* ===== 浴火重生 ===== */
+/* HP 旁的 🌅:還能復活時發光,用掉後變灰 */
+.revive-icon { flex: none; font-size: 4.6cqw; line-height: 1; filter: drop-shadow(0 0 1.2cqw #ff9a2a); animation: reviveGlow 1.4s ease-in-out infinite alternate; }
+.revive-icon[hidden] { display: none; }
+.revive-icon.used { filter: grayscale(1) brightness(.5); opacity: .5; animation: none; }
+@keyframes reviveGlow { to { filter: drop-shadow(0 0 2.4cqw #ffcf3a); } }
+/* 復活瞬間:全畫面火光從中間爆開,🔥 升起 */
+.revive-fx {
+  position: absolute; inset: 0; z-index: 40; pointer-events: none; display: grid; place-items: center;
+  background: radial-gradient(circle at 50% 60%, #fff6c8 0, #ffb02a 22%, #ff4a0a 45%, #7a0a0088 70%, transparent 85%);
+  animation: reviveBurst 1.2s ease-out forwards;
+}
+.revive-fx i { font-style: normal; font-size: 30cqw; filter: drop-shadow(0 0 4cqw #ffcf3a); animation: reviveRise 1.2s cubic-bezier(.2, 1.4, .4, 1) forwards; }
+@keyframes reviveBurst { 0% { opacity: 0; transform: scale(.3); } 15% { opacity: 1; transform: scale(1.1); } 70% { opacity: .85; } 100% { opacity: 0; transform: scale(1.4); } }
+@keyframes reviveRise { 0% { transform: translateY(30cqw) scale(.4); opacity: 0; } 35% { transform: translateY(0) scale(1.15); opacity: 1; } 80% { opacity: 1; } 100% { transform: translateY(-8cqw) scale(1); opacity: 0; } }

@@ -564,6 +564,12 @@ G.scenes = {
         const withRule = rules.length && Math.random() < G.RULE_CHANCE;
         choices = G.shuffle(pool.filter(s => !s.rule)).slice(0, withRule ? 2 : 3);
         if (withRule || choices.length < 3) choices.splice(Math.floor(Math.random() * (choices.length + 1)), 0, ...rules.slice(0, 3 - choices.length));
+        // 同一關死太多次:有額外機率把其中一張一般技能換成「浴火重生」
+        const phoenix = pool.find(s => s.id === 'phoenix');
+        if (phoenix && !choices.includes(phoenix) && Math.random() < G.battle.phoenixBoost()) {
+          const k = choices.findIndex(s => !s.rule);
+          if (k >= 0) choices[k] = phoenix;
+        }
       }
       G.$('#skillPick h2').textContent = G.t(rulesOnly ? '修得一項技法' : '選擇一項技能');
       const box = G.$('#skillCards');
@@ -577,6 +583,7 @@ G.scenes = {
           const s = choices[+b.dataset.i];
           s.apply(p);
           p.skills.push(s.id);
+          if (s.id === 'phoenix') G.battle.phoenixSeen(); // 選了浴火重生:這一關的死亡次數歸零重算
           G.audio.play('select');
           el.classList.remove('show');
           resolve();

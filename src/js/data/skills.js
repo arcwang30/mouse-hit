@@ -26,7 +26,7 @@ G.SKILLS = [
   { id: 'calm',     icon: '🧘', name: '氣定神閒', desc: '防禦符號停留時間 +250ms',           apply: p => { p.guardBonus += 250; } },
   { id: 'combo',    icon: '⚡', name: '連擊氣勢', desc: '連續命中時每段額外 +1 傷害',        apply: p => { p.combo += 1; } },
   { id: 'regen',    icon: '🍵', name: '養精蓄銳', desc: '每擊倒一個 WAVE 回復 15 HP',        apply: p => { p.regen += 15; } },
-  { id: 'phoenix',  icon: '🌅', name: '浴火重生', desc: '倒下時以 50% HP 復活一次(限一次)', unique: true, apply: p => { p.revive = 1; } },
+  { id: 'phoenix',  icon: '🌅', name: '浴火重生', desc: '倒下時 HP 全滿復活一次(限一次)', unique: true, apply: p => { p.revive = 1; } },
   { id: 'first',    icon: '🥇', name: '先發制人', desc: '每回合第一拳傷害 x3',               unique: true, apply: p => { p.firstStrike = true; } },
   { id: 'execute',  icon: '💀', name: '斬殺',     desc: '敵人 HP 低於 20% 時傷害 x2',        unique: true, apply: p => { p.execute = true; } },
   { id: 'absorb',   icon: '🌀', name: '格擋蓄氣', desc: '成功防禦時必殺值 +3',               apply: p => { p.blockUlt += 3; } },

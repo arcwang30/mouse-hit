@@ -21,7 +21,7 @@ window.simRun = function (stageIdx, skill, upLv) {
   const clamp = x => Math.max(0.05, Math.min(0.99, x));
   const hurt = d => {
     p.hp -= Math.max(1, Math.round(d * (1 - p.armor)));
-    if (p.hp <= 0 && p.revive) { p.revive = 0; p.hp = Math.round(p.maxHp / 2); }
+    if (p.hp <= 0 && p.revive) { p.revive = 0; p.hp = p.maxHp; }
   };
 
   // 第三階段:技法在模擬中用近似效果表示

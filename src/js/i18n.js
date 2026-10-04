@@ -418,7 +418,7 @@ G.I18N = {
   '氣定神閒': ['泰然自若', 'Calm Mind'], '防禦符號停留時間 +250ms': ['防御シンボルの表示時間 +250ms', 'Guard symbol time +250ms'],
   '連擊氣勢': ['連撃の勢い', 'Combo Momentum'], '連續命中時每段額外 +1 傷害': ['連続命中ごとにダメージ +1', '+1 damage per consecutive hit'],
   '養精蓄銳': ['英気を養う', 'Recuperate'], '每擊倒一個 WAVE 回復 15 HP': ['WAVE 撃破ごとに HP 15 回復', 'Heal 15 HP per wave cleared'],
-  '浴火重生': ['不死鳥', 'Phoenix'], '倒下時以 50% HP 復活一次(限一次)': ['倒れた時に HP 50% で一度だけ復活', 'Revive once with 50% HP'],
+  '浴火重生': ['不死鳥', 'Phoenix'], '倒下時 HP 全滿復活一次(限一次)': ['倒れた時に HP 全回復で一度だけ復活', 'Revive once with full HP'],
   '先發制人': ['先手必勝', 'First Strike'], '每回合第一拳傷害 x3': ['毎ターン最初のパンチ ×3', 'First punch each turn ×3'],
   '斬殺': ['とどめ', 'Execute'], '敵人 HP 低於 20% 時傷害 x2': ['敵 HP 20% 未満でダメージ ×2', '×2 damage when enemy HP < 20%'],
   '格擋蓄氣': ['防御蓄気', 'Guard Charge'], '成功防禦時必殺值 +3': ['ガード成功で必殺ゲージ +3', 'Special +3 per block'],

@@ -30,6 +30,9 @@ const CHEST_ODDS = { coins: 0.4, skill: 0.3 }; // 剩下 30% 是寶箱怪(要打
 const MIMIC_STEAL = 10; // 寶箱怪的假錢袋 / 假盾牌每次搶走的金幣(再乘周回倍率)
 const SKILL_RULE_CHANCE = 0.25; // 寶箱開出的隨機技能:有這個機率是技法(還有沒拿過的才會出現)
 const HEAL_SKILLS = ['steel', 'pill', 'leech', 'regen', 'bell']; // HP 偏低時比較容易開到的保命技能
+// 同一關死太多次:從第 2 次死亡起,每次選技能有額外機率一定混入「浴火重生」(每多死一次 +PHOENIX_STEP,最多 PHOENIX_MAX)
+// 拿到浴火重生(自己選的或寶箱開到)後,這一關的死亡次數就歸零重算;只出現在選項裡沒選不算
+const PHOENIX_STEP = 0.15, PHOENIX_MAX = 0.6;
 const DEVIL_GOLD = 100;
 // 新機制:疾風(滑擊拳傷害倍率)、倒數炸彈(秒數再乘周回的停留倍率、爆炸傷害倍率)、幻術(記憶長度依周回、每格閃爍毫秒、每格作答時間、失敗傷害倍率)
 const SWIPE_MUL = 1.5; // 踢擊(帶箭頭、要滑)的傷害倍率
@@ -104,7 +107,7 @@ G.battle = {
   },
 
   resume() {
-    if (!G.clock.paused || G.tips.open) return; // 說明卡開著時由說明卡負責恢復
+    if (!G.clock.paused || G.tips.open || this.reviving) return; // 說明卡開著時由說明卡負責恢復;浴火重生演出中等演出結束
     G.$('#pauseMenu').classList.remove('show');
     G.audio.play('click');
     G.clock.resume();
@@ -1373,6 +1376,19 @@ G.battle = {
     restore();
   },
 
+  // 浴火重生的額外出現機率:這一關死了 n 次 → (n - 1) × PHOENIX_STEP,最多 PHOENIX_MAX
+  phoenixBoost() {
+    const n = (G.prog().deaths || {})[this.stageIdx] || 0;
+    return Math.min(PHOENIX_MAX, Math.max(0, n - 1) * PHOENIX_STEP);
+  },
+  // 拿到浴火重生了:這一關的死亡次數歸零,之後再慢慢累積
+  phoenixSeen() {
+    const pr = G.prog();
+    if (!pr.deaths || !pr.deaths[this.stageIdx]) return;
+    pr.deaths[this.stageIdx] = 0;
+    G.save.write();
+  },
+
   // 寶箱開出的隨機技能:直接獲得(不用選),有 SKILL_RULE_CHANCE 的機率是技法;
   // HP 低於一半時保命技能機率 ×3,HP 快滿時「回氣丹」幾乎不會出現(開到也浪費)
   async treasureSkill() {
@@ -1381,12 +1397,13 @@ G.battle = {
     let s;
     if (rules.length && Math.random() < SKILL_RULE_CHANCE) s = G.pick(rules);
     else {
-      const hpRate = p.hp / p.maxHp;
+      const hpRate = p.hp / p.maxHp, boost = this.phoenixBoost();
       const pool = G.SKILLS.filter(x => !x.rule && !x.risk && !owned(x)).map(x => ({ x,
-        w: x.id === 'pill' && hpRate > 0.8 ? 0.15 : HEAL_SKILLS.includes(x.id) && hpRate < 0.5 ? 3 : 1 }));
+        w: x.id === 'pill' && hpRate > 0.8 ? 0.15 : HEAL_SKILLS.includes(x.id) && hpRate < 0.5 ? 3 : x.id === 'phoenix' ? 1 + boost * 10 : 1 }));
       let r = Math.random() * pool.reduce((n, o) => n + o.w, 0);
       s = (pool.find(o => (r -= o.w) < 0) || pool[0]).x;
     }
+    if (s.id === 'phoenix') this.phoenixSeen();
     s.apply(p);
     p.skills.push(s.id);
     G.audio.play(s.rule ? 'perfect' : 'levelup');
@@ -1765,11 +1782,35 @@ G.battle = {
     if (p.hp <= 0 && this.e && this.e.mimic) { p.hp = 1; this.e.fled = true; }
     if (p.hp <= 0 && p.revive > 0) {
       p.revive = 0;
-      p.hp = Math.round(p.maxHp / 2);
-      G.audio.play('revive');
-      G.banner('浴火重生!', '烈焰烙痕灼燒,炎鋼再次站起', 1000);
+      p.hp = p.maxHp;
+      this.reviveFx();
     }
     this.render();
+  },
+
+  // 浴火重生的演出:戰鬥停住約 1.2 秒,全畫面火光爆開、HP 補滿,再接著打(不會在混亂中錯過)
+  reviveFx() {
+    const battle = G.$('#battle');
+    const wasPaused = G.clock.paused;
+    G.clock.pause(); // 先停住計時與動畫,之後加上的火光動畫不受影響
+    this.reviving = true;
+    G.audio.play('revive');
+    G.audio.play('fire');
+    G.haptic.buzz([0, 60, 40, 120]);
+    G.$('#bannerMain').textContent = G.t('浴火重生!');
+    G.$('#bannerSub').textContent = G.t('烈焰烙痕灼燒,炎鋼再次站起');
+    G.$('#banner').classList.add('show');
+    const fx = document.createElement('div');
+    fx.className = 'revive-fx';
+    fx.innerHTML = '<i>🔥</i>';
+    battle.appendChild(fx);
+    setTimeout(() => {
+      fx.remove();
+      G.$('#banner').classList.remove('show');
+      this.reviving = false;
+      if (document.hidden) { this.renderPause(); G.$('#pauseMenu').classList.add('show'); } // 演出中切走 App:改成停在 PAUSE
+      else if (!wasPaused) G.clock.resume();
+    }, 1200);
   },
 
   healPlayer(n, quiet) {
@@ -1792,6 +1833,10 @@ G.battle = {
     if (!p || !e) return;
     G.$('#playerHpFill').style.width = (p.hp / p.maxHp * 100) + '%';
     G.$('#playerHpText').textContent = G.t('炎鋼 HP {0}/{1}', p.hp, p.maxHp);
+    // 浴火重生:學到後在 HP 旁邊顯示 🌅,用掉後變灰
+    const rv = G.$('#reviveIcon');
+    rv.hidden = !p.skills.includes('phoenix');
+    rv.classList.toggle('used', !p.revive);
     // 瀕死警示:HP ≤ 30% 九宮格縫隙緩慢閃紅,≤ 15% 閃得快一點(玩家專心看格子時也知道快撐不住了)
     const hpRate = p.hp / p.maxHp;
     G.$('#battle').classList.toggle('danger', p.hp > 0 && hpRate <= 0.3 && hpRate > 0.15);
@@ -1911,6 +1956,9 @@ G.battle = {
     if (win) {
       pr.unlocked = Math.max(pr.unlocked, Math.min(G.STAGES.length, i + 2));
       if (!pr.clear.includes(i)) pr.clear.push(i);
+    } else {
+      pr.deaths = pr.deaths || {}; // 這一關死了幾次(浴火重生的出現機率會跟著提高)
+      pr.deaths[i] = (pr.deaths[i] || 0) + 1;
     }
     pr.best[i] = Math.max(pr.best[i] || 0, score);
     // 星級評價:過關 / HP 剩 50% 以上 / 最高連擊 30 以上,各一顆星;保留最好的紀錄
