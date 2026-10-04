@@ -35,7 +35,7 @@ const MEMORY_LEN = { 1: 3, 2: 4, 3: 5 }, MEMORY_SHOW = 520, MEMORY_PER = 900, ME
 // 旋風破綻:出現機率、指針最多轉幾圈、缺口兩側寬容角度、畫圈限時、需要的圈數(一般 / 精英 / BOSS)
 const DIAL_CHANCE = 0.4, DIAL_LAPS = 3, DIAL_GRACE = 6, DIAL_SPIN_MS = 5000, DIAL_TURNS = [3, 4, 5];
 // 旋風破綻的風級:轉滿最低圈數後,每多轉 extra 圈升一級,破甲傷害乘上 mul(畫圈限時內一直轉,轉越多越痛)
-const DIAL_TIERS = [{ extra: 0, name: '旋風', mul: 1 }, { extra: 2, name: '暴風', mul: 1.5 }, { extra: 4, name: '颶風', mul: 2 }];
+const DIAL_TIERS = [{ extra: 0, name: '旋風', mul: 1 }, { extra: 2, name: '暴風', mul: 1.25 }, { extra: 4, name: '颶風', mul: 1.5 }]; // 最高 = 攻擊力 ×6,和必殺技、BOSS 小遊戲成功同級
 // 完美:符號出現後的前 30% 時間內點中(剩餘比例 ≥ PERFECT_AT),傷害 ×PERFECT_MUL、必殺值多 PERFECT_ULT
 const PERFECT_AT = 0.7, PERFECT_MUL = 1.3, PERFECT_ULT = 2;
 const ENRAGE_FROM = 3, ENRAGE_MAX = 5; // 修羅以上:敵人第幾次攻擊起開始狂暴(每次再加 G.ROUNDS 的 enrage,最多疊幾層)
@@ -710,7 +710,8 @@ G.battle = {
           this.comboHit();
           this.tornadoFx(() => this.stormAdd(storm, laps));
         }
-        if (this.over()) end();
+        // 轉到最高風級(颶風)就直接收招,不用等時間跑完
+        if (laps - turns >= DIAL_TIERS[DIAL_TIERS.length - 1].extra || this.over()) end();
       };
       d.el.addEventListener('pointerdown', ev => {
         ev.preventDefault();
