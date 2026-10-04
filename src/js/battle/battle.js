@@ -45,6 +45,7 @@ const DIAL_TIERS = [{ extra: 0, name: '旋風', mul: 1 }, { extra: 2, name: '暴
 // 完美:符號出現後的前 30% 時間內點中(剩餘比例 ≥ PERFECT_AT),傷害加成 +PERFECT_BONUS(和反擊、破甲、FEVER 相加)、必殺值多 PERFECT_ULT
 // 破甲成功後下一回合的傷害加成 BROKEN_BONUS(同樣和其他狀態加成相加)
 const PERFECT_AT = 0.7, PERFECT_BONUS = 0.3, PERFECT_ULT = 2, BROKEN_BONUS = 0.5;
+const BREAK_TUTORIAL_MS = 4500; // 新手教學的破綻數字限時(正式關卡見 G.ROUNDS 的 breakTime)
 const ENRAGE_FROM = 3, ENRAGE_MAX = 5; // 修羅以上:敵人第幾次攻擊起開始狂暴(每次再加 G.ROUNDS 的 enrage,最多疊幾層)
 const BONUS_STARS = [40, 70]; // 特訓關:狂打幾 HIT 拿第二、第三顆星
 const CHAPTER_COINS = 300;    // 章節通關獎勵(每一輪第一次打倒最終 BOSS)
@@ -504,7 +505,8 @@ G.battle = {
     const hits = e.boss ? 14 : e.elite ? 12 : 10;
     this.setEnemyState('stagger');
     if (!G.tutorial.active && Math.random() < DIAL_CHANCE) return this.dialBreak(); // 另一種玩法:旋風破綻
-    const { breakLen, breakTime } = G.roundCfg(); // 第二、三輪數字更多
+    const { breakLen } = G.roundCfg(); // 第二、三輪數字更多
+    const breakTime = G.tutorial.active ? BREAK_TUTORIAL_MS : G.roundCfg().breakTime; // 新手教學給寬鬆一點的時間
     // 每次破綻隨機:數字 / 希臘數字 / 骰子(教學固定用數字)
     const style = G.tutorial.active ? G.BREAK_STYLES[0] : G.pick(G.BREAK_STYLES);
     const range = style.id === 'dice' ? G.t('骰子 1 → {0} 點', breakLen) : style.marks[0] + ' → ' + style.marks[breakLen - 1];
