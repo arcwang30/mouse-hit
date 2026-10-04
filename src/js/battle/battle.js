@@ -40,8 +40,9 @@ const MEMORY_LEN = { 1: 3, 2: 4, 3: 5 }, MEMORY_SHOW = 520, MEMORY_PER = 900, ME
 const DIAL_CHANCE = 0.4, DIAL_LAPS = 3, DIAL_GRACE = 6, DIAL_SPIN_MS = 5000, DIAL_TURNS = [3, 4, 5];
 // 旋風破綻的風級:轉滿最低圈數後,每多轉 extra 圈升一級,破甲傷害乘上 mul(畫圈限時內一直轉,轉越多越痛)
 const DIAL_TIERS = [{ extra: 0, name: '旋風', mul: 1 }, { extra: 2, name: '暴風', mul: 1.25 }, { extra: 4, name: '颶風', mul: 1.5 }]; // 最高 = 攻擊力 ×6,和必殺技、BOSS 小遊戲成功同級
-// 完美:符號出現後的前 30% 時間內點中(剩餘比例 ≥ PERFECT_AT),傷害 ×PERFECT_MUL、必殺值多 PERFECT_ULT
-const PERFECT_AT = 0.7, PERFECT_MUL = 1.3, PERFECT_ULT = 2;
+// 完美:符號出現後的前 30% 時間內點中(剩餘比例 ≥ PERFECT_AT),傷害加成 +PERFECT_BONUS(和反擊、破甲、FEVER 相加)、必殺值多 PERFECT_ULT
+// 破甲成功後下一回合的傷害加成 BROKEN_BONUS(同樣和其他狀態加成相加)
+const PERFECT_AT = 0.7, PERFECT_BONUS = 0.3, PERFECT_ULT = 2, BROKEN_BONUS = 0.5;
 const ENRAGE_FROM = 3, ENRAGE_MAX = 5; // 修羅以上:敵人第幾次攻擊起開始狂暴(每次再加 G.ROUNDS 的 enrage,最多疊幾層)
 const BONUS_STARS = [40, 70]; // 特訓關:狂打幾 HIT 拿第二、第三顆星
 const CHAPTER_COINS = 300;    // 章節通關獎勵(每一輪第一次打倒最終 BOSS)
@@ -302,15 +303,17 @@ G.battle = {
     let first = true, combo = 0;
     const counter = this.counterStack || 0;    // 反震掌:上回合格擋累積的每拳加成
     const power = this.counterPct || 0;        // 格擋越快累積越多的反擊力(%)
-    const broken = this.brokenNext;            // 上一輪破綻連打成功:每拳 ×1.5
+    const broken = this.brokenNext;            // 上一輪破綻連打成功:每拳 +50%(BROKEN_BONUS)
     this.counterStack = 0;
     this.counterPct = 0;
     this.brokenNext = false;
-    const mul = (1 + power / 100) * (broken ? 1.5 : 1);
+    // 狀態加成改成「相加」再乘一次:反擊力 + 破甲 + FEVER + 完美(每拳另外算),避免老手全部吃滿時倍數暴增
+    // (金拳、熔岩、踢擊、蓄力、暴擊這些和「哪一顆拳」有關的倍率照舊相乘)
+    const stateBonus = power / 100 + (broken ? BROKEN_BONUS : 0);
 
     const bonus = [];
     if (power) bonus.push(G.t('反擊 +{0}%', power));
-    if (broken) bonus.push(G.t('破甲 ×1.5'));
+    if (broken) bonus.push(G.t('破甲 +{0}%', BROKEN_BONUS * 100));
     if (counter) bonus.push(G.t('反震 +{0}', counter));
     this.phase = 'attack';
     await this.setTurn('atk'); // 斬擊演出播完才開始冒拳頭
@@ -342,18 +345,18 @@ G.battle = {
       onLine: () => this.lineBonus(),
       onChip: (i, type, cleared) => this.chip(type, cleared),
       onHit: (i, info) => {
-        let d = (p.atk + combo * p.combo + counter) * mul;
+        // 完美:一出現就點中(自動命中、蓄力不算)
+        const perfect = !info.auto && !info.hold && info.ratio >= PERFECT_AT;
+        if (perfect) { this.stats.perfectHits = (this.stats.perfectHits || 0) + 1; this.float('完美', 'perfect'); this.gainUlt(PERFECT_ULT); }
+        const boost = stateBonus + (perfect ? PERFECT_BONUS : 0) + (this.fever() ? FEVER_MUL - 1 : 0);
+        let d = (p.atk + combo * p.combo + counter) * (1 + boost);
         if (info.gold) { d *= GOLD_MUL; this.float('金拳!', 'tag gold'); }
         if (info.lava) { d *= 2; this.float('熔岩拳!', 'tag lava'); this.hurtPlayer(LAVA_BURN); }
         if (info.swipe) { d *= SWIPE_MUL; this.float('踢擊!', 'tag line'); }
-        // 完美:一出現就點中(自動命中、蓄力不算)
-        const perfect = !info.auto && !info.hold && info.ratio >= PERFECT_AT;
-        if (perfect) { d *= PERFECT_MUL; this.stats.perfectHits = (this.stats.perfectHits || 0) + 1; this.float('完美', 'perfect'); this.gainUlt(PERFECT_ULT); }
         combo++;
         if (first && p.firstStrike) d *= 3;
         first = false;
         if (p.execute && e.hp < e.maxHp * 0.2) d *= 2;
-        if (this.fever()) d *= FEVER_MUL;
         this.comboHit();
         const charged = info.hold && info.charged;
         if (charged) d *= 3;

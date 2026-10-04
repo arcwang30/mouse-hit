@@ -63,7 +63,7 @@ window.simRun = function (stageIdx, skill, upLv) {
       } else {
         let combo = 0, first = true;
         const counter = counterNext, count = p.attackCount;
-        const mul = (1 + powerNext / 100) * (brokenNext ? 1.5 : 1);
+        const stateBonus = powerNext / 100 + (brokenNext ? 0.5 : 0); // 和遊戲相同:反擊、破甲、完美、FEVER 相加
         counterNext = powerNext = 0;
         brokenNext = false;
         const r = clamp(skill + (p.moleLife * rc.fistLife - 1200) / 2000 - patPenalty - atkPen + sim.hit);
@@ -75,7 +75,8 @@ window.simRun = function (stageIdx, skill, upLv) {
         const holdAt = 1 + Math.floor(Math.random() * (count - 1));
         for (let k = 0; k < count && e.hp > 0; k++) {
           if (Math.random() < r) {
-            let d = (p.atk + combo * p.combo + counter) * mul;
+            const perfect = Math.random() < Math.max(0, r - 0.35); // 完美:越熟練越常一出現就打中
+            let d = (p.atk + combo * p.combo + counter) * (1 + stateBonus + (perfect ? 0.3 : 0) + (fv() - 1));
             combo++;
             if (first && p.firstStrike) d *= 3;
             first = false;
@@ -84,7 +85,7 @@ window.simRun = function (stageIdx, skill, upLv) {
             if (k !== holdAt && Math.random() < 0.12) d *= Math.random() < clamp(r - 0.15) / r ? 2.5 : 1; // 金拳
             if (board === 'lava' && Math.random() < 0.22) { d *= 2; hurt(4); } // 熔岩格
             if (Math.random() < p.crit) d *= p.critMul;
-            d *= fv() * sim.dmg;
+            d *= sim.dmg;
             p.ult = Math.min(p.ultMax, p.ult + p.ultGain * (fv() - 1)); // FEVER 額外集氣
             evHit();
             e.hp -= Math.round(d);

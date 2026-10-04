@@ -188,7 +188,7 @@ G.I18N = {
   '中頭目出現!': ['中ボス出現!', 'Mid-boss appears! '],
   '精英來襲!': ['エリート襲来!', 'Elite incoming! '],
   '反擊 +{0}%': ['反撃 +{0}%', 'Counter +{0}%'],
-  '破甲 ×1.5': ['装甲破壊 ×1.5', 'Armor Break ×1.5'],
+  '破甲 +{0}%': ['装甲破壊 +{0}%', 'Armor Break +{0}%'],
   '反震 +{0}': ['反震 +{0}', 'Recoil +{0}'],
   '你的回合・{0}': ['あなたのターン・{0}', 'Your turn · {0}'],
   '你的回合:點擊 👊,HOLD 要按住': ['あなたのターン:👊 をタップ、HOLD は長押し', 'Your turn: tap 👊, press and hold HOLD'],
@@ -320,7 +320,7 @@ G.I18N = {
   '手指不放開,一筆走過所有冰晶 ❄️!不能踩到裂冰,也不能走回頭。': ['指を離さず、一筆ですべての氷晶 ❄️ を通れ!割れた氷を踏んだり、同じマスに戻ったりしてはいけない。', 'Without lifting your finger, pass over every ice crystal ❄️ in one stroke! Don\'t step on cracked ice or go back over a cell.'],
   '一筆畫:走過所有冰晶!': ['一筆書き:すべての氷晶を通れ!', 'One stroke: cross every crystal!'],
   '完美命中': ['パーフェクト', 'Perfect Hit'], '完美': ['パーフェクト', 'Perfect'],
-  '拳頭一冒出來就馬上打中(出現後的前 30% 時間內),算「完美」:傷害 ×1.3、必殺值額外增加。不只要打到,還要打得快!': ['拳が出た瞬間に叩く(出現後の最初の 30% の時間内)と「パーフェクト」:ダメージ ×1.3、必殺ゲージも追加で増加。当てるだけでなく、素早く当てよう!', 'Hit a fist right as it pops up (within the first 30% of its time) for a PERFECT: ×1.3 damage and bonus Special gain. Don\'t just hit—hit fast!'],
+  '拳頭一冒出來就馬上打中(出現後的前 30% 時間內),算「完美」:傷害 +30%、必殺值額外增加。不只要打到,還要打得快!': ['拳が出た瞬間に叩く(出現後の最初の 30% の時間内)と「パーフェクト」:ダメージ +30%、必殺ゲージも追加で増加。当てるだけでなく、素早く当てよう!', 'Hit a fist right as it pops up (within the first 30% of its time) for a PERFECT: +30% damage and bonus Special gain. Don\'t just hit—hit fast!'],
   '修羅的規則': ['修羅のルール', 'Asura Rules'],
   '修羅起有兩條新規則:① 連擊 3 以上時失誤,會扣掉一部分必殺值。② 敵人從第 3 次攻擊起會狂暴,每次攻擊越來越痛,戰鬥拖越久越危險。': ['修羅から新ルールが 2 つ:① コンボ 3 以上でミスすると必殺ゲージが一部減る。② 敵は 3 回目の攻撃から狂暴化し、攻撃のたびに痛くなる。長引くほど危険。', 'Asura adds two rules: ① Missing with a combo of 3+ drains part of your Special. ② From their 3rd attack, enemies grow enraged and hit harder each time—the longer the fight, the deadlier.'],
   '天魔的規則': ['天魔のルール', 'Demon Rules'],
@@ -398,7 +398,7 @@ G.I18N = {
 
   // ---- 永久成長 ----
   '體魄': ['体力', 'Vitality'], '最大 HP +10': ['最大 HP +10', 'Max HP +10'],
-  '拳力': ['拳力', 'Power'], '出拳傷害 +1': ['パンチダメージ +1', 'Punch damage +1'],
+  '拳力': ['拳力', 'Power'], '出拳傷害 +5%': ['パンチダメージ +5%', 'Punch damage +5%'],
   '心法': ['心法', 'Spirit'], '命中必殺值 +0.5': ['命中時の必殺ゲージ +0.5', 'Special gain per hit +0.5'],
   '反應': ['反応', 'Reflex'], '符號停留時間 +50ms': ['シンボル表示時間 +50ms', 'Symbol time +50ms'],
 
