@@ -4,7 +4,7 @@
 // FEVER / 技能三選一 / 分歧 不在這裡教,正式關卡第一次遇到時由 G.tips 說明。
 (function () {
   const LONG = 1e9;       // 符號停留時間給到無限大:不會消失,等玩家點
-  const STEPS = 8;
+  const STEPS = 9;
 
   // ---- 教練提示框與手指指示 ----
   const coach = (step, text) => {
@@ -88,7 +88,7 @@
 
       // 攻擊階段(拳頭):回傳本次的命中統計
       const attack = async o => {
-        const r = { hits: 0, golds: 0, charged: false, early: false, bombs: 0 };
+        const r = { hits: 0, golds: 0, charged: false, early: false, bombs: 0, kicks: 0 };
         b.phase = 'attack';
         await b.setTurn('atk');
         b.setPhase('你的回合:點擊 👊,HOLD 要按住', 'atk');
@@ -99,9 +99,10 @@
             r.hits++;
             if (info.gold) { r.golds++; b.float('金拳!', 'tag gold'); }
             if (info.charged) { r.charged = true; b.float('蓄力重拳!', 'tag line'); }
-            const d = b.p.atk * (info.gold ? 2.5 : 1) * (info.charged ? 3 : 1);
-            b.punchFx(i % 3, { crit: info.gold || info.charged });
-            b.hurtEnemy(Math.round(d), info.gold, info.charged);
+            if (info.swipe) { r.kicks++; b.float('踢擊!', 'tag line'); }
+            const d = b.p.atk * (info.gold ? 2.5 : 1) * (info.charged ? 3 : 1) * (info.swipe ? 1.5 : 1);
+            b.punchFx(i % 3, { crit: info.gold || info.charged, icon: info.swipe ? '🦵' : '👊' });
+            b.hurtEnemy(Math.round(d), info.gold, info.charged, info.swipe ? 'slash' : null);
             b.comboHit();
           },
           onMiss: () => { b.comboBreak(); G.audio.play('whiff'); },
@@ -159,22 +160,26 @@
         return r.charged || '太早放開了,要等按鈕發光再放開。';
       });
 
-      // 4. 防禦
-      await step(4, '敵人攻擊時會冒出 🛡️,在攻擊打到你之前點掉它!剛出現的金色時擋下,反擊力最高。', async () =>
+      // 4. 踢擊:帶箭頭的 🦵 要往箭頭方向滑
+      await step(4, '帶箭頭的 🦵 是踢擊!按住它,往箭頭的方向滑過去,傷害 ×1.5。', async () =>
+        (await attack({ count: 2, life: LONG, point: true, mods: { swipe: 1 } })).kicks >= 2 || '要按住 🦵,再往箭頭的方向滑喔!');
+
+      // 5. 防禦
+      await step(5, '敵人攻擊時會冒出 🛡️,在攻擊打到你之前點掉它!剛出現的金色時擋下,反擊力最高。', async () =>
         (await defend({ count: 3, life: 1700, point: true })).blocked >= 2 || '被打中了!盾牌一出現就點掉它。');
 
-      // 5. 炸彈
-      await step(5, '拳頭裡會混著 💣,千萬不要點!點到會受傷,連擊也會中斷。', async () => {
+      // 6. 炸彈
+      await step(6, '拳頭裡會混著 💣,千萬不要點!點到會受傷,連擊也會中斷。', async () => {
         const r = await attack({ count: 4, life: 1700, interval: 1000, decoyRate: 1, decoyIcon: '💣' });
         if (r.bombs) return '點到炸彈了!只點 👊,💣 不要碰。';
         return r.hits >= 3 || '漏掉太多拳頭了,再試一次。';
       });
 
-      // 6. 破綻:全部擋下 → 依序點數字 → 狂按大按鈕
-      await step(6, '敵人的攻擊全部擋下,就會露出破綻!先把盾牌全部擋下。', async () => {
+      // 7. 破綻:全部擋下 → 依序點數字 → 狂按大按鈕
+      await step(7, '敵人的攻擊全部擋下,就會露出破綻!先把盾牌全部擋下。', async () => {
         const r = await defend({ count: 2, life: 2600 });
         if (r.missed) return '要全部擋下才會露出破綻,再試一次。';
-        coach(6, '依序點擊 1 → 4 抓住破綻,接著狂按變大的按鈕破甲!');
+        coach(7, '依序點擊 1 → 4 抓住破綻,接著狂按變大的按鈕破甲!');
         b.brokenNext = false;
         await b.breakChance();
         const ok = b.brokenNext;
@@ -182,9 +187,9 @@
         return ok || '數字要照順序點,破甲時要快速連打!';
       });
 
-      // 7. 必殺技:集滿後按「🔥 必殺」
+      // 8. 必殺技:集滿後按「🔥 必殺」
       if (alive()) {
-        coach(7, '必殺值集滿了!按下「🔥 必殺」發動必殺技!(設定裡可以把按鈕換到左邊)');
+        coach(8, '必殺值集滿了!按下「🔥 必殺」發動必殺技!(設定裡可以把按鈕換到左邊)');
         heal();
         b.p.ult = b.p.ultMax;
         b.phase = 'attack';
@@ -205,12 +210,12 @@
         }
       }
 
-      // 8. 小實戰:全部混在一起,不判定成敗
+      // 9. 小實戰:全部混在一起,不判定成敗
       if (alive()) {
-        coach(8, '最後來一場小實戰!把剛剛學到的全部用上。');
+        coach(9, '最後來一場小實戰!把剛剛學到的全部用上。');
         heal();
         await wait(900);
-        await attack({ count: 6, life: 1500, interval: 650, patterns: { single: 3, pair: 1 }, mods: { gold: 0.2 },
+        await attack({ count: 6, life: 1500, interval: 650, patterns: { single: 3, pair: 1 }, mods: { gold: 0.2, swipe: 0.2 }, // 金拳、踢擊、HOLD 混在一起
           hold: { at: 3, icon: '👊', label: 'HOLD', holdMs: 650 } });
         if (alive()) await defend({ count: 3, life: 1600 });
       }

@@ -731,6 +731,26 @@ h2 { margin: 0; }
 .cell.timebomb .cap { background: linear-gradient(180deg, #5a5a5a, #1e1e1e 55%, #000); --edge: #000; color: #ff3a3a; animation: bombPulse .5s ease-in-out infinite alternate; }
 .cell.timebomb .badge { right: auto; left: 50%; top: auto; bottom: 6%; transform: translateX(-50%); font-size: 7cqw; color: #ff3a3a; -webkit-text-stroke: .5cqw #000; }
 .cell.timebomb .cap::after { color: #ff3a3a; }
+/* 倒數炸彈(要點掉拆除):點燃中的炸彈 —— 💣 一縮一放、引信冒火花往上噴、按鈕外圈火光閃爍,最後一秒跳得更急;上方標「拆!」 */
+.cell.timebomb .cap { box-shadow: inset 0 .9cqw 0 #ffffff30, 0 2.2cqw 0 #000, 0 0 4cqw #ff7a1a, 0 0 1.5cqw #ffb03c; animation: bombPulse .5s ease-in-out infinite alternate, bombGlow .18s steps(2) infinite; }
+@keyframes bombGlow { 50% { filter: brightness(1.25) saturate(1.3); } }
+.cell.timebomb .icon { position: relative; display: inline-block; animation: bombBeat .42s ease-in-out infinite alternate; }
+@keyframes bombBeat { from { transform: scale(.88) rotate(-4deg); } to { transform: scale(1.14) rotate(4deg); } }
+.cell.timebomb.urgent .icon { animation-duration: .16s; }
+.cell.timebomb.urgent .cap { background: linear-gradient(180deg, #7a2a1a, #2a0a04 55%, #000); }
+.cell.timebomb .icon::after { /* 引信的火花:在 💣 右上角的引信位置 */
+  content: ""; position: absolute; right: -6%; top: -14%; width: 46%; height: 46%; border-radius: 50%; pointer-events: none;
+  background: radial-gradient(circle, #fff 0 14%, #ffe14a 30%, #ff7a1a 52%, transparent 70%);
+  filter: drop-shadow(0 0 1cqw #ffb03c); animation: fuseSpark .14s steps(2) infinite;
+}
+@keyframes fuseSpark { 50% { transform: scale(1.45) rotate(45deg); opacity: .75; } }
+.cell.timebomb .icon::before { /* 往上噴的小火星 */
+  content: ""; position: absolute; right: 8%; top: -6%; width: .9cqw; height: .9cqw; border-radius: 50%; background: #ffe14a; pointer-events: none;
+  box-shadow: -1.5cqw -1.2cqw 0 #ffb03c, 1.2cqw -1.8cqw 0 #ffe14a, -.4cqw -2.6cqw 0 #ff7a1a, 1.8cqw -.6cqw 0 #fff2a0;
+  animation: fuseEmbers .5s linear infinite;
+}
+@keyframes fuseEmbers { from { transform: translateY(0) scale(1); opacity: 1; } to { transform: translateY(-120%) scale(.4); opacity: 0; } }
+.cell.timebomb .label { background: #ff3a1a; color: #fff; animation: clashPulse .3s ease-in-out infinite alternate; }
 @keyframes bombPulse { to { box-shadow: inset 0 .9cqw 0 #ffffff30, 0 1cqw 0 var(--edge), 0 0 4cqw #ff2020; } }
 /* 滑擊拳:螢光綠外殼,中間一個實心粗箭頭(程式畫的,依方向旋轉),朝滑動方向來回晃;按下瞄準時發亮
    標籤裡的 ↑↓←→ 文字只留著給無障礙讀取,畫面上隱藏 */
@@ -742,6 +762,8 @@ h2 { margin: 0; }
   transform: translate(-50%, -50%) rotate(var(--rot)); animation: swipeHint .6s ease-in-out infinite alternate;
 }
 .cell.swipe .icon { opacity: .35; }
+.cell.kick .icon { opacity: 1; font-size: 13cqw; filter: drop-shadow(0 .4cqw 0 #063a12); } /* 踢擊:🦵 放大不透明,箭頭縮小疊在上面,腳和方向都看得到 */
+.cell.kick .label { width: 8.5cqw; height: 8.5cqw; filter: drop-shadow(0 0 .6cqw #063a12) drop-shadow(0 0 1.4cqw #b4ff4a); }
 .cell.swipe-up .label    { --rot: -90deg; --sx: 0%;   --sy: -22%; }
 .cell.swipe-down .label  { --rot: 90deg;  --sx: 0%;   --sy: 22%; }
 .cell.swipe-left .label  { --rot: 180deg; --sx: -22%; --sy: 0%; }

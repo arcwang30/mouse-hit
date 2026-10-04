@@ -29,7 +29,9 @@ const SKILL_RULE_CHANCE = 0.25; // 寶箱開出的隨機技能:有這個機率�
 const HEAL_SKILLS = ['steel', 'pill', 'leech', 'regen', 'bell']; // HP 偏低時比較容易開到的保命技能
 const DEVIL_GOLD = 100;
 // 新機制:疾風(滑擊拳傷害倍率)、倒數炸彈(秒數再乘周回的停留倍率、爆炸傷害倍率)、幻術(記憶長度依周回、每格閃爍毫秒、每格作答時間、失敗傷害倍率)
-const SWIPE_MUL = 1.5;
+const SWIPE_MUL = 1.5; // 踢擊(帶箭頭、要滑)的傷害倍率
+// 踢擊是固定招式:出現率從第一章第 1 區的 KICK_BASE 起,每往後一區 +KICK_STEP,最多 KICK_MAX(第二章固定最高);帶疾風的敵人再往上加
+const KICK_BASE = 0.1, KICK_STEP = 0.02, KICK_MAX = 0.2, KICK_CAP = 0.6;
 const TIMEBOMB_MS = 3000, TIMEBOMB_DMG = 1.5;
 const MEMORY_LEN = { 1: 3, 2: 4, 3: 5 }, MEMORY_SHOW = 520, MEMORY_PER = 900, MEMORY_DMG = 1.5;
 // 旋風破綻:出現機率、指針最多轉幾圈、缺口兩側寬容角度、畫圈限時、需要的圈數(一般 / 精英 / BOSS)
@@ -324,7 +326,7 @@ G.battle = {
       interval: Math.max(250, life * 0.45), patterns: this.patterns(),
       // 蓄力重拳:每回合其中一顆拳頭需要按住蓄力
       hold: { at: 1 + Math.floor(Math.random() * (p.attackCount - 1)), icon: '👊', label: 'HOLD', holdMs: HOLD_MS * (p.holdMaster ? 0.6 : 1) },
-      mods: { gold: GOLD_RATE * p.goldMul, hidden: m.hidden, blink: m.blink, armor: m.armor, swipe: m.swipe, mirror: m.mirror, spin: m.spin, greed: m.greed, greedAt: m.greedAt },
+      mods: { gold: GOLD_RATE * p.goldMul, hidden: m.hidden, blink: m.blink, armor: m.armor, swipe: this.kickRate(m), mirror: m.mirror, spin: m.spin, greed: m.greed, greedAt: m.greedAt },
       onMirage: () => { combo = 0; this.comboBreak(); this.float('蜃樓!', 'tag miss'); },
       onSpin: () => this.spinFx(),
       onEmpty: () => this.backlash(), // 天魔:點空格反噬
@@ -341,7 +343,7 @@ G.battle = {
         let d = (p.atk + combo * p.combo + counter) * mul;
         if (info.gold) { d *= GOLD_MUL; this.float('金拳!', 'tag gold'); }
         if (info.lava) { d *= 2; this.float('熔岩拳!', 'tag lava'); this.hurtPlayer(LAVA_BURN); }
-        if (info.swipe) { d *= SWIPE_MUL; this.float('疾風拳!', 'tag line'); }
+        if (info.swipe) { d *= SWIPE_MUL; this.float('踢擊!', 'tag line'); }
         // 完美:一出現就點中(自動命中、蓄力不算)
         const perfect = !info.auto && !info.hold && info.ratio >= PERFECT_AT;
         if (perfect) { d *= PERFECT_MUL; this.stats.perfectHits = (this.stats.perfectHits || 0) + 1; this.float('完美', 'perfect'); this.gainUlt(PERFECT_ULT); }
@@ -360,7 +362,7 @@ G.battle = {
           this.float('蓄力重拳!', 'tag charge');
           this.punchFx(i % 3, { crit: true, final: true, dur: 200 });
         } else {
-          this.punchFx(i % 3, { crit });
+          this.punchFx(i % 3, { crit, icon: info.swipe ? '🦵' : '👊' });
         }
         this.hurtEnemy(Math.round(d), crit || charged, charged, info.swipe && !charged ? 'slash' : null); // 滑擊拳:劃過的音效
         if (info.gold && !crit && !charged) this.hitStop(60); // 金拳也頓一下
@@ -1078,7 +1080,7 @@ G.battle = {
 
     const f = document.createElement('div');
     f.className = 'fx-fist' + (o.crit ? ' crit' : '');
-    f.textContent = '👊';
+    f.textContent = o.icon || '👊';
     stage.appendChild(f);
     f.animate([
       { transform: `translate(${sx}px, ${sy}px) translate(-50%, -50%) scale(${s0}) rotate(${(col - 1) * 12}deg)`, opacity: 0.85 },
@@ -1272,6 +1274,13 @@ G.battle = {
       bg.style.backgroundImage = before.bg;
     };
   },
+  // 這一回合踢擊(🦵 帶箭頭、要滑)的出現率:依關卡進度 10% → 20%,加上敵人機制「疾風腿」的加成
+  kickRate(m) {
+    if (G.tutorial.active) return m.swipe || 0;
+    const progress = (G.chapter() - 1) * 6 + (this.stage ? this.stage.region : 0);
+    return Math.min(KICK_CAP, Math.min(KICK_MAX, KICK_BASE + KICK_STEP * progress) + (m.swipe || 0));
+  },
+
   // 天魔:點到空格(或封印格)反噬,扣最大 HP 一小部分並中斷連擊;不會因此倒下
   backlash() {
     const r = G.roundCfg().backlash;

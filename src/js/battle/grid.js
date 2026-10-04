@@ -483,14 +483,16 @@ G.molePhase = o => new Promise(resolve => {
     } else if (kind === 'timebomb') {
       icon = '💣';
       cls = 'timebomb';
+      label = G.t('拆!'); // 點燃中的炸彈要點掉拆除(和不能點的 💣 陷阱區分)
       life = mods.timebombMs || 3000;
     } else if (kind === 'normal') {
       // 金拳:停留很短,場上同時最多一顆(避免一次冒出好幾顆 ×2.5)
       if (roll(mods.gold) && ![...active.values()].some(x => x.gold)) { a.gold = true; cls += ' gold'; label = '×2.5'; life *= 0.45; }
       else if (roll(mods.armor)) { a.armor = 1; cls += ' crystal'; }
-      else if (roll(mods.swipe)) { // 疾風:隨機一個方向,停留時間多給一點(滑動比點擊慢)
+      else if (roll(mods.swipe)) { // 踢擊 🦵:隨機一個方向,要往箭頭方向滑;停留時間多給一點(滑動比點擊慢)
         a.swipe = G.pick(['up', 'down', 'left', 'right']);
-        cls += ' swipe swipe-' + a.swipe;
+        icon = '🦵';
+        cls += ' swipe kick swipe-' + a.swipe;
         label = { up: '↑', down: '↓', left: '←', right: '→' }[a.swipe];
         life *= 1.25;
       }
@@ -521,7 +523,11 @@ G.molePhase = o => new Promise(resolve => {
     G.audio.play('pop');
     if (kind === 'timebomb') { // 倒數 3、2、1 顯示在角標,每秒滴答一聲
       const secs = Math.ceil(life / 1000);
-      for (let s = 0; s < secs; s++) a.ts.push(G.clock.after(() => { G.grid.setBadge(i, secs - s); G.audio.play('tick'); }, life - (secs - s) * 1000));
+      for (let s = 0; s < secs; s++) a.ts.push(G.clock.after(() => {
+        G.grid.setBadge(i, secs - s);
+        G.audio.play('tick');
+        if (secs - s <= 1) cell(i).classList.add('urgent'); // 最後一秒:跳得更急
+      }, life - (secs - s) * 1000));
     }
 
     if (o.onSpawn && (kind === 'normal' || a.heavy)) a.fx = o.onSpawn(i, life);
