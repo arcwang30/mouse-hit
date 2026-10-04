@@ -762,27 +762,23 @@ h2 { margin: 0; }
   transform: translate(-50%, -50%) rotate(var(--rot)); animation: swipeHint .6s ease-in-out infinite alternate;
 }
 .cell.swipe .icon { opacity: .35; }
-/* 踢擊:深綠按鈕 + 白色腳印(腳尖朝滑動方向)+ 黃色箭頭在腳尖那一側往外推,腳印和方向都一眼看得出來
-   腳印圖 kick_foot.png 原本腳尖朝右上(45°),依方向轉:上 -45°、右 45°、下 135°、左 -135° */
+/* 踢擊:深綠按鈕 + 白色腳印(維持原圖方向)+ 正中央的黃色方向箭頭
+   箭頭墊一個深綠圓底、粗描邊加黃光,壓在白色腳印上也看得清楚;箭頭往滑動方向一推一推 */
 .cell.kick .cap { background: linear-gradient(180deg, #7ae05a, #1f8a2a 55%, #0a4a14); --edge: #042a0a; }
 .cell.kick .icon {
-  font-size: 0; width: 14cqw; height: 14cqw; opacity: 1;
+  font-size: 0; width: 15cqw; height: 15cqw; opacity: .95;
   background: url('../../assets/images/ui/kick_foot.png') center / contain no-repeat;
-  transform: rotate(var(--frot, 45deg)); filter: drop-shadow(0 .4cqw 0 #042a0a) drop-shadow(0 0 1cqw #0008);
+  filter: drop-shadow(0 .4cqw 0 #042a0a);
 }
-.cell.kick.swipe-up    { --frot: -45deg; }
-.cell.kick.swipe-right { --frot: 45deg; }
-.cell.kick.swipe-down  { --frot: 135deg; }
-.cell.kick.swipe-left  { --frot: -135deg; }
+/* 駭入:還沒現形前和其他符號一樣只顯示 ❓(不露出腳印和方向),現形後才變成腳印 */
+.cell.kick.hidden .icon { background: none; font-size: 12cqw; }
+.cell.kick.hidden .label { visibility: hidden; }
 .cell.kick .label {
-  width: 8cqw; height: 8cqw; z-index: 2;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M2.5 8h10.5V2.5L22.5 12 13 21.5V16H2.5z' fill='%23ffe14a' stroke='%233a2400' stroke-width='2' stroke-linejoin='round'/%3E%3C/svg%3E");
-  filter: drop-shadow(0 0 1cqw #ffb800);
-  animation: kickHint .5s ease-in-out infinite alternate;
-}
-@keyframes kickHint {
-  from { transform: translate(calc(-50% + var(--sx) * 1.7), calc(-50% + var(--sy) * 1.7)) rotate(var(--rot)); }
-  to   { transform: translate(calc(-50% + var(--sx) * 2.8), calc(-50% + var(--sy) * 2.8)) rotate(var(--rot)); }
+  width: 11cqw; height: 11cqw; z-index: 2; border-radius: 50%;
+  background:
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M3 8.5h10V3l9 9-9 9v-5.5H3z' fill='%23ffe14a' stroke='%23241400' stroke-width='2.2' stroke-linejoin='round'/%3E%3C/svg%3E") center / 78% no-repeat,
+    radial-gradient(circle, #042a0ae0 0 56%, #042a0a80 66%, transparent 70%);
+  filter: drop-shadow(0 0 1.2cqw #ffd400);
 }
 .cell.swipe-up .label    { --rot: -90deg; --sx: 0%;   --sy: -22%; }
 .cell.swipe-down .label  { --rot: 90deg;  --sx: 0%;   --sy: 22%; }
@@ -858,4 +854,4 @@ h2 { margin: 0; }
 }
 #menu.slam { animation: titleShake .4s; }
 #menu .strike-bolt { z-index: 5; }
-.fx-fist .fx-foot { display: block; width: 1em; height: 1em; transform: rotate(-45deg); filter: drop-shadow(0 0 1.5cqw #4ad94a) drop-shadow(0 .3cqw 0 #042a0a); } /* 踢擊的腳印飛向敵人(腳尖朝上) */
+.fx-fist .fx-foot { display: block; width: 1em; height: 1em; filter: drop-shadow(0 0 1.5cqw #4ad94a) drop-shadow(0 .3cqw 0 #042a0a); } /* 踢擊的腳印飛向敵人(原圖方向) */

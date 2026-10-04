@@ -184,7 +184,7 @@ G.grid = {
 //     lockon 鎖定:出現前先顯示準星(數值 = 提前毫秒數)
 //     heavy  { chance, holdMs } 重擊:要按住「頂住」才算擋下
 //     swipe  疾風:拳頭帶箭頭,要往箭頭方向滑才算打中(onHit 的 info.swipe)
-//     timebomb 倒數:每組另外冒出一顆 💣(不計入次數),timebombMs 內點掉 = 拆除(onDefuse),時間到爆炸(onBomb)
+//     timebomb 倒數:每組另外冒出一顆 💣(不計入次數),timebombMs 內點滿 timebombTaps 下 = 拆除(onDefuse,每點一下跳格),時間到爆炸(onBomb)
 //     mirror 蜃樓:符號是幻影(標 ⇋),要點左右對稱的鏡像格才算打中;點幻影本身 = onMirage
 //     spin   磁暴:階段中途九宮格整個旋轉(onSpin)
 //     greed  貪婪(寶箱怪):拳頭冒出 greedAt 比例的時間後變成陷阱(decoyIcon),之前沒打中就算錯過,之後點到觸發 onDecoy
@@ -314,6 +314,15 @@ G.molePhase = o => new Promise(resolve => {
     settle();
   };
   const armExpire = (i, a, ms) => a.ts.push(G.clock.after(() => expire(i, a), ms));
+  // 倒數炸彈:角標顯示剩幾秒、每秒滴答,最後一秒跳得更急;remain = 還剩幾毫秒(跳格時帶著剩下的時間重新排)
+  const armBomb = (i, a, remain) => {
+    const secs = Math.ceil(remain / 1000);
+    for (let s = 0; s < secs; s++) a.ts.push(G.clock.after(() => {
+      G.grid.setBadge(i, secs - s);
+      G.audio.play('tick');
+      if (secs - s <= 1) cell(i).classList.add('urgent');
+    }, Math.max(0, remain - (secs - s) * 1000)));
+  };
 
   G.grid.handler = i => {
     // 蜃樓:點到幻影的鏡像格 = 打中幻影
@@ -362,7 +371,24 @@ G.molePhase = o => new Promise(resolve => {
       return;
     }
 
-    if (a.kind === 'timebomb') { // 倒數炸彈:點掉就拆除
+    if (a.kind === 'timebomb') { // 倒數炸彈:要點滿 taps 下才拆除;每點一下就帶著剩下的時間跳到別格(追著拆)
+      if (--a.taps > 0) {
+        G.grid.impact(i, 'guard');
+        G.audio.play('chip');
+        const to = freeCell();
+        if (to < 0) { cell(i).querySelector('.label').textContent = G.t('拆 ×{0}', a.taps); return; } // 沒有空格可跳:留在原地
+        const remain = Math.max(300, a.life - (G.clock.now() - a.born));
+        kill(a); active.delete(i);
+        G.grid.clear(i, 'sink');
+        goneAt[i] = G.clock.now();
+        a.cell = to; a.life = remain; a.born = G.clock.now();
+        G.grid.set(to, '💣', 'timebomb', remain, G.t('拆 ×{0}', a.taps));
+        G.audio.play('whiff');
+        armBomb(to, a, remain);
+        armExpire(to, a, remain);
+        active.set(to, a);
+        return;
+      }
       kill(a); active.delete(i);
       G.grid.clear(i, 'press');
       G.grid.flash(i, 'good');
@@ -483,7 +509,8 @@ G.molePhase = o => new Promise(resolve => {
     } else if (kind === 'timebomb') {
       icon = '💣';
       cls = 'timebomb';
-      label = G.t('拆!'); // 點燃中的炸彈要點掉拆除(和不能點的 💣 陷阱區分)
+      a.taps = mods.timebombTaps || 1; // 要點幾下才拆得掉(每點一下跳格)
+      label = a.taps > 1 ? G.t('拆 ×{0}', a.taps) : G.t('拆!'); // 點燃中的炸彈要點掉拆除(和不能點的 💣 陷阱區分)
       life = mods.timebombMs || 3000;
     } else if (kind === 'normal') {
       // 金拳:停留很短,場上同時最多一顆(避免一次冒出好幾顆 ×2.5)
@@ -521,14 +548,7 @@ G.molePhase = o => new Promise(resolve => {
       c.querySelector('.icon').textContent = icon;
     }, life * mods.hidden));
     G.audio.play('pop');
-    if (kind === 'timebomb') { // 倒數 3、2、1 顯示在角標,每秒滴答一聲
-      const secs = Math.ceil(life / 1000);
-      for (let s = 0; s < secs; s++) a.ts.push(G.clock.after(() => {
-        G.grid.setBadge(i, secs - s);
-        G.audio.play('tick');
-        if (secs - s <= 1) cell(i).classList.add('urgent'); // 最後一秒:跳得更急
-      }, life - (secs - s) * 1000));
-    }
+    if (kind === 'timebomb') armBomb(i, a, life); // 倒數 3、2、1 顯示在角標,每秒滴答一聲
 
     if (o.onSpawn && (kind === 'normal' || a.heavy)) a.fx = o.onSpawn(i, life);
     armExpire(i, a, life);

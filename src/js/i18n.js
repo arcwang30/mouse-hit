@@ -560,7 +560,7 @@ G.I18N = {
   '「頂住」的盾牌要按住到集滿': ['「耐えろ」の盾は満タンまで長押し', 'Hold "BRACE" shields until full'],
   '發亮的符號要點兩下': ['光る記号は 2 回タップ', 'Glowing symbols take two taps'],
   '紅色準星亮起後盾牌才出現': ['赤い照準が光ってから盾が出る', 'Shields appear after the red reticle'],
-  '💣 要在倒數歸零前點掉拆除': ['💣 はカウント 0 までにタップで解除', 'Tap 💣 before the countdown hits 0'],
+  '點燃的 💣 會跳格,要追著點 2~3 下才拆得掉': ['火のついた 💣 はマスを跳び回る。追いかけて 2~3 回タップで解除', 'A lit 💣 hops around—chase it and tap 2–3 times to defuse'],
   '燒紅格子的拳頭傷害 ×2,但會燙傷自己': ['赤熱マスの拳はダメージ ×2、ただし自分もやけど', 'Fists on red-hot cells deal ×2 but burn you'],
   '符號會跳到別格': ['記号が別のマスへ跳ぶ', 'Symbols jump to another cell'],
   '踢擊 🦵 特別多,要往箭頭方向滑': ['キック 🦵 が多い。矢印の方向にスワイプ', 'Lots of kicks 🦵—swipe in the arrow direction'], '疾風腿': ['疾風脚', 'Gale Kicks'],
@@ -711,7 +711,8 @@ G.I18N = {
   // 新機制:倒數炸彈 / 滑擊拳 / 記憶拳
   '爆破鐘匠・滴答': ['爆破時計師・チクタク', 'Tick-Tock the Bomb Clocksmith'], '疾風飛賊・閃': ['疾風の盗賊・センコウ', 'Flash the Gale Thief'],
   '幻影魔術師・米拉': ['幻影の奇術師・ミラ', 'Mira the Phantom Magician'],
-  '倒數:💣 要在倒數歸零前點掉拆除,不然會爆炸!': ['カウントダウン:💣 は 0 になる前にタップして解除。間に合わないと爆発!', 'Countdown: tap the 💣 before it hits 0 to defuse it, or it explodes!'],
+  '倒數:點燃的 💣 每點一下就跳格,追著點滿次數才拆得掉,倒數歸零就爆炸!': ['カウントダウン:火のついた 💣 はタップするたびに別のマスへ跳ぶ。追いかけて回数分タップすれば解除、0 になると爆発!', 'Countdown: a lit 💣 hops to another cell each time you tap it—chase it down for the full number of taps before it hits 0, or it explodes!'],
+  '拆 ×{0}': ['解除 ×{0}', 'DEFUSE ×{0}'],
   '疾風:踢擊 🦵 特別多,往箭頭方向滑(傷害 ×1.5)': ['疾風:キック 🦵 が多い。矢印の方向にスワイプ(ダメージ ×1.5)', 'Gale: lots of kicks 🦵—swipe in the arrow direction (×1.5 damage)'],
   '幻術:記住格子閃爍的順序,照同樣順序點回來': ['幻術:光ったマスの順番を覚えて、同じ順にタップ', 'Illusion: remember the order the cells flash, then tap them in the same order'],
   '踢擊!': ['キック!', 'Kick!'], '拆除!': ['解除!', 'Defused!'], '爆炸!': ['爆発!', 'Boom!'],

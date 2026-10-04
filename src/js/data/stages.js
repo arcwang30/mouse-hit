@@ -291,7 +291,7 @@ G.MECH_INFO = {
   heavy:    { name: '重擊', hint: '「頂住」的盾牌要按住到集滿' },
   armor:    { name: '晶盾', hint: '發亮的符號要點兩下' },
   lockon:   { name: '鎖定', hint: '紅色準星亮起後盾牌才出現' },
-  timebomb: { name: '倒數炸彈', hint: '💣 要在倒數歸零前點掉拆除' },
+  timebomb: { name: '倒數炸彈', hint: '點燃的 💣 會跳格,要追著點 2~3 下才拆得掉' },
   lava:     { name: '熔岩', hint: '燒紅格子的拳頭傷害 ×2,但會燙傷自己' },
   blink:    { name: '瞬移', hint: '符號會跳到別格' },
   swipe:    { name: '疾風腿', hint: '踢擊 🦵 特別多,要往箭頭方向滑' },
