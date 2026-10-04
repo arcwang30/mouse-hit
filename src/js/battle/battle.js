@@ -7,7 +7,7 @@ const BLOCK_PCT_CAP = 60;  // 反擊力累積上限(%)
 const FEVER_AT = 15;       // 連擊累積幾次進入 FEVER
 const FEVER_MS = 10000;    // FEVER 持續時間
 const FEVER_MUL = 1.5;     // FEVER 期間傷害 / 反擊力 / 必殺集氣倍率
-const GOLD_RATE = 0.07;    // 金拳出現機率(停留只有一般的 45%,場上同時最多一顆)
+const GOLD_RATE = 0.07;    // 金拳出現機率(停留只有一般的 40%、且不超過每一輪的 goldMs,場上同時最多一顆)
 const GOLD_MUL = 2.5;      // 金拳傷害倍率
 const BOMB_RATE = 0.12;    // 第 4 波起一般敵人攻擊回合混入炸彈的機率
 const LAVA_BURN = 4;       // 打熔岩格的燙傷
@@ -335,7 +335,7 @@ G.battle = {
       interval: Math.max(250, life * 0.45), patterns: this.patterns(),
       // 蓄力重拳:每回合其中一顆拳頭需要按住蓄力
       hold: { at: 1 + Math.floor(Math.random() * (p.attackCount - 1)), icon: '👊', label: 'HOLD', holdMs: HOLD_MS * (p.holdMaster ? 0.6 : 1) },
-      mods: { gold: GOLD_RATE * p.goldMul, hidden: m.hidden, blink: m.blink, armor: m.armor, swipe: this.kickRate(m), mirror: m.mirror, spin: m.spin, greed: m.greed, greedAt: m.greedAt },
+      mods: { gold: GOLD_RATE * p.goldMul, goldMs: rc.goldMs, hidden: m.hidden, blink: m.blink, armor: m.armor, swipe: this.kickRate(m), mirror: m.mirror, spin: m.spin, greed: m.greed, greedAt: m.greedAt },
       onMirage: () => { combo = 0; this.comboBreak(); this.float('蜃樓!', 'tag miss'); },
       onSpin: () => this.spinFx(),
       onEmpty: () => this.backlash(), // 天魔:點空格反噬

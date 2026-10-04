@@ -22,20 +22,21 @@ G.WAVE_GROWTH = {
 //   backlash 點到空格反噬,扣最大 HP 的比例;seal 每回合被封印(不會冒符號)的格數
 // 演出:prefix 敵人名字前綴;bgmRate 戰鬥音樂加速;畫面色調與敵人光環見 cyber-ui.css 的 #battle.round-2 / .round-3
 // breakLen / breakTime 破綻要依序點幾個數字、限時幾毫秒;dialArc / dialSpeed 旋風破綻的缺口寬度(度)與指針轉速(度/秒);points 積分與成長點數倍率;upMax 開啟這一輪後「成長」的等級上限
+// goldMs 金拳(×2.5)最多停留幾毫秒:「反應」升級和鷹眼加長的停留時間不會讓金拳變得好按
 G.ROUNDS = {
   1: { name: '第一輪・凡塵', tag: '',   scale: 0,   hp: 1,   atk: 1,   count: 0, skillEvery: 3,
        fistLife: 1,    life: 1,    pattern: 0,   bombAll: 0,    extras: 0, noWaveHeal: false, prefix: '',      bgmRate: 1,
        comboLoss: 0,   enrage: 0,    backlash: 0,    seal: 0,
-       breakLen: 4, breakTime: 2800, dialArc: 70, dialSpeed: 200, points: 1,   upMax: 10 },
+       breakLen: 4, breakTime: 2800, dialArc: 70, dialSpeed: 200, points: 1,   upMax: 10, goldMs: 600 },
   2: { name: '第二輪・修羅', tag: 'Ⅱ', scale: 0.6, hp: 1,   atk: 1,    count: 0, skillEvery: 3,
        fistLife: 0.82, life: 0.82, pattern: 0.5, bombAll: 0.12, extras: 1, noWaveHeal: true,  prefix: '修羅・', bgmRate: 1.08,
        comboLoss: 0.1, enrage: 0.05, backlash: 0,    seal: 0,
-       breakLen: 5, breakTime: 3200, dialArc: 54, dialSpeed: 260, points: 1.5, upMax: 15,
+       breakLen: 5, breakTime: 3200, dialArc: 54, dialSpeed: 260, points: 1.5, upMax: 15, goldMs: 520,
        desc: '符號更快消失、更常多發,敵人多一種招式,波與波之間不回血。連擊中斷會扣必殺值,敵人越打越狂暴。成長上限 Lv15,點數 ×1.5。' },
   3: { name: '第三輪・天魔', tag: 'Ⅲ', scale: 1.0, hp: 1.05, atk: 1.15, count: 1, skillEvery: 2,
        fistLife: 0.72, life: 0.72, pattern: 0.9, bombAll: 0.18, extras: 2, noWaveHeal: true,  prefix: '天魔・', bgmRate: 1.15,
        comboLoss: 0.2, enrage: 0.08, backlash: 0.03, seal: 2,
-       breakLen: 6, breakTime: 3600, dialArc: 42, dialSpeed: 320, points: 2,   upMax: 20,
+       breakLen: 6, breakTime: 3600, dialArc: 42, dialSpeed: 320, points: 2,   upMax: 20, goldMs: 450,
        desc: '最高難度:符號極快、敵人多兩種招式、多一面盾牌,BOSS 每 2 回合放必殺技,不回血。點空格會反噬受傷,每回合有 2 格被封印。成長上限 Lv20,點數 ×2。' },
 };
 

@@ -39,10 +39,18 @@ const ENDING = [
     text: '他的眼中不再有仇恨，只有對武道巔峰的追求。烈火淬煉完畢，這顆孤星將在更廣闊的世界，展開全新的修練旅程。' },
 ];
 
-// 大地圖:每區 5 個關卡節點在區域裡的位置(x%, y%),由上往下蜿蜒,BOSS 在最下面中間
 // 周回切換按鈕的頭像:凡塵 人頭 / 修羅 長角 / 天魔 裂嘴惡魔
 const ROUND_FACES = { 1: '🧑', 2: '😈', 3: '👹' };
-const MAP_POS = [[22, 10], [72, 28], [30, 48], [74, 66], [50, 84]];
+// 大地圖:每區 5 個關卡節點在區域裡的位置(x%, y%),最後一個是 BOSS
+// 每一區的路線形狀都不一樣,翻頁時一眼就看得出換了區域
+const MAP_POS = [
+  [[22, 10], [72, 28], [30, 48], [74, 66], [50, 84]], // 由上往下蜿蜒
+  [[22, 86], [78, 78], [56, 50], [18, 38], [64, 14]], // 由下往上爬(上下相鄰的節點左右錯開,炎鋼不會頂到上一個節點)
+  [[18, 18], [80, 20], [80, 78], [22, 74], [50, 46]], // 繞一圈收進中央
+  [[20, 12], [18, 48], [40, 82], [78, 62], [74, 22]], // U 字迴轉
+  [[82, 82], [80, 42], [50, 14], [18, 38], [30, 76]], // 右邊上去、翻過頂端再從左邊下來
+  [[18, 86], [56, 80], [78, 56], [40, 40], [62, 14]], // 之字登頂
+];
 const COMICS = {
   opening: { src: '../assets/images/story/opening.jpg', w: 1408, h: 768, beats: STORY },
   ending:  { src: '../assets/images/story/ending.jpg',  w: 1380, h: 752, beats: ENDING },
@@ -376,22 +384,23 @@ G.scenes = {
     const regions = G.REGIONS.map((g, r) => {
       const locked = g.first >= pr.unlocked;
       const got = G.STAGES.slice(g.first, g.last + 1).reduce((n, s, k) => n + (pr.stars[g.first + k] || 0), 0);
+      const pos = MAP_POS[r % MAP_POS.length]; // 這一區的路線形狀
       const nodes = G.STAGES.slice(g.first, g.last + 1).map((s, k) => {
-        const i = g.first + k, [x, y] = MAP_POS[k], st = pr.stars[i] || 0;
+        const i = g.first + k, [x, y] = pos[k], st = pr.stars[i] || 0;
         const cls = ['map-node', 't-' + s.type, i >= pr.unlocked ? 'locked' : '', pr.clear.includes(i) ? 'clear' : '', i === cur ? 'current' : ''].join(' ');
         return `<button class="${cls}" data-i="${i}" style="left:${x}%;top:${y}%" ${i >= pr.unlocked ? 'disabled' : ''}>` +
           `<span class="mn-icon">${G.STAGE_TYPES[s.type].icon}</span><span class="mn-code">${s.code}</span>` +
           `<span class="mn-stars">${[1, 2, 3].map(n => `<i class="${n <= st ? 'on' : ''}">★</i>`).join('')}</span>` +
           (i === cur ? `<span class="mn-hero" style="background-image:url('${url('fx/credit_hero.png')}')"></span>` : '') + '</button>';
       }).join('');
-      const path = MAP_POS.map(([x, y]) => `${x},${y}`).join(' ');
+      const path = pos.map(([x, y]) => `${x},${y}`).join(' ');
       const bossName = r ? G.t(G.ENEMIES[G.REGIONS[r - 1].boss].name) : '';
       const art = G.STAGES[g.first + 2].img; // 背景圖還沒到的區域用漸層代替
       return `<section class="map-region${locked ? ' locked' : ''}" style="--rbg:${art ? `url('${url(art)}')` : 'linear-gradient(160deg, #6a4a20, #2a1a0a 60%, #120a04)'}">` +
         `<header class="mr-head"><b>${G.t('區域 {0}', r + 1)} ${G.t(g.name)}</b><span>★ ${got}/15</span></header>` +
         `<p class="mr-desc">${G.t(g.desc)}</p>` +
-        `<div class="mr-field"><svg class="mr-path" viewBox="0 0 100 100" preserveAspectRatio="none"><polyline points="${path}"/></svg>${nodes}</div>` +
-        (locked ? `<div class="mr-fog"><b>🔒</b>${G.t('打倒「{0}」後開放', bossName)}</div>` : '') + '</section>';
+        `<div class="mr-field"><svg class="mr-path" viewBox="0 0 100 100" preserveAspectRatio="none"><polyline class="shade" points="${path}"/><polyline points="${path}"/></svg>${nodes}</div>` +
+        (locked ? `<div class="mr-fog"><b>🔒</b><span>${G.t('打倒「{0}」後開放', bossName)}</span></div>` : '') + '</section>';
     }).join('');
     // 章節與周回切換放在地圖上方固定的列,地圖往下捲也看得到
     G.$('#stageBar').innerHTML = chTabs;
