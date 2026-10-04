@@ -500,7 +500,9 @@ G.molePhase = o => new Promise(resolve => {
     const a = { kind, cell: i, gid, ts: [], fx: null };
     let icon = o.icon, cls = o.cls, label = '';
 
-    if (kind === 'normal' && roll(mods.heavy && mods.heavy.chance)) { // 重擊:改成要頂住
+    // 重擊:改成要頂住。場上同時最多一個要按住的按鈕(HOLD / 頂住),手指才來得及處理其他按鈕
+    const holding = [...active.values()].some(x => x.holdMs);
+    if (kind === 'normal' && !holding && roll(mods.heavy && mods.heavy.chance)) {
       kind = a.kind = 'hold';
       a.heavy = true;
       a.holdMs = mods.heavy.holdMs;
