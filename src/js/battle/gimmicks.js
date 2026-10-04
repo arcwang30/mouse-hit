@@ -435,8 +435,16 @@
       let hits = 0;
       for (let k = 0; k < pairs && !this.over(); k++) {
         const [a, b] = G.shuffle([...Array(9).keys()]).slice(0, 2);
-        G.grid.set(a, '💎', 'twin', life);
-        G.grid.set(b, '💎', 'twin', life);
+        G.grid.set(a, '💎', 'twin', life, G.t('同時'));
+        G.grid.set(b, '💎', 'twin', life, G.t('同時'));
+        // 兩格之間拉一條虛線、中間放 ✌️,一看就知道這兩顆要一起按
+        const wrap = G.$('.grid-wrap'), wr = wrap.getBoundingClientRect();
+        const [ax, ay] = center(a), [bx, by] = center(b);
+        const link = document.createElement('div');
+        link.className = 'gm-link';
+        link.innerHTML = `<svg viewBox="0 0 ${wr.width || 1} ${wr.height || 1}"><line x1="${ax}" y1="${ay}" x2="${bx}" y2="${by}"/></svg>` +
+          `<b style="left:${(ax + bx) / 2}px;top:${(ay + by) / 2}px">✌️</b>`;
+        wrap.appendChild(link);
         const ok = await new Promise(res => {
           let first = null, t = null;
           const fin = r => { G.clock.cancel(t); G.grid.handler = null; res(r); };
@@ -449,6 +457,7 @@
             fin(now - first.now <= win);
           };
         });
+        link.remove();
         G.grid.clear(a, ok ? 'press' : 'sink');
         G.grid.clear(b, ok ? 'press' : 'sink');
         if (ok) { hits++; G.grid.impact(a, 'num'); G.grid.impact(b, 'num'); G.audio.play('crit'); this.setEnemyState('hit', 200); }

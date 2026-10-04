@@ -295,6 +295,7 @@ G.I18N = {
   '雙指齊按!': ['二本指同時押し!', 'Twin Press!'],
   '{0}的兩個弱點 💎 同時亮起,用兩根手指同時按下!': ['{0}の弱点 💎 が 2 つ同時に光る。2 本の指で同時に押せ!', '{0}\'s two weak points 💎 light up together—press both at once with two fingers!'],
   '兩指同時按下弱點!': ['2 本指で弱点を同時に押せ!', 'Press both weak points at once!'], '失手': ['ミス', 'Missed'],
+  '同時': ['同時', 'BOTH'],
   '翻牌配對!': ['神経衰弱!', 'Card Match!'],
   '記住牌面,翻出四組相同的圖案!小心{0}的幻象 💀,翻到就失敗。': ['カードを覚えて、同じ絵柄を 4 組めくれ!{0}の幻影 💀 をめくると失敗。', 'Memorize the cards and flip all four matching pairs! Flip {0}\'s illusion 💀 and you fail.'],
   '記住牌面!': ['カードを覚えろ!', 'Memorize the cards!'], '翻出四組相同的圖案!': ['同じ絵柄を 4 組めくれ!', 'Find all four pairs!'],

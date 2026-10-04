@@ -357,7 +357,7 @@ G.battle = {
         } else {
           this.punchFx(i % 3, { crit });
         }
-        this.hurtEnemy(Math.round(d), crit || charged, charged);
+        this.hurtEnemy(Math.round(d), crit || charged, charged, info.swipe && !charged ? 'slash' : null); // 滑擊拳:劃過的音效
         if (info.gold && !crit && !charged) this.hitStop(60); // 金拳也頓一下
         if (p.lifesteal) this.healPlayer(p.lifesteal, true);
         this.gainUlt(p.ultGain);
@@ -1637,11 +1637,11 @@ G.battle = {
   },
 
   // ---- 數值變化 ----
-  hurtEnemy(d, crit, big) {
+  hurtEnemy(d, crit, big, sfx) { // sfx:改用別的打擊音效(例如滑擊拳的劃過聲)
     const e = this.e;
     e.hp = Math.max(0, e.hp - d);
     this.stats.dmg += d;
-    G.audio.play(big ? 'boom' : crit ? 'crit' : 'punch');
+    G.audio.play(sfx || (big ? 'boom' : crit ? 'crit' : 'punch'));
     this.float(d, crit ? (big ? 'dmg big' : 'dmg crit') : 'dmg');
     if (e.hp > 0) this.setEnemyState('hit', 250);
     // 打擊頓幀:擊倒 > 重擊(蓄力 / 必殺最後一擊)> 暴擊

@@ -181,6 +181,13 @@ const SFX = {
     a.noise(0.15, { filter: 'highpass', freq: 4000, vol: 0.25 });
   },
   whiff:   a => a.noise(0.18, { filter: 'bandpass', freq: 800, to: 2500, q: 2, vol: 0.25 }),
+  // 滑擊拳打中:刀劃過空氣的「咻——」加上一點金屬擦過的高音,尾端一記悶響
+  slash:   (a, t) => {
+    a.noise(0.24, { filter: 'bandpass', freq: 1400, to: 7000, q: 2.5, vol: 0.5 });
+    a.noise(0.1, { filter: 'highpass', freq: 6000, vol: 0.25, when: t + 0.06 });
+    a.tone(2400, 0.12, { type: 'triangle', to: 900, vol: 0.08, when: t + 0.04 });
+    a.tone(140, 0.12, { to: 60, vol: 0.45, when: t + 0.08 });
+  },
   // 旋風破綻:畫圈時的強風(heat 0~1 = 手指轉速,越快風聲越高越大)、每圈放出的龍捲風呼嘯
   gust:    (a, t, heat = 0.5) => a.noise(0.28, { filter: 'bandpass', freq: 250 + heat * 700, to: 500 + heat * 1600, q: 1.4, vol: 0.12 + heat * 0.3 }),
   tornado: a => {
