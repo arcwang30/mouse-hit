@@ -1080,7 +1080,8 @@ G.battle = {
 
     const f = document.createElement('div');
     f.className = 'fx-fist' + (o.crit ? ' crit' : '');
-    f.textContent = o.icon || '👊';
+    if (o.icon === '🦵') f.innerHTML = '<img class="fx-foot" src="../assets/images/ui/kick_foot.png" alt="">'; // 踢擊:飛出去的是腳印
+    else f.textContent = o.icon || '👊';
     stage.appendChild(f);
     f.animate([
       { transform: `translate(${sx}px, ${sy}px) translate(-50%, -50%) scale(${s0}) rotate(${(col - 1) * 12}deg)`, opacity: 0.85 },
