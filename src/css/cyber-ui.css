@@ -1157,3 +1157,19 @@ html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; } /* 手機瀏覽
 @keyframes dollCaught { 40% { filter: brightness(1.8); box-shadow: 0 0 0 1.2cqw #3ddc84, 0 0 10cqw #3ddc84; } 100% { filter: brightness(1.2); } }
 .gs-doll.caught::before { content: ""; position: absolute; inset: 0; border-radius: 50%; box-shadow: 0 0 0 .8cqw #3ddc84; animation: dollRing .6s ease-out forwards; }
 @keyframes dollRing { from { transform: scale(1); opacity: 1; } to { transform: scale(2.2); opacity: 0; } }
+
+/* ===== 鍵盤操作提示(body.kb:有滑鼠的裝置或按過鍵盤時才顯示)===== */
+.kb-hint, .dial-kb { display: none; pointer-events: none; white-space: nowrap; }
+.kb-hint {
+  position: absolute; left: 50%; bottom: .6cqw; z-index: 5; transform: translateX(-50%);
+  padding: .5cqw 2.4cqw; border-radius: 3cqw; font-size: 3.4cqw; color: #fff4b8;
+  background: #000c; border: .3cqw solid #ffe14a99; box-shadow: 0 0 2cqw #ffd40055;
+}
+/* 踢擊:場上有現形的腳印時才出現 */
+body.kb .grid-wrap:has(.cell.kick.on:not(.hidden)) .kb-kick { display: block; animation: kbHintIn .2s ease-out; }
+@keyframes kbHintIn { from { opacity: 0; transform: translateX(-50%) translateY(1cqw); } }
+.dial-kb {
+  position: absolute; left: 50%; top: 11%; transform: translateX(-50%); z-index: 3;
+  padding: .4cqw 2cqw; border-radius: 3cqw; font-size: 3.6cqw; color: #fff4b8; background: #000a;
+}
+body.kb .dial-kb { display: block; }

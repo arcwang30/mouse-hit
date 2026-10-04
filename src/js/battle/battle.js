@@ -40,6 +40,7 @@ const TIMEBOMB_TAPS = { 1: 2, 2: 3, 3: 3 }, TIMEBOMB_HOP = 600;
 const MEMORY_LEN = { 1: 3, 2: 4, 3: 5 }, MEMORY_SHOW = 520, MEMORY_PER = 900, MEMORY_DMG = 1.5;
 // 旋風破綻:出現機率、指針最多轉幾圈、缺口兩側寬容角度、畫圈限時、需要的圈數(一般 / 精英 / BOSS)
 const DIAL_CHANCE = 0.4, DIAL_LAPS = 3, DIAL_GRACE = 6, DIAL_SPIN_MS = 5000, DIAL_TURNS = [3, 4, 5];
+const DIAL_KEY_DEG = 60; // 鍵盤畫圈:← → 交替每按一下轉幾度(6 下一圈)
 // 旋風破綻的風級:轉滿最低圈數後,每多轉 extra 圈升一級,破甲傷害乘上 mul(畫圈限時內一直轉,轉越多越痛)
 const DIAL_TIERS = [{ extra: 0, name: '旋風', mul: 1 }, { extra: 2, name: '暴風', mul: 1.25 }, { extra: 4, name: '颶風', mul: 1.5 }]; // 最高 = 攻擊力 ×6,和必殺技、BOSS 小遊戲成功同級
 // 完美:符號出現後的前 30% 時間內點中(剩餘比例 ≥ PERFECT_AT),傷害加成 +PERFECT_BONUS(和反擊、破甲、FEVER 相加)、必殺值多 PERFECT_ULT
@@ -606,7 +607,7 @@ G.battle = {
     const el = document.createElement('div');
     el.className = 'dial';
     el.innerHTML = '<div class="dial-disc"><div class="dial-gap"></div><div class="dial-ticks"></div>' +
-      '<div class="dial-storm"></div><div class="dial-needle"></div><div class="dial-hub">🌀</div><b class="dial-count"></b></div>';
+      '<div class="dial-storm"></div><div class="dial-needle"></div><div class="dial-hub">🌀</div><b class="dial-count"></b><b class="dial-kb"></b></div>';
     const disc = el.querySelector('.dial-disc');
     const size = Math.min(grid.offsetWidth, grid.offsetHeight); // 畫面沒顯示(0)時改用 CSS 的預設大小
     if (size) disc.style.width = disc.style.height = size + 'px';
@@ -618,6 +619,7 @@ G.battle = {
       needle: el.querySelector('.dial-needle'),
       storm: el.querySelector('.dial-storm'),
       count: el.querySelector('.dial-count'),
+      kb: el.querySelector('.dial-kb'), // 鍵盤操作提示(只在用鍵盤的裝置顯示)
       close() { G.grid.handler = null; el.classList.add('out'); setTimeout(() => el.remove(), 250); },
     };
   },
@@ -664,6 +666,7 @@ G.battle = {
       spin();
       d.el.addEventListener('pointerdown', tap);
       G.grid.handler = () => tap(); // 鍵盤:任一格的按鍵都算點擊
+      d.kb.textContent = G.t('⌨ 任一格的按鍵抓住');
     });
   },
 
@@ -672,7 +675,7 @@ G.battle = {
 
   // 在圓盤上畫圈:以圓心算手指角度的變化並累加(來回抖動會互相抵銷),每滿一圈一道龍捲風捲向敵人、繞在牠身邊
   // 限時 DIAL_SPIN_MS 一直可以轉:轉滿 turns 圈算成功,之後多轉的圈數讓風級往上升(旋風 → 暴風 → 颶風)
-  // 圓盤上的龍捲風粒子隨手指轉速變強;鍵盤每按一下算 90 度;時間到回傳總圈數
+  // 圓盤上的龍捲風粒子隨手指轉速變強;鍵盤 ← → 交替連打;時間到回傳總圈數
   dialSpin(d, turns, storm) {
     d.el.classList.add('spin');
     d.count.textContent = '0 / ' + turns;
@@ -684,6 +687,7 @@ G.battle = {
         timer.stop();
         cancelAnimationFrame(raf);
         G.grid.handler = null;
+        document.removeEventListener('keydown', onKey);
         res(laps);
       };
       const timer = this.timebar(DIAL_SPIN_MS, end);
@@ -741,7 +745,18 @@ G.battle = {
       });
       d.el.addEventListener('pointerup', () => { last = null; });
       d.el.addEventListener('pointercancel', () => { last = null; });
-      G.grid.handler = () => add(90);
+      // 鍵盤:← → 交替連打,每按對一下轉 DIAL_KEY_DEG 度;同一個鍵連按不算(不能單鍵狂按)
+      let lastKey = null;
+      const onKey = ev => {
+        if (ev.code !== 'ArrowLeft' && ev.code !== 'ArrowRight') return;
+        ev.preventDefault();
+        if (ev.repeat || G.clock.paused || ev.code === lastKey) return;
+        lastKey = ev.code;
+        add(DIAL_KEY_DEG);
+      };
+      document.addEventListener('keydown', onKey);
+      G.grid.handler = () => {}; // 九宮格的按鍵在畫圈時不作用
+      d.kb.textContent = G.t('⌨ ← → 交替連打');
       // 粒子強度慢慢退去:手指停下來龍捲風就變弱
       const cool = () => {
         if (done) return;

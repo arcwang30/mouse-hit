@@ -35,6 +35,11 @@
 .ht-row { display: flex; align-items: center; gap: 3.5cqw; padding: 2.4cqw 0; border-bottom: 1px solid #ffffff14; }
 .ht-row:last-child { border-bottom: 0; }
 .ht-ic { font-size: 8cqw; width: 11cqw; text-align: center; flex-shrink: 0; }
+.ht-ic .ht-foot { display: block; width: 9cqw; height: 9cqw; margin: 0 auto; filter: drop-shadow(0 0 1.2cqw #4ad94a) drop-shadow(0 .3cqw 0 #042a0a); } /* 踢擊的腳印圖 */
+.ht-ic .ht-kick { position: relative; display: block; width: 9cqw; height: 9cqw; margin: 0 auto; }
+.ht-ic .ht-kick::after { content: ''; position: absolute; left: 50%; top: 50%; width: 7cqw; height: 7cqw; transform: translate(-50%, -50%);
+  background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M3 8.5h10V3l9 9-9 9v-5.5H3z' fill='%23ffe14a' stroke='%23241400' stroke-width='2.4' stroke-linejoin='round'/%3E%3C/svg%3E") center / contain no-repeat;
+  filter: drop-shadow(0 0 .5cqw #ffd400); }
 .ht-row b, .ht-tip b, .ht-enemy b { color: var(--fire-2); font-size: 4cqw; }
 .ht-row p, .ht-tip p, .ht-enemy p { margin: .6cqw 0 0; font-size: 3.3cqw; line-height: 1.55; color: #e6ecff; }
 

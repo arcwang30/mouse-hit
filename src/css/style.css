@@ -763,7 +763,7 @@ h2 { margin: 0; }
 }
 .cell.swipe .icon { opacity: .35; }
 /* 踢擊:深綠按鈕 + 白色腳印(維持原圖方向)+ 正中央的黃色方向箭頭
-   箭頭用大的黃色箭頭直接壓在腳印正中央(深色粗描邊加黃光,不另外墊底),往滑動方向一推一推 */
+   箭頭用大的黃色箭頭直接壓在腳印正中央(深色粗描邊加黃光,不另外墊底);箭頭本身不動,不會滑出格子 */
 .cell.kick .cap { background: linear-gradient(180deg, #7ae05a, #1f8a2a 55%, #0a4a14); --edge: #042a0a; }
 .cell.kick .icon {
   font-size: 0; width: 15cqw; height: 15cqw; opacity: .95;
@@ -774,10 +774,19 @@ h2 { margin: 0; }
 .cell.kick.hidden .icon { background: none; font-size: 12cqw; }
 .cell.kick.hidden .label { visibility: hidden; }
 .cell.kick .label { /* 大黃箭頭直接壓在腳印上:深色粗描邊 + 黃光,壓在白色腳印上也清楚 */
-  width: 13cqw; height: 13cqw; z-index: 2;
+  width: 13cqw; height: 13cqw; z-index: 2; animation: none;
   background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M3 8.5h10V3l9 9-9 9v-5.5H3z' fill='%23ffe14a' stroke='%23241400' stroke-width='2.4' stroke-linejoin='round'/%3E%3C/svg%3E") center / contain no-repeat;
   filter: drop-shadow(0 0 .8cqw #ffd400) drop-shadow(0 .3cqw 0 #241400);
 }
+/* 流光:只在箭頭的黃色部分裡,從尾巴掃到尖端(箭頭跟著 --rot 轉,所以光一定順著滑動方向跑) */
+.cell.kick .label::after {
+  content: ''; position: absolute; inset: 0;
+  background: linear-gradient(90deg, transparent 36%, #fffbe6 50%, transparent 64%) 100% 0 / 250% 100% no-repeat;
+  -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M3 8.5h10V3l9 9-9 9v-5.5H3z'/%3E%3C/svg%3E") center / contain no-repeat;
+  mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M3 8.5h10V3l9 9-9 9v-5.5H3z'/%3E%3C/svg%3E") center / contain no-repeat;
+  animation: kickSweep .8s linear infinite;
+}
+@keyframes kickSweep { to { background-position: 0 0; } }
 .cell.swipe-up .label    { --rot: -90deg; --sx: 0%;   --sy: -22%; }
 .cell.swipe-down .label  { --rot: 90deg;  --sx: 0%;   --sy: 22%; }
 .cell.swipe-left .label  { --rot: 180deg; --sx: -22%; --sy: 0%; }

@@ -23,6 +23,13 @@ document.addEventListener('touchend', e => {
   lastTouchEnd = now;
 }, { passive: false });
 
+// ---- 鍵盤操作提示 ----
+// 有滑鼠的裝置預設顯示;按過鍵盤就顯示,改用手指觸控就收起來(body.kb)
+const kbMode = on => document.body.classList.toggle('kb', on);
+kbMode(matchMedia('(hover: hover) and (pointer: fine)').matches);
+document.addEventListener('keydown', () => kbMode(true), true);
+document.addEventListener('pointerdown', e => { if (e.pointerType === 'touch') kbMode(false); }, true);
+
 // ---- 音效 ----
 // 瀏覽器要求使用者互動後才能播放聲音
 ['pointerdown', 'keydown'].forEach(ev => document.addEventListener(ev, () => G.audio.unlock(), true));

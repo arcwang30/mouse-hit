@@ -236,7 +236,16 @@ G.molePhase = o => new Promise(resolve => {
   document.addEventListener('pointermove', onMove);
   document.addEventListener('pointerup', onUp);
   document.addEventListener('pointercancel', onUp);
-  G.grid.swipeKey = dir => { if (swiping && swiping.x == null) endSwipe(dir); };
+  // 鍵盤:先按格子鍵瞄準再按方向鍵;或直接按方向鍵 = 踢場上同方向、最早冒出來的那顆(還沒現形的不算)
+  G.grid.swipeKey = dir => {
+    if (swiping && swiping.x == null) return endSwipe(dir);
+    if (swiping) return;
+    for (const [i, a] of active) {
+      if (a.swipe !== dir || cell(i).classList.contains('hidden')) continue;
+      swiping = { i, a, x: null, y: null };
+      return endSwipe(dir);
+    }
+  };
 
   // 倒數炸彈還在的話,符號都處理完也要等它拆除或爆炸才結束
   const bombsLeft = () => [...active.values()].some(a => a.kind === 'timebomb');
