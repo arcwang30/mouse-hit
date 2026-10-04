@@ -799,8 +799,20 @@ h2 { margin: 0; }
 .shard { position: absolute; inset: 0; overflow: hidden; will-change: transform, opacity; }
 .title-snap { position: absolute; inset: 0; overflow: hidden; background: #000; }
 .title-snap .title-bg, .title-snap .title-logo, .title-snap .title-logo img { animation: none; }
-.title-snap .title-logo { opacity: 1; transform: translateX(-50%); }
+.title-snap .title-logo { display: none; } /* 標題畫面不放標題字(碎完才在主選單砸下來) */
 .title-snap .brand-splash, .title-snap .title-start, .title-snap .embers, .title-snap .bolt, .title-snap .strike-bolt, .title-snap .title-wave { display: none; }
 .shatter .cracks { position: absolute; inset: 0; width: 100%; height: 100%; z-index: 1; animation: crackFade .5s .1s ease-out forwards; }
 .shatter .cracks polyline { fill: none; stroke: #fff; stroke-width: .5cqw; vector-effect: non-scaling-stroke; filter: drop-shadow(0 0 1cqw #ffd84a); }
 @keyframes crackFade { to { opacity: 0; } }
+/* 從標題進入主選單:標題字先藏著,碎片飛完後由大到小砸下來(和舊版標題畫面的 LOGO 同一種演出) */
+#menu.logo-wait .menu-logo img { opacity: 0; }
+.menu-logo.slam img { animation: menuLogoSlam .7s cubic-bezier(.2, .8, .3, 1.2) .25s both; }
+@keyframes menuLogoSlam {
+  0%   { opacity: 0; transform: scale(2.2); filter: blur(1cqw) brightness(2); }
+  60%  { opacity: 1; transform: scale(.94); }
+  72%  { transform: translateX(-1.5%) scale(1.02) rotate(-1deg); }
+  84%  { transform: translateX(1.2%) rotate(.6deg); }
+  100% { opacity: 1; transform: none; }
+}
+#menu.slam { animation: titleShake .4s; }
+#menu .strike-bolt { z-index: 5; }

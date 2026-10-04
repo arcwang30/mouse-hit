@@ -196,9 +196,6 @@ G.scenes = {
     }
     el.classList.remove('leaving', 'fadeout', 'ready', 'slam');
     el.querySelectorAll('.strike-bolt, .title-wave').forEach(b => b.remove());
-    const logo = el.querySelector('.title-logo');
-    logo.classList.remove('enter');
-    void logo.offsetWidth;
     el.classList.add('intro'); // 開場演出(CSS):品牌 LOGO → 鏡頭仰望
     G.show('title');
     G.bgm.play('menu');
@@ -224,18 +221,17 @@ G.scenes = {
       setTimeout(() => G.audio.play('thunder'), 150);
       this._bolt = setTimeout(strike, 4000 + Math.random() * 5000);
     };
-    // 開場時間軸(毫秒):0~2600 品牌 LOGO → 2600~3100 全黑 → 3100~3600 黑底淡出、3200 鏡頭開始仰望 → 5600 落雷 + LOGO 砸下(太鼓、震動)→ 6500 出現「點擊畫面開始」
+    // 開場時間軸(毫秒):0~2600 品牌 LOGO → 2600~3100 全黑 → 3100~3600 黑底淡出、3200 鏡頭開始仰望 → 5600 落雷(太鼓、震動)→ 6500 出現「點擊畫面開始」
+    // 標題字「鋼拳風雲錄」不在這裡出現:等玻璃碎完,才在主選單用同樣的落雷砸下來(見 menuLogoSlam),避免 LOGO 出現兩次
     // 演出中點一下 = 直接跳到最後
     const slam = () => {
       strike(true);
-      logo.classList.add('enter');
-      setTimeout(() => { G.audio.play('drum'); el.classList.add('slam'); }, 430); // LOGO 落地那一刻
+      setTimeout(() => { G.audio.play('drum'); el.classList.add('slam'); }, 430); // 落雷後的重擊
       setTimeout(() => el.classList.remove('slam'), 850);
     };
     const ready = () => {
       this._introT.forEach(clearTimeout);
       el.classList.remove('intro');
-      if (!logo.classList.contains('enter')) logo.classList.add('enter');
       el.classList.add('ready');
       this._bolt = setTimeout(strike, 4000 + Math.random() * 4000); // 之後隨機落雷
     };
@@ -300,8 +296,26 @@ G.scenes = {
     G.audio.play('boom');
     G.haptic.buzz([0, 80, 30, 160]);
     el.querySelectorAll('.title-wave').forEach(w => w.remove());
+    G.$('#menu').classList.add('logo-wait'); // 主選單的標題字先藏著,碎片飛完才砸下來
     this.menu(); // 碎片底下換成主選單
-    setTimeout(() => box.remove(), 1100);
+    setTimeout(() => { box.remove(); this.menuLogoSlam(); }, 1100);
+  },
+
+  // 從標題進入主選單:一道閃電劈下,「鋼拳風雲錄」由大到小砸下來,落地時太鼓 + 震動(只有從標題進來時演出)
+  menuLogoSlam() {
+    const menu = G.$('#menu'), logo = menu.querySelector('.menu-logo');
+    if (!menu.classList.contains('active')) { menu.classList.remove('logo-wait'); return; }
+    menu.querySelectorAll('.strike-bolt').forEach(b => b.remove());
+    menu.insertAdjacentHTML('beforeend', lightningSvg());
+    G.audio.play('thunder');
+    G.haptic.buzz([0, 60, 40, 140]);
+    menu.classList.remove('logo-wait');
+    logo.classList.remove('slam');
+    void logo.offsetWidth;
+    logo.classList.add('slam');
+    setTimeout(() => { G.audio.play('drum'); menu.classList.add('slam'); }, 430); // 落地那一刻
+    setTimeout(() => menu.classList.remove('slam'), 850);
+    setTimeout(() => { logo.classList.remove('slam'); menu.querySelectorAll('.strike-bolt').forEach(b => b.remove()); }, 1200);
   },
 
   // ---- 主選單 ----
