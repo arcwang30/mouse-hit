@@ -7,7 +7,7 @@ const BLOCK_PCT_CAP = 60;  // 反擊力累積上限(%)
 const FEVER_AT = 15;       // 連擊累積幾次進入 FEVER
 const FEVER_MS = 10000;    // FEVER 持續時間
 const FEVER_MUL = 1.5;     // FEVER 期間傷害 / 反擊力 / 必殺集氣倍率
-const GOLD_RATE = 0.12;    // 金拳出現機率(停留較短)
+const GOLD_RATE = 0.07;    // 金拳出現機率(停留只有一般的 45%,場上同時最多一顆)
 const GOLD_MUL = 2.5;      // 金拳傷害倍率
 const BOMB_RATE = 0.12;    // 第 4 波起一般敵人攻擊回合混入炸彈的機率
 const LAVA_BURN = 4;       // 打熔岩格的燙傷
@@ -24,6 +24,7 @@ const MERCHANT = [
   { id: 'leave',  icon: '🚶', name: '離開',     desc: '什麼都不買' },
 ];
 const CHEST_ODDS = { coins: 0.4, skill: 0.3 }; // 剩下 30% 是寶箱怪(要打一場,打贏一樣有寶物)
+const MIMIC_STEAL = 10; // 寶箱怪的假錢袋 / 假盾牌每次搶走的金幣(再乘周回倍率)
 const SKILL_RULE_CHANCE = 0.25; // 寶箱開出的隨機技能:有這個機率是技法(還有沒拿過的才會出現)
 const HEAL_SKILLS = ['steel', 'pill', 'leech', 'regen', 'bell']; // HP 偏低時比較容易開到的保命技能
 const DEVIL_GOLD = 100;
@@ -100,8 +101,11 @@ G.battle = {
   },
 
   renderPause() {
-    G.$('#pauseQuit').textContent = G.t(this.quitArmed ? '再按一次確認' : '回到主畫面');
-    G.$('#pauseQuit').classList.toggle('danger', !!this.quitArmed);
+    // quitArmed:已經按過一次的離開按鈕('menu' 回到主畫面 / 'stages' 返回關卡選擇),再按一次才真的離開
+    G.$('#pauseQuit').textContent = G.t(this.quitArmed === 'menu' ? '再按一次確認' : '回到主畫面');
+    G.$('#pauseStages').textContent = G.t(this.quitArmed === 'stages' ? '再按一次確認' : '返回關卡選擇');
+    G.$('#pauseStages').classList.toggle('danger', this.quitArmed === 'stages');
+    G.$('#pauseQuit').classList.toggle('danger', this.quitArmed === 'menu');
     G.$('#pauseMenu').classList.remove('skills'); // 每次暫停都從主選單開始
   },
 
@@ -134,9 +138,9 @@ G.battle = {
     this.renderPause();
   },
 
-  // 回到主畫面:本局作廢(不結算),停掉所有還在跑的計時器
-  quit() {
-    if (!this.quitArmed) { this.quitArmed = true; G.audio.play('fail'); return this.renderPause(); }
+  // 離開戰鬥:本局作廢(不結算),停掉所有還在跑的計時器;to = 'menu' 回到主畫面 / 'stages' 返回關卡選擇
+  quit(to = 'menu') {
+    if (this.quitArmed !== to) { this.quitArmed = to; G.audio.play('fail'); return this.renderPause(); }
     this.run = (this.run || 0) + 1;
     G.clock.reset();
     G.voice.stop();
@@ -151,7 +155,7 @@ G.battle = {
     G.$('#stageView').classList.remove('rush');
     this.setTurn(null);
     if (G.tutorial.active) G.tutorial.cleanup();
-    G.scenes.menu();
+    if (to === 'stages') G.scenes.stages(); else G.scenes.menu();
   },
 
   async start(stageIdx) {
@@ -220,6 +224,7 @@ G.battle = {
     if (G.round() >= 2) await G.tips.show('shura');
     if (G.round() >= 3) await G.tips.show('tianmo');
     if (run !== this.run) return;
+    this.preloadEnemies(); // 先在背景載入這一關所有敵人的立繪(BOSS 警報的剪影、進場時才不會空白)
     const total = this.stage.waves.length;
     for (let w = 0; w < total; w++) {
       this.wave = w;
@@ -319,7 +324,7 @@ G.battle = {
       interval: Math.max(250, life * 0.45), patterns: this.patterns(),
       // 蓄力重拳:每回合其中一顆拳頭需要按住蓄力
       hold: { at: 1 + Math.floor(Math.random() * (p.attackCount - 1)), icon: '👊', label: 'HOLD', holdMs: HOLD_MS * (p.holdMaster ? 0.6 : 1) },
-      mods: { gold: GOLD_RATE * p.goldMul, hidden: m.hidden, blink: m.blink, armor: m.armor, swipe: m.swipe, mirror: m.mirror, spin: m.spin },
+      mods: { gold: GOLD_RATE * p.goldMul, hidden: m.hidden, blink: m.blink, armor: m.armor, swipe: m.swipe, mirror: m.mirror, spin: m.spin, greed: m.greed, greedAt: m.greedAt },
       onMirage: () => { combo = 0; this.comboBreak(); this.float('蜃樓!', 'tag miss'); },
       onSpin: () => this.spinFx(),
       onEmpty: () => this.backlash(), // 天魔:點空格反噬
@@ -410,7 +415,9 @@ G.battle = {
     this.soulReady = p.comboSoul;
     let missed = 0, api = null, walled = !p.autoGuard;
     await G.molePhase({
-      icon: '🛡️', cls, count, life, interval: life * 0.5, decoyRate: s ? s.decoy : 0, patterns: this.patterns(),
+      icon: '🛡️', cls, count, life, interval: life * 0.5, patterns: this.patterns(),
+      // 陷阱:BOSS 必殺技的 💀,或寶箱怪混進來的假盾牌(長得幾乎一樣,只有顏色偏紫、會微微抖動)
+      decoyRate: m.fake || (s ? s.decoy : 0), decoyIcon: m.fake ? '🛡️' : undefined, decoyCls: m.fake ? 'guard fake' : undefined,
       slowFirst: p.slowmo ? SLOWMO : null,
       onReady: a => { api = a; },
       mods: { blink: m.blink, ghost: m.ghost, armor: m.armor, lockon: m.lockon, heavy: m.heavy, timebomb: m.timebomb, timebombMs: Math.round(TIMEBOMB_MS * G.roundCfg().life), mirror: m.mirror, spin: m.spin },
@@ -465,7 +472,13 @@ G.battle = {
         }
       },
       onMiss: () => { missed++; this.comboBreak(); this.hurtPlayer(dmg); },
-      onDecoy: () => { missed++; this.comboBreak(); G.audio.play('poison'); this.hurtPlayer(dmg * 1.5); },
+      onDecoy: () => {
+        missed++;
+        this.comboBreak();
+        G.audio.play('poison');
+        if (m.fake) { this.float('假盾牌!', 'tag miss'); this.stealCoins(); } // 寶箱怪的假盾牌:咬一口還順手搶錢
+        this.hurtPlayer(dmg * 1.5);
+      },
       stop: () => this.over(),
     });
     this.phase = null;
@@ -926,12 +939,14 @@ G.battle = {
         if (done >= 0 && done < idx) return; // 剛點過的格子再碰到一次不算錯
         if (i === seq[idx]) {
           G.audio.play('note', idx);
+          G.grid.set(i, '✔', 'mem-ok', 0, String(idx + 1)); // 點對:浮出綠色按鈕,標上第幾個
           G.grid.impact(i, 'num', idx === len - 1);
           G.grid.flash(i, 'good');
           this.comboHit();
           if (++idx === len) { timer.stop(); G.grid.handler = null; res(true); }
         } else {
           timer.stop();
+          G.grid.set(i, '✖', 'mem-bad'); // 點錯:紅色按鈕
           G.grid.flash(i, 'bad');
           G.grid.impact(i, 'bad');
           G.grid.handler = null;
@@ -975,12 +990,22 @@ G.battle = {
     await G.clock.wait(700);
   },
 
+  // 預先載入這一關所有敵人(含寶箱怪)的立繪
+  preloadEnemies() {
+    this._preload = [...new Set(this.stage.waves.map(w => w.replace('+', '')))]
+      .map(id => G.ENEMIES[id]).concat(G.MIMIC).filter(d => d && d.img)
+      .map(d => { const img = new Image(); img.src = ENEMY_IMG_DIR + d.img; return img; });
+  },
+
   // 最終 BOSS 登場前的警報:音樂停下 → 警報聲、警示膠帶、BOSS 黑影、WARNING 閃爍(約 2.6 秒)
   async bossWarning(e) {
     const el = G.$('#bossWarn'), shadow = G.$('#bwShadow');
     G.bgm.stop();
     shadow.style.display = e.img ? '' : 'none';
-    if (e.img) shadow.src = ENEMY_IMG_DIR + e.img;
+    if (e.img) { // 剪影的圖還沒載入完就先等一下(最多 0.8 秒),不然警報播完了黑影才出現
+      shadow.src = ENEMY_IMG_DIR + e.img;
+      await Promise.race([shadow.decode ? shadow.decode().catch(() => {}) : Promise.resolve(), G.clock.wait(800)]);
+    }
     G.$('#bwName').textContent = e.name;
     el.classList.remove('show');
     void el.offsetWidth;
@@ -1540,9 +1565,20 @@ G.battle = {
   // 點到炸彈
   bomb(icon) {
     this.comboBreak();
-    this.float(icon === '💣' ? '炸彈!' : '中毒!', 'tag miss');
+    this.float(icon === '💣' ? '炸彈!' : icon === '💰' ? '假錢袋!' : '中毒!', 'tag miss');
+    if (icon === '💰') this.stealCoins(); // 寶箱怪的假錢袋:被搶錢
     G.audio.play('hurt');
     this.hurtPlayer(Math.round(4 + this.wave * 0.8 * this.stage.scale));
+  },
+
+  // 寶箱怪:搶走金幣(MIMIC_STEAL × 周回倍率,最多搶到 0 為止)
+  stealCoins() {
+    const sv = G.save.data, n = Math.min(sv.coins, Math.round(MIMIC_STEAL * G.roundCfg().points));
+    if (n <= 0) return;
+    sv.coins -= n;
+    G.save.write();
+    this.float(`💰 -${n}`, 'hurt', true);
+    G.audio.play('coin');
   },
 
   // 連線 / 掃射的三顆全部打中
@@ -1737,7 +1773,15 @@ G.battle = {
 
   // 有立繪用圖片,沒有就用暫代 emoji
   showSprite(e) {
-    const el = G.$('#enemySprite');
+    // 換一張全新的立繪節點:上一隻敵人沒播完的受擊 / 頓幀 / 倒下動畫不會延續到新敵人身上(進場就發亮)
+    const old = G.$('#enemySprite'), el = old.cloneNode(false);
+    old.replaceWith(el);
+    const view = G.$('#stageView'), en = G.$('#enemy');
+    view.classList.remove('hitstop');
+    view.querySelectorAll('.fx-fist, .fx-impact, .fx-tornado, .fx-shot').forEach(x => x.remove()); // 還在飛的拳頭、爆炸
+    en.getAnimations().forEach(a => a.cancel());
+    en.style.translate = en.style.rotate = en.style.transition = '';
+    G.clock.cancel(this._stateTimer);
     if (e.img) {
       el.innerHTML = '';
       const img = new Image();

@@ -312,6 +312,7 @@ G.I18N = {
   '三仙歸洞!': ['三つの壺!', 'Shell Game!'],
   '記住真身 👺 躲在哪一個傀儡裡,洗牌後點出來!': ['本体 👺 がどの人形に隠れたか覚えて、シャッフル後に見破れ!', 'Remember which puppet hides the real one 👺, then tap it after the shuffle!'],
   '看清楚真身在哪!': ['本体の位置をよく見て!', 'Watch where the real one is!'], '盯緊真身!': ['本体から目を離すな!', 'Keep your eyes on it!'], '點出真身!': ['本体をタップ!', 'Tap the real one!'],
+  '看穿真身!': ['本体を見破った!', 'Found the real one!'],
   '一筆畫!': ['一筆書き!', 'One Stroke!'],
   '手指不放開,一筆走過所有冰晶 ❄️!不能踩到裂冰,也不能走回頭。': ['指を離さず、一筆ですべての氷晶 ❄️ を通れ!割れた氷を踏んだり、同じマスに戻ったりしてはいけない。', 'Without lifting your finger, pass over every ice crystal ❄️ in one stroke! Don\'t step on cracked ice or go back over a cell.'],
   '一筆畫:走過所有冰晶!': ['一筆書き:すべての氷晶を通れ!', 'One stroke: cross every crystal!'],
@@ -359,7 +360,8 @@ G.I18N = {
   '繼續遊戲': ['つづける', 'RESUME'],
   '回到主畫面': ['タイトルメニューへ', 'MAIN MENU'],
   '再按一次確認': ['もう一度押して確定', 'Press again to confirm'],
-  '回到主畫面後,本局進度不會保留': ['メニューに戻ると、このプレイの進行は失われます', 'Returning to the menu discards this run'],
+  '離開戰鬥後,本局進度不會保留': ['戦闘を抜けると、このプレイの進行は失われます', 'Leaving the battle discards this run'],
+  '返回關卡選擇': ['ステージ選択に戻る', 'Back to Stage Select'],
 
   // ---- 技能 / 分歧 / 結算 ----
   '選擇一項技能': ['スキルを1つ選択', 'Choose a Skill'],
@@ -749,7 +751,8 @@ G.I18N = {
   '分歧事件「神秘寶箱」': ['分岐イベント「謎の宝箱」', 'Path event: Mystery Chest'],
   '打開神秘寶箱時有機率跳出來。強度跟著當下的關卡變化;打倒牠能搶回金幣與一個隨機技能,打不過牠也只會吃飽逃走。': ['謎の宝箱を開けると、たまに飛び出してくる。強さはその時のステージ次第。倒せばコインとランダムなスキルを奪えるが、負けても満腹になって逃げるだけ。', 'Sometimes leaps out when you open a Mystery Chest. Its strength matches the current stage. Beat it to take coins and a random skill; if you can\'t, it just eats its fill and runs.'],
   '寶箱張開大嘴撲了上來!打倒牠就能搶走寶物': ['宝箱が大口を開けて襲ってきた!倒せばお宝を奪える', 'The chest opens its jaws and lunges! Beat it to take its treasure'],
-  '寶箱怪:小心混在拳頭裡的假錢袋 💰': ['ミミック:拳に紛れたニセの金袋 💰 に注意', 'Mimic: watch out for fake money bags 💰 among the fists'],
+  '寶箱怪:拳頭放太久會變成假錢袋 💰,防禦時小心偏紫、會抖的假盾牌!': ['ミミック:拳を放っておくとニセの金袋 💰 に変わる。防御では紫がかって震えるニセの盾に注意!', 'Mimic: fists left too long turn into fake money bags 💰. On defense, watch for fake shields—slightly purple and twitching!'],
+  '假錢袋!': ['ニセ金袋!', 'Fake bag!'], '假盾牌!': ['ニセの盾!', 'Fake shield!'],
   '擊退寶箱怪!': ['ミミック撃退!', 'Mimic defeated!'], '搶回寶物:金幣 💰 +{0}': ['お宝を奪った:コイン 💰 +{0}', 'Treasure taken: 💰 +{0}'],
   '寶箱怪逃走了…': ['ミミックが逃げた…', 'The mimic fled…'], '牠吃飽就溜了,什麼也沒留下': ['満腹になって逃げていった。何も残っていない', 'It ate its fill and slipped away, leaving nothing behind'],
   '惡魔': ['悪魔', 'Devil'], '「想要力量嗎?只要付出一點點代價……」': ['「力が欲しいか?ほんの少しの代償でな……」', '"Want power? It only costs a little…"'],

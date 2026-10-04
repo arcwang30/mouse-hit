@@ -87,7 +87,8 @@ G.$('#pauseResume').onclick = () => G.battle.resume();
 G.$('#pauseSkills').onclick = () => G.battle.showPauseSkills(true);
 G.$('#psBack').onclick = () => G.battle.showPauseSkills(false);
 G.$('#pauseSettings').onclick = () => G.pages.settingsOver();
-G.$('#pauseQuit').onclick = () => G.battle.quit();
+G.$('#pauseQuit').onclick = () => G.battle.quit('menu');
+G.$('#pauseStages').onclick = () => G.battle.quit('stages');
 G.$('#coachSkip').onclick = () => G.tutorial.skip();
 // 切到別的分頁 / App 時自動暫停
 document.addEventListener('visibilitychange', () => { if (document.hidden) G.battle.pause(); });

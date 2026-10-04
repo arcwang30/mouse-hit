@@ -214,11 +214,12 @@
         };
       });
       at.forEach(c => G.grid.cells[c].classList.remove('shell-pick'));
-      // 揭曉:真身換回 👺,點錯的那個傀儡碎掉
-      dolls[0].textContent = '👺';
-      dolls[0].classList.add('real');
+      // 揭曉:真身換回 👺;點對 → 那個傀儡浮起、綠框加 ✔ 爆出光效;點錯 → 紅框加 ✖ 化成煙,真身另外亮紅光
       const won = pick === at[0];
-      if (pick >= 0 && !won) { const d = dolls[at.indexOf(pick)]; d.textContent = '💨'; d.classList.add('wrong'); }
+      dolls[0].textContent = '👺';
+      dolls[0].classList.add(won ? 'caught' : 'real');
+      if (won) { G.grid.flash(pick, 'good'); G.grid.impact(pick, 'num', true); this.float('看穿真身!', 'tag armor'); }
+      else if (pick >= 0) { const d = dolls[at.indexOf(pick)]; d.textContent = '💨'; d.classList.add('wrong'); G.grid.flash(pick, 'bad'); G.grid.impact(pick, 'bad'); }
       G.audio.play(won ? 'perfect' : 'fail');
       await G.clock.wait(900);
       layer.remove();

@@ -539,7 +539,7 @@ html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; } /* 手機瀏覽
   animation: bwPulse .55s ease-in-out infinite;
 }
 .bw-shadow { /* BOSS 的黑影慢慢逼近 */
-  position: absolute; left: 50%; top: 50%; height: 62cqh; width: auto; opacity: .55;
+  position: absolute; left: 50%; top: 50%; height: 62cqh; width: 96cqw; object-fit: contain; opacity: .55; /* 寬的立繪也縮在畫面內,不會偏出框 */
   transform: translate(-50%, -50%) scale(1.1);
   filter: brightness(0) drop-shadow(0 0 2cqw #ff0022) drop-shadow(0 0 6cqw #ff002299);
   animation: bwLoom 2.6s ease-out forwards;
@@ -1131,3 +1131,29 @@ html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; } /* 手機瀏覽
   font-size: 6.5cqw; background: radial-gradient(circle, #0a3a5a, #041a2a); box-shadow: 0 0 0 .5cqw #7fe9ff, 0 0 3cqw #4ad0ff; animation: linkPulse .4s ease-in-out infinite alternate; }
 @keyframes linkPulse { to { transform: translate(-50%, -50%) scale(1.15); } }
 .cell.twin .label { background: #7fe9ff; color: #002a3a; }
+/* 寶箱怪:假盾牌(和真的盾牌幾乎一樣,只是偏紫、會神經質地抖動)/ 拳頭變成的假錢袋 */
+.cell.guard.fake .cap { filter: hue-rotate(55deg) saturate(1.25); animation: rise .2s cubic-bezier(.3, 1.7, .5, 1), fakeTwitch .9s steps(1) infinite; }
+@keyframes fakeTwitch { 0%, 70% { translate: 0 0; } 75% { translate: -1.5% 0; } 80% { translate: 1.5% 0; } 85% { translate: 0 0; } }
+.cell.greed-trap .cap { background: linear-gradient(180deg, #fff2a0, #c89a10 55%, #6a4a00); --edge: #3a2400; animation: greedFlip .25s ease-out; }
+@keyframes greedFlip { from { transform: translateY(-4%) rotateY(90deg); } }
+/* 記憶考驗:點對 → 綠色 ✔ 按鈕(標第幾個)、點錯 → 紅色 ✖ */
+.cell.mem-ok .cap { background: linear-gradient(180deg, #d8ffe8, #3ddc84 55%, #0f7a40); --edge: #04381c; color: #fff; }
+.cell.mem-ok .label { background: #fff; color: #0f7a40; }
+.cell.mem-bad .cap { background: linear-gradient(180deg, #ffd0d0, #ff3a4a 55%, #8a0a14); --edge: #40040a; color: #fff; }
+/* 蜃樓:點中鏡像格時,點的那一格也浮出一顆按鈕再壓下 */
+.pop-hit { position: absolute; left: 7%; right: 7%; top: 5%; bottom: 13%; z-index: 2; display: grid; place-items: center; pointer-events: none;
+  border-radius: 3.5cqw; background: linear-gradient(180deg, #d8ffe8, #3ddc84 55%, #0f7a40);
+  box-shadow: inset 0 .9cqw 0 #ffffff70, 0 2.2cqw 0 #04381c, 0 0 4cqw #3ddc84; animation: popHit .42s ease-out forwards; }
+.pop-hit i { font-style: normal; font-size: 12cqw; line-height: 1; }
+@keyframes popHit { 0% { transform: translateY(45%) scale(.7); opacity: 0; } 35% { transform: translateY(-4%) scale(1.05); opacity: 1; } 60% { transform: translateY(14%); filter: brightness(1.4); } 100% { transform: translateY(14%); opacity: 0; } }
+/* 三仙歸洞:點中真身 → 傀儡浮起、綠框、右上角 ✔、爆出光環;點錯的傀儡 → 紅框 ✖ */
+.gs-doll.caught { box-shadow: 0 0 0 .7cqw #3ddc84, 0 0 6cqw #3ddc84; animation: dollCaught .5s ease-out forwards; }
+.gs-doll.caught::after, .gs-doll.wrong::after { position: absolute; right: -6%; top: -6%; display: grid; place-items: center; width: 40%; height: 40%; border-radius: 50%;
+  font-size: 60%; color: #fff; box-shadow: 0 .4cqw 0 #0008; }
+.gs-doll.caught::after { content: '✔'; background: #3ddc84; }
+.gs-doll.wrong::after { content: '✖'; background: #ff3a4a; }
+.gs-doll.wrong { box-shadow: 0 0 0 .6cqw #ff3a4a, 0 0 4cqw #ff3a4a; }
+/* 不縮放傀儡本身(會連定位一起放大而跑位):改成發亮 + 光環擴散 */
+@keyframes dollCaught { 40% { filter: brightness(1.8); box-shadow: 0 0 0 1.2cqw #3ddc84, 0 0 10cqw #3ddc84; } 100% { filter: brightness(1.2); } }
+.gs-doll.caught::before { content: ""; position: absolute; inset: 0; border-radius: 50%; box-shadow: 0 0 0 .8cqw #3ddc84; animation: dollRing .6s ease-out forwards; }
+@keyframes dollRing { from { transform: scale(1); opacity: 1; } to { transform: scale(2.2); opacity: 0; } }

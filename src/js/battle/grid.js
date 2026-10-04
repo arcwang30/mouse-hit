@@ -147,6 +147,15 @@ G.grid = {
     G.$('#grid').style.setProperty('--grot', '0deg');
   },
 
+  // 在第 i 格短暫浮出一顆按鈕再壓下(不佔格子狀態,不影響之後在這格冒出的符號)
+  popAt(i, icon) {
+    const p = document.createElement('span');
+    p.className = 'pop-hit';
+    p.innerHTML = `<i>${icon}</i>`;
+    this.cells[i].appendChild(p);
+    setTimeout(() => p.remove(), 420);
+  },
+
   bump(i) {
     const c = this.cells[i];
     c.classList.remove('bump');
@@ -162,7 +171,7 @@ G.grid = {
 // 進階選項:
 //   patterns       出現模式權重(single/pair/triple/line/sweep/rapid),見下方 spawnGroup
 //   hold           { at, icon, label, holdMs } 第 at 個符號改成「按住蓄力」,放開時 onHit(i, { hold, charged })
-//   decoyRate      混入陷阱(不計入次數,點到觸發 onDecoy);decoyIcon 陷阱圖示,預設 💀
+//   decoyRate      混入陷阱(不計入次數,點到觸發 onDecoy);decoyIcon 陷阱圖示,預設 💀;decoyCls 陷阱的外觀(假盾牌用)
 //   onSpawn(i, ms) 回傳特效物件 { block, hit, cancel },在點中/錯過/提前結束時呼叫
 //   onLine(cells)  連線 / 掃射出現的一整條全部打中
 //   onGhost(i)     點到殘影;onChip(i, type, cleared) 敲到觸手 / 冰
@@ -178,6 +187,7 @@ G.grid = {
 //     timebomb 倒數:每組另外冒出一顆 💣(不計入次數),timebombMs 內點掉 = 拆除(onDefuse),時間到爆炸(onBomb)
 //     mirror 蜃樓:符號是幻影(標 ⇋),要點左右對稱的鏡像格才算打中;點幻影本身 = onMirage
 //     spin   磁暴:階段中途九宮格整個旋轉(onSpin)
+//     greed  貪婪(寶箱怪):拳頭冒出 greedAt 比例的時間後變成陷阱(decoyIcon),之前沒打中就算錯過,之後點到觸發 onDecoy
 //   流沙格(格子狀態 sand)上的符號停留時間 ×SAND_LIFE
 const SAND_LIFE = 0.55; // 流沙格上符號的停留時間倍率
 G.molePhase = o => new Promise(resolve => {
@@ -414,7 +424,7 @@ G.molePhase = o => new Promise(resolve => {
     goneAt[i] = G.clock.now();
     G.grid.impact(i, o.cls.includes('guard') ? 'guard' : a.gold ? 'num' : 'fist', a.gold || auto);
     const ratio = Math.max(0, a.life - (G.clock.now() - a.born)) / a.life;
-    if (a.mirror !== undefined) G.grid.flash(a.mirror, 'good'); // 蜃樓:鏡像格也亮一下
+    if (a.mirror !== undefined) { G.grid.flash(a.mirror, 'good'); G.grid.popAt(a.mirror, a.icon); } // 蜃樓:點的那一格(鏡像格)也浮出按鈕表現打中
     unMirror(a);
     kill(a); active.delete(i);
     G.grid.clear(i, 'press');
@@ -469,13 +479,14 @@ G.molePhase = o => new Promise(resolve => {
       life += 400;
     } else if (kind === 'decoy') {
       icon = o.decoyIcon || '💀';
-      cls = 'decoy';
+      cls = o.decoyCls || 'decoy';
     } else if (kind === 'timebomb') {
       icon = '💣';
       cls = 'timebomb';
       life = mods.timebombMs || 3000;
     } else if (kind === 'normal') {
-      if (roll(mods.gold)) { a.gold = true; cls += ' gold'; label = '×2.5'; life *= 0.6; }
+      // 金拳:停留很短,場上同時最多一顆(避免一次冒出好幾顆 ×2.5)
+      if (roll(mods.gold) && ![...active.values()].some(x => x.gold)) { a.gold = true; cls += ' gold'; label = '×2.5'; life *= 0.45; }
       else if (roll(mods.armor)) { a.armor = 1; cls += ' crystal'; }
       else if (roll(mods.swipe)) { // 疾風:隨機一個方向,停留時間多給一點(滑動比點擊慢)
         a.swipe = G.pick(['up', 'down', 'left', 'right']);
@@ -483,8 +494,10 @@ G.molePhase = o => new Promise(resolve => {
         label = { up: '↑', down: '↓', left: '←', right: '→' }[a.swipe];
         life *= 1.25;
       }
+      // 貪婪(寶箱怪):一般拳頭放太久會變成陷阱
+      if (!a.gold && !a.armor && !a.swipe && roll(mods.greed)) a.greed = true;
       // 蜃樓:中間那一行沒有鏡像,左右兩行才會出現;鏡像格要空著
-      if (!a.gold && !a.armor && !a.swipe && i % 3 !== 1 && roll(mods.mirror)) {
+      if (!a.gold && !a.armor && !a.swipe && !a.greed && i % 3 !== 1 && roll(mods.mirror)) {
         const m = mirrorOf(i);
         if (!active.has(m) && !reserved.has(m)) { a.mirror = m; reserved.add(m); mirrorAt.set(m, i); cls += ' mirage'; label = '⇋'; }
       }
@@ -514,6 +527,19 @@ G.molePhase = o => new Promise(resolve => {
     if (o.onSpawn && (kind === 'normal' || a.heavy)) a.fx = o.onSpawn(i, life);
     armExpire(i, a, life);
     active.set(i, a);
+    // 貪婪:greedAt 比例的時間一到,拳頭變成陷阱(這顆拳頭算錯過);剩下的時間點到它就觸發 onDecoy
+    if (a.greed) a.ts.push(G.clock.after(() => {
+      if (finished || active.get(i) !== a) return;
+      a.kind = 'decoy';
+      const c = cell(i);
+      c.classList.add('greed-trap');
+      c.querySelector('.icon').textContent = o.decoyIcon || '💀';
+      c.querySelector('.label').textContent = '';
+      G.grid.bump(i);
+      G.audio.play('coin');
+      o.onMiss(i);
+      settle();
+    }, life * (mods.greedAt || 0.45)));
 
     if (kind === 'normal' || a.heavy) {
       // 醉影:旁邊多一個假的
