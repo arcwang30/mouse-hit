@@ -190,7 +190,7 @@ G.grid = {
 //     greed  貪婪(寶箱怪):拳頭冒出 greedAt 比例的時間後變成陷阱(decoyIcon),之前沒打中就算錯過,之後點到觸發 onDecoy
 //   流沙格(格子狀態 sand)上的符號停留時間 ×SAND_LIFE
 const SAND_LIFE = 0.55; // 流沙格上符號的停留時間倍率
-const GOLD_LIFE = 0.4;  // 金拳的停留時間倍率(另有每一輪的上限 goldMs)
+const GOLD_LIFE = 0.45; // 金拳的停留時間倍率(再限制在每一輪的 goldMs [下限, 上限] 之間)
 G.molePhase = o => new Promise(resolve => {
   const mods = o.mods || {};
   const active = new Map();     // 格子 → 目前的符號
@@ -524,7 +524,7 @@ G.molePhase = o => new Promise(resolve => {
       life = mods.timebombMs || 3000;
     } else if (kind === 'normal') {
       // 金拳:停留很短,場上同時最多一顆(避免一次冒出好幾顆 ×2.5)
-      if (roll(mods.gold) && ![...active.values()].some(x => x.gold)) { a.gold = true; cls += ' gold'; label = '×2.5'; life = Math.min(life * GOLD_LIFE, mods.goldMs || Infinity); }
+      if (roll(mods.gold) && ![...active.values()].some(x => x.gold)) { a.gold = true; cls += ' gold'; label = '×2.5'; life = mods.goldMs ? Math.min(Math.max(life * GOLD_LIFE, mods.goldMs[0]), mods.goldMs[1]) : life * GOLD_LIFE; }
       else if (roll(mods.armor)) { a.armor = 1; cls += ' crystal'; }
       else if (roll(mods.swipe)) { // 踢擊 🦵:隨機一個方向,要往箭頭方向滑;停留時間多給一點(滑動比點擊慢)
         a.swipe = G.pick(['up', 'down', 'left', 'right']);

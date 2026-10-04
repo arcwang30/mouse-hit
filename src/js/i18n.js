@@ -114,9 +114,9 @@ G.I18N = {
   '符號更快消失、更常多發,敵人多一種招式,波與波之間不回血。連擊中斷會扣必殺值,敵人越打越狂暴。成長上限 Lv15,點數 ×1.5。':
     ['符号が速く消え、複数出現が増加。敵の技が 1 つ増え、WAVE 間の回復なし。コンボが途切れると必殺ゲージが減り、敵は戦うほど狂暴化。強化上限 Lv15、ポイント ×1.5。',
      'Symbols vanish faster and come in bunches, enemies gain an extra trick, and there is no healing between waves. Breaking a combo drains Special, and enemies grow more enraged the longer a fight lasts. Upgrade cap Lv15, points ×1.5.'],
-  '最高難度:符號極快、敵人多兩種招式、多一面盾牌,BOSS 每 2 回合放必殺技,不回血。點空格會反噬受傷,每回合有 2 格被封印。成長上限 Lv20,點數 ×2。':
-    ['最高難度:符号は超高速、敵の技が 2 つ増え盾も 1 枚増加、BOSS は 2 ターンごとに必殺技、回復なし。空きマスを叩くと反動ダメージ、毎ターン 2 マスが封印される。強化上限 Lv20、ポイント ×2。',
-     'Hardest: blazing-fast symbols, two extra enemy tricks plus an extra shield, boss specials every 2 turns, no healing. Tapping an empty cell backfires, and 2 cells are sealed every turn. Upgrade cap Lv20, points ×2.'],
+  '最高難度:符號極快、敵人多兩種招式、多一面盾牌,BOSS 每 2 回合放必殺技,不回血。每回合有 2 格被封印。成長上限 Lv20,點數 ×2。':
+    ['最高難度:符号は超高速、敵の技が 2 つ増え盾も 1 枚増加、BOSS は 2 ターンごとに必殺技、回復なし。毎ターン 2 マスが封印される。強化上限 Lv20、ポイント ×2。',
+     'Hardest: blazing-fast symbols, two extra enemy tricks plus an extra shield, boss specials every 2 turns, no healing. 2 cells are sealed every turn. Upgrade cap Lv20, points ×2.'],
   '{0} 開啟!': ['{0} 解放!', '{0} unlocked!'],
   '成長上限提升至 Lv{0}': ['強化上限が Lv{0} に上昇', 'Upgrade cap raised to Lv{0}'],
   '{0} 點': ['{0} pt', '{0} pt'],
@@ -324,7 +324,7 @@ G.I18N = {
   '修羅的規則': ['修羅のルール', 'Asura Rules'],
   '修羅起有兩條新規則:① 連擊 3 以上時失誤,會扣掉一部分必殺值。② 敵人從第 3 次攻擊起會狂暴,每次攻擊越來越痛,戰鬥拖越久越危險。': ['修羅から新ルールが 2 つ:① コンボ 3 以上でミスすると必殺ゲージが一部減る。② 敵は 3 回目の攻撃から狂暴化し、攻撃のたびに痛くなる。長引くほど危険。', 'Asura adds two rules: ① Missing with a combo of 3+ drains part of your Special. ② From their 3rd attack, enemies grow enraged and hit harder each time—the longer the fight, the deadlier.'],
   '天魔的規則': ['天魔のルール', 'Demon Rules'],
-  '天魔再加兩條:① 反噬:點到空格會受傷並中斷連擊,不能再亂按。② 封印:每回合有 2 格被鎖鏈封住,不會冒出符號,節奏會被打亂。': ['天魔ではさらに 2 つ:① 反動:空きマスを叩くとダメージを受けコンボが途切れる。連打は禁物。② 封印:毎ターン 2 マスが鎖で封じられ、記号が出なくなる。リズムが崩れる。', 'Demon adds two more: ① Backlash: tapping an empty cell hurts you and breaks your combo—no more button mashing. ② Seal: 2 cells are chained shut each turn and spawn nothing, throwing off your rhythm.'],
+  '天魔再加一條:封印:每回合有 2 格被鎖鏈封住,不會冒出符號,節奏會被打亂。': ['天魔ではさらに 1 つ:封印:毎ターン 2 マスが鎖で封じられ、記号が出なくなる。リズムが崩れる。', 'Demon adds one more: Seal: 2 cells are chained shut each turn and spawn nothing, throwing off your rhythm.'],
   '反噬!': ['反動!', 'Backlash!'], '狂暴 +{0}%': ['狂暴 +{0}%', 'Enraged +{0}%'], '必殺 -{0}%': ['必殺 -{0}%', 'Special -{0}%'],
   '旋風破綻': ['旋風の隙', 'Cyclone Opening'],
   '雷達指針轉進發亮的缺口時,點一下抓住破綻!接著在限時內用手指在圓盤上畫圈,每轉一圈就捲起一道龍捲風繞住敵人。轉滿最低圈數就能破甲,轉越多風級越高(旋風 → 暴風 ×1.25 → 颶風 ×1.5),轉到颶風就立刻收招,把敵人捲上天再狠狠摔下!': ['レーダーの針が光る切れ目に入った瞬間にタップして隙をつかめ!続けて制限時間内に円盤の上で指をぐるぐる回そう。1 周ごとに竜巻が敵を取り囲む。規定の周数で装甲破壊、回すほど風が強まり(旋風 → 暴風 ×1.25 → 颶風 ×1.5)。颶風に達した瞬間に決め技、敵を空へ巻き上げて叩き落とす!', 'Tap when the radar needle enters the glowing gap to seize the opening! Then keep drawing circles on the dial until time runs out—each full turn sends a tornado to swirl around the enemy. Reach the minimum turns to break its armor; the more you spin, the stronger the wind (Cyclone → Gale ×1.25 → Hurricane ×1.5). Reach Hurricane and the finisher fires at once, hurling the enemy into the sky and slamming it down!'],
