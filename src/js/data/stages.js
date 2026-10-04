@@ -294,7 +294,7 @@ G.MECH_INFO = {
   timebomb: { name: '倒數炸彈', hint: '點燃的 💣 會跳格,要追著點 2~3 下才拆得掉' },
   lava:     { name: '熔岩', hint: '燒紅格子的拳頭傷害 ×2,但會燙傷自己' },
   blink:    { name: '瞬移', hint: '符號會跳到別格' },
-  swipe:    { name: '疾風腿', hint: '踢擊 🦵 特別多,要往箭頭方向滑' },
+  swipe:    { name: '疾風腿', hint: '踢擊(綠色腳印)特別多,要往箭頭方向滑' },
   ice:      { name: '冰封', hint: '結冰的格子要先敲破冰' },
   ghost:    { name: '殘影', hint: '點到半透明殘影會中斷連擊' },
   tentacle: { name: '觸手', hint: '觸手蓋住的格子,敲 3 下清掉' },

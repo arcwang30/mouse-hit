@@ -57,6 +57,8 @@
 .ht-cell .icon { font-size: 7.5cqw; }
 .ht-cell.num .icon { font-size: 8cqw; }
 .ht-cell .label { font-size: 1.9cqw; padding: .1cqw 1cqw; }
+.ht-cell.kick .icon { width: 11cqw; height: 11cqw; } /* 踢擊:小圖示裡腳印和箭頭縮小,腳印才看得到 */
+.ht-cell.kick .label { width: 8cqw; height: 8cqw; }
 
 .ht-stage { margin-bottom: 3cqw; }
 .ht-stage-name {

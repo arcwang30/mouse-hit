@@ -172,7 +172,7 @@ G.MECHS = {
   skyEmpress:  { hint: '天穹:瞬移與鎖定交替,拳頭會先顯示 ❓',
     rotate: [{ atk: { hidden: 0.45 }, def: { blink: 0.5, lockon: 400 } }, { atk: { blink: 0.4 }, def: { ghost: 0.5, armor: 0.25 } }] },
   clockBomber: { hint: '倒數:點燃的 💣 每點一下就跳格,追著點滿次數才拆得掉,倒數歸零就爆炸!', def: { timebomb: 0.45 } },
-  skater:      { hint: '疾風:踢擊 🦵 特別多,往箭頭方向滑(傷害 ×1.5)', atk: { swipe: 0.4 } },
+  skater:      { hint: '疾風:踢擊(綠色腳印)特別多,往箭頭方向滑(傷害 ×1.5)', atk: { swipe: 0.4 } },
   magician:    { hint: '幻術:記住格子閃爍的順序,照同樣順序點回來', def: { memory: true } },
   // 第二章:sand 流沙(格子狀態)、spin 磁暴(九宮格旋轉)、mirror 蜃樓(要點鏡像格)
   sandBandit:   { hint: '沙盜:拳頭會瞬移,流沙格上的符號沉得快', board: 'sand', atk: { blink: 0.3 } },

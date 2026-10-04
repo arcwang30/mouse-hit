@@ -160,9 +160,9 @@
         return r.charged || '太早放開了,要等按鈕發光再放開。';
       });
 
-      // 4. 踢擊:帶箭頭的 🦵 要往箭頭方向滑
-      await step(4, '帶箭頭的 🦵 是踢擊!按住它,往箭頭的方向滑過去,傷害 ×1.5。', async () =>
-        (await attack({ count: 2, life: LONG, point: true, mods: { swipe: 1 } })).kicks >= 2 || '要按住 🦵,再往箭頭的方向滑喔!');
+      // 4. 踢擊:帶黃色箭頭的綠色腳印要往箭頭方向滑
+      await step(4, '帶黃色箭頭的綠色腳印是踢擊!按住它,往箭頭的方向滑過去,傷害 ×1.5。', async () =>
+        (await attack({ count: 2, life: LONG, point: true, mods: { swipe: 1 } })).kicks >= 2 || '要按住腳印,再往箭頭的方向滑喔!');
 
       // 5. 防禦
       await step(5, '敵人攻擊時會冒出 🛡️,在攻擊打到你之前點掉它!剛出現的金色時擋下,反擊力最高。', async () =>
