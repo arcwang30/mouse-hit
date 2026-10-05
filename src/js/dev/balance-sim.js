@@ -63,7 +63,7 @@ window.simRun = function (stageIdx, skill, upLv) {
       } else {
         let combo = 0, first = true;
         const counter = counterNext, count = p.attackCount;
-        const stateBonus = powerNext / 100 + (brokenNext ? 0.5 : 0); // 和遊戲相同:反擊、破甲、完美、FEVER 相加
+        const stateBonus = powerNext / 100 + (brokenNext ? 0.35 : 0); // 和遊戲相同:反擊、破甲、完美、FEVER 相加
         counterNext = powerNext = 0;
         brokenNext = false;
         const r = clamp(skill + (p.moleLife * rc.fistLife - 1200) / 2000 - patPenalty - atkPen + sim.hit);
@@ -119,9 +119,12 @@ window.simRun = function (stageIdx, skill, upLv) {
         if (decoy && Math.random() < decoy / (1 - decoy) * 0.2) { missed++; hurt(dmg * 1.5); }
       }
       // 全部擋下 → 破綻:先依序點數字(成功率約同點擊),再狂按大按鈕(幾乎都按得完)
-      if (!missed && p.hp > 0 && Math.random() < clamp(skill + 0.05 - 0.05 * (G.roundCfg().breakLen - 4)) * 0.95) { // 第二、三輪數字更多
+      const alert = e.alert > 0; // 敵人警戒:上次破甲成功後的下一次攻擊不會有破綻
+      if (alert) e.alert--;
+      if (!alert && !missed && p.hp > 0 && Math.random() < clamp(skill + 0.05 - 0.05 * (G.roundCfg().breakLen - 4)) * 0.95) { // 第二、三輪數字更多
         e.hp -= p.atk * 4;
         brokenNext = true;
+        e.alert = 1;
       }
     }
     if (p.hp <= 0) return w;

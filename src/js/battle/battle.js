@@ -48,8 +48,8 @@ const DIAL_KEY_DEG = 60; // 鍵盤畫圈:← → 交替每按一下轉幾度(6 �
 // 旋風破綻的風級:轉滿最低圈數後,每多轉 extra 圈升一級,破甲傷害乘上 mul(畫圈限時內一直轉,轉越多越痛)
 const DIAL_TIERS = [{ extra: 0, name: '旋風', mul: 1 }, { extra: 2, name: '暴風', mul: 1.25 }, { extra: 4, name: '颶風', mul: 1.5 }]; // 最高 = 攻擊力 ×6,和必殺技、BOSS 小遊戲成功同級
 // 完美:符號出現後的前 30% 時間內點中(剩餘比例 ≥ PERFECT_AT),傷害加成 +PERFECT_BONUS(和反擊、破甲、FEVER 相加)、必殺值多 PERFECT_ULT
-// 破甲成功後下一回合的傷害加成 BROKEN_BONUS(同樣和其他狀態加成相加)
-const PERFECT_AT = 0.7, PERFECT_BONUS = 0.3, PERFECT_ULT = 2, BROKEN_BONUS = 0.5;
+// 破甲成功後下一回合的傷害加成 BROKEN_BONUS(同樣和其他狀態加成相加);破甲後敵人警戒 BREAK_ALERT 次攻擊,這段期間全擋也不會有破綻
+const PERFECT_AT = 0.7, PERFECT_BONUS = 0.3, PERFECT_ULT = 2, BROKEN_BONUS = 0.35, BREAK_ALERT = 1;
 const BREAK_TUTORIAL_MS = 4500; // 新手教學的破綻數字限時(正式關卡見 G.ROUNDS 的 breakTime)
 const ENRAGE_FROM = 3, ENRAGE_MAX = 5; // 修羅以上:敵人第幾次攻擊起開始狂暴(每次再加 G.ROUNDS 的 enrage,最多疊幾層)
 const BONUS_STARS = [40, 70]; // 特訓關:狂打幾 HIT 拿第二、第三顆星
@@ -311,7 +311,7 @@ G.battle = {
     let first = true, combo = 0;
     const counter = this.counterStack || 0;    // 反震掌:上回合格擋累積的每拳加成
     const power = this.counterPct || 0;        // 格擋越快累積越多的反擊力(%)
-    const broken = this.brokenNext;            // 上一輪破綻連打成功:每拳 +50%(BROKEN_BONUS)
+    const broken = this.brokenNext;            // 上一輪破綻連打成功:每拳 +35%(BROKEN_BONUS)
     this.counterStack = 0;
     this.counterPct = 0;
     this.brokenNext = false;
@@ -390,7 +390,16 @@ G.battle = {
     this.render();
   },
 
+  // 敵人回合:破甲成功後敵人警戒(e.alert),接下來這一次攻擊全擋也不會出現破綻
   async enemyTurn() {
+    const e = this.e, alert = (e.alert || 0) > 0;
+    this.breakBlocked = alert;
+    await this.enemyAttack();
+    this.breakBlocked = false;
+    if (alert && this.e === e) { e.alert--; this.render(); }
+  },
+
+  async enemyAttack() {
     const e = this.e, p = this.p;
     e.turn++;
     const s = e.skill && e.turn % (e.skillEvery || 3) === 0 ? e.skill : null;
@@ -516,6 +525,10 @@ G.battle = {
   // 破綻:先依序點數字抓住破綻(原本必殺技的指令輸入),成功後九宮格變成一顆大按鈕狂按破甲
   async breakChance() {
     const e = this.e;
+    if (this.breakBlocked) { // 敵人警戒中:全擋了也不露破綻
+      this.float('敵人警戒中', 'tag');
+      return;
+    }
     const hits = e.boss ? 14 : e.elite ? 12 : 10;
     this.setEnemyState('stagger');
     if (!G.tutorial.active && Math.random() < DIAL_CHANCE) return this.dialBreak(); // 另一種玩法:旋風破綻
@@ -564,6 +577,7 @@ G.battle = {
     if (broken) {
       this.stats.breaks++;
       this.brokenNext = true;
+      if (!G.tutorial.active) this.e.alert = BREAK_ALERT; // 被破甲後敵人提高警戒(新手教學不受影響)
       this.comboHit();
       G.audio.play('break');
       if (!tier) this.punchFx(1, { crit: true, final: true, dur: 200 });
@@ -1855,6 +1869,10 @@ G.battle = {
     const hpRate = p.hp / p.maxHp;
     G.$('#battle').classList.toggle('danger', p.hp > 0 && hpRate <= 0.3 && hpRate > 0.15);
     G.$('#battle').classList.toggle('critical', p.hp > 0 && hpRate <= 0.15);
+    // 敵人警戒中:名字旁顯示 👁️(這段期間不會有破綻)
+    const nm = G.$('#enemyName');
+    nm.classList.toggle('alert', (e.alert || 0) > 0);
+    nm.dataset.alert = G.t('警戒');
     G.$('#enemyHpFill').style.width = (e.hp / e.maxHp * 100) + '%';
     G.$('#enemyHpText').textContent = `${e.hp}/${e.maxHp}`;
     G.$('#ultFill').style.width = (p.ult / p.ultMax * 100) + '%';
