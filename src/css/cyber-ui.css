@@ -1076,6 +1076,28 @@ html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; } /* 手機瀏覽
 .cell.clash-btn .cap { background: linear-gradient(180deg, #ffb36b, #ff5a1f 55%, #c2300a); --edge: #7a1c04; animation: clashPulse .5s ease-in-out infinite alternate; }
 .cell.clash-btn .label { font-size: 4.4cqw; }
 @keyframes clashPulse { to { filter: brightness(1.25) drop-shadow(0 0 2cqw #ff9a2a); } }
+/* 按下 L / R:按鈕往下壓再彈起(原本的脈動照樣進行) */
+.cell.clash-btn.bump .cap { animation: clashPress .16s ease-out, clashPulse .5s ease-in-out infinite alternate; }
+@keyframes clashPress { 35% { transform: translateY(10%) scale(.9); filter: brightness(1.6); } 75% { transform: translateY(-4%) scale(1.04); } }
+/* 熱鬥:交鋒點噴火花、💥 每推一下就跳一下;點得越快熱度越高 */
+.gm-clash .gc-mark.hit { animation: gcMarkHit .18s ease-out; }
+@keyframes gcMarkHit { 40% { transform: translate(-50%, -50%) scale(1.6) rotate(-12deg); filter: drop-shadow(0 0 3cqw #fff) brightness(1.4); } }
+.gc-sparks { position: absolute; top: 50%; width: 0; height: 0; z-index: 2; pointer-events: none; }
+.gc-sparks i { position: absolute; width: 1.2cqw; height: 1.2cqw; margin: -.6cqw; border-radius: 50%; background: #fff2a8; box-shadow: 0 0 1.5cqw #ffb02a; animation: gcSpark .42s ease-out forwards; }
+@keyframes gcSpark { to { transform: translate(var(--dx), var(--dy)) scale(.3); opacity: 0; } }
+/* 熱度高:力量條著火、「熱鬥!」字樣浮出、整條微微震動 */
+.gm-clash .gc-fill { box-shadow: 0 0 calc(var(--heat, 0) * 4cqw) #ff7a1a; }
+.gm-clash .gc-hot { position: absolute; left: 50%; bottom: 120%; transform: translateX(-50%); font-style: normal; font-weight: 900; font-size: 4.6cqw; color: #ffe14a;
+  text-shadow: 0 0 1.5cqw #ff5a1f, 0 .3cqw 0 #7a1c04; white-space: nowrap; opacity: 0; transition: opacity .2s; pointer-events: none; }
+.gm-clash.hot .gc-hot { opacity: 1; animation: gcHot .3s ease-in-out infinite alternate; }
+@keyframes gcHot { to { transform: translateX(-50%) scale(1.15); } }
+.gm-clash.hot .gc-track { animation: gcJolt .09s linear infinite; }
+@keyframes gcJolt { 50% { transform: translate(.3cqw, -.2cqw); } }
+/* 九宮格四周的火光,強度跟著熱度 */
+.gc-heat { position: absolute; inset: 0; z-index: 4; pointer-events: none; opacity: var(--heat, 0); transition: opacity .15s;
+  background: radial-gradient(ellipse at 50% 50%, transparent 45%, #ff6a1a55 75%, #ff2a0aaa 100%); animation: gcFlicker .18s ease-in-out infinite alternate; }
+.gc-heat.out { transition: opacity .4s; opacity: 0; }
+@keyframes gcFlicker { to { filter: brightness(1.35) hue-rotate(-8deg); } }
 #grid.gimmick .cell:not(.on):not(.path-crack) { opacity: .45; }
 
 /* 三仙歸洞:浮在九宮格上的傀儡;真身 👺 發紅光,點錯的傀儡化成煙 */

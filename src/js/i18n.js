@@ -312,6 +312,7 @@ G.I18N = {
   '對拳拼勁!': ['拳の押し合い!', 'Fist Clash!'],
   '{0}正面硬碰!左右兩顆拳頭交替狂點,把力量推過去!': ['{0}と真っ向勝負!左右の拳を交互に連打して押し返せ!', 'Head-on with {0}! Tap the left and right fists in turn to push the power through!'],
   '對拳:左右交替狂點!': ['押し合い:左右交互に連打!', 'Clash: tap left and right in turn!'],
+  '熱鬥!': ['激闘!', 'HEATED!'],
   '三仙歸洞!': ['三つの壺!', 'Shell Game!'],
   '記住真身 👺 躲在哪一個傀儡裡,洗牌後點出來!': ['本体 👺 がどの人形に隠れたか覚えて、シャッフル後に見破れ!', 'Remember which puppet hides the real one 👺, then tap it after the shuffle!'],
   '看清楚真身在哪!': ['本体の位置をよく見て!', 'Watch where the real one is!'], '盯緊真身!': ['本体から目を離すな!', 'Keep your eyes on it!'], '點出真身!': ['本体をタップ!', 'Tap the real one!'],

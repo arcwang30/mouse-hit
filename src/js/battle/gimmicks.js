@@ -107,14 +107,36 @@
       this.setPhase('對拳:左右交替狂點!', 'atk');
       const bar = document.createElement('div');
       bar.className = 'gm-clash';
-      bar.innerHTML = `<span class="gc-me">${G.t('炎鋼')}</span><div class="gc-track"><i class="gc-fill"></i><b class="gc-mark">💥</b></div><span class="gc-foe">${e.name}</span>`;
-      G.$('.grid-wrap').appendChild(bar);
+      bar.innerHTML = `<span class="gc-me">${G.t('炎鋼')}</span><div class="gc-track"><i class="gc-fill"></i><b class="gc-mark">💥</b><em class="gc-hot">${G.t('熱鬥!')}</em></div><span class="gc-foe">${e.name}</span>`;
+      // 熱度:左右交替點得越快越高(停手會慢慢降),九宮格四周冒出火光、力量條著火
+      const heatFx = document.createElement('div');
+      heatFx.className = 'gc-heat';
+      G.$('.grid-wrap').append(heatFx, bar);
       G.grid.set(3, '👊', 'clash-btn', 0, 'L');
       G.grid.set(5, '👊', 'clash-btn', 0, 'R');
       G.audio.play('ready');
-      let pos = 50, last = -1, done = false, prev = G.clock.now(), raf;
-      const draw = () => bar.style.setProperty('--pos', pos.toFixed(1) + '%');
+      let pos = 50, last = -1, done = false, prev = G.clock.now(), raf, heat = 0;
+      const draw = () => {
+        bar.style.setProperty('--pos', pos.toFixed(1) + '%');
+        heatFx.style.setProperty('--heat', heat.toFixed(3));
+        bar.style.setProperty('--heat', heat.toFixed(3));
+        bar.classList.toggle('hot', heat > 0.55);
+      };
       draw();
+      // 每推一下:交鋒點噴出火花、💥 跳一下
+      const sparks = () => {
+        const mark = bar.querySelector('.gc-mark');
+        mark.classList.remove('hit'); void mark.offsetWidth; mark.classList.add('hit');
+        const box = document.createElement('span');
+        box.className = 'gc-sparks';
+        box.style.left = pos.toFixed(1) + '%';
+        box.innerHTML = Array.from({ length: 7 }, () => {
+          const a = Math.random() * Math.PI * 2, r = 5 + Math.random() * 6;
+          return `<i style="--dx:${(Math.cos(a) * r).toFixed(1)}cqw;--dy:${(Math.sin(a) * r).toFixed(1)}cqw"></i>`;
+        }).join('');
+        bar.querySelector('.gc-track').appendChild(box);
+        setTimeout(() => box.remove(), 450);
+      };
       return new Promise(res => {
         const end = ok => {
           if (done) return;
@@ -123,7 +145,8 @@
           timer.stop();
           G.grid.handler = null;
           bar.classList.add(ok ? 'win' : 'lose');
-          setTimeout(() => bar.remove(), 500);
+          heatFx.classList.add('out');
+          setTimeout(() => { bar.remove(); heatFx.remove(); }, 500);
           res(ok);
         };
         const timer = this.timebar(ms, () => end(false));
@@ -132,6 +155,7 @@
           if (done) return;
           const now = G.clock.now();
           pos -= drain * (now - prev) / 1000;
+          heat = Math.max(0, heat - 0.9 * (now - prev) / 1000); // 停手約 1 秒熱度就退光
           prev = now;
           if (pos <= 0) { pos = 0; draw(); end(false); return; }
           draw();
@@ -144,8 +168,10 @@
           if (i === last) { G.audio.play('tap'); return; } // 同一邊連點不算,要左右交替
           last = i;
           pos = Math.min(100, pos + CLASH_STEP);
+          heat = Math.min(1, heat + 0.14);
           draw();
-          G.audio.play('punch');
+          sparks();
+          G.audio.play(heat > 0.55 ? 'crit' : 'punch'); // 打出熱度後換成更響的打擊聲
           G.haptic.buzz(15);
           this.punchFx(i === 3 ? 0 : 2, { small: true, dur: 110 });
           this.setEnemyState('recoil', 160);
