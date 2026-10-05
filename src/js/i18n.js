@@ -337,7 +337,6 @@ G.I18N = {
   '{0}破甲!': ['{0}装甲破壊!', '{0} Break!'], '暴風': ['暴風', 'Gale'], '颶風': ['颶風', 'Hurricane'],
   '旋風': ['旋風', 'Cyclone'],
   '必殺技發動!': ['必殺技発動!', 'SPECIAL!'],
-  '必殺技蓄勢:先擋下場上的攻擊!': ['必殺技チャージ:場の攻撃を先に防げ!', 'Special charging: block the attacks already on the field!'],
   '{0} 秒內依序點擊 {1}': ['{0} 秒以内に {1} の順にタップ', 'Tap {1} in order within {0} s'],
   '骰子 1 → {0} 點': ['サイコロの 1 → {0}', 'dice 1 → {0}'],
   '烈焰鋼拳・焚天': ['烈焔鋼拳・焚天', 'Blazing Steel Fist: Skyburn'],

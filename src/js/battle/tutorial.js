@@ -212,7 +212,7 @@
         });
         unpoint();
         if (alive()) {
-          await b.ultimate();
+          while (alive() && b.ulting) await new Promise(r => setTimeout(r, 50)); // 按下後必殺技直接發動(castUlt),等演出結束
           b.phase = null;
           G.audio.play('levelup');
           await wait(400);

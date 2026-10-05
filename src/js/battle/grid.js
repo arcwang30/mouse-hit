@@ -23,6 +23,7 @@ G.grid = {
   },
 
   tap(i) {
+    if (G.clock.paused) return; // 暫停中(PAUSE、必殺演出、浴火重生)九宮格不能點
     if (this.handler && this.cells[i]) this.handler(i);
   },
 
@@ -207,7 +208,7 @@ G.molePhase = o => new Promise(resolve => {
   const mods = o.mods || {};
   const active = new Map();     // 格子 → 目前的符號
   const reserved = new Set();   // 已被鎖定準星預約的格子
-  let spawned = 0, settled = 0, finished = false, draining = false, spawnTimer; // draining:不再冒新符號,場上的處理完就結束
+  let spawned = 0, settled = 0, finished = false, spawnTimer;
   const setCounter = n => { if (!o.noCounter) G.$('#counter').textContent = n; }; // noCounter:由呼叫端自己顯示(例如獎勵關的擊中數)
   setCounter(o.count);
 
@@ -296,9 +297,9 @@ G.molePhase = o => new Promise(resolve => {
   };
   const settle = () => {
     settled++;
-    if ((settled >= o.count && !bombsLeft()) || o.stop() || (draining && !active.size)) finish();
+    if ((settled >= o.count && !bombsLeft()) || o.stop()) finish();
   };
-  const bombDone = () => { if ((settled >= o.count && !bombsLeft()) || o.stop() || (draining && !active.size)) finish(); };
+  const bombDone = () => { if ((settled >= o.count && !bombsLeft()) || o.stop()) finish(); };
   // 可以放符號的格子:沒被占用、沒被預約、沒被觸手蓋住
   const freeCells = () => [...Array(9).keys()].filter(i =>
     !active.has(i) && !reserved.has(i) && !(blockAt(i) && ['tentacle', 'seal'].includes(blockAt(i).type))); // 觸手、封印格不冒符號
@@ -489,15 +490,7 @@ G.molePhase = o => new Promise(resolve => {
   const hittable = i => { const a = active.get(i); return a && a.kind === 'normal' && !a.armor && !(blockAt(i) && blockAt(i).type === 'ice'); };
   o.onReady && o.onReady({
     autoHit: i => { if (finished || !hittable(i)) return false; doHit(i, active.get(i), true); return true; },
-    // 收尾:不再冒新符號,場上已經出現的處理完(打中或錯過)就結束(防禦中發動必殺技)
-    drain: () => {
-      if (finished || draining) return;
-      draining = true;
-      G.clock.cancel(spawnTimer);
-      pending.forEach(G.clock.cancel);
-      if (mods.lockon) reserved.forEach(k => { if (!active.has(k)) { reserved.delete(k); cell(k).classList.remove('target'); } }); // 還沒落下的準星收掉
-      if (!active.size) finish();
-    },
+    end: () => finish(), // 立刻結束這個階段(必殺技打倒敵人時)
     targets: () => [...active.keys()].filter(hittable),
   });
   const phaseStart = G.clock.now();
@@ -650,7 +643,6 @@ G.molePhase = o => new Promise(resolve => {
   // 指定格被占用時改放其他空格;都滿了就稍後再試
   const spawnWhenFree = (i, kind, lifeMul, gid) => {
     if (finished) return;
-    if (draining) { if (i >= 0) { reserved.delete(i); cell(i).classList.remove('target'); } return; } // 收尾中:準星預約的也不再出現
     if (i >= 0 && (active.has(i) || (reserved.has(i) && !mods.lockon))) { // 原本的格子被占走,清掉準星改放別格
       if (mods.lockon) { reserved.delete(i); cell(i).classList.remove('target'); }
       i = -1;
@@ -661,7 +653,7 @@ G.molePhase = o => new Promise(resolve => {
   };
 
   const spawnGroup = () => {
-    if (finished || draining) return;
+    if (finished) return;
     if (o.stop()) { finish(); return; }
     const free = freeCells();
     if (!free.length) { spawnTimer = G.clock.after(spawnGroup, 100); return; }

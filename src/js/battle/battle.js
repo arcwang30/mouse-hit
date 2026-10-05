@@ -114,7 +114,7 @@ G.battle = {
   },
 
   resume() {
-    if (!G.clock.paused || G.tips.open || this.reviving) return; // 說明卡開著時由說明卡負責恢復;浴火重生演出中等演出結束
+    if (!G.clock.paused || G.tips.open || this.reviving || this.ulting) return; // 說明卡開著時由說明卡負責恢復;浴火重生、必殺演出中等演出結束
     G.$('#pauseMenu').classList.remove('show');
     G.audio.play('click');
     G.clock.resume();
@@ -284,7 +284,6 @@ G.battle = {
       while (!this.over()) {
         await this.playerTurn();
         if (run !== this.run) return;
-        if (this.ultRequested && !this.over()) await this.ultimate();
         await this.maybeGimmick(); // 區域 BOSS 的 HP 第一次掉到一半:進入專屬小遊戲
         if (run !== this.run) return;
         if (this.over()) break;
@@ -352,7 +351,7 @@ G.battle = {
       onSpin: () => this.spinFx(),
       onEmpty: () => this.backlash(), // 天魔:點空格反噬
       slowFirst: p.slowmo ? SLOWMO : null,
-      onReady: a => { api = a; },
+      onReady: a => { api = a; this.phaseEnd = a.end; }, // phaseEnd:必殺技打倒敵人時用來直接結束這一回合
       // 炸彈:第 4 波起一般敵人也會混入;部分敵人機制會更多
       decoyRate: m.bomb != null ? m.bomb : Math.max(this.wave >= 3 ? BOMB_RATE : 0, rc.bombAll), // 周回:第 1 波就有炸彈
       decoyIcon: m.bombIcon || '💣',
@@ -392,9 +391,10 @@ G.battle = {
         if (!info.auto && api) this.techniques(i, charged, api); // 技法觸發的自動命中不會再連鎖
       },
       onMiss: () => { combo = 0; this.comboBreak(); G.audio.play('whiff'); this.setEnemyState('defend', 450); },
-      stop: () => this.over() || this.ultRequested,
+      stop: () => this.over(),
     });
     this.phase = null;
+    this.phaseEnd = null;
     this.render();
   },
 
@@ -433,7 +433,6 @@ G.battle = {
       this.phase = null;
       if (e.hp > 0) this.setEnemyState('idle');
       this.render();
-      if (this.ultRequested && !this.over()) return this.ultimate(); // 記憶考驗中按了必殺技:考驗結束後發動
       this.addGauge(ok ? BREAK_GAUGE.memory : BREAK_GAUGE.miss); // 記憶考驗答對 = 一次漂亮的全擋
       if (ok && !this.over() && this.breakReady()) await this.breakChance();
       return;
@@ -445,11 +444,7 @@ G.battle = {
       // 陷阱:BOSS 必殺技的 💀,或寶箱怪混進來的假盾牌(長得幾乎一樣,只有顏色偏紫、會微微抖動)
       decoyRate: m.fake || (s ? s.decoy : 0), decoyIcon: m.fake ? '🛡️' : undefined, decoyCls: m.fake ? 'guard fake' : undefined,
       slowFirst: p.slowmo ? SLOWMO : null,
-      onReady: a => { // defDrain:防禦中按必殺技時不再冒新盾牌,場上的擋完就發動(盾牌出現前就按了:開始後馬上收尾)
-        api = a;
-        this.defDrain = a.drain;
-        if (this.ultRequested) G.clock.after(a.drain, 0);
-      },
+      onReady: a => { api = a; this.phaseEnd = a.end; }, // phaseEnd:必殺技打倒敵人時用來直接結束這一回合
       mods: { blink: m.blink, ghost: m.ghost, armor: m.armor, lockon: m.lockon, heavy: m.heavy && { ...m.heavy, holdMs: Math.round(m.heavy.holdMs * HEAVY_HOLD_MUL) }, timebomb: m.timebomb, timebombTaps: TIMEBOMB_TAPS[G.round()], timebombMs: Math.round((TIMEBOMB_MS + (TIMEBOMB_TAPS[G.round()] - 1) * TIMEBOMB_HOP) * G.roundCfg().life), mirror: m.mirror, spin: m.spin },
       onMirage: () => { this.comboBreak(); this.float('蜃樓!', 'tag miss'); },
       onSpin: () => this.spinFx(),
@@ -515,14 +510,12 @@ G.battle = {
         if (m.fake) { this.float('假盾牌!', 'tag miss'); this.stealCoins(); } // 寶箱怪的假盾牌:咬一口還順手搶錢
         this.hurtPlayer(dmg * 1.5);
       },
-      stop: () => this.over(), // 防禦中按必殺技時由 defDrain 收尾(場上的盾牌還要擋),不在這裡直接結束
+      stop: () => this.over(),
     });
-    this.defDrain = null;
+    this.phaseEnd = null;
     this.phase = null;
     if (e.hp > 0) this.setEnemyState('idle');
     this.render();
-    // 防禦中發動必殺技:敵人不再出新攻擊,場上的盾牌處理完就放必殺技;這回合不會有破綻
-    if (this.ultRequested && !this.over()) return this.ultimate();
     // 全部擋下而且破綻量表已滿:敵人露出破綻,給一段專心連打的時間(露出後量表歸零)
     if (!missed && !this.over() && this.breakReady()) await this.breakChance();
   },
@@ -1044,20 +1037,40 @@ G.battle = {
   },
 
   // 必殺技:按下就直接發動(不用再輸入指令),快輸的時候也能一招翻盤
-  async ultimate() {
+  // realtime:戰鬥中按下必殺技時,遊戲時鐘是暫停的(九宮格凍結),演出改用真實時間計時,九宮格保留不清空
+  async ultimate(realtime = false) {
     const p = this.p;
+    const wait = realtime ? ms => new Promise(r => setTimeout(r, ms)) : ms => G.clock.wait(ms);
     this.ultRequested = false;
     this.setPhase('必殺技發動!', 'ult');
-    G.grid.clearAll();
+    if (!realtime) G.grid.clearAll();
     p.ult = 0;
     this.stats.ults++;
     this.render();
     // 第二章破關後覺醒「炎鋼天道」:威力 ×1.5,發動時回復 20% HP
     const tiandao = !!G.save.data.tiandao;
-    await this.cutIn(tiandao);
+    await this.cutIn(tiandao, wait);
     if (tiandao) this.healPlayer(Math.round(p.maxHp * TIANDAO_HEAL));
-    await this.barrage(Math.round(p.atk * p.ultMult * (tiandao ? TIANDAO_MUL : 1)));
-    await G.clock.wait(700);
+    await this.barrage(Math.round(p.atk * p.ultMult * (tiandao ? TIANDAO_MUL : 1)), wait);
+    await wait(700);
+  },
+
+  // 按下必殺技:從按下的瞬間起整場戰鬥暫停(符號、計時、飛來的攻擊都停住、九宮格不能點),
+  // 必殺演出全部播完再接著原本的攻擊 / 防禦回合;必殺技打倒敵人時這一回合直接結束
+  async castUlt() {
+    if (this.ulting) return;
+    this.ulting = this.ultRequested = true;
+    const wasPaused = G.clock.paused;
+    G.clock.pause();
+    const ph = G.$('#phase'), phaseText = ph.textContent, phaseCls = ph.className;
+    await this.ultimate(true);
+    ph.textContent = phaseText; // 提示列換回原本回合的說明
+    ph.className = phaseCls;
+    this.ulting = this.ultRequested = false;
+    this.render();
+    if (document.hidden) { this.renderPause(); G.$('#pauseMenu').classList.add('show'); } // 演出中切走 App:改成停在 PAUSE
+    else if (!wasPaused) G.clock.resume();
+    if (this.over() && this.phaseEnd) this.phaseEnd();
   },
 
   // 預先載入這一關所有敵人(含寶箱怪)的立繪
@@ -1088,7 +1101,7 @@ G.battle = {
     el.classList.remove('show');
   },
 
-  async cutIn(tiandao = false) {
+  async cutIn(tiandao = false, wait = ms => G.clock.wait(ms)) {
     const el = G.$('#cutin');
     // 炎鋼天道:金色火焰、換招式名(過場圖到了以前沿用原本的圖)
     el.classList.toggle('tiandao', tiandao);
@@ -1107,14 +1120,14 @@ G.battle = {
     el.classList.add('show');
     G.audio.play('cutin');
     G.voice.say('hero', 'hero_ult', tiandao ? '炎鋼天道・焚天' : '烈焰鋼拳・焚天'); // 喊招
-    G.clock.after(() => G.audio.play('boom'), 450); // 命中瞬間
+    wait(450).then(() => G.audio.play('boom')); // 命中瞬間
     G.haptic.buzz([0, 450, 80]);
-    await G.clock.wait(1700);
+    await wait(1700);
     el.classList.remove('show');
   },
 
   // 必殺技後的百烈拳:36 拳連打分段造成約 60% 傷害,最後一擊打出其餘傷害
-  async barrage(total) {
+  async barrage(total, wait = ms => G.clock.wait(ms)) {
     const stage = G.$('#stageView');
     const RUSH = 36, EVERY = 3, GAP = 38; // 36 拳,每 3 拳結算一次傷害
     const tick = Math.max(1, Math.floor(total * 0.6 / (RUSH / EVERY)));
@@ -1123,11 +1136,11 @@ G.battle = {
     for (let k = 0; k < RUSH; k++) {
       this.punchFx(Math.floor(Math.random() * 3), { spread: 0.45, dur: 130, small: true });
       if (k % EVERY === 0) { this.hurtEnemy(tick, false); dealt += tick; }
-      await G.clock.wait(GAP);
+      await wait(GAP);
     }
-    await G.clock.wait(150);
+    await wait(150);
     this.punchFx(1, { crit: true, final: true, dur: 260 });
-    await G.clock.wait(260);
+    await wait(260);
     stage.classList.remove('rush');
     this.hurtEnemy(Math.max(1, total - dealt), true, true);
   },
@@ -1465,7 +1478,6 @@ G.battle = {
     while (!this.over()) {
       await this.playerTurn();
       if (run !== this.run) return false;
-      if (this.ultRequested && !this.over()) await this.ultimate();
       if (this.over()) break;
       await this.enemyTurn();
       if (run !== this.run) return false;
@@ -1756,16 +1768,12 @@ G.battle = {
     G.$('#comboNum').classList.add('pop');
   },
 
-  // 攻擊與防禦回合都能發動;防禦中按下會打斷敵人後續的攻擊(場上已出現的盾牌還是要擋)
+  // 攻擊與防禦回合都能發動:按下的瞬間戰鬥暫停,必殺演出結束後接著原本的回合(見 castUlt)
   requestUlt() {
-    if ((this.phase === 'attack' || this.phase === 'defend') && !this.ultRequested && this.p.ult >= this.p.ultMax) {
-      this.ultRequested = true;
+    if ((this.phase === 'attack' || this.phase === 'defend') && !this.ultRequested && !G.clock.paused && this.p.ult >= this.p.ultMax) {
       G.audio.play('ultPress');
       G.$('#ultBtn').disabled = true;
-      if (this.phase === 'defend') { // 防禦中:不再有新攻擊,場上已經出現的盾牌還是要擋
-        if (this.defDrain) this.defDrain();
-        this.setPhase('必殺技蓄勢:先擋下場上的攻擊!', 'ult');
-      }
+      this.castUlt();
     }
   },
 
@@ -1800,7 +1808,7 @@ G.battle = {
     this._stopT = setTimeout(() => {
       stage.classList.remove('hitstop');
       // 遊戲正在 PAUSE 時不放開,交給 PAUSE 的恢復處理
-      if (!G.clock.paused) this._stopAnims.forEach(a => { if (a.playState === 'paused') try { a.play(); } catch (err) {} });
+      if (!G.clock.paused || this.ulting) this._stopAnims.forEach(a => { if (a.playState === 'paused') try { a.play(); } catch (err) {} }); // 必殺演出時時鐘是停的,特效照樣放開
       else G.clock.anims.push(...this._stopAnims.filter(a => a.playState === 'paused'));
       this._stopAnims = null;
       this._stopUntil = 0;
