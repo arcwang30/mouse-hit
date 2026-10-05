@@ -148,6 +148,9 @@
   animation: breathe 20s ease-in-out infinite alternate;
 }
 #artBg .rain { opacity: .18; }
+/* 選擇關卡頁:背景再壓暗一點,讓區域地圖的區塊比較突出 */
+#artBg .art-img { transition: filter .4s; }
+#app:has(#stages.active) #artBg .art-img { filter: brightness(.48) saturate(.85); }
 #artBg::after { /* 只在最上緣與最下緣壓暗,讓標題與按鈕清楚 */
   content: ""; position: absolute; inset: 0; pointer-events: none;
   background: linear-gradient(180deg, #000a 0%, transparent 22%, transparent 62%, #000c 100%);

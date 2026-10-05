@@ -42,10 +42,28 @@ G.audio = {
     this.noiseBuf = buf;
 
     this.applyVolume();
+    // 切到背景就暫停發聲;回來時恢復。來電、通知、鬧鐘會讓手機把音效「中斷」(iOS 的 interrupted / suspended),
+    // 狀態一變就試著恢復;瀏覽器不准自動恢復時,玩家下一次點擊(main.js 的 unlock)會再恢復一次
     document.addEventListener('visibilitychange', () => {
-      document.hidden ? ctx.suspend() : ctx.resume();
+      if (document.hidden) ctx.suspend();
+      else this.wake();
     });
+    window.addEventListener('pageshow', () => this.wake());
+    window.addEventListener('focus', () => this.wake());
+    ctx.onstatechange = () => { if (ctx.state !== 'running' && !document.hidden) setTimeout(() => this.wake(), 300); };
     return true;
+  },
+
+  // 恢復發聲(被中斷或暫停時);恢復後補放一小段無聲,喚醒 iOS 有時恢復了卻沒有聲音的輸出
+  wake() {
+    const ctx = this.ctx;
+    if (!ctx || document.hidden || ctx.state === 'running' || ctx.state === 'closed') return Promise.resolve();
+    return ctx.resume().then(() => {
+      const src = ctx.createBufferSource();
+      src.buffer = ctx.createBuffer(1, 1, ctx.sampleRate);
+      src.connect(ctx.destination);
+      src.start();
+    }).catch(() => {});
   },
 
   unlock() {
@@ -53,7 +71,7 @@ G.audio = {
     const startPending = () => {
       if (this.pendingBgm) { const n = this.pendingBgm; this.pendingBgm = null; G.bgm.play(n); }
     };
-    if (this.ctx.state === 'suspended') this.ctx.resume().then(startPending);
+    if (this.ctx.state !== 'running') this.wake().then(startPending); // suspended / interrupted 都要恢復
     else startPending();
   },
 

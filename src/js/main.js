@@ -32,7 +32,8 @@ document.addEventListener('pointerdown', e => { if (e.pointerType === 'touch') k
 
 // ---- 音效 ----
 // 瀏覽器要求使用者互動後才能播放聲音
-['pointerdown', 'keydown'].forEach(ev => document.addEventListener(ev, () => G.audio.unlock(), true));
+// touchend / click 也要:iOS 只承認這兩個是能恢復聲音的「使用者操作」(來電或通知中斷後靠這裡恢復)
+['pointerdown', 'touchend', 'click', 'keydown'].forEach(ev => document.addEventListener(ev, () => G.audio.unlock(), true));
 
 // 一般按鈕的點擊音(技能卡另有選取音)
 document.addEventListener('pointerdown', e => {
