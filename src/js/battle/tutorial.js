@@ -102,7 +102,7 @@
             if (info.swipe) { r.kicks++; b.float('踢擊!', 'tag line'); }
             const d = b.p.atk * (info.gold ? 2.5 : 1) * (info.charged ? 3 : 1) * (info.swipe ? 1.5 : 1);
             b.punchFx(i % 3, { crit: info.gold || info.charged, icon: info.swipe ? '🦵' : '👊' });
-            b.hurtEnemy(Math.round(d), info.gold, info.charged, info.swipe ? 'slash' : null);
+            b.hurtEnemy(Math.round(d), info.gold, info.charged, info.swipe ? 'kick' : null);
             b.comboHit();
           },
           onMiss: () => { b.comboBreak(); G.audio.play('whiff'); },

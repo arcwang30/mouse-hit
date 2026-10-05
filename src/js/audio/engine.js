@@ -206,6 +206,19 @@ const SFX = {
     a.tone(2400, 0.12, { type: 'triangle', to: 900, vol: 0.08, when: t + 0.04 });
     a.tone(140, 0.12, { to: 60, vol: 0.45, when: t + 0.08 });
   },
+  // 踢擊打中:短促的腿風「咻」,接著像一腳踢破牆——沉重的撞擊、牆面碎裂的爆音、碎石嘩啦落下
+  kick:    (a, t) => {
+    // 腿風「咻——」:由低往高掃過的風聲,加一層高頻氣流,拉長一點、音量加大,擊中前先聽得清楚
+    a.noise(0.2, { filter: 'bandpass', freq: 700, to: 4500, q: 1.6, vol: 0.75 });
+    a.noise(0.16, { filter: 'highpass', freq: 5000, vol: 0.22, when: t + 0.03 });
+    const hit = t + 0.13; // 腿風之後才踢中(太早會把「咻」蓋掉)
+    a.tone(95, 0.22, { to: 40, vol: 0.8, when: hit });                                       // 撞上牆的沉重衝擊
+    a.noise(0.28, { freq: 2600, to: 350, vol: 0.75, when: hit });                            // 牆面碎裂的爆音(由亮轉悶)
+    a.noise(0.04, { filter: 'highpass', freq: 3000, vol: 0.4, when: hit });                  // 裂開瞬間的脆響
+    for (let k = 0; k < 5; k++) {                                                            // 碎石落下:幾顆小碎塊的喀啦聲
+      a.noise(0.03, { filter: 'bandpass', freq: 1500 + Math.random() * 2500, q: 3, vol: 0.22 - k * 0.03, when: hit + 0.1 + k * 0.045 + Math.random() * 0.03 });
+    }
+  },
   // 旋風破綻:畫圈時的強風(heat 0~1 = 手指轉速,越快風聲越高越大)、每圈放出的龍捲風呼嘯
   gust:    (a, t, heat = 0.5) => a.noise(0.28, { filter: 'bandpass', freq: 250 + heat * 700, to: 500 + heat * 1600, q: 1.4, vol: 0.12 + heat * 0.3 }),
   tornado: a => {

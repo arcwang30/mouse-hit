@@ -377,7 +377,7 @@ G.battle = {
         } else {
           this.punchFx(i % 3, { crit, icon: info.swipe ? '🦵' : '👊' });
         }
-        this.hurtEnemy(Math.round(d), crit || charged, charged, info.swipe && !charged ? 'slash' : null); // 滑擊拳:劃過的音效
+        this.hurtEnemy(Math.round(d), crit || charged, charged, info.swipe && !charged ? 'kick' : null); // 踢擊:腿風 + 踢中的擊中聲
         if (info.gold && !crit && !charged) this.hitStop(60); // 金拳也頓一下
         if (p.lifesteal) this.healPlayer(p.lifesteal, true);
         this.gainUlt(p.ultGain);
