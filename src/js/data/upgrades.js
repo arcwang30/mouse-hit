@@ -7,6 +7,6 @@ G.UPGRADES = [
   { id: 'react', icon: '👁️', name: '反應', desc: '符號停留時間 +50ms', apply: (p, lv) => { p.moleLife += 50 * lv; p.guardBonus += 50 * lv; } },
 ];
 
-// 升級成本:Lv8 以前每級 +5(和以前一樣),之後越來越貴,沒辦法四項同時練滿,要決定優先順序
-// (Lv10 → 71、Lv15 → 276、Lv19 → 584)
-G.upgradeCost = lv => 5 + lv * 5 + Math.max(0, lv - 8) ** 2 * 4;
+// 升級成本:每級 10 + 8×等級,Lv8 之後再越來越貴,沒辦法四項同時練滿,要決定優先順序
+// (升到 Lv1 要 10、Lv5 要 42、Lv10 要 86、Lv15 要 266、Lv20 要 646;一項練到 Lv10 共約 470)
+G.upgradeCost = lv => 10 + lv * 8 + Math.max(0, lv - 8) ** 2 * 4;

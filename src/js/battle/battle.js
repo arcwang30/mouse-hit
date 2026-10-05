@@ -57,6 +57,9 @@ const BREAK_TUTORIAL_MS = 4500; // 新手教學的破綻數字限時(正式關�
 const ENRAGE_FROM = 3, ENRAGE_MAX = 5; // 修羅以上:敵人第幾次攻擊起開始狂暴(每次再加 G.ROUNDS 的 enrage,最多疊幾層)
 const BONUS_STARS = [40, 70]; // 特訓關:狂打幾 HIT 拿第二、第三顆星
 const CHAPTER_COINS = 300;    // 章節通關獎勵(每一輪第一次打倒最終 BOSS)
+// 成長點數(過關結算):首次通關 = 關卡類型的基本值 + region × 區域編號(第二章從 7 起算);重玩 ×REPLAY_PTS、沒過關 ×LOSE_PTS × 打倒的波數比例
+// 每顆第一次拿到的星星 +STAR_PTS;最後再乘周回倍率(×1.5 / ×2)與賞金獵人
+const STAGE_PTS = { normal: 8, bonus: 8, elite: 12, boss: 18, region: 2 }, REPLAY_PTS = 0.2, LOSE_PTS = 0.2, STAR_PTS = 3;
 const TIANDAO_MUL = 1.5, TIANDAO_HEAL = 0.2; // 炎鋼天道(第二章破關後的必殺技):威力倍率、回復比例
 
 function makePlayer() {
@@ -1994,8 +1997,7 @@ G.battle = {
     const availBefore = G.roundAvail(); // 結算前能選到第幾輪(天魔可能因為這場拿到的星星而開放)
     let score = s.dmg + p.hp * 5 + s.waves * 300 + (win ? 1000 : 0);
     score = Math.round(score * p.scoreMul * G.roundCfg().points); // 周回:積分倍率
-    const points = Math.floor(score / 100);
-    sv.points += points;
+    const firstClear = win && !pr.clear.includes(i), starsBefore = (pr.stars || {})[i] || 0;
     if (win) {
       pr.unlocked = Math.max(pr.unlocked, Math.min(G.STAGES.length, i + 2));
       if (!pr.clear.includes(i)) pr.clear.push(i);
@@ -2014,6 +2016,15 @@ G.battle = {
     pr.stars = pr.stars || {};
     rate.newBest = rate.stars > (pr.stars[i] || 0);
     if (rate.newBest) pr.stars[i] = rate.stars;
+    // 成長點數:依進度給,不跟傷害掛鉤(避免後期敵人 HP 越高點數越多、重玩刷點)
+    // 首次通關給全額、重玩 20%、沒過關依打倒的波數給一點;每顆第一次拿到的星星另加;再乘周回倍率與「賞金獵人」
+    const st = this.stage, r = st.region + 1 + (G.chapter() - 1) * 6; // 第二章接著第一章往上算
+    const base = (STAGE_PTS[st.type] || STAGE_PTS.normal) + STAGE_PTS.region * r;
+    const clearPts = win ? Math.round(base * (firstClear ? 1 : REPLAY_PTS)) : Math.round(base * LOSE_PTS * s.waves / st.waves.length);
+    const starPts = Math.max(0, rate.stars - starsBefore) * STAR_PTS;
+    const points = Math.round((clearPts + starPts) * G.roundCfg().points * p.scoreMul);
+    this.pointInfo = { first: firstClear, clear: clearPts, stars: starPts };
+    sv.points += points;
     // 金幣:過關 15 + 每關 2 + 每顆星 8(精英 ×1.5、BOSS ×2);沒過關每擊倒一波 2;第二、三輪 ×1.5 / ×2
     // 狂打獎勵關(s.bonusCoins)和特殊事件(s.eventCoins)賺到的金幣不論輸贏都入帳
     const typeMul = { elite: 1.5, boss: 2 }[this.stage.type] || 1;

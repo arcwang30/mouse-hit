@@ -30,7 +30,7 @@ G.SKILLS = [
   { id: 'first',    icon: '🥇', name: '先發制人', desc: '每回合第一拳傷害 x3',               unique: true, apply: p => { p.firstStrike = true; } },
   { id: 'execute',  icon: '💀', name: '斬殺',     desc: '敵人 HP 低於 20% 時傷害 x2',        unique: true, apply: p => { p.execute = true; } },
   { id: 'absorb',   icon: '🌀', name: '格擋蓄氣', desc: '成功防禦時必殺值 +3',               apply: p => { p.blockUlt += 3; } },
-  { id: 'bounty',   icon: '💰', name: '賞金獵人', desc: '結算積分 +50%',                     apply: p => { p.scoreMul += 0.5; } },
+  { id: 'bounty',   icon: '💰', name: '賞金獵人', desc: '結算積分與成長點數 +50%',           apply: p => { p.scoreMul += 0.5; } },
 
   // ---- 代價技能(risk):效果強,但同時有缺點,每種只能拿一次;寶箱不會開到(不能強迫玩家吃下代價)----
   { id: 'berserk',  risk: true, unique: true, icon: '😡', name: '狂戰士',   desc: '出拳傷害 ×1.5,但受到的傷害 +30%',            apply: p => { p.atk = Math.round(p.atk * 1.5); p.armor -= 0.3; } },

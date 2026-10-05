@@ -390,6 +390,7 @@ G.I18N = {
   '取得技能': ['獲得スキル', 'Skills'],
   '積分': ['スコア', 'Score'],
   '獲得成長點數': ['獲得成長ポイント', 'Growth Points Earned'],
+  '首次通關 +{0}': ['初クリア +{0}', 'First clear +{0}'], '重玩 +{0}': ['再挑戦 +{0}', 'Replay +{0}'], '進度 +{0}': ['進行度 +{0}', 'Progress +{0}'], '新星星 +{0}': ['新しい星 +{0}', 'New stars +{0}'],
   '返回選擇關卡': ['ステージ選択へ', 'STAGE SELECT'],
 
   '休息': ['休息', 'Rest'], '回復 40% HP': ['HP を 40% 回復', 'Restore 40% HP'],
@@ -425,7 +426,7 @@ G.I18N = {
   '先發制人': ['先手必勝', 'First Strike'], '每回合第一拳傷害 x3': ['毎ターン最初のパンチ ×3', 'First punch each turn ×3'],
   '斬殺': ['とどめ', 'Execute'], '敵人 HP 低於 20% 時傷害 x2': ['敵 HP 20% 未満でダメージ ×2', '×2 damage when enemy HP < 20%'],
   '格擋蓄氣': ['防御蓄気', 'Guard Charge'], '成功防禦時必殺值 +3': ['ガード成功で必殺ゲージ +3', 'Special +3 per block'],
-  '賞金獵人': ['賞金稼ぎ', 'Bounty Hunter'], '結算積分 +50%': ['スコア +50%', 'Score +50%'],
+  '賞金獵人': ['賞金稼ぎ', 'Bounty Hunter'], '結算積分與成長點數 +50%': ['スコアと成長ポイント +50%', 'Score and growth points +50%'],
   '連鎖拳': ['連鎖拳', 'Chain Fist'], '打中拳頭時,相鄰的一顆拳頭也會被打中': ['拳を打つと、隣の拳も 1 つ一緒に打つ', 'Hitting a fist also hits one adjacent fist'],
   '爆裂拳': ['爆裂拳', 'Burst Fist'], '每打中 6 拳引爆一次,清掉同一排的拳頭': ['6 発ごとに爆発し、同じ列の拳を一掃', 'Every 6 hits explodes, clearing that row'],
   '時之呼吸': ['時の呼吸', 'Time Breath'], '每回合前 2.5 秒,符號停留時間 ×1.6': ['毎ターン最初の 2.5 秒、シンボル表示時間 ×1.6', 'First 2.5 s of each turn: symbol time ×1.6'],

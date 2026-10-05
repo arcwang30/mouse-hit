@@ -594,6 +594,10 @@ G.scenes = {
 
   // ---- 結算 ----
   result(win, score, points, s, p) {
+    // 成長點數的來源說明(首次通關 / 重玩 / 新星星)
+    const pi = G.battle.pointInfo || {};
+    const ptNote = () => [pi.clear ? G.t(pi.first ? '首次通關 +{0}' : win ? '重玩 +{0}' : '進度 +{0}', pi.clear) : '', pi.stars ? G.t('新星星 +{0}', pi.stars) : '']
+      .filter(Boolean).join('・').replace(/^(.+)$/, '<small class="pt-note">$1</small>');
     G.$('#resultTitle').textContent = G.t(win ? '🏆 過關!' : '💀 敗北…');
     G.bgm.stop();
     G.audio.play(win ? 'win' : 'lose');
@@ -615,7 +619,7 @@ G.scenes = {
       <div>${G.t('擊倒 WAVE')}<b>${s.waves} / ${Math.max(1, G.battle.stage.waves.length)}</b></div>
       <div>${G.t('取得技能')}<b>${skills}</b></div>
       <div class="score">${G.t('積分')}<b>${score}</b></div>
-      <div class="score">${G.t('獲得成長點數')}<b>${G.PT} +${points}</b></div>` +
+      <div class="score">${G.t('獲得成長點數')}<b>${G.PT} +${points}${ptNote()}</b></div>` +
       `<div class="score coins">${G.t('獲得金幣')}<b>💰 +${G.battle.coins || 0}${s.bonusCoins ? `<small class="coin-bonus">${G.t('(狂打 +{0})', s.bonusCoins)}</small>` : ''}${s.eventCoins ? `<small class="coin-bonus">${G.t('(事件 +{0})', s.eventCoins)}</small>` : ''}${s.chapterCoins ? `<small class="coin-bonus">${G.t('(章節通關 +{0})', s.chapterCoins)}</small>` : ''}</b></div>` +
       (G.battle.newChapter ? `<div class="new-round">${G.t('{0} 開放!', G.t(G.CHAPTERS[G.battle.newChapter - 1].name))}<small>${G.t('在選擇關卡的上方切換章節')}</small></div>` : '') +
       (G.battle.newRound ? `<div class="new-round">${G.t('{0} 開啟!', G.t(G.ROUNDS[G.battle.newRound].name))}<small>${G.t('成長上限提升至 Lv{0}', G.ROUNDS[G.battle.newRound].upMax)}</small></div>` : '') +
