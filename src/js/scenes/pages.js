@@ -100,7 +100,7 @@ G.pages = {
   // ---------- 設定 ----------
   // 分成「設定」(聲音、操作等)與「外觀」(九宮格造型、桌布)兩頁,上方分頁或左右滑動切換
   settingsTab: 0,
-  SETTINGS_TABS: ['⚙️ 設定', '🎨 外觀'],
+  SETTINGS_TABS: ['⚙️ 設定', '🎨 外觀', '💾 存檔'], // 存檔:測試用的存檔槽
   settings() {
     this.settingsTab = 0;
     this.renderSettings();
@@ -111,6 +111,7 @@ G.pages = {
     const n = this.SETTINGS_TABS.length;
     this.settingsTab = (i + n) % n;
     this.resetArmed = false;
+    this.slotArmed = null;
     G.audio.play('click');
     this.renderSettings();
     G.$('#settingsBody').scrollTop = 0;
@@ -139,7 +140,8 @@ G.pages = {
       : toggle('vibrate', '手機震動', G.haptic.ios ? '點擊時輕觸回饋(iPhone 只有點擊會震)' : '點擊與受傷時震動');
     G.$('#settingsTabs').innerHTML = this.SETTINGS_TABS.map((t, i) =>
       `<button class="pg-tab${i === this.settingsTab ? ' on' : ''}" data-tab="${i}">${G.t(t)}</button>`).join('');
-    G.$('#settingsBody').innerHTML = this.settingsTab === 1
+    G.$('#settingsBody').innerHTML = this.settingsTab === 2 ? this.slotsHtml()
+      : this.settingsTab === 1
       ? G.skin.html() + G.wall.html()
       : lang() + vol('music', '音樂') + vol('sfx', '音效') +
         vibrate() +
@@ -152,6 +154,57 @@ G.pages = {
         '</div>');
   },
 
+  // ---------- 存檔槽(測試用,之後會拿掉)----------
+  // 5 個存檔槽,各自存在 localStorage 的 gangquan_slot_1 ~ 5:{ t 存檔時間, data 整份存檔 }
+  // 存檔 / 讀檔 / 刪除都要按兩次確認(空的槽直接存);讀檔後重新載入遊戲,讓所有狀態都照新存檔重建
+  SLOT_N: 5,
+  slotKey: n => 'gangquan_slot_' + n,
+  slotGet(n) {
+    try { return JSON.parse(localStorage.getItem(this.slotKey(n))); } catch (e) { return null; }
+  },
+  slotsHtml() {
+    if (G.clock.paused) return `<p class="st-note">${G.t('戰鬥中不能存檔 / 讀檔,請先回到主畫面。')}</p>`;
+    const armed = this.slotArmed || '';
+    const btn = (op, n, label, cls = '', off = false) =>
+      `<button class="btn small ${cls}" data-slot="${op}" data-n="${n}"${off ? ' disabled' : ''}>${G.t(armed === op + n ? '再按一次確認' : label)}</button>`;
+    return `<p class="st-note">${G.t('🧪 測試用:把目前進度存到存檔槽,或從存檔槽讀回來。讀檔後遊戲會重新載入。')}</p>` +
+      Array.from({ length: this.SLOT_N }, (_, k) => {
+        const n = k + 1, s = this.slotGet(n), d = s && s.data;
+        const r1 = d && d.rounds && d.rounds[1] || {};
+        const info = d
+          ? `${new Date(s.t).toLocaleString()}<br>💰 ${d.coins || 0}・${G.t('點數')} ${d.points || 0}・${G.t('第一輪過關')} ${(r1.clear || []).length}・${G.t('開放到第 {0} 輪', d.roundMax || 1)}`
+          : G.t('(空)');
+        return `<div class="st-item st-slot"><div class="st-top"><b>${G.t('存檔 {0}', n)}</b></div><p>${info}</p>` +
+          `<div class="st-slot-btns">${btn('save', n, '💾 存檔')}${btn('load', n, '📂 讀檔', '', !d)}${btn('del', n, '🗑️ 刪除', 'danger', !d)}</div></div>`;
+      }).join('');
+  },
+  slotClick(op, n) {
+    const has = !!this.slotGet(n);
+    // 覆蓋 / 讀檔 / 刪除要按兩次;3 秒內沒按第二次就取消
+    if ((op !== 'save' || has) && this.slotArmed !== op + n) {
+      this.slotArmed = op + n;
+      clearTimeout(this._slotT);
+      this._slotT = setTimeout(() => { this.slotArmed = null; if (this.current === 'settings') this.renderSettings(); }, 3000);
+      G.audio.play('fail');
+      return this.renderSettings();
+    }
+    this.slotArmed = null;
+    try {
+      if (op === 'save') localStorage.setItem(this.slotKey(n), JSON.stringify({ t: Date.now(), data: G.save.data }));
+      else if (op === 'del') localStorage.removeItem(this.slotKey(n));
+      else if (op === 'load') {
+        localStorage.setItem(G.save.key, JSON.stringify(this.slotGet(n).data));
+        location.reload();
+        return;
+      }
+    } catch (e) {
+      G.banner('失敗', '瀏覽器的儲存空間無法寫入', 1200);
+      return;
+    }
+    G.audio.play(op === 'save' ? 'coin' : 'break');
+    this.renderSettings();
+    G.banner(op === 'save' ? G.t('已存到存檔 {0}', n) : G.t('已刪除存檔 {0}', n), '', 900);
+  },
   setVol(key, v) {
     v = Math.max(0, Math.min(5, v));
     if (v === G.save.data.vol[key]) return;
@@ -169,6 +222,7 @@ G.pages = {
     if (t.dataset.skin) { G.skin.pick(t.dataset.skin) && this.renderSettings(); return; }
     if (t.dataset.wall) { G.wall.pick(t.dataset.wall) && this.renderSettings(); return; }
     if (t.id === 'stInstall') return G.pwa.install();
+    if (t.dataset.slot) return this.slotClick(t.dataset.slot, +t.dataset.n);
     if (t.dataset.ult) { G.save.data.ultSide = t.dataset.ult; G.save.write(); G.applyUltSide(); G.audio.play('select'); return this.renderSettings(); }
     if (t.dataset.vol) return this.setVol(t.dataset.vol, +t.dataset.v);
     if (t.dataset.toggle) {

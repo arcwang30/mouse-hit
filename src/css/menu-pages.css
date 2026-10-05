@@ -669,3 +669,10 @@ html:lang(en) .stage-bar .ch-tab b { font-size: 2.6cqw; }
 #grid .cell .blk.seal { rotate: calc(var(--grot, 0deg) * -1); } /* 磁暴轉動時鎖頭保持正向 */
 /* 完美(符號一出現就點中):小字跳出 */
 .float.perfect { font-size: 4.6cqw; font-weight: 900; color: #fff6a0; text-shadow: 0 0 1.6cqw #ffb800, 0 .3cqw 0 #000; }
+
+/* ===== 設定:存檔槽(測試用)===== */
+.st-note { margin: 0 0 2cqw; font-size: 3.2cqw; line-height: 1.5; color: #e8eef6; }
+.st-slot p { margin: 1cqw 0 0; font-size: 3cqw; line-height: 1.5; color: #c8d2e0; }
+.st-slot-btns { display: grid; grid-template-columns: repeat(3, 1fr); gap: 2cqw; margin-top: 2cqw; }
+.st-slot-btns .btn { min-width: 0; padding-left: 1cqw; padding-right: 1cqw; font-size: 3.4cqw; }
+.st-slot-btns .btn:disabled { opacity: .35; }
