@@ -413,6 +413,7 @@ G.battle = {
       // 一般攻擊不再跳「敵人攻擊!」橫幅,由九宮格上的 DEFENSE! 斬擊提示(BOSS 必殺技仍保留橫幅,告訴玩家招式名)
     }
     this.phase = 'defend';
+    this.render(); // 必殺值已滿時,防禦回合一開始必殺鈕就亮起
     await this.setTurn('def'); // 斬擊演出播完才開始冒盾牌
     this.setPhase(s ? G.t('必殺技來襲:{0}!', G.t(s.name)) : '防禦:點擊 🛡️ 擋下攻擊!', 'def');
     this.setupBoard('defend');
@@ -424,6 +425,7 @@ G.battle = {
       this.phase = null;
       if (e.hp > 0) this.setEnemyState('idle');
       this.render();
+      if (this.ultRequested && !this.over()) return this.ultimate(); // 記憶考驗中按了必殺技:考驗結束後發動
       if (ok && !this.over()) await this.breakChance();
       return;
     }
@@ -434,7 +436,11 @@ G.battle = {
       // 陷阱:BOSS 必殺技的 💀,或寶箱怪混進來的假盾牌(長得幾乎一樣,只有顏色偏紫、會微微抖動)
       decoyRate: m.fake || (s ? s.decoy : 0), decoyIcon: m.fake ? '🛡️' : undefined, decoyCls: m.fake ? 'guard fake' : undefined,
       slowFirst: p.slowmo ? SLOWMO : null,
-      onReady: a => { api = a; },
+      onReady: a => { // defDrain:防禦中按必殺技時不再冒新盾牌,場上的擋完就發動(盾牌出現前就按了:開始後馬上收尾)
+        api = a;
+        this.defDrain = a.drain;
+        if (this.ultRequested) G.clock.after(a.drain, 0);
+      },
       mods: { blink: m.blink, ghost: m.ghost, armor: m.armor, lockon: m.lockon, heavy: m.heavy && { ...m.heavy, holdMs: Math.round(m.heavy.holdMs * HEAVY_HOLD_MUL) }, timebomb: m.timebomb, timebombTaps: TIMEBOMB_TAPS[G.round()], timebombMs: Math.round((TIMEBOMB_MS + (TIMEBOMB_TAPS[G.round()] - 1) * TIMEBOMB_HOP) * G.roundCfg().life), mirror: m.mirror, spin: m.spin },
       onMirage: () => { this.comboBreak(); this.float('蜃樓!', 'tag miss'); },
       onSpin: () => this.spinFx(),
@@ -495,11 +501,14 @@ G.battle = {
         if (m.fake) { this.float('假盾牌!', 'tag miss'); this.stealCoins(); } // 寶箱怪的假盾牌:咬一口還順手搶錢
         this.hurtPlayer(dmg * 1.5);
       },
-      stop: () => this.over(),
+      stop: () => this.over(), // 防禦中按必殺技時由 defDrain 收尾(場上的盾牌還要擋),不在這裡直接結束
     });
+    this.defDrain = null;
     this.phase = null;
     if (e.hp > 0) this.setEnemyState('idle');
     this.render();
+    // 防禦中發動必殺技:敵人不再出新攻擊,場上的盾牌處理完就放必殺技;這回合不會有破綻
+    if (this.ultRequested && !this.over()) return this.ultimate();
     // 全部擋下:敵人露出破綻,給一段專心連打的時間
     if (!missed && !this.over()) await this.breakChance();
   },
@@ -1718,11 +1727,16 @@ G.battle = {
     G.$('#comboNum').classList.add('pop');
   },
 
+  // 攻擊與防禦回合都能發動;防禦中按下會打斷敵人後續的攻擊(場上已出現的盾牌還是要擋)
   requestUlt() {
-    if (this.phase === 'attack' && this.p.ult >= this.p.ultMax) {
+    if ((this.phase === 'attack' || this.phase === 'defend') && !this.ultRequested && this.p.ult >= this.p.ultMax) {
       this.ultRequested = true;
       G.audio.play('ultPress');
       G.$('#ultBtn').disabled = true;
+      if (this.phase === 'defend') { // 防禦中:不再有新攻擊,場上已經出現的盾牌還是要擋
+        if (this.defDrain) this.defDrain();
+        this.setPhase('必殺技蓄勢:先擋下場上的攻擊!', 'ult');
+      }
     }
   },
 
@@ -1848,7 +1862,7 @@ G.battle = {
     G.$('#ultText').textContent = full ? G.t('必殺 MAX!') : G.t('必殺 {0}%', Math.floor(p.ult / p.ultMax * 100));
     G.$('.ult-bar').classList.toggle('full', full);
     const btn = G.$('#ultBtn');
-    btn.disabled = !(full && this.phase === 'attack' && !this.ultRequested);
+    btn.disabled = !(full && (this.phase === 'attack' || this.phase === 'defend') && !this.ultRequested);
     btn.classList.toggle('ready', !btn.disabled);
     G.$('#ultWrap').classList.toggle('ready', !btn.disabled);
   },

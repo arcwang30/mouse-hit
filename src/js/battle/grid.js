@@ -162,6 +162,18 @@ G.grid = {
     void c.offsetWidth;
     c.classList.add('bump');
   },
+
+  // 晶盾 / 晶拳敲裂:幾片碎晶往外飛散
+  shatter(i) {
+    const box = document.createElement('span');
+    box.className = 'shards';
+    box.innerHTML = Array.from({ length: 6 }, (_, k) => {
+      const a = (k / 6 + Math.random() * 0.1) * Math.PI * 2, r = 9 + Math.random() * 5;
+      return `<i style="--dx:${(Math.cos(a) * r).toFixed(1)}cqw;--dy:${(Math.sin(a) * r).toFixed(1)}cqw;--rot:${Math.round(Math.random() * 360)}deg"></i>`;
+    }).join('');
+    this.cells[i].appendChild(box);
+    setTimeout(() => box.remove(), 500);
+  },
 };
 
 // 打地鼠階段:依序在空格冒出符號,點中為 hit,時間到為 miss。
@@ -195,7 +207,7 @@ G.molePhase = o => new Promise(resolve => {
   const mods = o.mods || {};
   const active = new Map();     // 格子 → 目前的符號
   const reserved = new Set();   // 已被鎖定準星預約的格子
-  let spawned = 0, settled = 0, finished = false, spawnTimer;
+  let spawned = 0, settled = 0, finished = false, draining = false, spawnTimer; // draining:不再冒新符號,場上的處理完就結束
   const setCounter = n => { if (!o.noCounter) G.$('#counter').textContent = n; }; // noCounter:由呼叫端自己顯示(例如獎勵關的擊中數)
   setCounter(o.count);
 
@@ -284,9 +296,9 @@ G.molePhase = o => new Promise(resolve => {
   };
   const settle = () => {
     settled++;
-    if ((settled >= o.count && !bombsLeft()) || o.stop()) finish();
+    if ((settled >= o.count && !bombsLeft()) || o.stop() || (draining && !active.size)) finish();
   };
-  const bombDone = () => { if ((settled >= o.count && !bombsLeft()) || o.stop()) finish(); };
+  const bombDone = () => { if ((settled >= o.count && !bombsLeft()) || o.stop() || (draining && !active.size)) finish(); };
   // 可以放符號的格子:沒被占用、沒被預約、沒被觸手蓋住
   const freeCells = () => [...Array(9).keys()].filter(i =>
     !active.has(i) && !reserved.has(i) && !(blockAt(i) && ['tentacle', 'seal'].includes(blockAt(i).type))); // 觸手、封印格不冒符號
@@ -418,12 +430,13 @@ G.molePhase = o => new Promise(resolve => {
       return;
     }
 
-    if (a.armor > 0) { // 晶盾:第一下只敲裂
+    if (a.armor > 0) { // 晶盾:第一下只敲裂(下方的圓點熄掉一顆,碎晶飛散)
       a.armor--;
       cell(i).classList.add('cracked');
       G.grid.bump(i);
       G.grid.impact(i, 'guard');
-      G.audio.play('chip');
+      G.grid.shatter(i);
+      G.audio.play('crack');
       return;
     }
 
@@ -476,6 +489,15 @@ G.molePhase = o => new Promise(resolve => {
   const hittable = i => { const a = active.get(i); return a && a.kind === 'normal' && !a.armor && !(blockAt(i) && blockAt(i).type === 'ice'); };
   o.onReady && o.onReady({
     autoHit: i => { if (finished || !hittable(i)) return false; doHit(i, active.get(i), true); return true; },
+    // 收尾:不再冒新符號,場上已經出現的處理完(打中或錯過)就結束(防禦中發動必殺技)
+    drain: () => {
+      if (finished || draining) return;
+      draining = true;
+      G.clock.cancel(spawnTimer);
+      pending.forEach(G.clock.cancel);
+      if (mods.lockon) reserved.forEach(k => { if (!active.has(k)) { reserved.delete(k); cell(k).classList.remove('target'); } }); // 還沒落下的準星收掉
+      if (!active.size) finish();
+    },
     targets: () => [...active.keys()].filter(hittable),
   });
   const phaseStart = G.clock.now();
@@ -628,6 +650,7 @@ G.molePhase = o => new Promise(resolve => {
   // 指定格被占用時改放其他空格;都滿了就稍後再試
   const spawnWhenFree = (i, kind, lifeMul, gid) => {
     if (finished) return;
+    if (draining) { if (i >= 0) { reserved.delete(i); cell(i).classList.remove('target'); } return; } // 收尾中:準星預約的也不再出現
     if (i >= 0 && (active.has(i) || (reserved.has(i) && !mods.lockon))) { // 原本的格子被占走,清掉準星改放別格
       if (mods.lockon) { reserved.delete(i); cell(i).classList.remove('target'); }
       i = -1;
@@ -638,7 +661,7 @@ G.molePhase = o => new Promise(resolve => {
   };
 
   const spawnGroup = () => {
-    if (finished) return;
+    if (finished || draining) return;
     if (o.stop()) { finish(); return; }
     const free = freeCells();
     if (!free.length) { spawnTimer = G.clock.after(spawnGroup, 100); return; }

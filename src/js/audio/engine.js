@@ -223,6 +223,11 @@ const SFX = {
     a.noise(0.08, { filter: 'highpass', freq: 5000, vol: 0.3 });
   },
   chip:    a => { a.tone(900, 0.05, { type: 'square', vol: 0.12, to: 500 }); a.noise(0.04, { filter: 'bandpass', freq: 2500, q: 3, vol: 0.3 }); },
+  crack:   a => { // 晶盾敲裂:清脆的玻璃碎裂聲
+    a.tone(2600, 0.07, { type: 'triangle', to: 1700, vol: 0.2 });
+    a.tone(3900, 0.05, { type: 'sine', vol: 0.12 });
+    a.noise(0.12, { filter: 'highpass', freq: 4500, vol: 0.45 });
+  },
   break:   a => {
     a.noise(0.35, { freq: 4000, to: 300, vol: 0.7 });
     a.tone(180, 0.3, { type: 'square', to: 50, vol: 0.35 });

@@ -88,7 +88,7 @@ G.pages = {
     } else if (p === 2) {
       // 用遊戲裡真正的按鈕樣式畫出小圖示
       html = H.symbols.map(([cls, ic, label, t, d]) =>
-        `<div class="ht-row"><div class="ht-cell cell on ${cls}"><span class="cap">${label ? `<span class="label">${G.t(label)}</span>` : ''}<span class="icon">${ic}</span></span></div>` +
+        `<div class="ht-row"><div class="ht-cell cell on ${cls}"><span class="cap">${label ? `<span class="label">${G.t(label)}</span>` : ''}<span class="icon">${ic}</span><span class="badge"></span></span></div>` +
         `<div><b>${G.t(t)}</b><p>${G.t(d)}</p></div></div>`).join('');
     }
     const body = G.$('#howtoBody');

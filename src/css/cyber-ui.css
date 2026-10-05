@@ -306,6 +306,25 @@
     linear-gradient(60deg, transparent 58%, #fff 59% 60.5%, transparent 61%),
     linear-gradient(180deg, #e6c8ff, #9a3de0 55%, #4a1478);
 }
+/* 還要點幾下:按鈕上方的圓點(●● → 敲裂後 ●○),快節奏時眼角餘光就看得出來(下方是剩餘時間條) */
+.cell.crystal .badge { left: 50%; right: auto; top: 13%; bottom: auto; width: 0; height: 0; z-index: 3; }
+.cell.crystal .badge::before {
+  content: ""; position: absolute; left: -3.2cqw; top: -1.2cqw; width: 2.4cqw; height: 2.4cqw; border-radius: 50%;
+  background: #fff; box-shadow: 0 0 0 .35cqw #2d0a47, 4cqw 0 0 #fff, 4cqw 0 0 .35cqw #2d0a47, 0 0 1.4cqw .3cqw #e6b8ff, 4cqw 0 1.4cqw .3cqw #e6b8ff;
+}
+.cell.cracked .badge::before {
+  box-shadow: 0 0 0 .35cqw #2d0a47, 4cqw 0 0 #ffffff26, 4cqw 0 0 .35cqw #2d0a47, 0 0 1.4cqw .3cqw #e6b8ff;
+  animation: pipPop .3s ease-out;
+}
+@keyframes pipPop { 0% { transform: scale(1.6); } }
+/* 敲裂時飛散的碎晶 */
+.shards { position: absolute; left: 50%; top: 50%; z-index: 4; pointer-events: none; }
+.shards i {
+  position: absolute; width: 2.4cqw; height: 1.4cqw; margin: -.7cqw 0 0 -1.2cqw; background: linear-gradient(135deg, #fff, #d7a8ff);
+  clip-path: polygon(0 50%, 40% 0, 100% 30%, 70% 100%); box-shadow: 0 0 1cqw #fff;
+  animation: shardFly .45s ease-out forwards;
+}
+@keyframes shardFly { to { transform: translate(var(--dx), var(--dy)) rotate(var(--rot)); opacity: 0; } }
 
 /* 醉影:半透明、晃動的假符號 */
 .cell.ghost .cap {

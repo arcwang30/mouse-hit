@@ -59,6 +59,7 @@
 .ht-cell .label { font-size: 1.9cqw; padding: .1cqw 1cqw; }
 .ht-cell.kick .icon { width: 11cqw; height: 11cqw; } /* 踢擊:小圖示裡腳印和箭頭縮小,腳印才看得到 */
 .ht-cell.kick .label { width: 8cqw; height: 8cqw; }
+.ht-cell.crystal .badge { top: 14%; transform: scale(.55); } /* 晶盾:小圖示裡的圓點縮小 */
 
 .ht-stage { margin-bottom: 3cqw; }
 .ht-stage-name {
