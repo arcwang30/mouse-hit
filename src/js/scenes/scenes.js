@@ -469,7 +469,7 @@ G.scenes = {
     if (ch === G.chapter()) return;
     if (!G.chapterOpen(ch)) {
       G.audio.play('fail');
-      G.ach.toast({ icon: '🔒', name: G.t(G.CHAPTERS[ch - 1].name), sub: G.t('通過{0}「修羅」的所有關卡後開放(還剩 {1} 關)', G.t(G.CHAPTERS[ch - 2].name), G.shuraLeft(ch - 1)) });
+      G.ach.toast({ icon: '🔒', head: G.t('尚未開放'), name: G.t(G.CHAPTERS[ch - 1].name), sub: G.t('打倒{0}第一輪的最終 BOSS 後開放', G.t(G.CHAPTERS[ch - 2].name)) });
       return;
     }
     sv.chapter = ch;

@@ -1225,9 +1225,9 @@ body.kb .dial-kb { display: block; }
 .revive-fx {
   position: absolute; inset: 0; z-index: 40; pointer-events: none; display: grid; place-items: center;
   background: radial-gradient(circle at 50% 60%, #fff6c8 0, #ffb02a 22%, #ff4a0a 45%, #7a0a0088 70%, transparent 85%);
-  animation: reviveBurst 1.2s ease-out forwards;
+  animation: reviveBurst 1.8s ease-out forwards;
 }
-.revive-fx i { font-style: normal; font-size: 30cqw; filter: drop-shadow(0 0 4cqw #ffcf3a); animation: reviveRise 1.2s cubic-bezier(.2, 1.4, .4, 1) forwards; }
+.revive-fx i { font-style: normal; font-size: 30cqw; filter: drop-shadow(0 0 4cqw #ffcf3a); animation: reviveRise 1.8s cubic-bezier(.2, 1.4, .4, 1) forwards; }
 @keyframes reviveBurst { 0% { opacity: 0; transform: scale(.3); } 15% { opacity: 1; transform: scale(1.1); } 70% { opacity: .85; } 100% { opacity: 0; transform: scale(1.4); } }
 @keyframes reviveRise { 0% { transform: translateY(30cqw) scale(.4); opacity: 0; } 35% { transform: translateY(0) scale(1.15); opacity: 1; } 80% { opacity: 1; } 100% { transform: translateY(-8cqw) scale(1); opacity: 0; } }
 

@@ -175,11 +175,20 @@
         return r.hits >= 3 || '漏掉太多拳頭了,再試一次。';
       });
 
-      // 7. 破綻:全部擋下 → 依序點數字 → 狂按大按鈕
-      await step(7, '敵人的攻擊全部擋下,就會露出破綻!先把盾牌全部擋下。', async () => {
+      // 7. 破綻:💢 破綻量表(格擋累積)滿了 + 全部擋下 → 依序點數字 → 狂按大按鈕
+      //    教學先把量表放到快滿,指著它說明;擋下這兩面盾牌就補滿,接著教抓破綻
+      await step(7, 'HP 旁的 💢 是破綻量表:每次格擋都會累積,量表滿了而且那一回合全部擋下,就會露出破綻!先把盾牌全部擋下。', async () => {
+        b.breakGauge = 76;
+        b.render();
+        point(G.$('#breakGauge'));
         const r = await defend({ count: 2, life: 2600 });
-        if (r.missed) return '要全部擋下才會露出破綻,再試一次。';
-        coach(7, '依序點擊 1 → 4 抓住破綻,接著狂按變大的按鈕破甲!');
+        unpoint();
+        if (r.missed) return '要全部擋下才算數,再試一次。';
+        b.addGauge(24); // 擋下的盾牌把量表補滿(會跳出「破綻蓄滿!」)
+        await G.clock.wait(700);
+        coach(7, '量表滿了,敵人露出破綻!依序點擊 1 → 4 抓住破綻,接著狂按變大的按鈕破甲!');
+        b.breakGauge = 0; // 破綻露出後量表歸零
+        b.render();
         b.brokenNext = false;
         await b.breakChance();
         const ok = b.brokenNext;

@@ -33,6 +33,7 @@ const HEAL_SKILLS = ['steel', 'pill', 'leech', 'regen', 'bell']; // HP 偏低時
 // 同一關死太多次:從第 2 次死亡起,每次選技能有額外機率一定混入「浴火重生」(每多死一次 +PHOENIX_STEP,最多 PHOENIX_MAX)
 // 拿到浴火重生(自己選的或寶箱開到)後,這一關的死亡次數就歸零重算;只出現在選項裡沒選不算
 const PHOENIX_STEP = 0.15, PHOENIX_MAX = 0.6;
+const REVIVE_FX_MS = 1800, REVIVE_BREATH_MS = 400; // 浴火重生:火光演出時間、演出結束後再停一下的喘息時間(這段期間戰鬥都停住)
 const DEVIL_GOLD = 100;
 // 新機制:疾風(滑擊拳傷害倍率)、倒數炸彈(秒數再乘周回的停留倍率、爆炸傷害倍率)、幻術(記憶長度依周回、每格閃爍毫秒、每格作答時間、失敗傷害倍率)
 const SWIPE_MUL = 1.5; // 踢擊(帶箭頭、要滑)的傷害倍率
@@ -1846,13 +1847,16 @@ G.battle = {
     fx.className = 'revive-fx';
     fx.innerHTML = '<i>🔥</i>';
     battle.appendChild(fx);
+    // 火光演出 REVIVE_FX_MS 後收起,畫面清空再停 REVIVE_BREATH_MS 讓玩家看一眼九宮格,才恢復戰鬥
     setTimeout(() => {
       fx.remove();
       G.$('#banner').classList.remove('show');
-      this.reviving = false;
-      if (document.hidden) { this.renderPause(); G.$('#pauseMenu').classList.add('show'); } // 演出中切走 App:改成停在 PAUSE
-      else if (!wasPaused) G.clock.resume();
-    }, 1200);
+      setTimeout(() => {
+        this.reviving = false;
+        if (document.hidden) { this.renderPause(); G.$('#pauseMenu').classList.add('show'); } // 演出中切走 App:改成停在 PAUSE
+        else if (!wasPaused) G.clock.resume();
+      }, REVIVE_BREATH_MS);
+    }, REVIVE_FX_MS);
   },
 
   healPlayer(n, quiet) {
@@ -2055,8 +2059,8 @@ G.battle = {
     if (availAfter > availBefore) this.newRound = availAfter;
     // 修羅破關了但天魔還差星星:結算畫面提示還要幾顆
     this.tianmoNeed = round === 2 && cd.roundMax >= 3 && !G.tianmoOpen(ch) ? [G.starsOf(ch, 2), G.tianmoNeed(ch)] : null;
-    // 修羅的關卡全部通過(打完最後一個還沒過的關卡時):下一章開放
-    if (win && round === G.SHURA && G.CHAPTERS[ch] && !(sv.chaptersSeen || {})[ch + 1] && G.shuraLeft(ch) === 0) {
+    // 第一輪打倒這一章的最終 BOSS:下一章開放
+    if (win && round === 1 && i === G.STAGES.length - 1 && G.CHAPTERS[ch] && !(sv.chaptersSeen || {})[ch + 1]) {
       sv.chaptersSeen = Object.assign(sv.chaptersSeen || {}, { [ch + 1]: true });
       this.newChapter = ch + 1;
     }
