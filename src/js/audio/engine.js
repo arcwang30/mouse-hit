@@ -156,6 +156,7 @@ const SFX = {
   tap:     a => a.tone(200, 0.05, { type: 'triangle', vol: 0.08 }),
   tick:    a => a.tone(1800, 0.03, { type: 'square', vol: 0.07 }), // 倒數炸彈的滴答
   select:  (a, t) => arp(a, t, 660, [0, 7, 12], 0.05, { type: 'triangle', vol: 0.22, dur: 0.3 }),
+  ding:    (a, t) => { a.tone(1568, 0.4, { type: 'triangle', vol: 0.18 }); a.tone(3136, 0.25, { type: 'sine', vol: 0.05, when: t + 0.01 }); }, // 「輪到你」的清脆一聲
   levelup: (a, t) => arp(a, t, 523, [0, 4, 7, 12], 0.07, { type: 'square', vol: 0.14, dur: 0.22 }),
   // 金幣:經典的「叮—鈴」兩段音;big(金色拳頭)多一個高音閃光
   coin:    (a, t, big) => {

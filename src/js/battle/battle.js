@@ -206,6 +206,9 @@ G.battle = {
       `<span style="left:${8 + i * 90 / this.stage.deco.length}%;animation-delay:${i * 0.4}s">${d}</span>`).join('');
     G.grid.clearAll();
     G.grid.resetRot();
+    G.$('.timebar').classList.remove('hint'); // 小遊戲中途離開時的殘留(提示模式、井字的暗棋盤與 🌟)
+    G.$('#grid').classList.remove('ttt-wait');
+    document.querySelectorAll('.ttt-think').forEach(x => x.remove());
     // 先預載本關所有敵人立繪,避免出場時才載入閃一下
     this.stage.waves.forEach(s => {
       const d = G.ENEMIES[s.replace('+', '')];
@@ -1271,6 +1274,7 @@ G.battle = {
   // 第一次遇到第二章的九宮格機制時跳出說明卡(遊戲時間暫停);在 setupBoard 之後、符號出現之前呼叫
   async mechTips(m) {
     if ([...G.grid.blocks.values()].some(b => b.type === 'sand')) await G.tips.show('sand');
+    if ([...G.grid.blocks.values()].some(b => b.type === 'tornado')) await G.tips.show('tornado');
     if (m.spin) await G.tips.show('spin');
     if (m.mirror) await G.tips.show('mirror');
   },
@@ -1299,6 +1303,15 @@ G.battle = {
     if (type === 'sand') { // 流沙:每個階段換 3 格
       g.clearBlocks('sand');
       G.shuffle(open()).slice(0, 3).forEach(i => g.setBlock(i, 'sand'));
+    }
+    if (type === 'tornado') { // 龍捲風:一般敵人固定 1 格;tornadoMove 的敵人每個階段把 tornadoN 格搬到別處
+      const m = G.MECHS[this.e.id], has = [...g.blocks.values()].some(b => b.type === 'tornado');
+      if (m.tornadoMove || !has) {
+        const prev = [...g.blocks.keys()].filter(i => g.blocks.get(i).type === 'tornado');
+        g.clearBlocks('tornado');
+        const pool = open(), fresh = pool.filter(i => !prev.includes(i)); // 移動:盡量換到之前沒有龍捲風的格子
+        G.shuffle(fresh).concat(G.shuffle(pool.filter(i => prev.includes(i)))).slice(0, m.tornadoN || 1).forEach(i => g.setBlock(i, 'tornado'));
+      }
     }
     if (type === 'tentacle' && phase === 'defend') { // 每次攻擊長出 2 條觸手,最多 4 條
       const have = [...g.blocks.values()].filter(b => b.type === 'tentacle').length;
@@ -1992,7 +2005,8 @@ G.battle = {
     G.clock.after(() => f.remove(), 900);
   },
 
-  timebar(ms, onEnd) {
+  // hint:{ at, fn } 倒數剩下 at 比例時呼叫一次 fn(小遊戲的提示模式)
+  timebar(ms, onEnd, hint) {
     const fill = G.$('#timeFill');
     const start = G.clock.now();
     let raf, stopped = false;
@@ -2001,6 +2015,7 @@ G.battle = {
       const r = Math.max(0, 1 - (G.clock.now() - start) / ms); // PAUSE 時時鐘停住,倒數條也停住
       fill.style.width = r * 100 + '%';
       if (r <= 0) { stopped = true; onEnd(); return; }
+      if (hint && hint.at && !hint.done && r <= hint.at) { hint.done = true; hint.fn(); }
       raf = requestAnimationFrame(tick);
     };
     raf = requestAnimationFrame(tick);

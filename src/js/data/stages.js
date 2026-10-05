@@ -270,7 +270,7 @@ const BGS_3 = {
 };
 const REGIONS_3 = [
   { name: '鏽蝕港', desc: '大洋彼岸的巨型貨櫃港。天幕議會的走私船在夜色中進出,碼頭被海盜把持。', boss: 'hookCaptain', unlock: [], stars: 5 },
-  { name: '橫貫列車', desc: '橫跨大陸的磁浮列車。天幕的軍需列車載著被俘的武者,在高速中穿越荒野。', boss: 'railHunter', unlock: [], stars: 5 },
+  { name: '橫貫列車', desc: '橫跨大陸的磁浮列車。天幕的軍需列車載著被俘的武者,在高速中穿越荒野。', boss: 'railHunter', unlock: ['tornado'], stars: 5 },
   { name: '雨林基因廠', desc: '叢林深處的生化工廠。幽綠的培養槽裡,浸泡著被抽乾氣血的武者。', boss: 'geneDoctor', unlock: [], stars: 5 },
   { name: '地下鐵籠拳場', desc: '被奪走意志的武者在鐵籠裡被迫互相殘殺,黑市的歡呼聲震耳欲聾。', boss: 'cageChampion', unlock: [], stars: 5 },
   { name: '天幕都市', desc: '巨型穹頂籠罩的監控都市。宣傳螢幕日夜播放著議會的「和平」。', boss: 'executor', unlock: [], stars: 5 },
@@ -357,6 +357,8 @@ G.MECH_INFO = {
   sand:     { name: '流沙', hint: '流沙格上的符號沉得特別快,要先點' },
   spin:     { name: '磁暴', hint: '九宮格會整個旋轉,符號跟著位置跑' },
   mirror:   { name: '蜃樓', hint: '帶 ⇋ 的符號是幻影,要點左右對稱的另一格' },
+  // 第三章
+  tornado:  { name: '龍捲風', hint: '紫色漩渦格上的符號轉眼就被吸走:拳頭少打一拳,盾牌沒擋到照樣受傷' },
 };
 // 第 i 關可以出現的機制:第一輪只有之前章節全部 + 本章前面區域 BOSS 解鎖的;第二、三輪全部開放(回傳 null = 不限制)
 G.mechAllowed = (i, round = G.round(), ch = G.chapter()) => {

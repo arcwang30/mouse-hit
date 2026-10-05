@@ -60,13 +60,13 @@ G.grid = {
     };
     if (!anim) return reset();
     c.classList.add(anim);
-    this.timers[i] = G.clock.after(reset, anim === 'press' ? 130 : 150);
+    this.timers[i] = G.clock.after(reset, anim === 'press' ? 130 : anim === 'suck' ? 280 : 150);
   },
 
   clearAll() {
     for (let i = 0; i < 9; i++) {
       const c = this.cells[i];
-      if (!c.classList.contains('press') && !c.classList.contains('sink')) this.clear(i);
+      if (!['press', 'sink', 'suck'].some(k => c.classList.contains(k))) this.clear(i);
     }
   },
 
@@ -134,7 +134,7 @@ G.grid = {
     const el = this.cells[i].querySelector('.blk');
     el.className = 'blk' + (b ? ' ' + b.type : '');
     el.textContent = b && b.type === 'tentacle' ? '🐙' : b && b.type === 'seal' ? '🔒' : '';
-    this.cells[i].querySelector('.stag').textContent = b && b.type === 'sand' ? '⏬ ' + G.t('流沙') : ''; // 流沙格標示:上面的符號沉得快
+    this.cells[i].querySelector('.stag').textContent = !b ? '' : b.type === 'sand' ? '⏬ ' + G.t('流沙') : b.type === 'tornado' ? '🌪️ ' + G.t('龍捲風') : ''; // 流沙格:上面的符號沉得快;龍捲風格:符號很快被吸走
     el.dataset.hp = b && b.hp > 1 ? '×' + b.hp : '';
   },
 
@@ -203,6 +203,7 @@ G.grid = {
 //     greed  貪婪(寶箱怪):拳頭冒出 greedAt 比例的時間後變成陷阱(decoyIcon),之前沒打中就算錯過,之後點到觸發 onDecoy
 //   流沙格(格子狀態 sand)上的符號停留時間 ×SAND_LIFE
 const SAND_LIFE = 0.55; // 流沙格上符號的停留時間倍率
+const TORNADO_LIFE = 480; // 龍捲風格:符號出現後最多停留幾毫秒就被吸走(拳頭少打一拳、盾牌算沒擋到)
 const GOLD_LIFE = 0.45; // 金拳的停留時間倍率(再限制在每一輪的 goldMs [下限, 上限] 之間)
 G.molePhase = o => new Promise(resolve => {
   const mods = o.mods || {};
@@ -329,7 +330,7 @@ G.molePhase = o => new Promise(resolve => {
       bombDone();
       return;
     }
-    G.grid.clear(i, 'sink');
+    G.grid.clear(i, blockAt(i) && blockAt(i).type === 'tornado' ? 'suck' : 'sink'); // 龍捲風格:旋轉著被吸進漩渦
     if (a.kind === 'decoy' || a.kind === 'ghost') return;
     G.grid.flash(i, 'bad');
     a.fx && a.fx.hit();
@@ -562,6 +563,8 @@ G.molePhase = o => new Promise(resolve => {
     if (blockAt(i) && blockAt(i).type === 'sand' && kind !== 'timebomb') life *= SAND_LIFE;
     if (mods.lockon && kind !== 'decoy' && kind !== 'timebomb') life *= 0.8;
     if (o.slowFirst && G.clock.now() - phaseStart < o.slowFirst.ms) life *= o.slowFirst.mul; // 時之呼吸
+    // 龍捲風格:符號很快就被吸進漩渦(時之呼吸也救不了)
+    if (blockAt(i) && blockAt(i).type === 'tornado' && kind !== 'timebomb') life = Math.min(life, TORNADO_LIFE);
     a.life = life = Math.round(life);
     a.icon = icon;
     a.born = G.clock.now();
@@ -618,7 +621,7 @@ G.molePhase = o => new Promise(resolve => {
     const src = cell(from);
     const icon = a.icon || src.querySelector('.icon').textContent; // 駭入中的 ❓ 瞬移後直接現形
     const label = src.querySelector('.label').textContent;
-    const cls = [...src.classList].filter(c => !['cell', 'on', 'press', 'sink', 'thump', 'hidden', 'target'].includes(c)).join(' ');
+    const cls = [...src.classList].filter(c => !['cell', 'on', 'press', 'sink', 'suck', 'thump', 'hidden', 'target'].includes(c)).join(' ');
     kill(a);
     active.delete(from);
     G.grid.clear(from, 'sink');

@@ -182,7 +182,7 @@ G.ALLIES = {
 G.MIMIC = { name: '寶箱怪', icon: '🧰', img: 'enemies/mimic.webp', shot: '💰', hp: 90, atk: 11, atkCount: 6, guardLife: 950 };
 
 // 敵人專屬機制(第二階段):讓每種敵人玩起來不一樣
-// hint:登場時的提示;atk:你的攻擊回合;def:敵人攻擊回合;board:放在格子上的狀態(ice / tentacle / lava)
+// hint:登場時的提示;atk:你的攻擊回合;def:敵人攻擊回合;board:放在格子上的狀態(ice / tentacle / lava / sand / tornado;tornadoN 龍捲風格數、tornadoMove 每個階段移動)
 // 數值意義見 grid.js molePhase 的 mods 說明;bomb 為炸彈出現機率,bombIcon 為炸彈圖示
 // rotate:每次攻擊輪流換一種機制
 G.MECHS = {
@@ -238,22 +238,22 @@ G.MECHS = {
   sectGuardian: { hint: '護法:踢擊特別多還帶晶盾,盾牌裡混著倒數炸彈', atk: { swipe: 0.35, armor: 0.3 }, def: { timebomb: 0.35, heavy: { chance: 0.25, holdMs: 400 } } },
   sectMaster:   { hint: '無相:流沙之上,蜃樓、磁暴、幻術輪番上陣', board: 'sand',
     rotate: [{ def: { mirror: 0.4 } }, { atk: { swipe: 0.3 }, def: { spin: true } }, { atk: { hidden: 0.4 }, def: { lockon: 400 } }, { def: { memory: true } }] },
-  // 第三章:沒有新機制,把前兩章的機制組合得更密集
+  // 第三章:新機制「龍捲風」(軌道獵手解鎖),其餘把前兩章的機制組合得更密集
   skyTrooper:     { hint: '士兵:拳頭混著 💣,盾牌先亮準星', atk: { bomb: 0.3 }, def: { lockon: 450 } },
   mechHound:      { hint: '獵犬:拳頭和盾牌都會瞬移', atk: { blink: 0.35 }, def: { blink: 0.45 } },
   portThug:       { hint: '打手:「頂住」的重擊特別多', def: { heavy: { chance: 0.4, holdMs: 420 } } },
   trainBot:       { hint: '保安:盾牌帶鋼甲,車廂一轉九宮格也跟著轉', def: { armor: 0.35, spin: true } },
-  geneBrute:      { hint: '改造:發亮的拳頭要點兩下,重擊要頂住', atk: { armor: 0.3 }, def: { heavy: { chance: 0.35, holdMs: 420 } } },
+  geneBrute:      { hint: '改造:龍捲風格,發亮的拳頭要點兩下,重擊要頂住', board: 'tornado', atk: { armor: 0.3 }, def: { heavy: { chance: 0.35, holdMs: 420 } } },
   drainedFighter: { hint: '洗腦:盾牌帶著殘影,還會考驗記憶', rotate: [{ def: { ghost: 0.4 } }, { def: { memory: true } }] },
   camoNinja:      { hint: '迷彩:拳頭先顯示 ❓,殘影與蜃樓交錯', atk: { hidden: 0.4 }, def: { ghost: 0.35, mirror: 0.3 } },
-  eliteGuard:     { hint: '衛隊:盾牌帶晶盾,還混著倒數炸彈', def: { armor: 0.35, timebomb: 0.3 } },
+  eliteGuard:     { hint: '衛隊:龍捲風格,盾牌帶晶盾,還混著倒數炸彈', board: 'tornado', def: { armor: 0.35, timebomb: 0.3 } },
   hookCaptain:    { hint: '船長:錨鏈一甩盾牌就瞬移,重擊要頂住', atk: { swipe: 0.3 }, def: { blink: 0.4, heavy: { chance: 0.3, holdMs: 420 } } },
-  railHunter:     { hint: '獵手:準星鎖定,車廂一轉九宮格也跟著轉', atk: { blink: 0.3 }, def: { lockon: 400, spin: true } },
+  railHunter:     { hint: '獵手:龍捲風格上的符號轉眼就被吸走,準星鎖定、九宮格會轉', board: 'tornado', atk: { blink: 0.3 }, def: { lockon: 400, spin: true } },
   geneDoctor:     { hint: '博士:拳頭裡混著 🧪,觸手蓋住的格子要敲 3 下', board: 'tentacle', atk: { bomb: 0.3, bombIcon: '🧪' }, def: { armor: 0.3 } },
   cageChampion:   { hint: '拳霸:大量「頂住」重拳,發亮盾牌要點兩下', def: { heavy: { chance: 0.45, holdMs: 450 }, armor: 0.3 } },
   executor:       { hint: '執行官:鎖定、蜃樓、倒數炸彈輪番上陣',
     rotate: [{ def: { lockon: 400, blink: 0.35 } }, { def: { mirror: 0.4, ghost: 0.3 } }, { atk: { swipe: 0.35 }, def: { timebomb: 0.35 } }] },
-  skyChairman:    { hint: '議長:吸收的武魂化為歷代強敵的招式,熔岩格拳頭 ×2', board: 'lava',
+  skyChairman:    { hint: '議長:吸收的武魂化為歷代強敵的招式,兩道龍捲風每個階段都會移動', board: 'tornado', tornadoN: 2, tornadoMove: true,
     rotate: [{ def: { heavy: { chance: 0.35, holdMs: 420 }, armor: 0.3 } }, { atk: { hidden: 0.4, bomb: 0.3 }, def: { lockon: 400 } },
              { def: { mirror: 0.4, spin: true } }, { atk: { swipe: 0.35 }, def: { timebomb: 0.35 } }, { def: { memory: true } }] },
   steelEmperor:{ hint: '帝王:歷代強敵的招式輪番上陣,熔岩格拳頭 ×2', board: 'lava',
