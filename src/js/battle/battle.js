@@ -48,8 +48,11 @@ const DIAL_KEY_DEG = 60; // 鍵盤畫圈:← → 交替每按一下轉幾度(6 �
 // 旋風破綻的風級:轉滿最低圈數後,每多轉 extra 圈升一級,破甲傷害乘上 mul(畫圈限時內一直轉,轉越多越痛)
 const DIAL_TIERS = [{ extra: 0, name: '旋風', mul: 1 }, { extra: 2, name: '暴風', mul: 1.25 }, { extra: 4, name: '颶風', mul: 1.5 }]; // 最高 = 攻擊力 ×6,和必殺技、BOSS 小遊戲成功同級
 // 完美:符號出現後的前 30% 時間內點中(剩餘比例 ≥ PERFECT_AT),傷害加成 +PERFECT_BONUS(和反擊、破甲、FEVER 相加)、必殺值多 PERFECT_ULT
-// 破甲成功後下一回合的傷害加成 BROKEN_BONUS(同樣和其他狀態加成相加);破甲後敵人警戒 BREAK_ALERT 次攻擊,這段期間全擋也不會有破綻
-const PERFECT_AT = 0.7, PERFECT_BONUS = 0.3, PERFECT_ULT = 2, BROKEN_BONUS = 0.35, BREAK_ALERT = 1;
+// 破甲成功後下一回合的傷害加成 BROKEN_BONUS(同樣和其他狀態加成相加)
+const PERFECT_AT = 0.7, PERFECT_BONUS = 0.3, PERFECT_ULT = 2, BROKEN_BONUS = 0.35;
+// 破綻量表(同一關內跨波段累積,0~100):每次格擋依判定加分、漏擋扣分;量表滿了而且那一回合全部擋下,才會露出破綻(露出後歸零)
+// 一次攻擊約 5~7 面盾:全部迅擋約 3 次攻擊滿一次,一般格擋約 4~5 次
+const BREAK_GAUGE = { fast: 6, block: 4, late: 2, memory: 15, miss: -15 };
 const BREAK_TUTORIAL_MS = 4500; // 新手教學的破綻數字限時(正式關卡見 G.ROUNDS 的 breakTime)
 const ENRAGE_FROM = 3, ENRAGE_MAX = 5; // 修羅以上:敵人第幾次攻擊起開始狂暴(每次再加 G.ROUNDS 的 enrage,最多疊幾層)
 const BONUS_STARS = [40, 70]; // 特訓關:狂打幾 HIT 拿第二、第三顆星
@@ -188,6 +191,7 @@ G.battle = {
     this.counterStack = 0;
     this.counterPct = 0;
     this.brokenNext = false;
+    this.breakGauge = 0; // 破綻量表:每一關從零開始,同一關內跨波段累積
 
     // 有背景圖就用圖;沒有的話用漸層 + emoji 裝飾
     const bgImg = this.stage.img;
@@ -390,16 +394,7 @@ G.battle = {
     this.render();
   },
 
-  // 敵人回合:破甲成功後敵人警戒(e.alert),接下來這一次攻擊全擋也不會出現破綻
   async enemyTurn() {
-    const e = this.e, alert = (e.alert || 0) > 0;
-    this.breakBlocked = alert;
-    await this.enemyAttack();
-    this.breakBlocked = false;
-    if (alert && this.e === e) { e.alert--; this.render(); }
-  },
-
-  async enemyAttack() {
     const e = this.e, p = this.p;
     e.turn++;
     const s = e.skill && e.turn % (e.skillEvery || 3) === 0 ? e.skill : null;
@@ -435,7 +430,8 @@ G.battle = {
       if (e.hp > 0) this.setEnemyState('idle');
       this.render();
       if (this.ultRequested && !this.over()) return this.ultimate(); // 記憶考驗中按了必殺技:考驗結束後發動
-      if (ok && !this.over()) await this.breakChance();
+      this.addGauge(ok ? BREAK_GAUGE.memory : BREAK_GAUGE.miss); // 記憶考驗答對 = 一次漂亮的全擋
+      if (ok && !this.over() && this.breakReady()) await this.breakChance();
       return;
     }
     this.soulReady = p.comboSoul;
@@ -455,8 +451,8 @@ G.battle = {
       onSpin: () => this.spinFx(),
       onEmpty: () => this.backlash(), // 天魔:點空格反噬
       // 倒數炸彈:拆除算一次漂亮的格擋;爆炸傷害比一般攻擊高,也不會有破綻
-      onDefuse: () => { this.comboHit(); this.gainUlt(p.blockUlt); G.audio.play('perfect'); this.float('拆除!', 'tag armor'); },
-      onBomb: () => { missed++; this.comboBreak(); G.audio.play('boom'); this.float('爆炸!', 'tag miss'); this.hurtPlayer(dmg * TIMEBOMB_DMG); },
+      onDefuse: () => { this.comboHit(); this.gainUlt(p.blockUlt); this.addGauge(BREAK_GAUGE.block); G.audio.play('perfect'); this.float('拆除!', 'tag armor'); },
+      onBomb: () => { missed++; this.comboBreak(); this.addGauge(BREAK_GAUGE.miss); G.audio.play('boom'); this.float('爆炸!', 'tag miss'); this.hurtPlayer(dmg * TIMEBOMB_DMG); },
       onGhost: () => { this.comboBreak(); this.float('殘影!', 'tag miss'); },
       onChip: (i, type, cleared) => this.chip(type, cleared),
       // 每個盾牌對應一發飛向玩家的攻擊,盾牌消失的瞬間正好命中
@@ -475,6 +471,7 @@ G.battle = {
           missed++;
           this.comboBreak();
           this.float('沒頂住!', 'tag miss');
+          this.addGauge(BREAK_GAUGE.miss);
           this.hurtPlayer(dmg * 1.3);
           return false;
         }
@@ -489,24 +486,28 @@ G.battle = {
         if (p.counter) this.counterStack = (this.counterStack || 0) + p.counter;
         if (info.heavy) {
           info.grade = { cls: 'fast', text: G.t('頂住! +{0}%', pct) };
+          this.addGauge(BREAK_GAUGE.fast);
           G.audio.play('perfect');
           this.setEnemyState('stagger', 420);
         } else if (pct >= 8) {
           info.grade = { cls: 'fast', text: G.t('迅擋! +{0}%', pct) };
+          this.addGauge(BREAK_GAUGE.fast);
           this.stats.perfects++;
           G.audio.play('perfect');
           this.setEnemyState('stagger', 420);
         } else {
           info.grade = { cls: pct >= 4 ? '' : 'late', text: G.t(pct >= 4 ? '格擋 +{0}%' : '險擋 +{0}%', pct) };
+          this.addGauge(pct >= 4 ? BREAK_GAUGE.block : BREAK_GAUGE.late);
           G.audio.play('block');
           this.setEnemyState('recoil', 260);
         }
       },
-      onMiss: () => { missed++; this.comboBreak(); this.hurtPlayer(dmg); },
+      onMiss: () => { missed++; this.comboBreak(); this.addGauge(BREAK_GAUGE.miss); this.hurtPlayer(dmg); },
       onDecoy: () => {
         missed++;
         this.comboBreak();
         G.audio.play('poison');
+        this.addGauge(BREAK_GAUGE.miss);
         if (m.fake) { this.float('假盾牌!', 'tag miss'); this.stealCoins(); } // 寶箱怪的假盾牌:咬一口還順手搶錢
         this.hurtPlayer(dmg * 1.5);
       },
@@ -518,17 +519,28 @@ G.battle = {
     this.render();
     // 防禦中發動必殺技:敵人不再出新攻擊,場上的盾牌處理完就放必殺技;這回合不會有破綻
     if (this.ultRequested && !this.over()) return this.ultimate();
-    // 全部擋下:敵人露出破綻,給一段專心連打的時間
-    if (!missed && !this.over()) await this.breakChance();
+    // 全部擋下而且破綻量表已滿:敵人露出破綻,給一段專心連打的時間(露出後量表歸零)
+    if (!missed && !this.over() && this.breakReady()) await this.breakChance();
+  },
+
+  // 破綻量表:加減後限制在 0~100,滿了時亮起
+  addGauge(n) {
+    const was = this.breakGauge || 0;
+    this.breakGauge = Math.max(0, Math.min(100, was + n));
+    if (was < 100 && this.breakGauge >= 100) { G.audio.play('ready'); this.float('破綻蓄滿!', 'tag armor'); }
+    this.render();
+  },
+  // 能不能露出破綻:量表滿了(新手教學不看量表);露出後量表歸零
+  breakReady() {
+    if (!G.tutorial.active && (this.breakGauge || 0) < 100) return false;
+    this.breakGauge = 0;
+    this.render();
+    return true;
   },
 
   // 破綻:先依序點數字抓住破綻(原本必殺技的指令輸入),成功後九宮格變成一顆大按鈕狂按破甲
   async breakChance() {
     const e = this.e;
-    if (this.breakBlocked) { // 敵人警戒中:全擋了也不露破綻
-      this.float('敵人警戒中', 'tag');
-      return;
-    }
     const hits = e.boss ? 14 : e.elite ? 12 : 10;
     this.setEnemyState('stagger');
     if (!G.tutorial.active && Math.random() < DIAL_CHANCE) return this.dialBreak(); // 另一種玩法:旋風破綻
@@ -577,7 +589,6 @@ G.battle = {
     if (broken) {
       this.stats.breaks++;
       this.brokenNext = true;
-      if (!G.tutorial.active) this.e.alert = BREAK_ALERT; // 被破甲後敵人提高警戒(新手教學不受影響)
       this.comboHit();
       G.audio.play('break');
       if (!tier) this.punchFx(1, { crit: true, final: true, dur: 200 });
@@ -1865,14 +1876,14 @@ G.battle = {
     const rv = G.$('#reviveIcon');
     rv.hidden = !p.skills.includes('phoenix');
     rv.classList.toggle('used', !p.revive);
+    // 破綻量表:圓環跟著累積,滿了發光(下一次全擋就會露出破綻)
+    const bg = G.$('#breakGauge'), g = this.breakGauge || 0;
+    bg.style.setProperty('--g', g + '%');
+    bg.classList.toggle('full', g >= 100);
     // 瀕死警示:HP ≤ 30% 九宮格縫隙緩慢閃紅,≤ 15% 閃得快一點(玩家專心看格子時也知道快撐不住了)
     const hpRate = p.hp / p.maxHp;
     G.$('#battle').classList.toggle('danger', p.hp > 0 && hpRate <= 0.3 && hpRate > 0.15);
     G.$('#battle').classList.toggle('critical', p.hp > 0 && hpRate <= 0.15);
-    // 敵人警戒中:名字旁顯示 👁️(這段期間不會有破綻)
-    const nm = G.$('#enemyName');
-    nm.classList.toggle('alert', (e.alert || 0) > 0);
-    nm.dataset.alert = G.t('警戒');
     G.$('#enemyHpFill').style.width = (e.hp / e.maxHp * 100) + '%';
     G.$('#enemyHpText').textContent = `${e.hp}/${e.maxHp}`;
     G.$('#ultFill').style.width = (p.ult / p.ultMax * 100) + '%';

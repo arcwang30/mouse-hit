@@ -52,12 +52,6 @@
   color: #000; background: var(--neon-r); padding: .2cqw 1.2cqw;
 }
 #battle:has(.enemy.boss) .enemy-name::before { content: "BOSS"; background: var(--neon-y); }
-/* 敵人警戒中(破甲後下一次攻擊不會有破綻):名字後面加 👁️ 警戒 */
-.enemy-name.alert::after {
-  content: "👁️ " attr(data-alert); font-size: 2.6cqw; font-weight: 800; color: #9ad8ff; padding: .2cqw 1.2cqw; border-radius: 99px;
-  background: #0a2a40d0; box-shadow: inset 0 0 0 .25cqw #4ab8ff90; animation: alertBlink 1s ease-in-out infinite alternate;
-}
-@keyframes alertBlink { to { opacity: .55; } }
 
 /* 敵人狀態標籤(待機/攻擊/防禦…) */
 .state-tag {
@@ -1236,3 +1230,14 @@ body.kb .dial-kb { display: block; }
 .revive-fx i { font-style: normal; font-size: 30cqw; filter: drop-shadow(0 0 4cqw #ffcf3a); animation: reviveRise 1.2s cubic-bezier(.2, 1.4, .4, 1) forwards; }
 @keyframes reviveBurst { 0% { opacity: 0; transform: scale(.3); } 15% { opacity: 1; transform: scale(1.1); } 70% { opacity: .85; } 100% { opacity: 0; transform: scale(1.4); } }
 @keyframes reviveRise { 0% { transform: translateY(30cqw) scale(.4); opacity: 0; } 35% { transform: translateY(0) scale(1.15); opacity: 1; } 80% { opacity: 1; } 100% { transform: translateY(-8cqw) scale(1); opacity: 0; } }
+
+/* ===== 破綻量表(HP 旁的 💢 圓環)===== */
+/* 每次格擋累積,滿了發光:這時全部擋下就會露出破綻 */
+.break-gauge {
+  position: relative; flex: none; width: 7.4cqw; height: 7.4cqw; border-radius: 50%; display: grid; place-items: center;
+  background: conic-gradient(#ff5a3a var(--g, 0%), #ffffff1a 0); box-shadow: 0 0 0 .3cqw #000a;
+}
+.break-gauge b { display: grid; place-items: center; width: 5.4cqw; height: 5.4cqw; border-radius: 50%; background: #120c14; font-size: 3.4cqw; filter: grayscale(.6) brightness(.8); }
+.break-gauge.full { background: conic-gradient(#ffd84a 100%, transparent 0); animation: gaugeFull .5s ease-in-out infinite alternate; }
+.break-gauge.full b { filter: none; }
+@keyframes gaugeFull { to { box-shadow: 0 0 0 .3cqw #000a, 0 0 3cqw #ffb02a; transform: scale(1.08); } }

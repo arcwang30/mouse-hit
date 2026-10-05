@@ -11,8 +11,8 @@ window.simRun = function (stageIdx, skill, upLv) {
 
   const st = G.STAGES[stageIdx];
   const rc = G.roundCfg(); // 周回:手感調整(停留時間、出現模式、炸彈、追加機制、不回血)
-  let counterNext = 0, powerNext = 0, brokenNext = false; // 反震掌累積、反擊力%、破甲
-  // 連擊   let counterNext = 0, powerNext = 0, brokenNext = false; // 反震掌累積、反擊力%、破甲 FEVER:以「符號事件」計算,FEVER 10 秒約等於 11 個事件(一輪攻防)
+  let counterNext = 0, powerNext = 0, brokenNext = false, gauge = 0; // 反震掌累積、反擊力%、破甲、破綻量表(同一關跨波段累積)
+  // 連擊 FEVER:以「符號事件」計算,FEVER 10 秒約等於 11 個事件(一輪攻防)
   let charge = 0, feverLeft = 0;
   const FEVER_EVENTS = 11;
   const evHit = () => { if (feverLeft > 0) feverLeft--; else if (++charge >= 15) { charge = 0; feverLeft = FEVER_EVENTS; } };
@@ -114,17 +114,18 @@ window.simRun = function (stageIdx, skill, upLv) {
           // 反擊力:越快擋越多,反應時間以熟練度估算(0 = 最後一刻,1 = 一出現就擋)
           const ratio = Math.max(0, Math.min(1, skill - 0.3 + (Math.random() - 0.5) * 0.4));
           powerNext = Math.min(60, powerNext + Math.round(12 * ratio * fv()));
+          const pct = 12 * ratio * fv();
+          gauge = Math.min(100, gauge + (pct >= 8 ? 6 : pct >= 4 ? 4 : 2)); // 破綻量表:迅擋 / 格擋 / 險擋(和 battle.js 的 BREAK_GAUGE 相同)
           evHit();
-        } else { missed++; evMiss(); hurt(dmg); }
+        } else { missed++; evMiss(); hurt(dmg); gauge = Math.max(0, gauge - 15); }
         if (decoy && Math.random() < decoy / (1 - decoy) * 0.2) { missed++; hurt(dmg * 1.5); }
       }
-      // 全部擋下 → 破綻:先依序點數字(成功率約同點擊),再狂按大按鈕(幾乎都按得完)
-      const alert = e.alert > 0; // 敵人警戒:上次破甲成功後的下一次攻擊不會有破綻
-      if (alert) e.alert--;
-      if (!alert && !missed && p.hp > 0 && Math.random() < clamp(skill + 0.05 - 0.05 * (G.roundCfg().breakLen - 4)) * 0.95) { // 第二、三輪數字更多
+      // 全部擋下而且破綻量表滿了 → 破綻(量表歸零):先依序點數字(成功率約同點擊),再狂按大按鈕(幾乎都按得完)
+      const opening = !missed && p.hp > 0 && gauge >= 100;
+      if (opening) gauge = 0;
+      if (opening && Math.random() < clamp(skill + 0.05 - 0.05 * (G.roundCfg().breakLen - 4)) * 0.95) { // 第二、三輪數字更多
         e.hp -= p.atk * 4;
         brokenNext = true;
-        e.alert = 1;
       }
     }
     if (p.hp <= 0) return w;
