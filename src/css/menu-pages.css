@@ -133,7 +133,7 @@
 .cr-thanks { margin: 4cqw 0 1cqw; font-size: 5cqw; color: var(--fire-2); }
 .cr-thank { font-size: 4.6cqw; font-weight: 800; color: #fff; }
 .cr-foot { margin-top: 4cqw; font-size: 3cqw; color: var(--steel-hi); letter-spacing: .08em; }
-.cr-hero { width: 55%; margin: 2cqw auto 0; display: block; animation: heroFloat 2.4s ease-in-out infinite alternate; }
+.cr-hero { width: 60%; margin: 3cqw auto 0; display: block; border-radius: 4cqw; box-shadow: 0 0 0 .6cqw #ffffff30, 0 2cqw 5cqw #000c; } /* 方形插圖:圓角 + 淡框,不晃動 */
 @keyframes heroFloat { to { transform: translateY(-3%) rotate(-2deg); } }
 
 /* ==========================================================
