@@ -166,9 +166,16 @@ G.pages = {
       x.removeAttribute('id'); x.removeAttribute('data-i18n'); x.removeAttribute('data-i18n-title');
     });
     app.append(bt, pause);
-    shot.appendChild(app);
-    // 排版完成後,依各區塊的位置放上編號
-    requestAnimationFrame(() => {
+    // 放進 Shadow DOM 隔離起來:複製的畫面有 .grid-wrap、.ult-bar 等和真正戰鬥畫面相同的 class,
+    // 直接放在頁面上會被 G.$('.grid-wrap') 先找到,ATTACK / DEFENSE 等提示就會加到這份複製品裡而不見
+    // Shadow DOM 裡另外載入同一份 CSS,樣式不變,外面的查詢也找不到它
+    const root = shot.shadowRoot || shot.attachShadow({ mode: 'open' });
+    root.innerHTML = '';
+    const links = [...document.querySelectorAll('link[rel="stylesheet"]')].map(l => l.cloneNode());
+    root.append(...links, app);
+    // CSS 載入、排版完成後,依各區塊的位置放上編號
+    const loaded = links.map(l => new Promise(res => { l.onload = l.onerror = res; }));
+    Promise.all(loaded).then(() => requestAnimationFrame(() => {
       const box = app.getBoundingClientRect();
       if (!box.width) return;
       const half = box.width * 0.028; // 編號圓圈半徑(5.6cqw 的一半)
@@ -182,7 +189,7 @@ G.pages = {
         n.style.top = ((y - box.top) / box.height * 100).toFixed(1) + '%';
         app.appendChild(n);
       });
-    });
+    }));
   },
 
   // ---------- 設定 ----------
