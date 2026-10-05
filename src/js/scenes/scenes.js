@@ -446,6 +446,11 @@ G.scenes = {
         ? `<i style="background-image:url('../assets/images/${e.img}')"></i>` : '<b>?</b>'}</span>`;
     }).join('');
     const st = pr.stars[i] || 0;
+    // 必殺技選擇:解鎖兩招以上才出現(只列出已解鎖的);狂打獎勵關用不到必殺技
+    const owned = G.ultsOwned(), pick = G.ultNow();
+    const ults = owned.length > 1 && s.type !== 'bonus' ? `<div class="ss-ult"><p class="ss-ult-h">${G.t('必殺技')}</p><div class="ss-ult-list">` +
+      owned.map(u => `<button class="ss-ult-opt${u === pick ? ' on' : ''}" data-u="${u.id}"><i style="background-image:url('../assets/images/${u.art}')"></i>` +
+        `<b>${G.t(u.name)}</b><small>${G.t(u.desc)}</small></button>`).join('') + '</div></div>' : '';
     G.$('#stageSheet').innerHTML =
       `<div class="ss-box t-${s.type}"${s.img ? ` style="--ssbg:url('${new URL('../assets/images/' + s.img, location.href).href}')"` : ''}><div class="ss-head"><span class="ss-type">${type.icon} ${G.t(type.name)}</span>` +
       `<span class="ss-diff" title="${G.t('難度')}">${G.t('難度')}<i class="diff-bars">${[1, 2, 3, 4, 5].map(n => `<i class="${n <= s.stars ? 'on' : ''}"></i>`).join('')}</i></span></div>` +
@@ -454,12 +459,21 @@ G.scenes = {
         : `<p class="ss-desc">${G.t('{0} 波敵人', s.waves.length)}</p><div class="ss-foes">${foes}</div>`) +
       `<div class="ss-rate">${[1, 2, 3].map(n => `<span class="${n <= st ? 'on' : ''}">★</span>`).join('')}` +
       `${pr.best[i] ? `<small>${G.t('最高分 {0}', pr.best[i])}</small>` : ''}</div>` +
+      ults +
       `<div class="ss-btns"><button class="btn small" id="ssCancel">${G.t('返回')}</button><button class="btn ss-go" id="ssGo">${G.t('出戰')}</button></div></div>`;
     const el = G.$('#stageSheet');
     el.classList.add('show');
     G.audio.play('select');
     G.$('#ssGo').onclick = () => { el.classList.remove('show'); G.pages.current = null; G.battle.start(i); };
     G.$('#ssCancel').onclick = () => { el.classList.remove('show'); G.audio.play('click'); };
+    el.querySelectorAll('.ss-ult-opt').forEach(b => {
+      b.onclick = () => {
+        sv.ultPick = b.dataset.u;
+        G.save.write();
+        G.audio.play('click');
+        el.querySelectorAll('.ss-ult-opt').forEach(x => x.classList.toggle('on', x === b));
+      };
+    });
     el.onclick = e => { if (e.target === el) el.classList.remove('show'); };
   },
 

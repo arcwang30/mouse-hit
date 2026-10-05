@@ -46,7 +46,7 @@
       b.p = makePlayer();
       b.p.feverAt = 999; // 教學中不進 FEVER(第一次在正式關卡遇到時才說明)
       b.stats = { dmg: 0, hits: 0, blocks: 0, perfects: 0, breaks: 0, waves: 0, ults: 0, maxCombo: 0, fevers: 0 };
-      Object.assign(b, { comboN: 0, feverCharge: 0, ultRequested: false, counterPct: 0, counterStack: 0, brokenNext: false, wave: 0, phase: null });
+      Object.assign(b, { ultGuard: 0, boardCalm: 0, comboN: 0, feverCharge: 0, ultRequested: false, counterPct: 0, counterStack: 0, brokenNext: false, wave: 0, phase: null });
       b.endFever();
       b.e = { id: 'dummy', name: G.t('訓練木樁'), icon: '🎯', img: 'enemies/training_dummy.png', hp: 9999, maxHp: 9999, turn: 0 };
       G.$('#stageView').className = 'stage bg-' + b.stage.bg + ' has-bg';
@@ -207,8 +207,10 @@
         b.setPhase('按下「🔥 必殺」!', 'ult');
         b.render();
         point(G.$('#ultWrap'));
+        // 等必殺技發動:castUlt 一開始就把 ultRequested 清掉,所以改看「正在演出」或「發動次數增加」
+        const ults = b.stats.ults;
         await new Promise(res => {
-          const t = setInterval(() => { if (b.ultRequested || !alive()) { clearInterval(t); res(); } }, 50);
+          const t = setInterval(() => { if (b.ulting || b.stats.ults > ults || !alive()) { clearInterval(t); res(); } }, 50);
         });
         unpoint();
         if (alive()) {

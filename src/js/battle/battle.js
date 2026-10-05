@@ -61,8 +61,6 @@ const CHAPTER_COINS = 300;    // 章節通關獎勵(每一輪第一次打倒最�
 // 成長點數(過關結算):首次通關 = 關卡類型的基本值 + region × 區域編號(第二章從 7 起算);重玩 ×REPLAY_PTS、沒過關 ×LOSE_PTS × 打倒的波數比例
 // 每顆第一次拿到的星星 +STAR_PTS;最後再乘周回倍率(×1.5 / ×2)與賞金獵人
 const STAGE_PTS = { normal: 8, bonus: 8, elite: 12, boss: 18, region: 2 }, REPLAY_PTS = 0.2, LOSE_PTS = 0.2, STAR_PTS = 3;
-const TIANDAO_MUL = 1.5, TIANDAO_HEAL = 0.2; // 炎鋼天道(第二章破關後的必殺技):威力倍率、回復比例
-const SPARK_MUL = 1.8, SPARK_HEAL = 0.25;    // 星火燎原拳(第三章破關後的必殺技,取代炎鋼天道):威力倍率、回復比例
 
 function makePlayer() {
   const p = {
@@ -197,6 +195,9 @@ G.battle = {
     this.counterPct = 0;
     this.brokenNext = false;
     this.breakGauge = 0; // 破綻量表:每一關從零開始,同一關內跨波段累積
+    this.ultGuard = 0; // 炎鋼天道的護體還剩幾次
+    this.boardCalm = 0; // 星火燎原拳:還有幾個階段不佈置機制格
+    G.$('#battle').classList.remove('ult-guard');
 
     // 有背景圖就用圖;沒有的話用漸層 + emoji 裝飾
     const bgImg = this.stage.img;
@@ -405,7 +406,8 @@ G.battle = {
   async enemyTurn() {
     const e = this.e, p = this.p;
     e.turn++;
-    const s = e.skill && e.turn % (e.skillEvery || 3) === 0 ? e.skill : null;
+    let s = e.skill && e.turn % (e.skillEvery || 3) === 0 ? e.skill : null;
+    if (s && e.skillBroken) { s = null; e.skillBroken = false; this.float('必殺被打斷!', 'tag armor'); } // 星火燎原拳打斷了這一招
     // 盾牌停留:敵人基礎值已含周回倍率,「反應」升級的加成也跟著縮短
     let count = e.atkCount, life = e.guardLife + p.guardBonus * G.roundCfg().life, dmg = e.atk, cls = 'guard';
     // 修羅以上:敵人狂暴,第 ENRAGE_FROM 次攻擊起每次攻擊力再 +enrage(累積),拖越久越危險
@@ -439,6 +441,7 @@ G.battle = {
       this.render();
       this.addGauge(ok ? BREAK_GAUGE.memory : BREAK_GAUGE.miss); // 記憶考驗答對 = 一次漂亮的全擋
       if (ok && !this.over() && this.breakReady()) await this.breakChance();
+      if (this.ultGuard > 0 && --this.ultGuard === 0) G.$('#battle').classList.remove('ult-guard');
       return;
     }
     this.soulReady = p.comboSoul;
@@ -522,6 +525,7 @@ G.battle = {
     this.render();
     // 全部擋下而且破綻量表已滿:敵人露出破綻,給一段專心連打的時間(露出後量表歸零)
     if (!missed && !this.over() && this.breakReady()) await this.breakChance();
+    if (this.ultGuard > 0 && --this.ultGuard === 0) G.$('#battle').classList.remove('ult-guard'); // 炎鋼天道的護體:每次敵人攻擊結束扣一次
   },
 
   // 破綻量表:加減後限制在 0~100,滿了時亮起
@@ -1051,12 +1055,28 @@ G.battle = {
     p.ult = 0;
     this.stats.ults++;
     this.render();
-    // 必殺技等級:第二章破關後「炎鋼天道」(威力 ×1.5、回復 20%),第三章破關後「星火燎原拳」(威力 ×1.8、回復 25%)
-    const sv = G.save.data, lv = sv.spark ? 'spark' : sv.tiandao ? 'tiandao' : null;
-    const mul = lv === 'spark' ? SPARK_MUL : lv ? TIANDAO_MUL : 1, heal = lv === 'spark' ? SPARK_HEAL : lv ? TIANDAO_HEAL : 0;
+    // 這場帶的必殺技(出擊前選的,見 G.ULTS):烈焰鋼拳 爆發 / 炎鋼天道 守護 / 星火燎原拳 燎原
+    const u = G.ultNow(), lv = u.id === 'base' ? null : u.id;
     await this.cutIn(lv, wait);
-    if (heal) this.healPlayer(Math.round(p.maxHp * heal));
-    await this.barrage(Math.round(p.atk * p.ultMult * mul), wait);
+    if (u.heal) this.healPlayer(Math.round(p.maxHp * u.heal));
+    if (u.guard) { // 護體:之後幾次敵人攻擊傷害減半
+      this.ultGuard = u.guard;
+      G.$('#battle').classList.add('ult-guard');
+      this.float(G.t('護體!{0} 回合傷害減半', u.guard), 'tag line');
+    }
+    if (u.calm) { // 燎原:燒掉九宮格上的敵方機制格,接下來幾個階段不再佈置
+      if (G.grid.blocks.size) this.float('機制格清除!', 'tag line');
+      G.grid.clearBlocks();
+      this.boardCalm = u.calm;
+      if (this.e && this.e.skill) { this.e.skillBroken = true; this.float('打斷敵方必殺!', 'tag armor'); }
+    }
+    await this.barrage(Math.round(p.atk * p.ultMult * u.mul), wait);
+    if (u.id === 'base' && !this.over()) { // 爆發:必定破甲,破綻量表直接集滿
+      this.brokenNext = true;
+      this.float(G.t('破甲!下回合每拳 +{0}%', BROKEN_BONUS * 100), 'tag armor');
+      this.addGauge(100);
+    }
+    if (u.refund) { p.ult = Math.round(p.ultMax * u.refund); this.render(); } // 燎原:回收部分必殺值
     await wait(700);
   },
 
@@ -1281,6 +1301,7 @@ G.battle = {
 
   // 回合開始時依敵人機制佈置格子
   setupBoard(phase) {
+    if (this.boardCalm > 0) { this.boardCalm--; return; } // 星火燎原拳燒掉機制格後,接下來幾個階段不佈置
     const g = G.grid;
     const open = () => [...Array(9).keys()].filter(i => !g.blocks.has(i));
     // 天魔:每回合換一批封印格(不冒符號,點了算點空格)
@@ -1837,6 +1858,7 @@ G.battle = {
 
   hurtPlayer(d) {
     const p = this.p;
+    if (this.ultGuard > 0) d *= 0.5; // 炎鋼天道的護體:傷害減半
     d = Math.max(1, Math.round(d * (1 - p.armor)));
     if (this.stats) this.stats.hurt = (this.stats.hurt || 0) + 1; // 成就「毫髮無傷」
     p.hp = Math.max(0, p.hp - d);
@@ -2082,9 +2104,9 @@ G.battle = {
     if (finalWin) {
       if (ch === 1) sv.cleared = true; // 第一章破關:主選單「故事」可重看結局
       if (round === cd.roundMax && round < G.ROUND_LAST) cd.roundMax = round + 1; // 這一章開啟下一輪(天魔另外要看修羅的星數)
-      if (ch === 2 && round === 1 && !sv.tiandao) tiandao = sv.tiandao = true; // 第二章破關:覺醒新必殺技「炎鋼天道」
+      if (ch === 2 && round === 1 && !sv.tiandao) { tiandao = sv.tiandao = true; sv.ultPick = 'tiandao'; } // 第二章破關:覺醒新必殺技「炎鋼天道」(直接換上)
       if (ch === 3 && round === 1) sv.ch3Clear = true; // 第三章破關(成就用)
-      if (ch === 3 && round === 1 && !sv.spark) spark = sv.spark = true; // 第三章破關:必殺技進化為「星火燎原拳」
+      if (ch === 3 && round === 1 && !sv.spark) { spark = sv.spark = true; sv.ultPick = 'spark'; } // 第三章破關:新必殺技「星火燎原拳」(直接換上)
     }
     // 新的一輪開放:破關開了下一輪,或修羅的星星剛好湊夠開了天魔
     const availAfter = G.roundAvail(ch);

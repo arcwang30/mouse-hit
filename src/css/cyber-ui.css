@@ -1259,3 +1259,5 @@ body.kb .dial-kb { display: block; }
 .ttt-think { position: absolute; left: 70%; top: 3%; z-index: 6; font-size: 8cqw; pointer-events: none;
   filter: drop-shadow(0 0 2cqw #b88aff); animation: tttThink 1s linear infinite; }
 @keyframes tttThink { to { rotate: 360deg; } }
+/* 炎鋼天道的護體:效果期間 HP 條外圍亮金光 */
+#battle.ult-guard :has(> #playerHpFill) { box-shadow: 0 0 0 .4cqw #ffd84a, 0 0 3cqw #ffd84a90; }
