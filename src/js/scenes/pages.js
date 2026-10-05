@@ -81,11 +81,15 @@ G.pages = {
       html = H.rules.map(([ic, t, d]) =>
         `<div class="ht-row"><div class="ht-ic">${ic}</div><div><b>${G.t(t)}</b><p>${G.t(d)}</p></div></div>`).join('');
     } else if (p === 1) {
+      // 遊戲畫面:實際的戰鬥畫面縮小放進來(複製 #battle,換成示範內容),標上 ①~⑫,下面逐項說明
+      html = '<div class="ui-shot"></div>' +
+        H.ui.map(([t, d], k) => `<div class="ht-row"><div class="ht-ic"><i class="um-n big">${k + 1}</i></div><div><b>${G.t(t)}</b><p>${G.t(d)}</p></div></div>`).join('');
+    } else if (p === 2) {
       html = '<table class="ht-table"><tr>' + ['操作', '鍵盤', '滑鼠', '手機'].map(h => `<th>${G.t(h)}</th>`).join('') + '</tr>' +
         H.controls.map(r => `<tr>${r.map((t, k) => k ? `<td>${G.t(t).replace(/\n/g, '<br>')}</td>` : `<th>${G.t(t)}</th>`).join('')}</tr>`).join('') +
         '</table><h3 class="ht-h3">' + G.t('進階技巧') + '</h3>' +
         H.tips.map(([t, d]) => `<div class="ht-tip"><b>${G.t(t)}</b><p>${G.t(d)}</p></div>`).join('');
-    } else if (p === 2) {
+    } else if (p === 3) {
       // 用遊戲裡真正的按鈕樣式畫出小圖示
       html = H.symbols.map(([cls, ic, label, t, d]) =>
         `<div class="ht-row"><div class="ht-cell cell on ${cls}"><span class="cap">${label ? `<span class="label">${G.t(label)}</span>` : ''}<span class="icon">${ic}</span><span class="badge"></span></span></div>` +
@@ -94,7 +98,91 @@ G.pages = {
     const body = G.$('#howtoBody');
     body.innerHTML = html;
     body.scrollTop = 0;
+    const shot = body.querySelector('.ui-shot');
+    if (shot) this.buildUiShot(shot);
     body.querySelectorAll('.ht-pic img').forEach(img => img.complete ? fitPic(img) : img.onload = () => fitPic(img));
+  },
+
+  // 操作說明「遊戲畫面」:複製真正的戰鬥畫面(預設造型),填入示範內容——區域一的場景、訓練木樁、防禦回合,
+  // 放進 9:16 的小容器(cqw 會跟著容器縮小),再在各區塊旁標上 ①~⑫
+  buildUiShot(shot) {
+    const app = document.createElement('div');
+    app.className = 'ui-shot-app';
+    const bt = G.$('#battle').cloneNode(true);
+    const q = s => bt.querySelector(s);
+    bt.className = 'screen art active turn-def wp-auto skin-' + G.SKINS[0].id; // 預設造型、沒有桌布
+    bt.querySelectorAll('.coach, .coach-skip, .fx-fist, .fx-impact, .fx-tornado, .fx-shot, .kb-hint, .gc-heat, .gm-clash, .dial, .float, .shards').forEach(x => x.remove());
+    // 區域一的場景 + 訓練木樁
+    const st = G.CHAPTERS[0].stages[0];
+    q('#stageView').className = 'stage has-bg bg-' + st.bg;
+    q('#stageBg').style.backgroundImage = `url('../assets/images/${st.img}')`;
+    q('#deco').innerHTML = '';
+    q('#waveTag').textContent = 'WAVE 1/7';
+    q('#combo').className = 'combo show';
+    q('#comboNum').textContent = '12';
+    q('#feverFill').style.width = '60%';
+    q('#enemy').className = 'enemy idle';
+    q('#enemySprite').innerHTML = '<img src="../assets/images/enemies/training_dummy.png" alt="">';
+    q('#enemyState').textContent = G.t('待機');
+    q('#enemyName').className = 'enemy-name';
+    q('#enemyName').textContent = G.t('訓練木樁');
+    q('#enemyHpFill').style.width = '70%';
+    q('#enemyHpText').textContent = '42/60';
+    // HUD:HP、破綻量表、剩餘、必殺值、提示列、時間條
+    q('#playerHpFill').style.width = '80%';
+    q('#playerHpText').textContent = G.t('炎鋼 HP {0}/{1}', 80, 100);
+    q('#reviveIcon').hidden = true;
+    q('#breakGauge').className = 'break-gauge';
+    q('#breakGauge').style.setProperty('--g', '60%');
+    q('#counter').textContent = '5';
+    q('#ultFill').style.width = '60%';
+    q('#ultText').textContent = G.t('必殺 {0}%', 60);
+    q('.ult-bar').classList.remove('full');
+    q('#ultWrap').className = 'ult-wrap';
+    q('#ultBtn').className = 'ult-btn';
+    q('#ultBtn').textContent = G.t('🔥 必殺');
+    q('#phase').className = 'phase def';
+    q('#phase').textContent = G.t('防禦:點擊 🛡️ 擋下攻擊!');
+    q('#timeFill').style.width = '70%';
+    // 九宮格:防禦回合,三面盾牌
+    q('#grid').className = 'grid';
+    q('#grid').style.removeProperty('--grot');
+    q('.wp-layer').innerHTML = '';
+    q('#grid').querySelectorAll('.cell').forEach((c, i) => {
+      c.className = [1, 5, 6].includes(i) ? 'cell guard on' : 'cell';
+      c.style.setProperty('--life', '3000ms');
+      c.querySelector('.icon').textContent = [1, 5, 6].includes(i) ? '🛡️' : '';
+      c.querySelector('.label').textContent = c.querySelector('.badge').textContent = '';
+      c.querySelectorAll('.blk').forEach(b => { b.className = 'blk'; });
+    });
+    const pause = G.$('#pauseBtn').cloneNode(true);
+    pause.style.display = 'block';
+    // 要標號的區塊(順序 = G.HOWTO.ui):[元素, 編號放哪]——標在空白處,不蓋住內容
+    // 'r' 右邊外側 / 'l' 左邊外側 / 'ir' 右端內側 / 't' 正上方 / 'tr' 右上角
+    const marks = [[q('#waveTag'), 'r'], [pause, 'l'], [q('#combo'), 'l'], [q('#enemySprite'), 'r'], [q('.enemy-bar'), 'ir'],
+      [q('.player-bar'), 'ir'], [q('#breakGauge'), 't'], [q('.counter'), 'tr'], [q('.ult-bar'), 'ir'], [q('#ultBtn'), 'tr'], [q('#phase'), 'ir'], [q('#grid'), 'tr']];
+    // 複製來的節點不能有重複的 id(會搶走 G.$ 的查詢),也不需要翻譯標記
+    [bt, pause, ...bt.querySelectorAll('[id], [data-i18n], [data-i18n-title]')].forEach(x => {
+      x.removeAttribute('id'); x.removeAttribute('data-i18n'); x.removeAttribute('data-i18n-title');
+    });
+    app.append(bt, pause);
+    shot.appendChild(app);
+    // 排版完成後,依各區塊的位置放上編號
+    requestAnimationFrame(() => {
+      const box = app.getBoundingClientRect();
+      if (!box.width) return;
+      const half = box.width * 0.028; // 編號圓圈半徑(5.6cqw 的一半)
+      marks.forEach(([el, at], k) => {
+        const r = el.getBoundingClientRect(), n = document.createElement('i');
+        n.className = 'um-n shot';
+        n.textContent = k + 1;
+        const x = { r: r.right + half, l: r.left - half, ir: r.right - half * 1.6, t: r.left + r.width / 2, tr: r.right }[at];
+        const y = at === 't' ? r.top - half * 0.6 : at === 'tr' ? r.top : r.top + r.height / 2;
+        n.style.left = ((x - box.left) / box.width * 100).toFixed(1) + '%';
+        n.style.top = ((y - box.top) / box.height * 100).toFixed(1) + '%';
+        app.appendChild(n);
+      });
+    });
   },
 
   // ---------- 設定 ----------

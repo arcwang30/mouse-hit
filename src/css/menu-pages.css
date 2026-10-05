@@ -677,3 +677,15 @@ html:lang(en) .stage-bar .ch-tab b { font-size: 2.6cqw; }
 .st-slot-btns { display: grid; grid-template-columns: repeat(3, 1fr); gap: 2cqw; margin-top: 2cqw; }
 .st-slot-btns .btn { min-width: 0; padding-left: 1cqw; padding-right: 1cqw; font-size: 3.4cqw; }
 .st-slot-btns .btn:disabled { opacity: .35; }
+
+/* ===== 操作說明「遊戲畫面」:實際戰鬥畫面的縮小版(①~⑫ 對應下面的說明)===== */
+.ui-shot { margin: 1cqw 0 4cqw; }
+/* 9:16 的小容器:裡面複製的戰鬥畫面用 cqw / cqh 排版,會跟著這個容器等比縮小 */
+.ui-shot-app { position: relative; width: 74%; aspect-ratio: 9 / 16; margin: 0 auto; overflow: hidden; container-type: size;
+  border-radius: 3cqw; box-shadow: 0 0 0 .5cqw #ffffff40, 0 2cqw 5cqw #000c; background: var(--bg, #000); pointer-events: none; }
+.ui-shot-app .screen, .ui-shot-app .overlay { font-size: 4cqw; }
+.ui-shot-app *, .ui-shot-app *::before, .ui-shot-app *::after { animation: none !important; transition: none !important; } /* 靜止畫面 */
+.um-n { display: inline-grid; place-items: center; width: 3.6cqw; height: 3.6cqw; border-radius: 50%; flex: none;
+  font: 900 2.3cqw/1 var(--tech, sans-serif); font-style: normal; color: #000; background: #ffd84a; box-shadow: 0 0 0 .3cqw #000, 0 0 1.4cqw #ffd84a; }
+.um-n.big { width: 7cqw; height: 7cqw; font-size: 4cqw; }
+.um-n.shot { position: absolute; z-index: 50; width: 5.6cqw; height: 5.6cqw; font-size: 3.4cqw; transform: translate(-50%, -50%); }
