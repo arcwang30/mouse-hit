@@ -100,7 +100,7 @@ G.pages = {
   // ---------- 設定 ----------
   // 分成「設定」(聲音、操作等)與「外觀」(九宮格造型、桌布)兩頁,上方分頁或左右滑動切換
   settingsTab: 0,
-  SETTINGS_TABS: ['⚙️ 設定', '🎨 外觀', '💾 存檔'], // 存檔:測試用的存檔槽
+  SETTINGS_TABS: ['⚙️ 設定', '🎨 外觀', '💾 檔案'], // 檔案:測試用的存檔槽
   settings() {
     this.settingsTab = 0;
     this.renderSettings();
@@ -167,15 +167,15 @@ G.pages = {
     const armed = this.slotArmed || '';
     const btn = (op, n, label, cls = '', off = false) =>
       `<button class="btn small ${cls}" data-slot="${op}" data-n="${n}"${off ? ' disabled' : ''}>${G.t(armed === op + n ? '再按一次確認' : label)}</button>`;
-    return `<p class="st-note">${G.t('🧪 測試用:把目前進度存到存檔槽,或從存檔槽讀回來。讀檔後遊戲會重新載入。')}</p>` +
+    return `<p class="st-note">${G.t('🧪 測試用:把目前進度儲存到檔案,或從檔案讀回來。讀檔後遊戲會重新載入。')}</p>` +
       Array.from({ length: this.SLOT_N }, (_, k) => {
         const n = k + 1, s = this.slotGet(n), d = s && s.data;
         const r1 = d && d.rounds && d.rounds[1] || {};
         const info = d
           ? `${new Date(s.t).toLocaleString()}<br>💰 ${d.coins || 0}・${G.t('點數')} ${d.points || 0}・${G.t('第一輪過關')} ${(r1.clear || []).length}・${G.t('開放到第 {0} 輪', d.roundMax || 1)}`
           : G.t('(空)');
-        return `<div class="st-item st-slot"><div class="st-top"><b>${G.t('存檔 {0}', n)}</b></div><p>${info}</p>` +
-          `<div class="st-slot-btns">${btn('save', n, '💾 存檔')}${btn('load', n, '📂 讀檔', '', !d)}${btn('del', n, '🗑️ 刪除', 'danger', !d)}</div></div>`;
+        return `<div class="st-item st-slot"><div class="st-top"><b>${G.t('檔案 {0}', n)}</b></div><p>${info}</p>` +
+          `<div class="st-slot-btns">${btn('save', n, '💾 儲存')}${btn('load', n, '📂 讀檔', '', !d)}${btn('del', n, '🗑️ 刪除', 'danger', !d)}</div></div>`;
       }).join('');
   },
   slotClick(op, n) {
@@ -203,7 +203,7 @@ G.pages = {
     }
     G.audio.play(op === 'save' ? 'coin' : 'break');
     this.renderSettings();
-    G.banner(op === 'save' ? G.t('已存到存檔 {0}', n) : G.t('已刪除存檔 {0}', n), '', 900);
+    G.banner(op === 'save' ? G.t('已儲存到檔案 {0}', n) : G.t('已刪除檔案 {0}', n), '', 900);
   },
   setVol(key, v) {
     v = Math.max(0, Math.min(5, v));
