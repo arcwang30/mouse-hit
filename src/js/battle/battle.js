@@ -62,6 +62,7 @@ const CHAPTER_COINS = 300;    // 章節通關獎勵(每一輪第一次打倒最�
 // 每顆第一次拿到的星星 +STAR_PTS;最後再乘周回倍率(×1.5 / ×2)與賞金獵人
 const STAGE_PTS = { normal: 8, bonus: 8, elite: 12, boss: 18, region: 2 }, REPLAY_PTS = 0.2, LOSE_PTS = 0.2, STAR_PTS = 3;
 const TIANDAO_MUL = 1.5, TIANDAO_HEAL = 0.2; // 炎鋼天道(第二章破關後的必殺技):威力倍率、回復比例
+const SPARK_MUL = 1.8, SPARK_HEAL = 0.25;    // 星火燎原拳(第三章破關後的必殺技,取代炎鋼天道):威力倍率、回復比例
 
 function makePlayer() {
   const p = {
@@ -1047,11 +1048,12 @@ G.battle = {
     p.ult = 0;
     this.stats.ults++;
     this.render();
-    // 第二章破關後覺醒「炎鋼天道」:威力 ×1.5,發動時回復 20% HP
-    const tiandao = !!G.save.data.tiandao;
-    await this.cutIn(tiandao, wait);
-    if (tiandao) this.healPlayer(Math.round(p.maxHp * TIANDAO_HEAL));
-    await this.barrage(Math.round(p.atk * p.ultMult * (tiandao ? TIANDAO_MUL : 1)), wait);
+    // 必殺技等級:第二章破關後「炎鋼天道」(威力 ×1.5、回復 20%),第三章破關後「星火燎原拳」(威力 ×1.8、回復 25%)
+    const sv = G.save.data, lv = sv.spark ? 'spark' : sv.tiandao ? 'tiandao' : null;
+    const mul = lv === 'spark' ? SPARK_MUL : lv ? TIANDAO_MUL : 1, heal = lv === 'spark' ? SPARK_HEAL : lv ? TIANDAO_HEAL : 0;
+    await this.cutIn(lv, wait);
+    if (heal) this.healPlayer(Math.round(p.maxHp * heal));
+    await this.barrage(Math.round(p.atk * p.ultMult * mul), wait);
     await wait(700);
   },
 
@@ -1101,14 +1103,19 @@ G.battle = {
     el.classList.remove('show');
   },
 
-  async cutIn(tiandao = false, wait = ms => G.clock.wait(ms)) {
+  // lv:null 烈焰鋼拳 / 'tiandao' 炎鋼天道 / 'spark' 星火燎原拳(各自的招式名、標語、過場圖與配色)
+  async cutIn(lv = null, wait = ms => G.clock.wait(ms)) {
     const el = G.$('#cutin');
-    // 炎鋼天道:金色火焰、換招式名(過場圖到了以前沿用原本的圖)
-    el.classList.toggle('tiandao', tiandao);
-    el.classList.toggle('has-art', tiandao && !!G.TIANDAO_ART);
-    el.querySelector('.cutin-title').textContent = G.t(tiandao ? '炎鋼天道・焚天' : '烈焰鋼拳・焚天');
-    el.querySelector('.cutin-sub').textContent = G.t(tiandao ? '鋼鐵意志與不滅烈焰,合而為一!' : '額上烈焰烙痕,燃盡一切!');
-    el.querySelector('.cutin-art').src = '../assets/images/' + (tiandao && G.TIANDAO_ART ? G.TIANDAO_ART : 'fx/ult_cutin_fist.webp');
+    const ULT = {
+      spark:   { name: '星火燎原拳', sub: '億萬星火,燎盡天幕!', art: G.SPARK_ART },
+      tiandao: { name: '炎鋼天道・焚天', sub: '鋼鐵意志與不滅烈焰,合而為一!', art: G.TIANDAO_ART },
+    }[lv] || { name: '烈焰鋼拳・焚天', sub: '額上烈焰烙痕,燃盡一切!', art: null };
+    el.classList.toggle('tiandao', !!lv); // 天道與星火共用金色火焰的底
+    el.classList.toggle('spark', lv === 'spark');
+    el.classList.toggle('has-art', !!ULT.art);
+    el.querySelector('.cutin-title').textContent = G.t(ULT.name);
+    el.querySelector('.cutin-sub').textContent = G.t(ULT.sub);
+    el.querySelector('.cutin-art').src = '../assets/images/' + (ULT.art || 'fx/ult_cutin_fist.webp');
     // 出拳命中時從拳頭位置四射的火星:兩波,每次方向、距離、大小都隨機
     G.$('#cutinEmbers').innerHTML = Array.from({ length: 36 }, (_, k) => {
       const a = Math.random() * Math.PI * 2, r = 18 + Math.random() * 38;
@@ -1119,7 +1126,7 @@ G.battle = {
     void el.offsetWidth;
     el.classList.add('show');
     G.audio.play('cutin');
-    G.voice.say('hero', 'hero_ult', tiandao ? '炎鋼天道・焚天' : '烈焰鋼拳・焚天'); // 喊招
+    G.voice.say('hero', 'hero_ult', ULT.name); // 喊招
     wait(450).then(() => G.audio.play('boom')); // 命中瞬間
     G.haptic.buzz([0, 450, 80]);
     await wait(1700);
@@ -2056,11 +2063,13 @@ G.battle = {
     const finalWin = win && i === G.STAGES.length - 1, ch = G.chapter(), cd = G.chData(ch);
     this.newRound = 0;
     this.newChapter = 0;
-    let tiandao = false;
+    let tiandao = false, spark = false;
     if (finalWin) {
       if (ch === 1) sv.cleared = true; // 第一章破關:主選單「故事」可重看結局
       if (round === cd.roundMax && round < G.ROUND_LAST) cd.roundMax = round + 1; // 這一章開啟下一輪(天魔另外要看修羅的星數)
       if (ch === 2 && round === 1 && !sv.tiandao) tiandao = sv.tiandao = true; // 第二章破關:覺醒新必殺技「炎鋼天道」
+      if (ch === 3 && round === 1) sv.ch3Clear = true; // 第三章破關(成就用)
+      if (ch === 3 && round === 1 && !sv.spark) spark = sv.spark = true; // 第三章破關:必殺技進化為「星火燎原拳」
     }
     // 新的一輪開放:破關開了下一輪,或修羅的星星剛好湊夠開了天魔
     const availAfter = G.roundAvail(ch);
@@ -2082,6 +2091,7 @@ G.battle = {
     const lastRegion = this.regionCleared === G.REGIONS.length - 1;
     if (this.regionCleared >= 0 && !(lastRegion && ch === 1)) { const r = this.regionCleared; setTimeout(() => G.dialog.cleared(r), 900); }
     if (tiandao) setTimeout(() => G.dialog.awaken(), 900); // 第二章結局:覺醒對話
+    if (spark) setTimeout(() => G.dialog.awaken3(), 900); // 第三章結局:星火燎原拳覺醒對話
     G.ach.check(s, win); // 結算畫面上跳出這場達成的成就
   },
 };

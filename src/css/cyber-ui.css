@@ -893,6 +893,10 @@ html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; } /* 手機瀏覽
 .dialog.dlg-enemy .dlg-name { color: #ff6a7a; text-shadow: 0 0 1.4cqw #ff3a5a; text-align: right; }
 .dialog.dlg-hero .dlg-name { color: var(--fire-2); text-shadow: 0 0 1.4cqw #ff7a1f; }
 .dialog.dlg-hero .dlg-face { box-shadow: 0 0 0 .4cqw var(--fire-2), 0 0 3cqw #ff7a1f80; }
+/* 同伴(第三章):和敵人一樣在右邊,但用友善的青綠色 */
+.dialog.dlg-ally .dlg-box { box-shadow: inset 0 0 0 .4cqw #3ddc84; }
+.dialog.dlg-ally .dlg-face { box-shadow: 0 0 0 .4cqw #3ddc84, 0 0 3cqw #3ddc8460; }
+.dialog.dlg-ally .dlg-name { color: #7dffb4; text-shadow: 0 0 1.4cqw #3ddc84; }
 .dialog.dlg-narrator .dlg-face, .dialog.dlg-system .dlg-face { display: none; }
 .dialog.dlg-narrator .dlg-text { font-style: italic; color: #e8e0ff; }
 .dialog.dlg-system .dlg-box { box-shadow: inset 0 0 0 .5cqw var(--neon-y), 0 0 4cqw #ffd40060; }

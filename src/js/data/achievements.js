@@ -11,6 +11,7 @@ G.ACHIEVEMENTS = [
   { id: 'r1',       icon: '🏆', name: '凡塵霸主',   desc: '打倒第一輪的最終 BOSS', pts: 20,  check: c => cleared(c.sv, 1, G.CHAPTERS[0].stages.length - 1) },
   { id: 'r2',       icon: '👹', name: '修羅',       desc: '打倒第二輪的最終 BOSS', pts: 30,  check: c => cleared(c.sv, 2, G.CHAPTERS[0].stages.length - 1) },
   { id: 'ch2',      icon: '🔥', name: '炎鋼天道',   desc: '通過第二章「鋼鐵與心相的試煉」', pts: 30, check: c => !!c.sv.tiandao },
+  { id: 'ch3',      icon: '🌟', name: '星火燎原',   desc: '通過第三章「星火燎原的遠征」', pts: 30, check: c => !!(c.sv.ch3Clear || c.sv.spark) },
   { id: 'r3',       icon: '😈', name: '天魔降伏',   desc: '打倒第三輪的最終 BOSS', pts: 50, check: c => cleared(c.sv, 3, G.CHAPTERS[0].stages.length - 1) },
   // 單場挑戰
   { id: 'nodmg',    icon: '🛡️', name: '毫髮無傷',   desc: '一次都沒被打中就過關', pts: 15, check: c => !!(c.run && c.win && !c.run.hurt) },

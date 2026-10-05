@@ -391,7 +391,7 @@ G.scenes = {
         return `<button class="${cls}" data-i="${i}" style="left:${x}%;top:${y}%" ${i >= pr.unlocked ? 'disabled' : ''}>` +
           `<span class="mn-icon">${G.STAGE_TYPES[s.type].icon}</span><span class="mn-code">${s.code}</span>` +
           `<span class="mn-stars">${[1, 2, 3].map(n => `<i class="${n <= st ? 'on' : ''}">★</i>`).join('')}</span>` +
-          (i === cur ? `<span class="mn-hero" style="background-image:url('${url('fx/credit_hero.png')}')"></span>` : '') + '</button>';
+          (i === cur ? `<span class="mn-hero" style="background-image:url('${url(G.heroImg())}')"></span>` : '') + '</button>';
       }).join('');
       const path = pos.map(([x, y]) => `${x},${y}`).join(' ');
       const bossName = r ? G.t(G.ENEMIES[G.REGIONS[r - 1].boss].name) : '';

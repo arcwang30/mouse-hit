@@ -129,6 +129,54 @@ G.ENEMIES = {
     gimmick: ['slide', 'lights', 'twin', 'cards', 'tictac'], // 連環考驗:HP 66% / 33% 各抽一種第二章的小遊戲
     skill: { name: '日月無相', desc: '日月雙輪轉動,天地萬象一齊襲來!', count: 3, decoy: 0.3, dmgMul: 2, lifeMul: 0.75 },
   },
+
+  // ---- 第三章「星火燎原的遠征」:一般敵人 ----
+  skyTrooper:     { name: '天幕士兵',     icon: '🪖', img: 'enemies/sky_trooper.webp', shot: '🔸', hp: 100, atk: 15, atkCount: 5, guardLife: 920 },
+  mechHound:      { name: '機械獵犬',     icon: '🐕', img: 'enemies/mech_hound.webp', shot: '⚡', hp: 95,  atk: 15, atkCount: 6, guardLife: 850 },
+  portThug:       { name: '港口打手',     icon: '⚓', img: 'enemies/port_thug.webp', shot: '⛓️', hp: 120, atk: 15, atkCount: 4, guardLife: 1100 },
+  trainBot:       { name: '列車保安機兵', icon: '🚃', img: 'enemies/train_bot.webp', shot: '🔵', hp: 125, atk: 14, atkCount: 5, guardLife: 1000 },
+  geneBrute:      { name: '基因改造武者', icon: '🧬', img: 'enemies/gene_brute.webp', shot: '🧪', hp: 135, atk: 17, atkCount: 4, guardLife: 1050 },
+  drainedFighter: { name: '被洗腦的武者', icon: '😶', img: 'enemies/drained_fighter.webp', shot: '🗡️', hp: 105, atk: 15, atkCount: 5, guardLife: 950 },
+  camoNinja:      { name: '光學迷彩刺客', icon: '👻', img: 'enemies/camo_ninja.webp', shot: '💠', hp: 100, atk: 16, atkCount: 6, guardLife: 880 },
+  eliteGuard:     { name: '議會精英衛隊', icon: '🛡️', img: 'enemies/elite_guard.webp', shot: '⚔️', hp: 140, atk: 17, atkCount: 6, guardLife: 900 },
+
+  // ---- 第三章 區域 BOSS ----
+  hookCaptain: {
+    name: '鐵鉤船長', icon: '🏴‍☠️', img: 'enemies/hook_captain.webp', shot: '🪝', boss: true, hp: 280, atk: 18, atkCount: 6, guardLife: 980,
+    gimmick: 'wire', // HP 剩一半時:拆彈剪線
+    skill: { name: '鐵鉤錨鏈', desc: '鐵鉤甩出錨鏈,把整片戰場拖進漩渦!', count: 3, dmgMul: 1.5 },
+  },
+  railHunter: {
+    name: '軌道獵手', icon: '🚄', img: 'enemies/rail_hunter.webp', shot: '🔩', boss: true, hp: 290, atk: 18, atkCount: 7, guardLife: 880,
+    gimmick: 'rhythm', // HP 剩一半時:打鐵節奏
+    skill: { name: '超音速掃射', desc: '噴射加速,加特林全開掃射!', count: 3, lifeMul: 0.7, dmgMul: 1.4 },
+  },
+  geneDoctor: {
+    name: '基因博士', icon: '🧠', img: 'enemies/gene_doctor.webp', shot: '🧪', boss: true, hp: 300, atk: 19, atkCount: 6, guardLife: 950,
+    gimmick: 'cards', // HP 剩一半時:翻牌配對
+    skill: { name: '突變血清', desc: '注射突變血清,改造獸發狂撲來!', count: 2, decoy: 0.3, dmgMul: 1.5 },
+  },
+  cageChampion: {
+    name: '鐵籠拳霸', icon: '⛓️', img: 'enemies/cage_champion.webp', shot: '👊', boss: true, hp: 340, atk: 20, atkCount: 6, guardLife: 1000,
+    gimmick: 'clash', // HP 剩一半時:對拳拼勁
+    skill: { name: '鐵籠千拳', desc: '失控的鐵拳如暴雨般轟下!', count: 3, dmgMul: 1.8 },
+  },
+  executor: {
+    name: '議會執行官', icon: '⚖️', img: 'enemies/executor.webp', shot: '⚡', boss: true, hp: 320, atk: 20, atkCount: 7, guardLife: 880,
+    gimmick: 'shell', // HP 剩一半時:三仙歸洞
+    skill: { name: '雷光處決', desc: '雷光巨劍一閃,處決宣判!', count: 2, lifeMul: 0.65, dmgMul: 1.5 },
+  },
+  skyChairman: {
+    name: '天幕議長', icon: '🌐', img: 'enemies/sky_chairman.webp', shot: '🌀', boss: true, hp: 420, atk: 21, atkCount: 7, guardLife: 850,
+    gimmick: ['wire', 'rhythm', 'cards', 'clash', 'shell', 'slide', 'lights', 'twin', 'tictac', 'path'], // 連環考驗:HP 66% / 33% 各抽一種
+    skill: { name: '武魂剝離', desc: '被奪走的無數武魂化為風暴,一齊襲來!', count: 3, decoy: 0.3, dmgMul: 2, lifeMul: 0.75 },
+  },
+};
+// 第三章的同伴(只在劇情對話裡出場):對話的 who 可以填這裡的 id
+G.ALLIES = {
+  hayabusa: { name: '小隼', img: 'allies/hayabusa.webp', zoom: 280 }, // 反抗軍的少年駭客(zoom:對話頭像放大比例,圖的人物比較小時加大)
+  honglin:  { name: '紅綾', img: 'allies/honglin.webp', zoom: 190 },  // 被救出的女拳師
+  leishi:   { name: '雷獅', img: 'allies/leishi.webp', zoom: 280 },   // 覺醒後的鐵籠拳霸
 };
 // 寶箱怪:神秘寶箱事件才會出現的敵人(不在關卡裡,所以不放進 G.ENEMIES);強度跟著當下的關卡與波次
 G.MIMIC = { name: '寶箱怪', icon: '🧰', img: 'enemies/mimic.webp', shot: '💰', hp: 90, atk: 11, atkCount: 6, guardLife: 950 };
@@ -190,6 +238,24 @@ G.MECHS = {
   sectGuardian: { hint: '護法:踢擊特別多還帶晶盾,盾牌裡混著倒數炸彈', atk: { swipe: 0.35, armor: 0.3 }, def: { timebomb: 0.35, heavy: { chance: 0.25, holdMs: 400 } } },
   sectMaster:   { hint: '無相:流沙之上,蜃樓、磁暴、幻術輪番上陣', board: 'sand',
     rotate: [{ def: { mirror: 0.4 } }, { atk: { swipe: 0.3 }, def: { spin: true } }, { atk: { hidden: 0.4 }, def: { lockon: 400 } }, { def: { memory: true } }] },
+  // 第三章:沒有新機制,把前兩章的機制組合得更密集
+  skyTrooper:     { hint: '士兵:拳頭混著 💣,盾牌先亮準星', atk: { bomb: 0.3 }, def: { lockon: 450 } },
+  mechHound:      { hint: '獵犬:拳頭和盾牌都會瞬移', atk: { blink: 0.35 }, def: { blink: 0.45 } },
+  portThug:       { hint: '打手:「頂住」的重擊特別多', def: { heavy: { chance: 0.4, holdMs: 420 } } },
+  trainBot:       { hint: '保安:盾牌帶鋼甲,車廂一轉九宮格也跟著轉', def: { armor: 0.35, spin: true } },
+  geneBrute:      { hint: '改造:發亮的拳頭要點兩下,重擊要頂住', atk: { armor: 0.3 }, def: { heavy: { chance: 0.35, holdMs: 420 } } },
+  drainedFighter: { hint: '洗腦:盾牌帶著殘影,還會考驗記憶', rotate: [{ def: { ghost: 0.4 } }, { def: { memory: true } }] },
+  camoNinja:      { hint: '迷彩:拳頭先顯示 ❓,殘影與蜃樓交錯', atk: { hidden: 0.4 }, def: { ghost: 0.35, mirror: 0.3 } },
+  eliteGuard:     { hint: '衛隊:盾牌帶晶盾,還混著倒數炸彈', def: { armor: 0.35, timebomb: 0.3 } },
+  hookCaptain:    { hint: '船長:錨鏈一甩盾牌就瞬移,重擊要頂住', atk: { swipe: 0.3 }, def: { blink: 0.4, heavy: { chance: 0.3, holdMs: 420 } } },
+  railHunter:     { hint: '獵手:準星鎖定,車廂一轉九宮格也跟著轉', atk: { blink: 0.3 }, def: { lockon: 400, spin: true } },
+  geneDoctor:     { hint: '博士:拳頭裡混著 🧪,觸手蓋住的格子要敲 3 下', board: 'tentacle', atk: { bomb: 0.3, bombIcon: '🧪' }, def: { armor: 0.3 } },
+  cageChampion:   { hint: '拳霸:大量「頂住」重拳,發亮盾牌要點兩下', def: { heavy: { chance: 0.45, holdMs: 450 }, armor: 0.3 } },
+  executor:       { hint: '執行官:鎖定、蜃樓、倒數炸彈輪番上陣',
+    rotate: [{ def: { lockon: 400, blink: 0.35 } }, { def: { mirror: 0.4, ghost: 0.3 } }, { atk: { swipe: 0.35 }, def: { timebomb: 0.35 } }] },
+  skyChairman:    { hint: '議長:吸收的武魂化為歷代強敵的招式,熔岩格拳頭 ×2', board: 'lava',
+    rotate: [{ def: { heavy: { chance: 0.35, holdMs: 420 }, armor: 0.3 } }, { atk: { hidden: 0.4, bomb: 0.3 }, def: { lockon: 400 } },
+             { def: { mirror: 0.4, spin: true } }, { atk: { swipe: 0.35 }, def: { timebomb: 0.35 } }, { def: { memory: true } }] },
   steelEmperor:{ hint: '帝王:歷代強敵的招式輪番上陣,熔岩格拳頭 ×2', board: 'lava',
     rotate: [{ def: { heavy: { chance: 0.35, holdMs: 420 } } }, { atk: { hidden: 0.4, bomb: 0.3 }, def: { lockon: 400 } },
              { atk: { blink: 0.4 }, def: { ghost: 0.5, blink: 0.3 } }, { atk: { armor: 0.3 }, def: { armor: 0.35 } },

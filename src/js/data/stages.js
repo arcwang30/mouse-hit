@@ -258,10 +258,62 @@ const STAGE_LIST_2 = [
   [5, 'boss',   '無相祭壇', 'eye',      ['sectDisciple+', 'stormLord', 'particleMonk+', 'mirageFairy', 'dunesDancer+', 'sectGuardian', 'sectMaster'], [2, 4]],
 ];
 
+// ---- 第三章「星火燎原的遠征」----
+// 背景圖:backgrounds/ch3_xxx.jpg(bg 的漸層與 deco 只在圖還沒載入時墊底)
+const BGS_3 = {
+  port:  { bg: 'city',    img: 'backgrounds/ch3_port.jpg', bgm: 'battle1', deco: ['⚓', '🏗️', '🌫️', '🚢', '⚓'] },
+  train: { bg: 'subway',  img: 'backgrounds/ch3_train.jpg', bgm: 'battle2', deco: ['🚄', '💨', '🌄', '💨', '🚄'] },
+  lab:   { bg: 'forge',   img: 'backgrounds/ch3_lab.jpg', bgm: 'battle0', deco: ['🌿', '🧪', '🧬', '🧪', '🌿'] },
+  cage:  { bg: 'arena',   img: 'backgrounds/ch3_cage.jpg', bgm: 'arena',   deco: ['⛓️', '🔥', '🥊', '🔥', '⛓️'] },
+  dome:  { bg: 'theater', img: 'backgrounds/ch3_dome.jpg', bgm: 'snow',    deco: ['📺', '🛰️', '🌐', '🛰️', '📺'] },
+  tower: { bg: 'sky',     img: 'backgrounds/ch3_tower.jpg', bgm: 'sky',     deco: ['🌀', '✨', '🗼', '✨', '🌀'] },
+};
+const REGIONS_3 = [
+  { name: '鏽蝕港', desc: '大洋彼岸的巨型貨櫃港。天幕議會的走私船在夜色中進出,碼頭被海盜把持。', boss: 'hookCaptain', unlock: [], stars: 5 },
+  { name: '橫貫列車', desc: '橫跨大陸的磁浮列車。天幕的軍需列車載著被俘的武者,在高速中穿越荒野。', boss: 'railHunter', unlock: [], stars: 5 },
+  { name: '雨林基因廠', desc: '叢林深處的生化工廠。幽綠的培養槽裡,浸泡著被抽乾氣血的武者。', boss: 'geneDoctor', unlock: [], stars: 5 },
+  { name: '地下鐵籠拳場', desc: '被奪走意志的武者在鐵籠裡被迫互相殘殺,黑市的歡呼聲震耳欲聾。', boss: 'cageChampion', unlock: [], stars: 5 },
+  { name: '天幕都市', desc: '巨型穹頂籠罩的監控都市。宣傳螢幕日夜播放著議會的「和平」。', boss: 'executor', unlock: [], stars: 5 },
+  { name: '武魂剝離塔', desc: '都市中心直通天際的高塔。無數武魂在塔頂的漩渦中哀號。', boss: 'skyChairman', unlock: [], stars: 5 },
+];
+const STAGE_LIST_3 = [
+  [0, 'normal', '夜霧碼頭', 'port',    ['portThug', 'skyTrooper', 'portThug+'], []],
+  [0, 'normal', '貨櫃迷宮', 'port',    ['skyTrooper', 'mechHound', 'portThug+', 'skyTrooper+'], [1]],
+  [0, 'normal', '起重機高台', 'port',  ['portThug', 'mechHound', 'skyTrooper+', 'portThug'], []],
+  [0, 'elite',  '走私船艙', 'port',    ['portThug+', 'mechHound+', 'skyTrooper+'], [0]],
+  [0, 'boss',   '鐵錨旗艦', 'port',    ['portThug', 'mechHound+', 'skyTrooper+', 'portThug+', 'hookCaptain'], [1, 3]],
+  [1, 'normal', '月台突襲', 'train',   ['trainBot', 'skyTrooper', 'mechHound+'], []],
+  [1, 'normal', '貨運車廂', 'train',   ['mechHound', 'trainBot', 'portThug+', 'trainBot+'], [1]],
+  [1, 'normal', '車頂疾走', 'train',   ['trainBot', 'skyTrooper+', 'mechHound', 'trainBot'], []],
+  [1, 'elite',  '囚禁車廂', 'train',   ['trainBot+', 'mechHound+', 'camoNinja+'], [0]],
+  [1, 'boss',   '火車頭', 'train',     ['trainBot', 'skyTrooper+', 'hookCaptain', 'trainBot+', 'railHunter'], [1, 3]],
+  [2, 'normal', '叢林外圍', 'lab',     ['geneBrute', 'mechHound', 'skyTrooper+'], []],
+  [2, 'normal', '毒霧溫室', 'lab',     ['geneBrute', 'drainedFighter', 'geneBrute+', 'mechHound+'], [1]],
+  [2, 'normal', '培養槽區', 'lab',     ['drainedFighter', 'geneBrute', 'skyTrooper+', 'geneBrute'], []],
+  [2, 'elite',  '突變實驗室', 'lab',   ['geneBrute+', 'drainedFighter+', 'trainBot+'], [0]],
+  [2, 'boss',   '基因核心', 'lab',     ['geneBrute', 'drainedFighter+', 'railHunter', 'geneBrute+', 'geneDoctor'], [1, 3]],
+  [3, 'normal', '黑市入口', 'cage',    ['drainedFighter', 'portThug+', 'drainedFighter'], []],
+  [3, 'normal', '賭徒看台', 'cage',    ['drainedFighter', 'geneBrute+', 'drainedFighter+', 'camoNinja+'], [1]],
+  [3, 'normal', '囚籠走道', 'cage',    ['geneBrute', 'drainedFighter', 'portThug+', 'drainedFighter+'], []],
+  [3, 'elite',  '洗腦室', 'cage',      ['drainedFighter+', 'geneBrute+', 'geneDoctor'], [0]],
+  [3, 'boss',   '鐵籠擂台', 'cage',    ['drainedFighter', 'geneBrute+', 'drainedFighter+', 'hookCaptain', 'cageChampion'], [1, 3]],
+  [4, 'normal', '穹頂關卡', 'dome',    ['skyTrooper+', 'camoNinja', 'eliteGuard'], []],
+  [4, 'normal', '監控街區', 'dome',    ['camoNinja', 'eliteGuard', 'skyTrooper+', 'camoNinja+'], [1]],
+  [4, 'normal', '宣傳廣場', 'dome',    ['eliteGuard', 'camoNinja', 'mechHound+', 'eliteGuard'], []],
+  [4, 'elite',  '議會大廈', 'dome',    ['eliteGuard+', 'camoNinja+', 'railHunter'], [0]],
+  [4, 'boss',   '處刑台', 'dome',      ['eliteGuard', 'camoNinja+', 'eliteGuard+', 'cageChampion', 'executor'], [1, 3]],
+  [5, 'normal', '塔基', 'tower',       ['eliteGuard+', 'camoNinja+', 'skyTrooper+'], []],
+  [5, 'normal', '能源管道', 'tower',   ['eliteGuard+', 'drainedFighter+', 'camoNinja+', 'geneBrute+'], [1]],
+  [5, 'normal', '武魂迴廊', 'tower',   ['camoNinja', 'eliteGuard+', 'trainBot+', 'eliteGuard+'], []],
+  [5, 'elite',  '剝離室', 'tower',     ['eliteGuard+', 'geneDoctor', 'camoNinja+'], [0]],
+  [5, 'boss',   '天幕之巔', 'tower',   ['eliteGuard+', 'railHunter', 'camoNinja+', 'geneDoctor', 'eliteGuard+', 'executor', 'skyChairman'], [2, 4]],
+];
+
 // ---- 建立章節 ----
-// 難度(敵人強度倍率)曲線:第一章沿用舊版 10 關的曲線,第二章接著往上;依 30 關的位置內插
+// 難度(敵人強度倍率)曲線:第一章沿用舊版 10 關的曲線,第二、三章接著往上;依 30 關的位置內插
 const CURVE_1 = [1, 1.2, 1.4, 1.55, 1.7, 1.8, 1.9, 2, 2.05, 2.1];
 const CURVE_2 = [2.15, 2.3, 2.45, 2.55, 2.65, 2.75, 2.82, 2.9, 2.95, 3];
+const CURVE_3 = [3.05, 3.2, 3.35, 3.45, 3.55, 3.65, 3.72, 3.8, 3.86, 3.92];
 const curveAt = (curve, i, n) => {
   const x = i / (n - 1) * (curve.length - 1), k = Math.floor(x), f = x - k;
   return +(curve[k] + ((curve[k + 1] || curve[k]) - curve[k]) * f).toFixed(2);
@@ -278,6 +330,7 @@ const buildChapter = (id, name, sub, regions, list, bgs, curve) => {
 G.CHAPTERS = [
   buildChapter(1, '第一章 鋼拳復仇', '新神州', REGIONS_1, STAGE_LIST_1, BGS, CURVE_1),
   buildChapter(2, '第二章 鋼鐵與心相的試煉', '絕魔流沙', REGIONS_2, STAGE_LIST_2, BGS_2, CURVE_2),
+  buildChapter(3, '第三章 星火燎原的遠征', '天幕之下', REGIONS_3, STAGE_LIST_3, BGS_3, CURVE_3),
 ];
 // G.STAGES / G.REGIONS:目前選擇的章節(大部分程式只需要看目前這一章)
 Object.defineProperty(G, 'STAGES', { get: () => G.CHAPTERS[G.chapter() - 1].stages, configurable: true });
@@ -335,3 +388,7 @@ G.regionKey = (r, ch = G.chapter()) => ch === 1 ? String(r) : `${ch}-${r}`;
 // 第二章的美術:到了之後填上路徑(assets/images/ 底下),沒有的話沿用原本的圖
 G.HERO_AWAKE_IMG = 'fx/hero_awake.jpg'; // 炎鋼・天道覺醒立繪
 G.TIANDAO_ART = 'fx/ult_tiandao.webp';  // 新必殺技「炎鋼天道」過場圖
+G.SPARK_ART = 'fx/ult_spark.jpg';       // 第三章破關後的新必殺技「星火燎原拳」過場圖(右下浮水印在過場畫面外)
+// 第三章換上融合科技防護與古武勁裝的新戰袍:對話頭像、地圖上站著的炎鋼都用這張
+G.HERO_SPARK_IMG = 'fx/hero_spark.webp';
+G.heroImg = () => G.chapter() >= 3 ? G.HERO_SPARK_IMG : 'fx/credit_hero.png';

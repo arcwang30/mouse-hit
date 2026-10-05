@@ -814,6 +814,10 @@ h2 { margin: 0; }
 .cutin.tiandao .cutin-title { color: #fff3b0; text-shadow: 0 0 2cqw #ffd84a, 0 0 6cqw #4ad8ff; }
 .cutin.tiandao .cutin-glow { filter: hue-rotate(30deg); }
 .cutin.tiandao.has-art .cutin-glow { filter: hue-rotate(180deg) saturate(1.4); }
+/* 星火燎原拳:橘紅烈焰配青綠電光(和過場圖的配色一致) */
+.cutin.spark .cutin-title { color: #fff1d6; text-shadow: 0 0 2cqw #ff8a2a, 0 0 6cqw #3dffd0; }
+.cutin.spark.has-art .cutin-art { filter: drop-shadow(0 0 3cqw #ff8a2a) drop-shadow(0 0 5cqw #3dffd080); }
+.cutin.spark.has-art .cutin-glow { filter: saturate(1.5) brightness(1.1); }
 
 /* ===== 標題開場演出(每次開遊戲):品牌 LOGO → 鏡頭從炎鋼背影仰望到天上的鐵拳 → 落雷 + LOGO 砸下 → 點擊開始 ===== */
 #title.ready .title-start { animation: fadeIn .5s forwards, startBlink 1.4s .5s infinite; }
