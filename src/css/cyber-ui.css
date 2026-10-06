@@ -1271,3 +1271,38 @@ body.kb .dial-kb { display: block; }
 .chain-trail b { position: absolute; transform: translate(-50%, -150%); font: 900 5.5cqw/1 var(--tech, sans-serif); color: #fff3c0;
   text-shadow: 0 0 1.5cqw #ff6a1f, 0 .3cqw 0 #8a2a00; animation: chainPop .2s cubic-bezier(.3, 1.8, .5, 1); }
 @keyframes chainPop { from { scale: 1.6; } }
+/* 錨鏈:兩顆符號之間拉一條鐵鏈,中間掛著錨;點了一顆後它「鬆動」搖晃,等另一顆也打中 */
+.anchor-link { position: absolute; inset: 0; z-index: 4; pointer-events: none; }
+.anchor-link svg { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; }
+.anchor-link line { stroke: #c9d4dc; stroke-width: 1.5cqw; stroke-linecap: round; stroke-dasharray: 1.6cqw 1.1cqw;
+  filter: drop-shadow(0 0 .5cqw #000) drop-shadow(0 0 1.2cqw #8fb0c8); }
+.anchor-link b { position: absolute; transform: translate(-50%, -50%); display: grid; place-items: center; width: 8cqw; height: 8cqw; border-radius: 50%;
+  font-size: 5cqw; background: radial-gradient(circle, #3a4652, #141a20); box-shadow: 0 0 0 .4cqw #c9d4dc, 0 0 2cqw #000; rotate: calc(var(--grot, 0deg) * -1); }
+.cell.loose .cap { animation: looseShake .09s linear infinite alternate !important; filter: brightness(1.25) saturate(.7); }
+@keyframes looseShake { from { rotate: calc(var(--grot, 0deg) * -1 - 6deg); } to { rotate: calc(var(--grot, 0deg) * -1 + 6deg); } }
+/* 追蹤標靶:紫色外框的符號一格一格滑動;它下一步要去的格子先亮紫框預告 */
+.cell.tracking .cap { box-shadow: 0 0 0 .7cqw #ff4ad8, 0 0 3cqw #ff4ad8a0 !important; }
+.cell.tracking.slid .cap { animation: trackIn .12s ease-out !important; }
+@keyframes trackIn { from { scale: .8; opacity: .6; } }
+.cell.track-next { outline: .8cqw dashed #ff4ad8; outline-offset: -2cqw; animation: trackNext .4s ease-in-out infinite alternate; }
+@keyframes trackNext { from { outline-color: #ff4ad850; } }
+/* 甲板閃避:🥋 是自己;⚠ 標出要被砲擊的一排 / 一列 */
+.cell.dodge-me .cap { background: linear-gradient(180deg, #ffe0a8, #ff9a3c 55%, #c25a0a); --edge: #6a2a04; box-shadow: 0 0 3cqw #ffb36b; }
+.cell.dodge-warn .cap { background: linear-gradient(180deg, #ff8a8a, #e02a2a 55%, #7a0a0a); --edge: #3a0404; animation: rise .2s cubic-bezier(.3, 1.7, .5, 1), dodgeWarn .25s ease-in-out infinite alternate; }
+.cell.dodge-me.dodge-warn .cap { background: linear-gradient(180deg, #ffd0a8, #ff5a2a 55%, #a01a0a); box-shadow: 0 0 0 1cqw #ff2a2a, 0 0 5cqw #ff2a2a; } /* 站在危險區:紅框警告 */
+@keyframes dodgeWarn { to { filter: brightness(1.35); } }
+/* 洗腦干擾:中間是白底的顏色字(字色由程式指定),四周是色塊(修羅起色塊上寫著誤導的字) */
+.cell.stroop-word .cap { background: linear-gradient(180deg, #ffffff, #dcdce6); --edge: #6a6a7a; }
+.cell.stroop-word .icon { font-size: 13cqw; font-weight: 900; filter: none; text-shadow: 0 .3cqw 0 #0004; }
+.cell.stroop-swatch .icon { font-size: 7cqw; font-weight: 900; color: #fff; filter: none; text-shadow: 0 0 1cqw #000, 0 .3cqw 0 #000; }
+.cell.sw-red .cap { background: linear-gradient(180deg, #ff8080, #e02a2a); --edge: #6a0808; }
+.cell.sw-blue .cap { background: linear-gradient(180deg, #8ab4ff, #2a62e0); --edge: #08206a; }
+.cell.sw-yellow .cap { background: linear-gradient(180deg, #fffcc8, #ffe81a); --edge: #7a6a00; } /* 戰鬥畫面偏紅,黃色要夠亮才不會看成橘色 */
+.cell.sw-green .cap { background: linear-gradient(180deg, #8af0b0, #1ab05a); --edge: #045a24; }
+/* 打靶射擊:靶子紅白、人質藍灰 */
+.cell.shoot-target .cap { background: radial-gradient(circle, #fff 0 22%, #e02a2a 23% 42%, #fff 43% 62%, #e02a2a 63%); --edge: #5a0808; }
+.cell.shoot-hostage .cap { background: linear-gradient(180deg, #c8d8e8, #6a8aa8); --edge: #1a2a3a; }
+/* 鐵籠對拳:拳頭要換過去的位置先閃一下;🛑 假動作是灰紅色、不會脈動 */
+.cell.clash-next::before { box-shadow: inset 0 0 0 .7cqw #ffb36b, inset 0 0 4cqw #ff7a1f !important; animation: clashNext .12s steps(2) infinite; }
+@keyframes clashNext { 50% { opacity: .4; } }
+.cell.clash-btn.clash-feint .cap { background: linear-gradient(180deg, #c8b0b0, #7a3a3a 55%, #3a1414); --edge: #200808; animation: rise .15s ease-out; filter: saturate(.7); }

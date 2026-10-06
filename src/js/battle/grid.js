@@ -150,7 +150,7 @@ G.grid = {
     const el = this.cells[i].querySelector('.blk');
     el.className = 'blk' + (b ? ' ' + b.type : '');
     el.textContent = b && b.type === 'tentacle' ? '🐙' : b && b.type === 'seal' ? '🔒' : '';
-    this.cells[i].querySelector('.stag').textContent = !b ? '' : b.type === 'sand' ? '⏬ ' + G.t('流沙') : b.type === 'tornado' ? '🌪️ ' + G.t('龍捲風') : ''; // 流沙格:上面的符號沉得快;龍捲風格:符號很快被吸走
+    this.cells[i].querySelector('.stag').textContent = !b ? '' : b.type === 'sand' ? '⏬ ' + G.t('流沙') : b.type === 'tornado' ? '🌪️ ' + G.t('龍捲風') : b.type === 'shock' ? '⚡ ' + G.t('電網') : ''; // 流沙格:上面的符號沉得快;龍捲風格:符號很快被吸走
     el.dataset.hp = b && b.hp > 1 ? '×' + b.hp : '';
   },
 
@@ -209,6 +209,8 @@ G.grid = {
 //   mods           敵人機制與特殊符號(機率 0~1):
 //     gold   金拳:停留較短、傷害高       armor  晶盾:要點兩下
 //     blink  瞬移:存活一半時跳到別格     ghost  醉影:旁邊多一個假的殘影
+//     anchor 錨鏈:同時冒出的兩顆被鐵鏈連住的機率(要在 ANCHOR_MS 內接連打中)
+//     track  追蹤標靶:符號沿一排 / 一列每 TRACK_STEP 毫秒滑一格的機率
 //     hidden 駭入:前段時間顯示成 ❓(數值 = 現形時間比例)
 //     lockon 鎖定:出現前先顯示準星(數值 = 提前毫秒數)
 //     heavy  { chance, holdMs } 重擊:要按住「頂住」才算擋下
@@ -219,6 +221,9 @@ G.grid = {
 //     greed  貪婪(寶箱怪):拳頭冒出 greedAt 比例的時間後變成陷阱(decoyIcon),之前沒打中就算錯過,之後點到觸發 onDecoy
 //   流沙格(格子狀態 sand)上的符號停留時間 ×SAND_LIFE
 const SAND_LIFE = 0.55; // 流沙格上符號的停留時間倍率
+const ANCHOR_MS = 550; // 錨鏈:兩顆要在幾毫秒內接連打中
+const TRACK_STEP = 420; // 追蹤標靶:每幾毫秒滑一格
+const SHOCK_ON = 650, SHOCK_OFF = 750, SHOCK_WARN = 200; // 電網:通電、斷電、預告的毫秒數
 const TORNADO_LIFE = 480; // 龍捲風格:符號出現後最多停留幾毫秒就被吸走(拳頭少打一拳、盾牌算沒擋到)
 const GOLD_LIFE = 0.45; // 金拳的停留時間倍率(再限制在每一輪的 goldMs [下限, 上限] 之間)
 G.molePhase = o => new Promise(resolve => {
@@ -232,6 +237,7 @@ G.molePhase = o => new Promise(resolve => {
   const kill = a => { a.ts.forEach(G.clock.cancel); a.ts = []; };
   const cell = i => G.grid.cells[i];
   const blockAt = i => G.grid.blocks.get(i);
+  const live = i => { const b = blockAt(i); return !!(b && b.type === 'shock' && b.live); }; // 電網格正在通電
   const roll = p => !!p && Math.random() < p;
 
   // 滑擊拳:按住帶箭頭的拳頭後滑動,超過格子寬度約 1/3 就判定方向;沒滑夠就放開 = 彈開(可以再試)
@@ -255,7 +261,7 @@ G.molePhase = o => new Promise(resolve => {
   const chainable = j => {
     const a = active.get(j);
     return a && a.kind === 'normal' && !a.armor && !a.swipe && a.mirror === undefined &&
-      !cell(j).classList.contains('hidden') && !(blockAt(j) && blockAt(j).type === 'ice');
+      !cell(j).classList.contains('hidden') && !(blockAt(j) && blockAt(j).type === 'ice') && !live(j);
   };
   const endChain = () => {
     if (!chaining) return;
@@ -272,7 +278,7 @@ G.molePhase = o => new Promise(resolve => {
         chaining.path.push(j);
         chaining.last = j;
         G.grid.chainTrail(chaining.path);
-        doHit(j, active.get(j), false, false, chaining.n);
+        tryHit(j, active.get(j), chaining.n);
       }
       return;
     }
@@ -321,10 +327,34 @@ G.molePhase = o => new Promise(resolve => {
     o.onSpin && o.onSpin();
   }, ms)));
 
+  // 電網:每格輪流通電 SHOCK_ON、斷電 SHOCK_OFF(各格錯開),通電前 SHOCK_WARN 先閃一下預告
+  const shockTimers = [];
+  [...G.grid.blocks.entries()].filter(([, b]) => b.type === 'shock').forEach(([i, b], k) => {
+    const el = () => cell(i).querySelector('.blk');
+    const cycle = () => {
+      if (finished || blockAt(i) !== b) return;
+      el().classList.add('warn');
+      shockTimers.push(G.clock.after(() => {
+        if (finished || blockAt(i) !== b) return;
+        b.live = true;
+        el().classList.remove('warn');
+        el().classList.add('live');
+        shockTimers.push(G.clock.after(() => {
+          b.live = false;
+          el().classList.remove('live');
+          shockTimers.push(G.clock.after(cycle, SHOCK_OFF));
+        }, SHOCK_ON));
+      }, SHOCK_WARN));
+    };
+    shockTimers.push(G.clock.after(cycle, 250 + k * 420 + Math.random() * 300));
+  });
+
   const finish = () => {
     if (finished) return;
     finished = true;
     chaining = null;
+    G.$('#grid').querySelectorAll('.anchor-link').forEach(x => x.remove()); // 收掉錨鏈
+    G.grid.cells.forEach(c => c.classList.remove('track-next')); // 收掉追蹤標靶的預告
     G.grid.chainTrail(null);
     document.removeEventListener('pointermove', onMove);
     document.removeEventListener('pointerup', onUp);
@@ -333,6 +363,8 @@ G.molePhase = o => new Promise(resolve => {
     G.clock.cancel(spawnTimer);
     pending.forEach(G.clock.cancel);
     spinTimers.forEach(G.clock.cancel);
+    shockTimers.forEach(G.clock.cancel);
+    G.grid.blocks.forEach((b, i) => { if (b.type === 'shock') { b.live = false; cell(i).querySelector('.blk').classList.remove('live', 'warn'); } });
     active.forEach(a => { kill(a); a.fx && a.fx.cancel(); });
     active.clear();
     reserved.forEach(i => cell(i).classList.remove('target'));
@@ -360,11 +392,65 @@ G.molePhase = o => new Promise(resolve => {
     if (g.hit.length === g.size && o.onLine) o.onLine(g.hit);
   };
 
+  // 錨鏈(mods.anchor):同時冒出的兩顆被鐵鏈連住,要在 ANCHOR_MS 內接連打中;只打一顆的話它先「鬆動」,時間到被拉回原位
+  const linkable = a => a && a.kind === 'normal' && !a.armor && !a.swipe && a.mirror === undefined && !a.greed && !a.link && !a.track;
+  const link = (a, b) => {
+    a.link = b;
+    b.link = a;
+    const el = document.createElement('div'); // 放在 #grid 裡,磁暴旋轉時跟著格子一起轉
+    el.className = 'anchor-link';
+    const ctr = c => [c.offsetLeft + c.offsetWidth / 2, c.offsetTop + c.offsetHeight / 2];
+    const [ax, ay] = ctr(cell(a.cell)), [bx, by] = ctr(cell(b.cell)), g = G.$('#grid');
+    // 鐵鏈從格子邊緣拉到另一格邊緣,不蓋住符號本身
+    const len = Math.hypot(bx - ax, by - ay) || 1, cut = cell(a.cell).offsetWidth * 0.36 / len;
+    const [x1, y1, x2, y2] = [ax + (bx - ax) * cut, ay + (by - ay) * cut, bx - (bx - ax) * cut, by - (by - ay) * cut];
+    el.innerHTML = `<svg viewBox="0 0 ${g.offsetWidth || 1} ${g.offsetHeight || 1}"><line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}"/></svg>` +
+      `<b style="left:${(ax + bx) / 2}px;top:${(ay + by) / 2}px">⚓</b>`;
+    g.appendChild(el);
+    a.linkEl = b.linkEl = el;
+    cell(a.cell).classList.add('anchored');
+    cell(b.cell).classList.add('anchored');
+  };
+  const unlink = a => {
+    const b = a.link;
+    if (!b) return;
+    if (a.linkEl) a.linkEl.remove();
+    [a, b].forEach(x => { x.link = null; x.linkEl = null; cell(x.cell).classList.remove('anchored', 'loose'); });
+  };
+  // 一般符號被點中:有鐵鏈的先鬆動,另一顆也打中才一起結算
+  const tryHit = (i, a, chain = 0) => {
+    const b = a.link;
+    if (!b || active.get(b.cell) !== b) { unlink(a); return doHit(i, a, false, false, chain); }
+    if (b.loose) { // 另一顆已經鬆動:扯斷鐵鏈,兩顆一起打掉
+      const bi = b.cell;
+      unlink(a);
+      G.audio.play('break');
+      doHit(bi, b, false, false, b.chain || 0);
+      doHit(i, a, false, false, chain);
+      return;
+    }
+    if (a.loose) return;
+    a.loose = true;
+    a.chain = chain;
+    cell(i).classList.add('loose');
+    G.audio.play('chip');
+    a.ts.push(G.clock.after(() => { // 時間到:被鐵鏈拉回原位
+      if (finished || active.get(a.cell) !== a) return;
+      a.loose = false;
+      cell(a.cell).classList.remove('loose');
+      G.grid.bump(a.cell);
+      G.audio.play('block');
+      o.onSnap && o.onSnap(a.cell);
+    }, ANCHOR_MS));
+  };
+
   const goneAt = {}; // 每格的符號最後一次消失 / 被打中的時間:剛結束的格子再點一下不算點空(反噬的寬容)
   const expire = (i, a) => {
     goneAt[i] = G.clock.now();
     active.delete(i);
     unMirror(a);
+    unlink(a);
+    untrack(a);
     if (swiping && swiping.a === a) { swiping = null; cell(i).classList.remove('aiming'); }
     if (a.kind === 'timebomb') { // 倒數歸零:爆炸,波及上下左右
       G.grid.clear(i, 'press');
@@ -394,6 +480,8 @@ G.molePhase = o => new Promise(resolve => {
   };
 
   G.grid.handler = i => {
+    // 電網:通電中的格子一碰就觸電(符號留著,等斷電再點)
+    if (live(i)) { G.grid.flash(i, 'bad'); G.grid.bump(i); G.grid.impact(i, 'bad'); o.onShock && o.onShock(i); return; }
     // 蜃樓:點到幻影的鏡像格 = 打中幻影
     let viaMirror = false;
     if (mirrorAt.has(i) && active.get(mirrorAt.get(i))) { i = mirrorAt.get(i); viaMirror = true; }
@@ -514,7 +602,7 @@ G.molePhase = o => new Promise(resolve => {
     // 一般符號(學會燎原連拳後,用手指按下的拳頭可以當連段的起點)
     const p = G.grid.lastDown;
     if (o.chain && p && chainable(i)) chaining = { id: p.id, last: i, n: 1, path: [i] };
-    doHit(i, a, false);
+    tryHit(i, a);
   };
 
   // 結算一次命中。auto = 由技法自動打中(連鎖、爆裂、蓄力大師);swipe = 滑擊拳滑對方向;chain = 燎原連拳的第幾顆
@@ -524,6 +612,8 @@ G.molePhase = o => new Promise(resolve => {
     const ratio = Math.max(0, a.life - (G.clock.now() - a.born)) / a.life;
     if (a.mirror !== undefined) { G.grid.flash(a.mirror, 'good'); G.grid.popAt(a.mirror, a.icon); } // 蜃樓:點的那一格(鏡像格)也浮出按鈕表現打中
     unMirror(a);
+    unlink(a); // 技法自動打中時直接扯斷錨鏈
+    untrack(a);
     kill(a); active.delete(i);
     G.grid.clear(i, 'press');
     G.grid.flash(i, 'good');
@@ -656,12 +746,57 @@ G.molePhase = o => new Promise(resolve => {
         }
       }
       // 瞬移:存活到一半時跳到別格
-      if (a.mirror === undefined && roll(mods.blink)) a.ts.push(G.clock.after(() => blink(i, a), life * 0.45)); // 蜃樓不瞬移
+      // 追蹤標靶:沿一排或一列滑動(和瞬移二選一)
+      if (kind === 'normal' && !a.armor && !a.swipe && a.mirror === undefined && !a.greed && !cell(i).classList.contains('hidden') && roll(mods.track)) startTrack(i, a);
+      else if (a.mirror === undefined && roll(mods.blink)) a.ts.push(G.clock.after(() => blink(i, a), life * 0.45)); // 蜃樓不瞬移
     }
   };
 
+  // 追蹤標靶(mods.track):每 TRACK_STEP 毫秒沿著同一排 / 同一列滑一格,撞到邊或別的符號就折返;要去的下一格先亮紫框預告
+  const stepOf = (i, d) => { const r = Math.floor(i / 3) + d[0], c = i % 3 + d[1]; return r >= 0 && r < 3 && c >= 0 && c < 3 ? r * 3 + c : -1; };
+  const openFor = j => j >= 0 && !active.has(j) && !reserved.has(j) && !(blockAt(j) && ['tentacle', 'seal'].includes(blockAt(j).type));
+  const trackNext = a => { // 這一步要去哪(前面擋住就折返);哪裡都去不了回傳 -1
+    let to = stepOf(a.cell, a.dir);
+    if (!openFor(to)) { a.dir = [-a.dir[0], -a.dir[1]]; to = stepOf(a.cell, a.dir); }
+    return openFor(to) ? to : -1;
+  };
+  const showNext = a => {
+    if (a.nextEl != null) cell(a.nextEl).classList.remove('track-next');
+    a.nextEl = trackNext(a);
+    if (a.nextEl >= 0) cell(a.nextEl).classList.add('track-next'); else a.nextEl = null;
+  };
+  const startTrack = (i, a) => {
+    a.track = true;
+    const dirs = G.shuffle([[0, 1], [0, -1], [1, 0], [-1, 0]]);
+    a.dir = dirs.find(d => openFor(stepOf(i, d))) || dirs[0];
+    cell(i).classList.add('tracking');
+    showNext(a);
+    a.ts.push(G.clock.after(() => trackStep(a), TRACK_STEP));
+  };
+  const trackStep = a => {
+    if (finished || active.get(a.cell) !== a || a.loose) return;
+    if (a.nextEl != null) cell(a.nextEl).classList.remove('track-next');
+    a.nextEl = null;
+    const from = a.cell, to = trackNext(a);
+    if (to >= 0) {
+      const left = a.life - (G.clock.now() - a.born);
+      const src = cell(from), label = src.querySelector('.label').textContent;
+      const cls = [...src.classList].filter(c => !['cell', 'on', 'press', 'sink', 'suck', 'thump', 'hidden', 'target', 'track-next'].includes(c)).join(' ');
+      kill(a);
+      active.delete(from);
+      G.grid.clear(from);
+      G.grid.set(to, a.icon || src.querySelector('.icon').textContent, cls + ' slid', left, label);
+      a.cell = to;
+      armExpire(to, a, left);
+      active.set(to, a);
+    }
+    showNext(a);
+    a.ts.push(G.clock.after(() => trackStep(a), TRACK_STEP));
+  };
+  const untrack = a => { if (a.nextEl != null) { cell(a.nextEl).classList.remove('track-next'); a.nextEl = null; } };
+
   const blink = (from, a) => {
-    if (finished || active.get(from) !== a || a.holding || (swiping && swiping.a === a)) return; // 瞄準中的滑擊拳不瞬移
+    if (finished || active.get(from) !== a || a.holding || a.link || (swiping && swiping.a === a)) return; // 瞄準中的滑擊拳、被錨鏈連住的不瞬移
     const to = freeCell();
     if (to < 0) return;
     const left = a.life - (G.clock.now() - a.born);
@@ -754,6 +889,11 @@ G.molePhase = o => new Promise(resolve => {
       if (!delay) spawnOne(i, kind, lifeMul, gid);
       else pending.push(G.clock.after(() => spawnWhenFree(i, kind, lifeMul, gid), delay));
     });
+    // 錨鏈:同時冒出的前兩顆用鐵鏈連住(依序出現的掃射、先亮準星的不連)
+    if (!gap && !lead && cells.length >= 2 && roll(mods.anchor)) {
+      const [p, q] = cells.map(i => active.get(i));
+      if (linkable(p) && linkable(q)) link(p, q);
+    }
     // 陷阱另外加一個,不占用次數
     if (roll(o.decoyRate)) {
       const d = G.pick(free.filter(i => !cells.includes(i)));

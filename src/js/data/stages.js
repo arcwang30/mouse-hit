@@ -270,11 +270,11 @@ const BGS_3 = {
   tower: { bg: 'sky',     img: 'backgrounds/ch3_tower.jpg', bgm: 'sky',     deco: ['🌀', '✨', '🗼', '✨', '🌀'] },
 };
 const REGIONS_3 = [
-  { name: '鏽蝕港', desc: '大洋彼岸的巨型貨櫃港。天幕議會的走私船在夜色中進出,碼頭被海盜把持。', boss: 'hookCaptain', unlock: [], learn: ['chain'], stars: 3 },
+  { name: '鏽蝕港', desc: '大洋彼岸的巨型貨櫃港。天幕議會的走私船在夜色中進出,碼頭被海盜把持。', boss: 'hookCaptain', unlock: ['anchor'], learn: ['chain'], stars: 3 },
   { name: '橫貫列車', desc: '橫跨大陸的磁浮列車。天幕的軍需列車載著被俘的武者,在高速中穿越荒野。', boss: 'railHunter', unlock: ['tornado'], stars: 3 },
   { name: '雨林基因廠', desc: '叢林深處的生化工廠。幽綠的培養槽裡,浸泡著被抽乾氣血的武者。', boss: 'geneDoctor', unlock: ['tentacle'], stars: 4 },
-  { name: '地下鐵籠拳場', desc: '被奪走意志的武者在鐵籠裡被迫互相殘殺,黑市的歡呼聲震耳欲聾。', boss: 'cageChampion', unlock: [], stars: 4 },
-  { name: '天幕都市', desc: '巨型穹頂籠罩的監控都市。宣傳螢幕日夜播放著議會的「和平」。', boss: 'executor', unlock: [], stars: 5 },
+  { name: '地下鐵籠拳場', desc: '被奪走意志的武者在鐵籠裡被迫互相殘殺,黑市的歡呼聲震耳欲聾。', boss: 'cageChampion', unlock: ['shock'], stars: 4 },
+  { name: '天幕都市', desc: '巨型穹頂籠罩的監控都市。宣傳螢幕日夜播放著議會的「和平」。', boss: 'executor', unlock: ['track'], stars: 5 },
   { name: '武魂剝離塔', desc: '都市中心直通天際的高塔。無數武魂在塔頂的漩渦中哀號。', boss: 'skyChairman', unlock: [], stars: 5 },
 ];
 const STAGE_LIST_3 = [
@@ -364,6 +364,9 @@ G.MECH_INFO = {
   mirror:   { name: '蜃樓', hint: '帶 ⇋ 的符號是幻影,要點左右對稱的另一格' },
   // 第三章
   tornado:  { name: '龍捲風', hint: '紫色漩渦格上的符號轉眼就被吸走:拳頭少打一拳,盾牌沒擋到照樣受傷' },
+  anchor:   { name: '錨鏈', hint: '被鐵鏈連住的兩顆要在 0.5 秒內接連點掉,只點一顆會被拉回來' },
+  shock:    { name: '電網', hint: '閃著電光的格子通電時別碰,等斷電的空檔再點' },
+  track:    { name: '追蹤標靶', hint: '帶紫框的符號會一格一格滑動,點它「現在」的位置;下一格會先亮紫框'  },
 };
 // 第 i 關可以出現的機制:之前章節全部 + 本章前面區域 BOSS 解鎖的(unlock 敵人招式、learn 玩家新能力);
 // 第二、三輪本章全部開放,但不會出現之後章節才登場的東西(第一章的修羅不會冒出第二章的機制)

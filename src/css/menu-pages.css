@@ -727,3 +727,15 @@ html:lang(en) .stage-bar .ch-tab b { font-size: 2.6cqw; }
 .cart-ic { display: inline-block; width: 3.8cqw; height: 3.8cqw; vertical-align: -.7cqw; background: #fff; filter: drop-shadow(0 0 .6cqw #fff8);
   -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M7 18a2 2 0 1 0 0 4 2 2 0 0 0 0-4zM1 2v2h2l3.6 7.6-1.35 2.4A2 2 0 0 0 7 17h12v-2H7.4l1.1-2h7.45a2 2 0 0 0 1.75-1l3.6-6.5A1 1 0 0 0 20 4H5.2l-.94-2H1zm16 16a2 2 0 1 0 0 4 2 2 0 0 0 0-4z'/%3E%3C/svg%3E") center / contain no-repeat;
   mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M7 18a2 2 0 1 0 0 4 2 2 0 0 0 0-4zM1 2v2h2l3.6 7.6-1.35 2.4A2 2 0 0 0 7 17h12v-2H7.4l1.1-2h7.45a2 2 0 0 0 1.75-1l3.6-6.5A1 1 0 0 0 20 4H5.2l-.94-2H1zm16 16a2 2 0 1 0 0 4 2 2 0 0 0 0-4z'/%3E%3C/svg%3E") center / contain no-repeat; }
+/* 電網格:暗色鐵絲網,通電前閃一下預告(warn),通電時(live)整格冒出青白電光 */
+.blk.shock { display: block; position: absolute; inset: 6%; z-index: 0; border-radius: 18%; pointer-events: none;
+  background: repeating-linear-gradient(45deg, #5a6a7a55 0 .5cqw, transparent .5cqw 3cqw), repeating-linear-gradient(-45deg, #5a6a7a55 0 .5cqw, transparent .5cqw 3cqw); }
+.blk.shock.warn { animation: shockWarn .1s steps(2) infinite; }
+@keyframes shockWarn { 50% { background-color: #7fe9ff33; } }
+.blk.shock.live { z-index: 3; background-color: #9ff4ff40; box-shadow: inset 0 0 4cqw #7fe9ff, 0 0 3cqw #4ad0ff;
+  background-image: repeating-linear-gradient(45deg, #dffcff 0 .5cqw, transparent .5cqw 3cqw), repeating-linear-gradient(-45deg, #dffcff 0 .5cqw, transparent .5cqw 3cqw);
+  animation: shockLive .08s steps(2) infinite; }
+@keyframes shockLive { 50% { opacity: .55; } }
+.cell:has(.blk.shock) { box-shadow: 0 0 0 .5cqw #5a7a90; }
+.cell:has(.blk.shock.live) { box-shadow: 0 0 0 .6cqw #bff7ff, 0 0 5cqw #4ad0ff; }
+#grid.numbering .blk.shock { display: none; }

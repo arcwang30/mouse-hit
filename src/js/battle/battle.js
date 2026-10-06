@@ -41,6 +41,7 @@ const SWIPE_MUL = 1.5; // 踢擊(帶箭頭、要滑)的傷害倍率
 const KICK_BASE = 0.1, KICK_STEP = 0.02, KICK_MAX = 0.2, KICK_CAP = 0.6, KICK_FROM = 8;
 // 燎原連拳(第三章鏽蝕港學會):一筆連段的第 n 顆每拳 +CHAIN_STEP×(n-1),最多 ×CHAIN_MAX
 const CHAIN_STEP = 0.25, CHAIN_MAX = 2;
+const SHOCK_DMG = 0.05; // 電網:觸電扣最大 HP 的比例
 const TIMEBOMB_MS = 3000, TIMEBOMB_DMG = 1.5;
 // 倒數炸彈要點幾下才拆得掉(依周回;每點一下跳到別格),每多一下倒數多給 TIMEBOMB_HOP 毫秒
 const TIMEBOMB_TAPS = { 1: 2, 2: 3, 3: 3 }, TIMEBOMB_HOP = 600;
@@ -355,10 +356,11 @@ G.battle = {
       interval: Math.max(250, life * 0.45), patterns: this.patterns(),
       // 蓄力重拳:每回合其中一顆拳頭需要按住蓄力
       hold: { at: 1 + Math.floor(Math.random() * (p.attackCount - 1)), icon: '👊', label: 'HOLD', holdMs: HOLD_MS * (p.holdMaster ? 0.6 : 1) },
-      mods: { gold: GOLD_RATE * p.goldMul, goldMs: rc.goldMs, hidden: m.hidden, blink: m.blink, armor: m.armor, swipe: this.kickRate(m), mirror: m.mirror, spin: m.spin, greed: m.greed, greedAt: m.greedAt },
+      mods: { gold: GOLD_RATE * p.goldMul, goldMs: rc.goldMs, hidden: m.hidden, blink: m.blink, armor: m.armor, swipe: this.kickRate(m), mirror: m.mirror, spin: m.spin, greed: m.greed, greedAt: m.greedAt, anchor: m.anchor, track: m.track },
       onMirage: () => { combo = 0; this.comboBreak(); this.float('蜃樓!', 'tag miss'); },
       onSpin: () => this.spinFx(),
       onEmpty: () => this.backlash(), // 天魔:點空格反噬
+      onShock: () => this.shock(),
       slowFirst: p.slowmo ? SLOWMO : null,
       onReady: a => { api = a; this.phaseEnd = a.end; }, // phaseEnd:必殺技打倒敵人時用來直接結束這一回合
       // 炸彈:第 4 波起一般敵人也會混入;部分敵人機制會更多
@@ -459,10 +461,11 @@ G.battle = {
       decoyRate: m.fake || (s ? s.decoy : 0), decoyIcon: m.fake ? '🛡️' : undefined, decoyCls: m.fake ? 'guard fake' : undefined,
       slowFirst: p.slowmo ? SLOWMO : null,
       onReady: a => { api = a; this.phaseEnd = a.end; }, // phaseEnd:必殺技打倒敵人時用來直接結束這一回合
-      mods: { blink: m.blink, ghost: m.ghost, armor: m.armor, lockon: m.lockon, heavy: m.heavy && { ...m.heavy, holdMs: Math.round(m.heavy.holdMs * HEAVY_HOLD_MUL) }, timebomb: m.timebomb, timebombTaps: TIMEBOMB_TAPS[G.round()], timebombMs: Math.round((TIMEBOMB_MS + (TIMEBOMB_TAPS[G.round()] - 1) * TIMEBOMB_HOP) * G.roundCfg().life), mirror: m.mirror, spin: m.spin },
+      mods: { blink: m.blink, ghost: m.ghost, armor: m.armor, lockon: m.lockon, heavy: m.heavy && { ...m.heavy, holdMs: Math.round(m.heavy.holdMs * HEAVY_HOLD_MUL) }, timebomb: m.timebomb, timebombTaps: TIMEBOMB_TAPS[G.round()], timebombMs: Math.round((TIMEBOMB_MS + (TIMEBOMB_TAPS[G.round()] - 1) * TIMEBOMB_HOP) * G.roundCfg().life), mirror: m.mirror, spin: m.spin, anchor: m.anchor, track: m.track },
       onMirage: () => { this.comboBreak(); this.float('蜃樓!', 'tag miss'); },
       onSpin: () => this.spinFx(),
       onEmpty: () => this.backlash(), // 天魔:點空格反噬
+      onShock: () => this.shock(),
       // 倒數炸彈:拆除算一次漂亮的格擋;爆炸傷害比一般攻擊高,也不會有破綻
       onDefuse: () => { this.comboHit(); this.gainUlt(p.blockUlt); this.addGauge(BREAK_GAUGE.block); G.audio.play('perfect'); this.float('拆除!', 'tag armor'); },
       onBomb: () => { missed++; this.comboBreak(); this.addGauge(BREAK_GAUGE.miss); G.audio.play('boom'); this.float('爆炸!', 'tag miss'); this.hurtPlayer(dmg * TIMEBOMB_DMG); },
@@ -1303,8 +1306,11 @@ G.battle = {
   async mechTips(m) {
     if ([...G.grid.blocks.values()].some(b => b.type === 'sand')) await G.tips.show('sand');
     if ([...G.grid.blocks.values()].some(b => b.type === 'tornado')) await G.tips.show('tornado');
+    if ([...G.grid.blocks.values()].some(b => b.type === 'shock')) await G.tips.show('shock');
     if (m.spin) await G.tips.show('spin');
     if (m.mirror) await G.tips.show('mirror');
+    if (m.anchor) await G.tips.show('anchor');
+    if (m.track) await G.tips.show('track');
   },
 
   // 回合開始時依敵人機制佈置格子
@@ -1341,6 +1347,10 @@ G.battle = {
         const pool = open(), fresh = pool.filter(i => !prev.includes(i)); // 移動:盡量換到之前沒有龍捲風的格子
         G.shuffle(fresh).concat(G.shuffle(pool.filter(i => prev.includes(i)))).slice(0, m.tornadoN || 1).forEach(i => g.setBlock(i, 'tornado'));
       }
+    }
+    if (type === 'shock') { // 電網:每個階段換一批(BOSS 3 格,其他 2 格)
+      g.clearBlocks('shock');
+      G.shuffle(open()).slice(0, this.e.boss ? 3 : 2).forEach(i => g.setBlock(i, 'shock'));
     }
     if (type === 'tentacle' && phase === 'defend') { // 每次攻擊長出 2 條觸手,最多 4 條
       const have = [...g.blocks.values()].filter(b => b.type === 'tentacle').length;
@@ -1412,6 +1422,15 @@ G.battle = {
     if (this.allowedNow && !this.allowedNow.has('kick')) return 0; // 踢擊在第二章沙海遺跡才學會
     const progress = Math.max(0, (G.chapter() - 1) * 6 + (this.stage ? this.stage.region : 0) - KICK_FROM); // 從學會的區域起算
     return Math.min(KICK_CAP, Math.min(KICK_MAX, KICK_BASE + KICK_STEP * progress) + (m.swipe || 0));
+  },
+
+  // 電網:碰到通電中的格子,觸電扣最大 HP 的 SHOCK_DMG 並中斷連擊
+  shock() {
+    if (this.over()) return;
+    this.comboBreak();
+    G.audio.play('zap');
+    this.float('觸電!', 'tag miss');
+    this.hurtPlayer(Math.max(1, Math.round(this.p.maxHp * SHOCK_DMG)));
   },
 
   // 天魔:點到空格(或封印格)反噬,扣最大 HP 一小部分並中斷連擊;不會因此倒下

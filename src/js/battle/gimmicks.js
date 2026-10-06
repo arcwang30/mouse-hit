@@ -3,6 +3,8 @@
 //          path 一筆畫(白魔雪女)/ shell 三仙歸洞(千面傀儡師)
 //   第二章 slide 流沙拼圖(沙盜王)/ lights 熄燈解鎖(磁暴領主)/ twin 雙指齊按(沙海巨像)
 //          cards 翻牌配對(蜃樓仙姬)/ tictac 井字智鬥(天沙宗護法)
+//   第三章 dodge 甲板閃避(鐵鉤船長)/ stroop 洗腦干擾(基因博士)/ shoot 打靶射擊(議會執行官)
+//          rhythm2 列車節奏(軌道獵手)/ clash2 鐵籠對拳(鐵籠拳霸):前兩章小遊戲的進階版
 //   章節最終 BOSS 的 gimmick 是陣列(連環考驗):HP 66% 和 33% 時各從陣列裡抽一種不重複的
 // 成功 → 攻擊力 ×WIN_DMG 的重擊並破防(下回合傷害提高);失敗 → 吃一記敵人攻擊 ×LOSE_DMG
 // 難度依周回(凡塵 / 修羅 / 天魔);BOSS 用哪一種寫在 enemies.js 的 gimmick
@@ -23,12 +25,22 @@
   const CARDS_PASS = 3, CARDS_PERFECT = 1.3, CARDS_BONUS = 1500, CARDS_TRAP = 3000; // 過關組數、完美倍率、配對加時、幻象扣時(毫秒)
   const SLIDE = { 1: { moves: 8, ms: 30000 }, 2: { moves: 11, ms: 28000 }, 3: { moves: 14, ms: 26000 } }; // 打亂步數、限時
   const TICTAC = { 1: { smart: 0.5, think: 4000 }, 2: { smart: 0.8, think: 3500 }, 3: { smart: 1, think: 3000 } }; // 敵人下最佳步的機率、每步思考時間
+  // 第三章
+  const DODGE = { 1: { rounds: 6, warn: 1000, cross: 0.2, allow: 2 }, 2: { rounds: 8, warn: 820, cross: 0.4, allow: 1 }, 3: { rounds: 10, warn: 680, cross: 0.55, allow: 1 } }; // 輪數、預告毫秒、十字機率、可被轟幾次
+  const STROOP = { 1: { rounds: 8, ms: 2200, fake: false, allow: 2 }, 2: { rounds: 10, ms: 1800, fake: true, allow: 2 }, 3: { rounds: 12, ms: 1500, fake: true, allow: 2 } }; // 題數、每題限時、色塊寫誤導字、可錯幾次
+  const SHOOT = { 1: { n: 10, step: 560, gap: 700, hostage: 0.2 }, 2: { n: 12, step: 470, gap: 600, hostage: 0.25 }, 3: { n: 14, step: 400, gap: 520, hostage: 0.3 } }; // 數量、滑一格毫秒、出現間隔、人質比例
+  const SHOOT_PASS = 0.7; // 打中七成以上的靶子算成功
+  // 第三章的進階版:列車節奏(打鐵節奏 + 反拍、雙拍、加速)、鐵籠對拳(對拳拼勁 + 換位、假動作)
+  const RHYTHM2 = { 1: { beats: 10, gap: 600, win: 140, adv: true, off: 0.25, dbl: 0.15, accel: 0.8 }, 2: { beats: 12, gap: 540, win: 120, adv: true, off: 0.3, dbl: 0.2, accel: 0.75 }, 3: { beats: 14, gap: 480, win: 105, adv: true, off: 0.35, dbl: 0.25, accel: 0.7 } };
+  const CLASH2 = { 1: { drain: 10, ms: 7000, shift: 1800, feint: 0.35, start: 35 }, 2: { drain: 13, ms: 6500, shift: 1500, feint: 0.45, start: 35 }, 3: { drain: 16, ms: 6000, shift: 1300, feint: 0.55, start: 35 } }; // start:力量條起點(原版 50)
+  const CLASH_FEINT_MS = 700; // 假動作 🛑 停留多久
   const WIRE_COLORS = [{ id: 'red', name: '紅' }, { id: 'yellow', name: '黃' }, { id: 'blue', name: '藍' }, { id: 'green', name: '綠' }, { id: 'purple', name: '紫' }, { id: 'white', name: '白' }];
-  const CFG = { clash: CLASH, shell: SHELL, path: PATH, wire: WIRE, rhythm: RHYTHM, lights: LIGHTS, twin: TWIN, cards: CARDS, slide: SLIDE, tictac: TICTAC };
+  const CFG = { clash: CLASH, shell: SHELL, path: PATH, wire: WIRE, rhythm: RHYTHM, lights: LIGHTS, twin: TWIN, cards: CARDS, slide: SLIDE, tictac: TICTAC, dodge: DODGE, stroop: STROOP, shoot: SHOOT, rhythm2: RHYTHM2, clash2: CLASH2 };
 
   const NAMES = {
     clash: '對拳拼勁', shell: '三仙歸洞', path: '一筆畫', wire: '拆彈剪線', rhythm: '打鐵節奏',
     lights: '熄燈解鎖', twin: '雙指齊按', cards: '翻牌配對', slide: '流沙拼圖', tictac: '井字智鬥',
+    dodge: '甲板閃避', stroop: '洗腦干擾', shoot: '打靶射擊', rhythm2: '列車節奏', clash2: '鐵籠對拳',
   };
   const near = (a, b) => Math.abs(a % 3 - b % 3) + Math.abs(Math.floor(a / 3) - Math.floor(b / 3)) === 1; // 上下左右相鄰
   const nbrs = i => [...Array(9).keys()].filter(j => near(i, j));
@@ -128,6 +140,7 @@
       showHint(null);
       G.$('.timebar').classList.remove('hint');
       grid.classList.remove('ttt-wait');
+      G.grid.cells[4].querySelector('.icon').style.color = ''; // 洗腦干擾改過中間格的字色
       document.querySelectorAll('.ttt-think').forEach(x => x.remove());
       G.grid.clearAll();
       grid.classList.remove('numbering', 'gimmick');
@@ -162,9 +175,11 @@
     },
 
     // ---- 對拳拼勁:九宮格中排左右兩顆大拳頭,交替點擊把力量條往敵人那邊推;敵人一直推回來 ----
-    async gm_clash({ drain, ms }, e) {
-      await G.banner('對拳拼勁!', G.t('{0}正面硬碰!左右兩顆拳頭交替狂點,把力量推過去!', e.name), 1600);
-      this.setPhase('對拳:左右交替狂點!', 'atk');
+    // 進階版(鐵籠對拳,shift):每 shift 毫秒兩顆拳頭換到別的位置(先閃一下預告);feint 機率換位後其中一顆變成 🛑 假動作,按到會被推回去
+    async gm_clash({ drain, ms, shift = 0, feint = 0, start = 50 }, e) {
+      if (shift) await G.banner('鐵籠對拳!', G.t('{0}在鐵籠裡左閃右晃!兩顆拳頭會換位置,跟著交替狂點;🛑 是假動作,別按!', e.name), 1900);
+      else await G.banner('對拳拼勁!', G.t('{0}正面硬碰!左右兩顆拳頭交替狂點,把力量推過去!', e.name), 1600);
+      this.setPhase(shift ? '對拳:跟著拳頭交替狂點!' : '對拳:左右交替狂點!', 'atk');
       const bar = document.createElement('div');
       bar.className = 'gm-clash';
       bar.innerHTML = `<span class="gc-me">${G.t('炎鋼')}</span><div class="gc-track"><i class="gc-fill"></i><b class="gc-mark">💥</b><em class="gc-hot">${G.t('熱鬥!')}</em></div><span class="gc-foe">${e.name}</span>`;
@@ -172,10 +187,31 @@
       const heatFx = document.createElement('div');
       heatFx.className = 'gc-heat';
       G.$('.grid-wrap').append(heatFx, bar);
-      G.grid.set(3, '👊', 'clash-btn', 0, 'L');
-      G.grid.set(5, '👊', 'clash-btn', 0, 'R');
+      const PAIRS = [[3, 5], [6, 8], [3, 8], [5, 6], [4, 7]]; // 拳頭可能出現的位置(兩兩一組;最上排被力量條蓋住,不用)
+      let pair = PAIRS[0], fake = -1;
+      const showPair = () => pair.forEach((c, k) => G.grid.set(c, c === fake ? '🛑' : '👊', c === fake ? 'clash-btn clash-feint' : 'clash-btn', 0, pair[0] === 3 ? ['L', 'R'][k] : ''));
+      showPair();
       G.audio.play('ready');
-      let pos = 50, last = -1, done = false, prev = G.clock.now(), raf, heat = 0;
+      let pos = start, last = -1, done = false, prev = G.clock.now(), raf, heat = 0;
+      // 換位:新位置先閃一下,接著拳頭移過去;換完有機率出現假動作
+      const move = () => {
+        if (done) return;
+        const next = G.pick(PAIRS.filter(p => p !== pair));
+        next.forEach(c => G.grid.cells[c].classList.add('clash-next'));
+        G.clock.after(() => {
+          if (done) return;
+          next.forEach(c => G.grid.cells[c].classList.remove('clash-next'));
+          pair.forEach(c => G.grid.clear(c));
+          pair = next;
+          last = -1;
+          fake = Math.random() < feint ? G.pick(pair) : -1;
+          showPair();
+          G.audio.play('whiff');
+          if (fake >= 0) G.clock.after(() => { if (done || !pair.includes(fake)) return; fake = -1; showPair(); }, CLASH_FEINT_MS);
+          G.clock.after(move, shift);
+        }, 350);
+      };
+      if (shift) G.clock.after(move, shift * 0.6); // 第一次換位來得早一點
       const draw = () => {
         bar.style.setProperty('--pos', pos.toFixed(1) + '%');
         heatFx.style.setProperty('--heat', heat.toFixed(3));
@@ -223,8 +259,18 @@
         };
         tick();
         G.grid.handler = i => {
-          if (i !== 3 && i !== 5) return;
+          if (!pair.includes(i)) return;
           G.grid.bump(i);
+          if (i === fake) { // 假動作:被反推
+            pos = Math.max(0, pos - CLASH_STEP * 2);
+            heat = 0;
+            draw();
+            G.grid.flash(i, 'bad');
+            G.audio.play('fail');
+            this.float('假動作!', 'tag miss');
+            if (pos <= 0) end(false);
+            return;
+          }
           if (i === last) { G.audio.play('tap'); return; } // 同一邊連點不算,要左右交替
           last = i;
           pos = Math.min(100, pos + CLASH_STEP);
@@ -233,7 +279,7 @@
           sparks();
           G.audio.play(heat > 0.55 ? 'crit' : 'punch'); // 打出熱度後換成更響的打擊聲
           G.haptic.buzz(15);
-          this.punchFx(i === 3 ? 0 : 2, { small: true, dur: 110 });
+          this.punchFx(i % 3, { small: true, dur: 110 });
           this.setEnemyState('recoil', 160);
           if (pos >= 100) end(true);
         };
@@ -447,15 +493,30 @@
     },
 
     // ---- 打鐵節奏:跟著節拍,光圈縮到鐵鎚上時點擊;打中七成以上的拍子算成功 ----
-    async gm_rhythm({ beats, gap, win }, e) {
-      await G.banner('打鐵節奏!', G.t('跟著{0}打鐵的節拍,光圈縮到鐵鎚上的瞬間點擊!', e.name), 1700);
+    // 進階版(列車節奏,adv):off 機率反拍(下一拍提早半拍)、dbl 機率雙拍(同時兩格)、節拍間隔越來越快,最後剩 accel 倍
+    async gm_rhythm({ beats, gap, win, adv, off = 0, dbl = 0, accel = 1 }, e) {
+      if (adv) await G.banner('列車節奏!', G.t('跟著{0}的列車節拍點擊!小心反拍和兩格同時的雙拍,節奏還會越來越快!', e.name), 1900);
+      else await G.banner('打鐵節奏!', G.t('跟著{0}打鐵的節拍,光圈縮到鐵鎚上的瞬間點擊!', e.name), 1700);
       this.setPhase('跟著節拍點擊!', 'atk');
       const wrap = G.$('.grid-wrap'), lead = gap * 2, notes = [];
       const size = G.grid.cells[0].getBoundingClientRect().width || 90;
       let hits = 0, judged = 0;
-      const recent = []; // 最近兩拍用過的格子:光圈要提早兩拍出現,同一格不能重疊
-      const t0 = G.clock.now() + 500;
-      const total = 500 + lead + gap * (beats - 1) + win;
+      // 先排好每一拍的時間與格子:同一段時間內(光圈提早 lead 出現)同時亮著的格子不能重疊
+      const t0 = G.clock.now() + 500, plan = [];
+      for (let k = 0, t = t0 + lead; k < beats; k++) {
+        const busy = plan.filter(p => Math.abs(p.target - t) < lead + win).map(p => p.i);
+        const free = [...Array(9).keys()].filter(i => !busy.includes(i));
+        const i = G.pick(free.length ? free : [...Array(9).keys()]);
+        plan.push({ i, target: t });
+        if (adv && k + 1 < beats && Math.random() < dbl) { // 雙拍:同一瞬間再加一格
+          const j = G.pick(free.filter(x => x !== i));
+          if (j !== undefined) { plan.push({ i: j, target: t }); k++; }
+        }
+        const g = gap * (1 - (1 - accel) * k / Math.max(1, beats - 1)); // 越來越快
+        t += adv && Math.random() < off ? g * 0.5 : g;
+      }
+      beats = plan.length;
+      const total = plan[plan.length - 1].target - G.clock.now() + win;
       return new Promise(res => {
         const timer = this.timebar(total, () => {});
         const judge = (note, ok) => {
@@ -467,12 +528,8 @@
           else { G.grid.flash(note.i, 'bad'); G.audio.play('whiff'); }
           if (judged === beats) { timer.stop(); G.grid.handler = null; res(hits >= Math.ceil(beats * RHYTHM_PASS)); }
         };
-        for (let k = 0; k < beats; k++) {
-          let i;
-          do { i = Math.floor(Math.random() * 9); } while (recent.includes(i));
-          recent.push(i);
-          if (recent.length > 2) recent.shift();
-          const note = { i, target: t0 + lead + k * gap, judged: false };
+        plan.forEach(({ i, target }, k) => {
+          const note = { i, target, judged: false };
           notes.push(note);
           // 提早 lead 毫秒冒出鐵鎚,外圈光圈慢慢縮到格子上
           G.clock.after(() => {
@@ -487,9 +544,9 @@
               { duration: lead, easing: 'linear', fill: 'forwards' });
             note.ring = ring;
           }, Math.max(0, note.target - lead - G.clock.now()));
-          G.clock.after(() => G.audio.play('drum'), Math.max(0, note.target - G.clock.now())); // 節拍聲
+          if (!k || plan[k - 1].target !== target) G.clock.after(() => G.audio.play('drum'), Math.max(0, note.target - G.clock.now())); // 節拍聲(雙拍只響一次)
           G.clock.after(() => { if (!note.judged) judge(note, false); }, Math.max(0, note.target + win - G.clock.now())); // 錯過
-        }
+        });
         G.grid.handler = i => {
           const now = G.clock.now();
           const note = notes.find(n => n.i === i && !n.judged && Math.abs(now - n.target) <= win * 2.5);
@@ -729,6 +786,138 @@
         if (lineOf(b, 'O')) { glow('O', 'bad'); await G.clock.wait(500); return false; }
         if (!empty(b).length) { this.float('和局', 'tag line'); await G.clock.wait(500); return true; }
       }
+    },
+
+    gm_rhythm2(cfg, e) { return this.gm_rhythm(cfg, e); }, // 進階版共用同一套流程
+    gm_clash2(cfg, e) { return this.gm_clash(cfg, e); },
+
+    // ---- 甲板閃避:你是九宮格上的 🥋,砲擊先用 ⚠ 標出要轟的一排 / 一列(cross 機率十字雙線),
+    //      點相鄰(含斜角)的格子移動躲開;撐過 rounds 輪,被轟到超過 allow 次就失敗 ----
+    async gm_dodge({ rounds, warn, cross, allow }, e) {
+      await G.banner('甲板閃避!', G.t('{0}的砲口對準甲板!看 ⚠ 標出的那一排或一列,點旁邊的格子移動躲開砲擊。', e.name), 1900);
+      const ROWS = [[0, 1, 2], [3, 4, 5], [6, 7, 8]], COLS = [[0, 3, 6], [1, 4, 7], [2, 5, 8]];
+      const adj = (p, q) => p !== q && Math.abs(p % 3 - q % 3) <= 1 && Math.abs(Math.floor(p / 3) - Math.floor(q / 3)) <= 1;
+      let me = 4, hits = 0, danger = [], firing = false;
+      const draw = list => list.forEach(i => {
+        const warned = danger.includes(i);
+        if (i === me) G.grid.set(i, '🥋', 'dodge-me' + (warned ? ' dodge-warn' : ''));
+        else if (warned) G.grid.set(i, '⚠', 'dodge-warn');
+        else G.grid.clear(i);
+      });
+      draw([...Array(9).keys()]);
+      G.grid.handler = i => {
+        if (firing || !adj(me, i)) { if (i !== me) G.grid.bump(i); return; }
+        const from = me;
+        me = i;
+        draw([from, i]);
+        G.audio.play('whiff');
+      };
+      for (let k = 0; k < rounds && !this.over(); k++) {
+        this.setPhase(G.t('躲開砲擊!{0} / {1}', k + 1, rounds), 'def');
+        // 十字:一排加一列(交叉處以外還有 4 格安全);一般:一排或一列
+        const lines = Math.random() < cross ? [G.pick(ROWS), G.pick(COLS)] : [G.pick([...ROWS, ...COLS])];
+        danger = [...new Set(lines.flat())];
+        draw([...Array(9).keys()]);
+        G.audio.play('tick');
+        await G.clock.wait(warn);
+        firing = true;
+        danger.forEach(i => { G.grid.flash(i, 'bad'); G.grid.impact(i, 'bad'); });
+        G.audio.play('boom');
+        if (danger.includes(me)) { hits++; this.float('被砲擊!', 'tag miss'); this.safeHurt(e.atk * 0.5); }
+        danger = [];
+        draw([...Array(9).keys()]);
+        await G.clock.wait(320);
+        firing = false;
+      }
+      G.grid.handler = null;
+      return hits <= allow;
+    },
+
+    // ---- 洗腦干擾:中間格寫著一個顏色的「字」,但字是用另一種顏色寫的;要點「字的顏色」那一格色塊。
+    //      fake:色塊上也寫著誤導的字;每題限時 ms,答錯 / 超時超過 allow 次就失敗 ----
+    async gm_stroop({ rounds, ms, fake, allow }, e) {
+      await G.banner('洗腦干擾!', G.t('{0}想擾亂你的心神!中間的字是用什麼「顏色」寫的,就點那個顏色的格子,別被字義騙了。', e.name), 2100);
+      const COLORS = [{ id: 'red', name: '紅', ink: '#ff4545' }, { id: 'blue', name: '藍', ink: '#4a8cff' }, { id: 'yellow', name: '黃', ink: '#ffd84a' }, { id: 'green', name: '綠', ink: '#3fdc78' }];
+      const icon4 = G.grid.cells[4].querySelector('.icon');
+      let wrong = 0;
+      for (let k = 0; k < rounds && !this.over(); k++) {
+        this.setPhase(G.t('看「顏色」不看字!{0} / {1}', k + 1, rounds), 'def');
+        const word = G.pick(COLORS), ink = G.pick(COLORS.filter(c => c !== word));
+        const spots = G.shuffle([0, 1, 2, 3, 5, 6, 7, 8]).slice(0, 4), order = G.shuffle(COLORS);
+        G.grid.set(4, G.t(word.name), 'stroop-word');
+        icon4.style.color = ink.ink;
+        spots.forEach((c, j) => G.grid.set(c, fake ? G.t(G.pick(COLORS.filter(x => x !== order[j])).name) : '', 'stroop-swatch sw-' + order[j].id));
+        const pick = await new Promise(res => {
+          const timer = this.timebar(ms, () => { G.grid.handler = null; res(-1); });
+          G.grid.handler = i => { if (!spots.includes(i)) return; timer.stop(); G.grid.handler = null; res(i); };
+        });
+        const ok = pick >= 0 && order[spots.indexOf(pick)] === ink;
+        if (pick >= 0) { G.grid.flash(pick, ok ? 'good' : 'bad'); G.grid.impact(pick, ok ? 'num' : 'bad'); }
+        if (ok) G.audio.play('perfect');
+        else { wrong++; G.audio.play('fail'); this.float(pick < 0 ? '超時' : '被干擾!', 'tag miss'); G.grid.flash(spots[order.indexOf(ink)], 'good'); }
+        await G.clock.wait(380);
+        icon4.style.color = '';
+        G.grid.clearAll();
+        await G.clock.wait(120);
+      }
+      return wrong <= allow;
+    },
+
+    // ---- 打靶射擊:靶子 🎯 沿著橫排一格一格滑過(每 step 毫秒),趁它經過時點中;混著人質 🧑 不能打。
+    //      共 n 個,打中 SHOOT_PASS 比例以上的靶子、誤傷人質不超過 1 次就成功 ----
+    async gm_shoot({ n, step, gap, hostage }, e) {
+      await G.banner('打靶射擊!', G.t('{0}的處刑靶場!靶子 🎯 會沿著橫排滑過,趁它經過時點中;小心別打到人質 🧑。', e.name), 1900);
+      const items = [], timers = [];
+      const kinds = G.shuffle([...Array(n)].map((_, k) => k < Math.round(n * hostage) ? 'hostage' : 'target')); // 人質數量固定,只打亂順序
+      let hits = 0, targets = 0, hostHits = 0, spawned = 0, done = false;
+      const at = it => it.row * 3 + it.col;
+      const show = it => G.grid.set(at(it), it.kind === 'target' ? '🎯' : '🧑', it.kind === 'target' ? 'shoot-target' : 'shoot-hostage');
+      const status = () => this.setPhase(G.t('命中 {0} / {1}', hits, targets), 'atk');
+      status();
+      return new Promise(res => {
+        const end = () => {
+          if (done) return;
+          done = true;
+          timers.forEach(G.clock.cancel);
+          G.grid.handler = null;
+          res(hits >= Math.ceil(targets * SHOOT_PASS) && hostHits <= 1);
+        };
+        const check = () => { if (spawned >= n && !items.length) G.clock.after(end, 300); };
+        const spawn = () => {
+          if (done || this.over()) return end();
+          if (spawned >= n) return;
+          const free = [0, 1, 2].filter(r => !items.some(x => x.row === r));
+          if (!free.length) { timers.push(G.clock.after(spawn, 150)); return; }
+          const dir = Math.random() < 0.5 ? 1 : -1, kind = kinds[spawned];
+          const it = { row: G.pick(free), dir, col: dir > 0 ? 0 : 2, kind };
+          if (kind === 'target') targets++;
+          spawned++;
+          items.push(it);
+          show(it);
+          status();
+          const slide = () => {
+            if (done || !items.includes(it)) return;
+            G.grid.clear(at(it));
+            it.col += it.dir;
+            if (it.col < 0 || it.col > 2) { items.splice(items.indexOf(it), 1); return check(); } // 滑出靶場
+            show(it);
+            timers.push(G.clock.after(slide, step));
+          };
+          timers.push(G.clock.after(slide, step));
+          timers.push(G.clock.after(spawn, gap));
+        };
+        G.grid.handler = i => {
+          const it = items.find(x => at(x) === i);
+          if (!it) return;
+          items.splice(items.indexOf(it), 1);
+          G.grid.clear(i, 'press');
+          if (it.kind === 'target') { hits++; G.grid.flash(i, 'good'); G.grid.impact(i, 'num', true); G.audio.play('crit'); this.setEnemyState('hit', 150); }
+          else { hostHits++; G.grid.flash(i, 'bad'); G.grid.impact(i, 'bad'); G.audio.play('fail'); this.float('誤傷人質!', 'tag miss'); }
+          status();
+          check();
+        };
+        spawn();
+      });
     },
   });
 })();
