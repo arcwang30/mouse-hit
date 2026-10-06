@@ -328,6 +328,7 @@ G.molePhase = o => new Promise(resolve => {
   const bowSound = b => {
     if (bowing !== b || finished) return;
     const pull = b.y == null ? Math.min(1, (G.clock.now() - b.t) / BOW_KEY_MS) : b.pull;
+    if (b.y == null && pull >= 1 && !b.readyPlayed) { b.readyPlayed = true; G.audio.play('ready'); } // 鍵盤拉滿的提示音(手指拉弓在 onMove 播)
     G.audio.play('bowHold', pull);
     G.clock.after(() => bowSound(b), BOW_SND_MS);
   };
@@ -700,6 +701,7 @@ G.molePhase = o => new Promise(resolve => {
       bowing = { i, a, id: p ? p.id : null, y: p ? p.y : null, t: G.clock.now(), pull: 0 };
       cell(i).classList.add('drawing');
       G.audio.play('draw');
+      G.audio.play('charge'); // 和 HOLD / 頂住按住時一樣的「嗯~~」
       const b = bowing;
       G.clock.after(() => bowSound(b), BOW_SND_MS);
       if (!p) bowKeyLoop();
