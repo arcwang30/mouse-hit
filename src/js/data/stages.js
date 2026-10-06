@@ -407,7 +407,7 @@ G.regionKey = (r, ch = G.chapter()) => ch === 1 ? String(r) : `${ch}-${r}`;
 // 第二章的美術:到了之後填上路徑(assets/images/ 底下),沒有的話沿用原本的圖
 G.HERO_AWAKE_IMG = 'fx/hero_awake.jpg'; // 炎鋼・天道立繪(圖鑑)
 G.TIANDAO_ART = 'fx/ult_tiandao_heal.webp'; // 必殺技「炎鋼天道」過場圖(換過圖,所以換檔名避開舊快取)
-G.SPARK_ART = 'fx/ult_spark.jpg';       // 第三章破關後的新必殺技「星火燎原拳」過場圖(右下浮水印在過場畫面外)
+G.SPARK_ART = 'fx/ult_spark_fists.webp'; // 第三章破關後的新必殺技「星火燎原拳」過場圖(換過圖,所以換檔名避開舊快取)
 // 必殺技:破關解鎖後,在出擊前的關卡資訊裡選要帶哪一招(記在 sv.ultPick;沒選過 = 最新解鎖的);教學一律用烈焰鋼拳
 // 三招各有定位(效果在 G.battle.ultimate 裡結算):
 //   base    爆發:威力最高,必定破甲(下一回合每拳 +35%)而且破綻量表直接集滿

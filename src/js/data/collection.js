@@ -18,7 +18,7 @@ G.DEX_HERO = [
   // 第三章
   { id: 'spark',    name: '炎鋼・星火戰袍', img: 'fx/hero_spark.webp', price: 380,
     bio: '踏上遠征的炎鋼。融合科技防護與古武勁裝的新戰袍,額上的烙痕綻放著燃燒希望的星火。' },
-  { id: 'ult3',     name: '星火燎原拳', img: 'fx/ult_spark.jpg', price: 480,
+  { id: 'ult3',     name: '星火燎原拳', img: 'fx/ult_spark_fists.webp', price: 480,
     bio: '打倒天幕議長後修得的奧義:被解放的武魂化作星火,匯聚在炎鋼的拳上。燎原之火燒盡敵人佈下的一切機關,連敵人的殺招也能打斷。' },
   // 第三章的同伴
   { id: 'hayabusa', name: '小隼', img: 'allies/hayabusa.webp', price: 300,
