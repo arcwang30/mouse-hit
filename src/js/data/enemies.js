@@ -202,12 +202,12 @@ G.ALLIES = {
     own: sv => !!(sv.ch3Clear || sv.spark), role: '防守', passive: 'HOLD 與「頂住」按住的時間縮短 20%',
     assist: '獅吼護陣:HP 第一次降到 30% 以下時,下一個敵人回合的盾牌全部自動擋下', shout: '獅吼護陣!下一波我替你扛!' },
 };
-// 已加入的夥伴(依加入順序);目前帶上場的夥伴(sv.allyPick:'none' = 不帶;沒選過 = 最新加入的);教學不帶
+// 已加入的夥伴(依加入順序);目前帶上場的夥伴(sv.allyPick:'none' = 不帶;沒選過或選的還沒加入 = 最新加入的);教學不帶
 G.alliesOwned = () => Object.keys(G.ALLIES).filter(id => G.ALLIES[id].own(G.save.data));
 G.allyNow = () => {
   if (G.tutorial && G.tutorial.active) return null;
   const own = G.alliesOwned(), pick = G.save.data.allyPick;
-  if (pick === 'none') return null;
+  if (pick === 'none') return null; // 選中的夥伴再點一次 = 不帶
   return own.includes(pick) ? pick : own[own.length - 1] || null;
 };
 // 寶箱怪:神秘寶箱事件才會出現的敵人(不在關卡裡,所以不放進 G.ENEMIES);強度跟著當下的關卡與波次

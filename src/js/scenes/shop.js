@@ -47,8 +47,7 @@ G.shop = {
       // 桌布:主題(對應九宮格造型)與世界觀(關卡場景)分兩段;✨ 是有動態效果
       const card = w => {
         const owned = G.wall.unlocked(w);
-        return `<div class="shop-wall">${G.wall.mini(w)}<b>${G.t(w.name)}</b>` +
-          (w.anim ? `<span class="wp-tag">${G.t('✨ 動態')}</span>` : '') +
+        return `<div class="shop-wall"><div class="wp-thumb">${G.wall.mini(w)}` + (w.anim ? `<span class="wp-tag">${G.t('✨ 動態')}</span>` : '') + `</div><b>${G.t(w.name)}</b>` +
           (w.ach && !owned ? `<span class="wp-ach">${G.t('或完成成就「{0}」', G.wall.achName(w))}</span>` : '') +
           this.buyBtn('wall:' + w.id, w.price, owned) + '</div>';
       };

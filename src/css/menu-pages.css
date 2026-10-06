@@ -577,10 +577,12 @@ html:lang(en) .round-tab { font-size: 2.7cqw; letter-spacing: 0; } /* 英文名�
 .ss-ult-opt small { font-size: 2.4cqw; color: var(--steel-hi); text-align: center; }
 .ss-ult-opt.on { opacity: 1; border-color: #ffd84a; box-shadow: 0 0 2.4cqw #ffd84a80, inset 0 0 2cqw #ffd84a30; }
 .ss-ult-opt.on small { color: #ffe08a; }
-/* 助陣夥伴:頭像是方形大頭照;「不帶」用 ✕;選中的夥伴能力寫在卡片下方 */
-.ss-ally .ss-ult-opt i { aspect-ratio: 1; background-position: center 15%; background-color: #1a2230; display: grid; place-items: center; font-style: normal; font-size: 6cqw; color: #ffffff55; }
+/* 助陣夥伴:頭像是方形大頭照;選中的夥伴能力寫在卡片下方 */
+.ss-ally .ss-ult-opt { flex: 0 0 calc((100% - 3.2cqw) / 3); } /* 固定三分之一寬:只有一兩位時也不會撐滿、不留空位 */
+.ss-ally .ss-ult-opt i { aspect-ratio: 1; background-position: center 15%; background-color: #1a2230; }
 .ss-ally-desc { margin: 1.4cqw 0 0; font-size: 2.6cqw; line-height: 1.5; color: var(--steel-hi); }
 .ss-ally-desc b { color: #ffe08a; }
+.ss-ally .ss-ult-h small { margin-left: 2cqw; font-size: 2.3cqw; font-weight: 600; letter-spacing: 0; color: #ffffff70; }
 .ss-go { background: linear-gradient(180deg, #ff7a1a, #b52a05 60%, #5a1000); box-shadow: inset 0 0 0 .5cqw var(--fire-2); font-size: 5cqw; }
 .map-region.locked .mr-head, .map-region.locked .mr-desc { z-index: 3; }
 .map-region.locked .mr-field { opacity: .3; } /* 還沒開放:關卡節點淡掉,讓背景圖看得出是哪裡 */

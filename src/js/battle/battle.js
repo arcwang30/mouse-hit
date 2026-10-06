@@ -62,6 +62,13 @@ const PERFECT_AT = 0.7, PERFECT_BONUS = 0.3, PERFECT_ULT = 2, BROKEN_BONUS = 0.3
 const HAYABUSA_REVEAL = 0.5, HAYABUSA_TRACK = 600, HONGLIN_PERFECT = 0.1, LEISHI_HOLD = 0.8;
 // 助陣夥伴的援護(每關一次):紅綾在連擊到 HONGLIN_COMBO 時打掉 HONGLIN_HITS 顆拳頭;雷獅在 HP ≤ LEISHI_HP 時預約下一個敵人回合全擋
 const HONGLIN_COMBO = 20, HONGLIN_HITS = 3, LEISHI_HP = 0.3;
+const ALLY_FX_MS = 2100, ALLY_FX_HIT = 900; // 援護演出:全長、特效高潮(震動)的毫秒數(要和 CSS 的 #allyFx 動畫對齊)
+// 各夥伴特效的音效節奏 [毫秒, 音效]:小隼電流雜訊、紅綾連續劃斬、雷獅雷鳴般的吼聲與護盾成形
+const ALLY_FX_SFX = {
+  hayabusa: [[450, 'zap'], [800, 'zap'], [950, 'select']],
+  honglin: [[620, 'slash'], [780, 'slash'], [940, 'slash'], [1050, 'crit']],
+  leishi: [[700, 'thunder'], [900, 'block'], [1000, 'perfect']],
+};
 // 破綻量表(同一關內跨波段累積,0~100):每次格擋依判定加分、漏擋扣分;量表滿了而且那一回合全部擋下,才會露出破綻(露出後歸零)
 // 一次攻擊約 5~7 面盾:全部迅擋約 3 次攻擊滿一次,一般格擋約 4~5 次
 const BREAK_GAUGE = { fast: 6, block: 4, late: 2, memory: 15, miss: -15 };
@@ -212,7 +219,7 @@ G.battle = {
     this.allyUsed = false;
     this.lionNext = false;
     this.lionTurn = false;
-    if (G.$('#allyPop')) G.$('#allyPop').classList.remove('show');
+    document.querySelectorAll('#allyFx').forEach(x => x.remove()); // 援護演出中途離開戰鬥的殘留
     this.boardCalm = 0; // 星火燎原拳:還有幾個階段不佈置機制格
     G.$('#battle').classList.remove('ult-guard');
 
@@ -364,7 +371,7 @@ G.battle = {
     await this.setTurn('atk'); // 斬擊演出播完才開始冒拳頭
     this.setPhase(bonus.length ? G.t('你的回合・{0}', bonus.join('・')) : '你的回合:點擊 👊,HOLD 要按住', 'atk');
     this.setupBoard('attack');
-    this.allyHack();
+    await this.allyHack();
     this.render();
 
     const m = this.mech('atk'), rc = G.roundCfg();
@@ -467,7 +474,7 @@ G.battle = {
     await this.setTurn('def'); // 斬擊演出播完才開始冒盾牌
     this.setPhase(s ? G.t('必殺技來襲:{0}!', G.t(s.name)) : '防禦:點擊 🛡️ 擋下攻擊!', 'def');
     this.setupBoard('defend');
-    this.allyHack();
+    await this.allyHack();
     const m = this.mech('def');
     await this.mechTips(m);
     // 幻術:隔一回合改成記憶考驗(第 1、3、5… 次攻擊),答對等於全部擋下,一樣有破綻
@@ -1393,16 +1400,18 @@ G.battle = {
       g.clearBlocks('sand');
       G.shuffle(open()).slice(0, 3).forEach(i => g.setBlock(i, 'sand'));
     }
-    if (type === 'tornado') { // 龍捲風:每個階段隨機換位置,至少 TORNADO_MIN 格(tornadoN 可以更多)
-      const n = Math.max(TORNADO_MIN, G.MECHS[this.e.id].tornadoN || 0);
+    // 一般敵人(第一輪、不是 BOSS 本人,BOSS 關裡的小兵也算)的龍捲風與電網只放 1 格;修羅 / 天魔與 BOSS 照原本的數量
+    const light = G.round() === 1 && !this.e.boss;
+    if (type === 'tornado') { // 龍捲風:每個階段隨機換位置,至少 TORNADO_MIN 格(tornadoN 可以更多;一般敵人 1 格)
+      const n = light ? 1 : Math.max(TORNADO_MIN, G.MECHS[this.e.id].tornadoN || 0);
       const prev = [...g.blocks.keys()].filter(i => g.blocks.get(i).type === 'tornado');
       g.clearBlocks('tornado');
       const pool = open(), fresh = pool.filter(i => !prev.includes(i)); // 移動:盡量換到之前沒有龍捲風的格子
       G.shuffle(fresh).concat(G.shuffle(pool.filter(i => prev.includes(i)))).slice(0, n).forEach(i => g.setBlock(i, 'tornado'));
     }
-    if (type === 'shock') { // 電網:每個階段換一批(BOSS 3 格,其他 2 格)
+    if (type === 'shock') { // 電網:每個階段換一批(BOSS 3 格,其他 2 格;一般敵人 1 格)
       g.clearBlocks('shock');
-      G.shuffle(open()).slice(0, this.e.boss ? 3 : 2).forEach(i => g.setBlock(i, 'shock'));
+      G.shuffle(open()).slice(0, light ? 1 : this.e.boss ? 3 : 2).forEach(i => g.setBlock(i, 'shock'));
     }
     if (type === 'tentacle' && phase === 'defend') { // 每次攻擊長出 2 條觸手,最多 4 條
       const have = [...g.blocks.values()].filter(b => b.type === 'tentacle').length;
@@ -1469,46 +1478,70 @@ G.battle = {
   // 這一回合影颸(🦵 帶箭頭、要滑)的出現率:依關卡進度 10% → 20%,加上敵人機制「疾風腿」的加成
   // 學會燎原連拳了沒(目前停用,不會開放)
   chainOk() { return !!(this.allowedNow && this.allowedNow.has('chain')); },
-  // 助陣夥伴援護:畫面上跳出夥伴的頭像與台詞(每關一次,呼叫時就算用掉)
+  // 助陣夥伴援護的全畫面演出(每關一次,呼叫時就算用掉):戰鬥暫停、畫面壓黑 → 夥伴頭像與台詞滑進來 → 各夥伴專屬的全畫面特效 → 收起後恢復戰鬥
+  // 回傳 Promise,演出播完才 resolve;援護的效果在演出之後才生效(呼叫端 await 或 .then)
   allyPop() {
     const a = G.ALLIES[this.ally];
-    if (!a) return;
+    if (!a) return Promise.resolve();
     this.allyUsed = true;
-    let el = G.$('#allyPop');
-    if (!el) {
-      el = document.createElement('div');
-      el.id = 'allyPop';
-      el.innerHTML = '<i></i><div><b></b><span></span></div>';
-      G.$('#stageView').appendChild(el);
-    }
-    el.querySelector('i').style.backgroundImage = `url('${ENEMY_IMG_DIR + (a.faces.angry || a.faces.normal)}')`;
-    el.querySelector('b').textContent = G.t(a.name);
-    el.querySelector('span').textContent = G.t(a.shout);
-    el.classList.remove('show');
-    void el.offsetWidth;
-    el.classList.add('show');
-    G.audio.play('levelup');
-    clearTimeout(this.allyPopTimer);
-    this.allyPopTimer = setTimeout(() => el.classList.remove('show'), 1900);
+    const run = this.run, wasPaused = G.clock.paused;
+    if (!wasPaused) G.clock.pause(); // 暫停中才建立的動畫不受暫停影響,演出照常播放
+    const el = document.createElement('div');
+    el.id = 'allyFx';
+    el.className = 'ally-' + this.ally;
+    el.innerHTML = '<i class="afx-dim"></i>' + this.allyFxLayer(this.ally) +
+      `<div class="afx-card"><i class="afx-face" style="background-image:url('${ENEMY_IMG_DIR + (a.faces.angry || a.faces.normal)}')"></i>` +
+      `<div class="afx-text"><b>${G.t(a.name)}</b><span>${G.t(a.shout)}</span></div></div>`;
+    if (!G.save.data.shake) el.style.animation = 'none'; // 設定關掉畫面震動時不晃
+    G.$('#battle').appendChild(el);
+    G.audio.play('cutin');
+    G.voice.say('ally', 'ally_' + this.ally, a.shout, ''); // 台詞本身已有驚嘆號
+    (ALLY_FX_SFX[this.ally] || []).forEach(([ms, sfx]) => setTimeout(() => G.audio.play(sfx), ms)); // 各夥伴特效的音效節奏
+    setTimeout(() => G.haptic.buzz([0, 60, 40, 120]), ALLY_FX_HIT);
+    return new Promise(resolve => setTimeout(() => {
+      el.remove();
+      if (!wasPaused && run === this.run && G.$('#battle').classList.contains('active')) G.clock.resume();
+      resolve();
+    }, ALLY_FX_MS));
   },
-  // 小隼的系統入侵:這一關第一次佈置出機制格時,全部清掉,下一個階段也不佈置
-  allyHack() {
+  // 援護演出中間的專屬全畫面特效(對應各夥伴的能力):
+  //   小隼 數位駭入:青色代碼雨 + 掃描線 + 雜訊閃爍,跳出 SYSTEM BREACH
+  //   紅綾 連環光刃:粉色光斬一道接一道劃過全畫面,最後星光四散
+  //   雷獅 獅吼護盾:金色聲波一圈圈擴散,中央凝聚出發光的六角護盾
+  allyFxLayer(id) {
+    const r = (a, b) => a + Math.random() * (b - a);
+    if (id === 'hayabusa') {
+      const hex = () => Array.from({ length: 12 }, () => Math.floor(Math.random() * 65536).toString(16).toUpperCase().padStart(4, '0')).join('\n');
+      return Array.from({ length: 14 }, (_, k) => `<i class="afx-code" style="left:${k * 7.2 + r(0, 3)}%;--d:${r(.05, .5).toFixed(2)}s;--t:${r(.9, 1.4).toFixed(2)}s">${hex()}</i>`).join('') +
+        '<i class="afx-scan"></i><i class="afx-glitch"></i><i class="afx-breach">SYSTEM BREACH</i>';
+    }
+    if (id === 'honglin') {
+      return '<i class="afx-lines"></i>' +
+        Array.from({ length: 6 }, (_, k) => `<i class="afx-slash" style="--a:${(k % 2 ? -1 : 1) * r(18, 40)}deg;--y:${r(35, 80).toFixed(0)}%;--d:${(0.62 + k * 0.08).toFixed(2)}s"></i>`).join('') +
+        Array.from({ length: 16 }, (_, k) => { const a = k / 16 * Math.PI * 2 + r(-.2, .2), d = r(30, 55);
+          return `<i class="afx-star" style="--x:${(Math.cos(a) * d).toFixed(1)}cqw;--y:${(Math.sin(a) * d * 1.4).toFixed(1)}cqw;--s:${r(6, 11).toFixed(1)}cqw">✦</i>`; }).join('') +
+        '<i class="afx-burst"></i>';
+    }
+    return '<i class="afx-lines"></i>' + [0, 1, 2].map(k => `<i class="afx-roar" style="--d:${(0.7 + k * 0.17).toFixed(2)}s"></i>`).join('') +
+      '<i class="afx-shield"></i><i class="afx-burst"></i>';
+  },
+  // 小隼的系統入侵:這一關第一次佈置出機制格時,演出後全部清掉,下一個階段也不佈置
+  async allyHack() {
     if (this.ally !== 'hayabusa' || this.allyUsed || !G.grid.blocks.size) return;
-    this.allyPop();
+    await this.allyPop();
     G.grid.clearBlocks();
     this.boardCalm = Math.max(this.boardCalm, 1);
     this.float('機制格清除!', 'tag line');
   },
-  // 紅綾的連環助拳:之後約 2 秒內,每隔一小段時間打掉一顆場上的拳頭(技法也打得到的那種),打滿 HONGLIN_HITS 顆為止
+  // 紅綾的連環助拳:演出後約 2 秒內,每隔一小段時間打掉一顆場上的拳頭(技法也打得到的那種),打滿 HONGLIN_HITS 顆為止
   honglinAssist(api) {
-    this.allyPop();
     let left = HONGLIN_HITS, tries = 14;
     const punch = () => {
       const t = api.targets();
       if (t.length && api.autoHit(G.pick(t))) { left--; this.float('助拳!', 'tag charge'); }
       if (left > 0 && --tries > 0) G.clock.after(punch, 160);
     };
-    G.clock.after(punch, 250);
+    this.allyPop().then(() => G.clock.after(punch, 150));
   },
   // 疾射(弓箭)的出現率(第三章起)
   bowRate() { return this.allowedNow && this.allowedNow.has('bow') ? BOW_RATE : 0; },

@@ -16,6 +16,7 @@ G.VOICE_FILES = {
 const VOICE_STYLE = {
   hero: { pitch: 1.25, rate: 1.15 }, // 少年主角:高亢、有衝勁
   boss: { pitch: 0.35, rate: 0.85 }, // BOSS:低沉、壓迫感
+  ally: { pitch: 1.05, rate: 1.1 },  // 助陣夥伴援護時的喊聲
 };
 const LANG_CODE = { zh: ['zh-TW', 'zh-HK', 'zh'], ja: ['ja-JP', 'ja'], en: ['en-US', 'en-GB', 'en'] };
 

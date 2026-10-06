@@ -226,6 +226,8 @@
 .shop-walls { display: grid; grid-template-columns: repeat(3, 1fr); gap: 2.4cqw; }
 .shop-wall { display: flex; flex-direction: column; align-items: center; gap: 1cqw; padding: 1.6cqw; background: #0006; clip-path: var(--chamfer); text-align: center; }
 .shop-wall b { font-size: 3.2cqw; }
-.shop-wall .wp-tag { font-size: 2.4cqw; color: var(--neon-y); }
+.shop-wall .wp-thumb { position: relative; width: 100%; line-height: 0; } /* 動態字樣壓在預覽圖左上角,名字與「已擁有」才會和靜態桌布對齊 */
+.shop-wall .wp-tag { position: absolute; left: .5cqw; top: .5cqw; z-index: 1; padding: .3cqw 1cqw; border-radius: .8cqw; background: #000c; font-size: 2.2cqw; line-height: 1.3; color: var(--neon-y); pointer-events: none; }
 .shop-wall .wp-ach { font-size: 2.3cqw; color: #9ff5c6; line-height: 1.3; }
+.shop-wall > :last-child { margin-top: auto; } /* 價格 / 已擁有一律貼齊卡片底部,同一排對齊 */
 .shop-sec { grid-column: 1 / -1; margin: 1.6cqw 0 0; font-size: 3.4cqw; font-weight: 900; color: var(--neon-c); }

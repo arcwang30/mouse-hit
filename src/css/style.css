@@ -802,22 +802,22 @@ h2 { margin: 0; }
 .cell.swipe-down .label  { --rot: 90deg;  --sx: 0%;   --sy: 22%; }
 .cell.swipe-left .label  { --rot: 180deg; --sx: -22%; --sy: 0%; }
 .cell.swipe-right .label { --rot: 0deg;   --sx: 22%;  --sy: 0%; }
-/* 拉弓:藍色按鈕 + 弓與箭(SVG,由 G.grid.bowPull 依拉弓程度改弓臂、弓弦、箭的位置);往下拉時箭跟著後退,拉滿發金光
+/* 拉弓:洋紅色按鈕 + 弓與箭(SVG,由 G.grid.bowPull 依拉弓程度改弓臂、弓弦、箭的位置);往下拉時箭跟著後退,拉滿發金光
    圖示和踢擊的腳印一樣是單一白色的圖騰,整體壓一層深色陰影;尺寸放大到和拳頭、腳印差不多 */
-.cell.bow .cap { background: linear-gradient(180deg, #a8ecff, #1f86c4 55%, #0a3a63); --edge: #04203a; }
-.cell.bow .label { background: #ffe14a; color: #04203a; }
+.cell.bow .cap { background: linear-gradient(180deg, #ffb0ec, #d0249f 55%, #5c0848); --edge: #2e0426; } /* 洋紅:和藍色盾牌、紫色晶盾、紅色 HOLD 都分得開 */
+.cell.bow .label { background: #ffe14a; color: #2e0426; }
 .bow-rig, .bow-shot { position: absolute; left: 50%; top: 66%; width: 90%; aspect-ratio: 1; transform: translate(-50%, -50%); pointer-events: none; }
 .bow-rig { z-index: 1; }
 .bow-rig svg, .bow-shot svg, .fx-arrow { display: block; width: 100%; height: 100%; overflow: visible; }
-.bow-rig svg, .bow-shot svg { filter: drop-shadow(0 0 .3cqw #04203a) drop-shadow(0 .4cqw 0 #04203a); }
-.bow-rig .limb { fill: none; stroke: #fff; stroke-width: 8; stroke-linecap: round; }
-.bow-rig .string { fill: none; stroke: #fff; stroke-width: 2.2; }
-.shaft, .fx-arrow line { stroke: #fff; stroke-width: 4.5; stroke-linecap: round; }
-.head, .fletch { fill: #fff; stroke: #fff; stroke-width: 1.5; stroke-linejoin: round; }
-.cell.bow.drawing .bow-rig { filter: drop-shadow(0 0 1.2cqw #a8ecff); }
+.bow-rig svg, .bow-shot svg { filter: drop-shadow(0 0 .4cqw #2e0426) drop-shadow(0 .45cqw 0 #2e0426); }
+.bow-rig .limb { fill: none; stroke: #fff; stroke-width: 11; stroke-linecap: round; }
+.bow-rig .string { fill: none; stroke: #fff; stroke-width: 3.6; }
+.shaft, .fx-arrow line { stroke: #fff; stroke-width: 7; stroke-linecap: round; }
+.head, .fletch { fill: #fff; stroke: #fff; stroke-width: 3; stroke-linejoin: round; }
+.cell.bow.drawing .bow-rig { filter: drop-shadow(0 0 1.2cqw #ffb0ec); }
 .bow-rig.full { filter: drop-shadow(0 0 2cqw #ffd400) drop-shadow(0 0 .6cqw #fff) !important; animation: bowShake .08s infinite; }
 @keyframes bowShake { 50% { translate: 2% 3%; } } /* 拉滿抖動:用 translate 屬性,不會蓋掉置中用的 transform */
-/* 拉弓中:和 HOLD / 頂住一樣從底部升起水位,高度 = 拉弓程度(--pull 0~1);藍色按鈕上用金色的水,拉滿變亮金 */
+/* 拉弓中:和 HOLD / 頂住一樣從底部升起水位,高度 = 拉弓程度(--pull 0~1);洋紅按鈕上用金色的水,拉滿變亮金 */
 .cell.bow.drawing .cap::before {
   content: ""; display: block; position: absolute; left: 0; right: 0; bottom: 0; top: auto; border-radius: 0; pointer-events: none;
   height: calc(var(--pull, 0) * (100% + 1.4cqw));
@@ -912,14 +912,60 @@ h2 { margin: 0; }
 #menu .strike-bolt { z-index: 5; }
 .fx-fist .fx-foot { display: block; width: 1em; height: 1em; filter: drop-shadow(0 0 1.5cqw #4ad94a) drop-shadow(0 .3cqw 0 #042a0a); } /* 踢擊的腳印飛向敵人(原圖方向) */
 
-/* 助陣夥伴援護:從左側滑進來的頭像 + 名字 + 台詞,約 1.9 秒後滑出 */
-#allyPop {
-  position: absolute; left: 0; bottom: 16%; z-index: 6; display: flex; align-items: center; gap: 2cqw; max-width: 82%;
-  padding: 1.4cqw 4cqw 1.4cqw 1.6cqw; pointer-events: none; color: #fff;
-  background: linear-gradient(90deg, #0b1018f0 70%, #0b101800); border-left: .8cqw solid #ffd84a;
-  transform: translateX(-110%); opacity: 0; transition: transform .25s cubic-bezier(.2, 1.4, .4, 1), opacity .2s;
-}
-#allyPop.show { transform: none; opacity: 1; }
-#allyPop i { flex: none; width: 14cqw; height: 14cqw; border-radius: 50%; background: #1a2230 center 15% / cover; box-shadow: 0 0 0 .5cqw #ffd84a, 0 0 3cqw #ffd84a80; }
-#allyPop b { display: block; font-size: 3cqw; color: #ffd84a; letter-spacing: .1em; }
-#allyPop span { display: block; font-size: 3.6cqw; font-weight: 900; line-height: 1.3; text-shadow: 0 .3cqw 0 #000; }
+/* 助陣夥伴援護:全畫面演出(總長 2.1 秒,和 battle.js 的 ALLY_FX_MS / ALLY_FX_HIT 對齊)
+   0.2 秒壓黑 → 0.45 秒夥伴頭像與台詞從左滑入 → 0.45~1.8 秒各夥伴專屬特效(高潮在 0.9 秒,畫面震動)→ 1.8 秒起收起 */
+#allyFx { position: absolute; inset: 0; z-index: 55; overflow: hidden; pointer-events: auto; --ac: #ffd84a; animation: afxShake 2.1s linear both; }
+#allyFx.ally-hayabusa { --ac: #19f0ff; }
+#allyFx.ally-honglin  { --ac: #ff5c8a; }
+#allyFx.ally-leishi   { --ac: #ffb02a; }
+#allyFx > i, #allyFx > div { position: absolute; pointer-events: none; font-style: normal; }
+.afx-dim { inset: 0; background: radial-gradient(circle at 50% 55%, #0008, #000e 75%); animation: afxDim 2.1s linear both; }
+.afx-lines { inset: -30%; background: repeating-conic-gradient(from 0deg at 50% 50%, transparent 0 4deg, color-mix(in srgb, var(--ac) 45%, transparent) 4deg 5deg);
+  -webkit-mask: radial-gradient(circle, transparent 18%, #000 60%); mask: radial-gradient(circle, transparent 18%, #000 60%); animation: afxLines 2.1s linear both; }
+.afx-card { left: 0; top: 14%; z-index: 3; width: 92%; display: flex; align-items: center; gap: 3cqw; padding: 2.5cqw 5cqw 2.5cqw 3cqw;
+  background: linear-gradient(90deg, #0b1018f5 65%, #0b101800); border-left: 1.4cqw solid var(--ac); animation: afxCard 2.1s cubic-bezier(.2, 1.3, .4, 1) both; }
+.afx-face { flex: none; width: 30cqw; height: 30cqw; border-radius: 50%; background: #1a2230 center 15% / cover; box-shadow: 0 0 0 1cqw var(--ac), 0 0 6cqw var(--ac); }
+.afx-text b { display: block; font-size: 5cqw; color: var(--ac); letter-spacing: .15em; }
+.afx-text span { display: block; margin-top: 1cqw; font-size: 6.4cqw; font-weight: 900; line-height: 1.25; color: #fff; text-shadow: 0 .5cqw 0 #000, 0 0 3cqw var(--ac); }
+.afx-burst { inset: 0; opacity: 0; background: radial-gradient(circle at 50% 60%, #fff, color-mix(in srgb, var(--ac) 70%, #fff) 30%, transparent 68%); animation: afxBurst 2.1s linear both; }
+@keyframes afxDim   { 0% { opacity: 0; } 9% { opacity: 1; } 86% { opacity: 1; } 100% { opacity: 0; } }
+@keyframes afxLines { 0%, 5% { opacity: 0; transform: rotate(0) scale(1.2); } 20% { opacity: .9; } 86% { opacity: .7; } 100% { opacity: 0; transform: rotate(25deg) scale(1); } }
+@keyframes afxCard  { 0%, 7% { transform: translateX(-110%); opacity: 0; } 21% { transform: none; opacity: 1; } 86% { transform: none; opacity: 1; } 100% { transform: translateX(-30%); opacity: 0; } }
+@keyframes afxBurst { 0%, 42% { opacity: 0; } 45% { opacity: .85; } 60%, 100% { opacity: 0; } }
+@keyframes afxShake { 0%, 42% { transform: none; } 44% { transform: translate(-1.5%, 1%); } 46% { transform: translate(1.5%, -1%); } 48% { transform: translate(-1%, -.5%); } 50% { transform: translate(.8%, .6%); } 53%, 100% { transform: none; } }
+
+/* 小隼・數位駭入:青色代碼雨往下流、掃描線來回掃過、雜訊閃爍,中央跳出 SYSTEM BREACH */
+.afx-code { top: -60%; white-space: pre; font: 700 3.2cqw/1.15 var(--tech, monospace), monospace; color: var(--ac); text-shadow: 0 0 1.5cqw var(--ac);
+  opacity: 0; animation: afxCode var(--t) linear var(--d) both; }
+.afx-scan { left: 0; right: 0; top: 0; height: 10%; background: linear-gradient(180deg, transparent, color-mix(in srgb, var(--ac) 60%, transparent), transparent);
+  opacity: 0; animation: afxScan .6s linear .35s 3 both; }
+.afx-glitch { inset: 0; background: repeating-linear-gradient(180deg, #19f0ff14 0 .4cqw, transparent .4cqw 1.2cqw); opacity: 0; animation: afxGlitch 2.1s steps(1) both; }
+.afx-breach { left: 50%; top: 62%; z-index: 2; transform: translate(-50%, -50%); white-space: nowrap; font: 900 8cqw var(--tech, monospace), monospace; letter-spacing: .12em;
+  color: #e8ffff; text-shadow: -.6cqw 0 #ff2a6d, .6cqw 0 var(--ac), 0 0 4cqw var(--ac); opacity: 0; animation: afxBreach 2.1s steps(1) both; }
+@keyframes afxCode   { 0% { top: -60%; opacity: 0; } 12% { opacity: .55; } 80% { opacity: .55; } 100% { top: 105%; opacity: 0; } }
+@keyframes afxScan   { 0% { top: -10%; opacity: 1; } 100% { top: 100%; opacity: 1; } }
+@keyframes afxGlitch { 0% { opacity: 0; } 20% { opacity: 1; } 42% { opacity: 0; } 44% { opacity: 1; filter: hue-rotate(90deg); } 47% { opacity: .4; filter: none; } 50% { opacity: 1; } 86%, 100% { opacity: 0; } }
+@keyframes afxBreach { 0%, 42% { opacity: 0; } 43% { opacity: 1; transform: translate(-46%, -50%) skewX(-12deg); } 45% { transform: translate(-54%, -50%); clip-path: inset(0 0 45% 0); }
+  47% { transform: translate(-50%, -50%); clip-path: none; } 60% { transform: translate(-51%, -50%); } 61% { transform: translate(-50%, -50%); } 86% { opacity: 1; } 87%, 100% { opacity: 0; } }
+
+/* 紅綾・連環光刃:粉色光斬一道接一道劃過全畫面,最後星光四散 */
+.afx-slash { left: 50%; top: var(--y); width: 170%; height: 1.8cqw; border-radius: 99px; opacity: 0;
+  background: linear-gradient(90deg, transparent, #fff 40%, var(--ac) 60%, transparent); box-shadow: 0 0 3cqw var(--ac), 0 0 1cqw #fff;
+  transform: translate(-50%, -50%) rotate(var(--a)) scaleX(0); animation: afxSlash .4s cubic-bezier(.2, .8, .3, 1) var(--d) both; }
+.afx-star { left: 50%; top: 58%; font-size: var(--s); line-height: 1; color: #fff0f5; text-shadow: 0 0 2cqw var(--ac), 0 0 5cqw var(--ac);
+  transform: translate(-50%, -50%) scale(.2); opacity: 0; animation: afxStar .9s cubic-bezier(.1, .7, .3, 1) 1s both; }
+@keyframes afxSlash { 0% { opacity: 1; transform: translate(-50%, -50%) rotate(var(--a)) scaleX(0); } 45% { opacity: 1; transform: translate(-50%, -50%) rotate(var(--a)) scaleX(1); }
+  100% { opacity: 0; transform: translate(-50%, -50%) rotate(var(--a)) scaleX(1) scaleY(.2); } }
+@keyframes afxStar  { 0% { opacity: 1; transform: translate(-50%, -50%) scale(.2); } 70% { opacity: 1; } 100% { opacity: 0; transform: translate(calc(-50% + var(--x)), calc(-50% + var(--y))) scale(1) rotate(90deg); } }
+
+/* 雷獅・獅吼護盾:金色聲波一圈圈擴散,中央凝聚出發光的六角護盾 */
+.afx-roar { left: 50%; top: 60%; width: 40cqw; height: 40cqw; margin: -20cqw 0 0 -20cqw; border-radius: 50%; border: 1.6cqw solid var(--ac);
+  box-shadow: 0 0 4cqw var(--ac), inset 0 0 4cqw var(--ac); opacity: 0; transform: scale(.2); animation: afxRoar .9s ease-out var(--d) both; }
+.afx-shield { left: 50%; top: 60%; width: 46cqw; aspect-ratio: 1; display: grid; place-items: center; z-index: 2;
+  clip-path: polygon(50% 0, 93% 25%, 93% 75%, 50% 100%, 7% 75%, 7% 25%);
+  background: radial-gradient(circle, #fff6c8 0 18%, #ffd84a 40%, #d98a00 70%, #7a4200);
+  transform: translate(-50%, -50%) scale(0); opacity: 0; animation: afxShield 2.1s cubic-bezier(.3, 1.6, .5, 1) both; }
+.afx-shield::after { content: "獅"; font: 900 20cqw/1 serif; color: #5a3300; text-shadow: 0 .4cqw 0 #fff6c8; }
+@keyframes afxRoar   { 0% { opacity: 1; transform: scale(.2); } 100% { opacity: 0; transform: scale(4.5); } }
+@keyframes afxShield { 0%, 33% { opacity: 0; transform: translate(-50%, -50%) scale(0) rotate(-60deg); } 43% { opacity: 1; transform: translate(-50%, -50%) scale(1.1) rotate(0); }
+  50% { transform: translate(-50%, -50%) scale(1); filter: brightness(1.6); } 70% { filter: brightness(1); } 86% { opacity: 1; transform: translate(-50%, -50%) scale(1); } 100% { opacity: 0; transform: translate(-50%, -50%) scale(1.3); } }
