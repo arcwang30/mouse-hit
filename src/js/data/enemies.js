@@ -186,9 +186,14 @@ G.ENEMIES = {
 };
 // 第三章的同伴(只在劇情對話裡出場):對話的 who 可以填這裡的 id
 G.ALLIES = {
-  hayabusa: { name: '小隼', img: 'allies/hayabusa.webp', zoom: 280 }, // 反抗軍的少年駭客(zoom:對話頭像放大比例,圖的人物比較小時加大)
-  honglin:  { name: '紅綾', img: 'allies/honglin.webp', zoom: 190 },  // 被救出的女拳師
-  leishi:   { name: '雷獅', img: 'allies/leishi.webp', zoom: 280 },   // 覺醒後的鐵籠拳霸
+  // faces:對話時依台詞情緒換的表情頭像(正常、怒、哀、樂;台詞用 'honglin:sad' 這樣指定);faceSize / facePos:頭像框裡的縮放與位置
+  // img / zoom:圖鑑等其他地方用的立繪
+  hayabusa: { name: '小隼', img: 'allies/hayabusa.webp', zoom: 280, faceSize: 'auto 125%', facePos: 'center 12%', // 反抗軍的少年駭客
+    faces: { normal: 'allies/hayabusa_normal.webp', angry: 'allies/hayabusa_angry.webp', sad: 'allies/hayabusa_sad.webp', happy: 'allies/hayabusa_happy.webp' } },
+  honglin:  { name: '紅綾', img: 'allies/honglin.webp', zoom: 190, faceSize: '112% auto', facePos: 'center 18%', // 被救出的女拳師
+    faces: { normal: 'allies/honglin_normal.webp', angry: 'allies/honglin_angry.webp', sad: 'allies/honglin_sad.webp', happy: 'allies/honglin_happy.webp' } },
+  leishi:   { name: '雷獅', img: 'allies/leishi.webp', zoom: 280, faceSize: 'auto 125%', facePos: 'center 10%', // 從洗腦中清醒的拳王(鐵籠拳霸)
+    faces: { normal: 'allies/leishi_normal.webp', angry: 'allies/leishi_angry.webp', sad: 'allies/leishi_sad.webp', happy: 'allies/leishi_happy.webp' } },
 };
 // 寶箱怪:神秘寶箱事件才會出現的敵人(不在關卡裡,所以不放進 G.ENEMIES);強度跟著當下的關卡與波次
 G.MIMIC = { name: '寶箱怪', icon: '🧰', img: 'enemies/mimic.webp', shot: '💰', hp: 90, atk: 11, atkCount: 6, guardLife: 950 };

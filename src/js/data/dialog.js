@@ -5,11 +5,11 @@ const SCRIPT_1 = [
   { // 1 山腳小鎮
     intro: [
       ['narrator', '下山後的第一座城鎮。街頭巷尾,都在傳一個名字——鋼拳帝王。'],
-      ['hero', '師父倒下時,手裡握著一枚刻著拳印的徽章……就從這裡開始查。'],
+      ['hero:sad', '師父倒下時,手裡握著一枚刻著拳印的徽章……就從這裡開始查。'],
     ],
     boss: [
       ['fatKing', '呵呵呵,小鬼,這條街歸我管!那枚徽章?那可是「帝王軍」的貨!'],
-      ['hero', '帝王軍……把你知道的,全部吐出來!'],
+      ['hero:angry', '帝王軍……把你知道的,全部吐出來!'],
     ],
     clear: [
       ['narrator', '胖子魔王招了:帝王軍的據點,就在市中心的鋼鐵指揮塔。'],
@@ -22,21 +22,21 @@ const SCRIPT_1 = [
     ],
     boss: [
       ['mechGeneral', '確認入侵者。啟動飽和轟炸,將目標從地圖上抹除。'],
-      ['hero', '神拳門的拳,不怕你的炸彈!'],
+      ['hero:angry', '神拳門的拳,不怕你的炸彈!'],
     ],
     clear: [
       ['narrator', '將軍的殘骸裡留著一道指令:「把武鬥家送進熔爐,改造成鋼鐵戰士。」'],
-      ['hero', '他們在把人改造成兵器……!'],
+      ['hero:angry', '他們在把人改造成兵器……!'],
     ],
   },
   { // 3 鋼鐵熔爐
     intro: [
       ['narrator', '火光沖天的煉鋼廠。被改造的戰士們,眼神空洞地列隊前進。'],
-      ['hero', '這些人……原本也都是習武之人。'],
+      ['hero:sad', '這些人……原本也都是習武之人。'],
     ],
     boss: [
       ['forgeMaster', '好材料!用你的骨頭,能打出最強的鋼拳!'],
-      ['hero', '我的拳頭,只為砸碎你們而鍛!'],
+      ['hero:angry', '我的拳頭,只為砸碎你們而鍛!'],
     ],
     clear: [
       ['narrator', '巨匠倒下前吐露了秘密:帝王軍的武學,源自雪嶺古寺的禁忌秘卷。'],
@@ -45,11 +45,11 @@ const SCRIPT_1 = [
   { // 4 雪嶺古寺
     intro: [
       ['narrator', '終年積雪的古寺。這裡曾是神拳門的分院,如今只剩寒風呼嘯。'],
-      ['hero', '師父年輕時……也在這裡修行過。'],
+      ['hero:sad', '師父年輕時……也在這裡修行過。'],
     ],
     boss: [
       ['snowWitch', '雷震天的弟子?呵……他當年從這裡帶走的,可不只是武學。'],
-      ['hero', '什麼意思?給我說清楚!'],
+      ['hero:angry', '什麼意思?給我說清楚!'],
     ],
     clear: [
       ['snowWitch', '……殺死你師父的人,曾是他的師兄弟。去霓虹夜城找千面傀儡師吧。'],
@@ -63,21 +63,21 @@ const SCRIPT_1 = [
     ],
     boss: [
       ['puppetLord', '歡迎來到最後一幕。今晚的主角,是被命運操弄的你。'],
-      ['hero', '我的命運,由我的拳頭決定!'],
+      ['hero:angry', '我的命運,由我的拳頭決定!'],
     ],
     clear: [
       ['puppetLord', '帝王……「暗曜」大人就在天空要塞。他曾是神拳門最強的弟子,也是你師父的師兄。'],
-      ['hero', '暗曜……我一定會打倒你,替師父報仇!'],
+      ['hero:angry', '暗曜……我一定會打倒你,替師父報仇!'],
     ],
   },
   { // 6 天空要塞
     intro: [
       ['narrator', '雲海之上的浮空城。鋼拳帝王・暗曜,就在雲端的最頂點。'],
-      ['hero', '師父,請看著我。這一拳,為您而揮!'],
+      ['hero:sad', '師父,請看著我。這一拳,為您而揮!'],
     ],
     boss: [
       ['steelEmperor', '雷震天到死都不肯交出神拳門的終極絕學。那就由你來交出來吧!'],
-      ['hero', '想要絕學?我現在就讓你親身體會!'],
+      ['hero:angry', '想要絕學?我現在就讓你親身體會!'],
     ],
     clear: [],
   },
@@ -89,7 +89,7 @@ const SCRIPT_2 = [
   { // 1 流沙邊境
     intro: [
       ['narrator', '大仇已報,心卻空了一塊。炎鋼離開新神州,踏進傳說中科技無法干擾的極境——絕魔流沙。'],
-      ['hero', '師父……復仇之後,我該為了什麼而揮拳?'],
+      ['hero:sad', '師父……復仇之後,我該為了什麼而揮拳?'],
     ],
     boss: [
       ['sandKing', '哈!又一個想穿越流沙的傻子。在這片沙漠,太陽就是王法——而我,就是烈日!'],
@@ -116,11 +116,11 @@ const SCRIPT_2 = [
   { // 3 沙海遺跡
     intro: [
       ['narrator', '神殿的壁畫上,古代武者以拳引火、以身化光。神拳門的武學,原來源自這片沙漠。'],
-      ['hero', '師父說過,神拳門的源頭早已失傳……原來在這裡。'],
+      ['hero:happy', '師父說過,神拳門的源頭早已失傳……原來在這裡。'],
     ],
     boss: [
       ['colossus', '……來者……何人……欲取源流……先過……吾拳……'],
-      ['hero', '我是神拳門的炎鋼!請受我一拳!'],
+      ['hero:angry', '我是神拳門的炎鋼!請受我一拳!'],
     ],
     clear: [
       ['narrator', '巨像崩落,胸口的核心化作光點,飛向西方的綠洲。'],
@@ -146,7 +146,7 @@ const SCRIPT_2 = [
     ],
     boss: [
       ['sectGuardian', '外人止步!想見宗主,先接下我這雙粒子金剛拳!'],
-      ['hero', '我的火焰,不會輸給你的光!'],
+      ['hero:angry', '我的火焰,不會輸給你的光!'],
     ],
     clear: [
       ['sectGuardian', '……你的火,和古書記載的「天道之焰」一模一樣。宗主在風暴之眼等你。'],
@@ -155,11 +155,11 @@ const SCRIPT_2 = [
   { // 6 風暴之眼
     intro: [
       ['narrator', '風暴的中心,一片死寂。古老的祭壇上,日月雙輪緩緩轉動。'],
-      ['hero', '師父,我終於明白了。復仇,從來不是終點……'],
+      ['hero:sad', '師父,我終於明白了。復仇,從來不是終點……'],
     ],
     boss: [
       ['sectMaster', '炎鋼。你帶著仇恨而來,帶著迷惘而行。最後一問——你的拳,為誰而揮?'],
-      ['hero', '為了守護,為了傳承!這就是我的答案!'],
+      ['hero:happy', '為了守護,為了傳承!這就是我的答案!'],
     ],
     clear: [],
   },
@@ -170,15 +170,15 @@ const SCRIPT_3 = [
     intro: [
       ['narrator', '一枚來自大洋彼岸的匿名加密晶片。殘存的影像揭開了真相——資助殺師仇人的,只是「天幕議會」的一個小小分部。'],
       ['narrator', '議會正在全球核心都市佈置「武魂剝離裝置」,要把古武傳人的氣血與意志抽乾,化為機械軍隊的能源。'],
-      ['hero', '那些被囚禁的武者……我不會讓你們等太久。這一次,我要砸碎整片天幕!'],
+      ['hero:angry', '那些被囚禁的武者……我不會讓你們等太久。這一次,我要砸碎整片天幕!'],
     ],
     boss: [
       ['hookCaptain', '嘎哈哈!議會懸賞的小子就是你?把你這身武魂裝箱賣了,夠我喝上一輩子!'],
-      ['hero', '你的船,今天就沉在這座港口。'],
+      ['hero:angry', '你的船,今天就沉在這座港口。'],
     ],
     clear: [
-      ['hayabusa', '嘿!打得漂亮!我叫小隼,反抗軍的駭客。這艘船的航海日誌我破解了——下一批「貨」在橫貫列車上。'],
-      ['hero', '「貨」……是被抓走的武者吧。小隼,帶路!'],
+      ['hayabusa:happy', '嘿!打得漂亮!我叫小隼,反抗軍的駭客。這艘船的航海日誌我破解了——下一批「貨」在橫貫列車上。'],
+      ['hero:angry', '「貨」……是被抓走的武者吧。小隼,帶路!'],
     ],
   },
   { // 2 橫貫列車
@@ -188,21 +188,21 @@ const SCRIPT_3 = [
     ],
     boss: [
       ['railHunter', '偵測到違規乘客。本列車不設停靠站——你的終點,就是這裡。'],
-      ['hero', '那我就在這裡,讓你的列車停下來!'],
+      ['hero:angry', '那我就在這裡,讓你的列車停下來!'],
     ],
     clear: [
-      ['honglin', '謝謝你……我叫紅綾。他們把我師兄帶去了雨林裡的工廠,說要「抽取武魂」。'],
-      ['hero', '紅綾,一起去吧。妳的師兄,我們一起救!'],
+      ['honglin:sad', '謝謝你……我叫紅綾。他們把我師兄帶去了雨林裡的工廠,說要「抽取武魂」。'],
+      ['hero:happy', '紅綾,一起去吧。妳的師兄,我們一起救!'],
     ],
   },
   { // 3 雨林基因廠
     intro: [
       ['narrator', '濕熱的雨林深處,培養槽發出幽綠的光。槽裡漂浮的,全是被抽乾氣血的武者。'],
-      ['honglin', '師兄……!炎鋼,求你,把這座工廠砸了!'],
+      ['honglin:sad', '師兄……!炎鋼,求你,把這座工廠砸了!'],
     ],
     boss: [
       ['geneDoctor', '美妙!古武的氣血,加上我的基因藥劑——完美的生化兵器就要誕生了!'],
-      ['hero', '拿人命做實驗的傢伙,沒資格談「完美」!'],
+      ['hero:angry', '拿人命做實驗的傢伙,沒資格談「完美」!'],
     ],
     clear: [
       ['narrator', '博士的終端機上,列著被送往地下拳場的「優良素材」名單。第一個名字被打上了紅圈——鐵籠拳霸。'],
@@ -212,15 +212,15 @@ const SCRIPT_3 = [
   { // 4 地下鐵籠拳場
     intro: [
       ['narrator', '震耳欲聾的歡呼聲中,套著控制頸環的武者們在鐵籠裡互相殘殺。'],
-      ['hero', '他們不是野獸……是被奪走意志的武者!'],
+      ['hero:sad', '他們不是野獸……是被奪走意志的武者!'],
     ],
     boss: [
       ['cageChampion', '…………目標……排除……(頸環閃著紅光)'],
-      ['hero', '醒過來!你的拳頭,不是拿來娛樂這些人的!'],
+      ['hero:angry', '醒過來!你的拳頭,不是拿來娛樂這些人的!'],
     ],
     clear: [
-      ['leishi', '……頭好痛。是你的拳,把我從那片黑暗裡打醒的。我叫雷獅——這條命,借你用!'],
-      ['hero', '不是借。是一起——把天幕砸碎!'],
+      ['leishi:sad', '……頭好痛。是你的拳,把我從那片黑暗裡打醒的。我叫雷獅——這條命,借你用!'],
+      ['hero:happy', '不是借。是一起——把天幕砸碎!'],
     ],
   },
   { // 5 天幕都市
@@ -231,11 +231,11 @@ const SCRIPT_3 = [
     ],
     boss: [
       ['executor', '議會的意志即是秩序。違逆者,當場處決。'],
-      ['hero', '用恐懼換來的秩序,我一拳打碎!'],
+      ['hero:angry', '用恐懼換來的秩序,我一拳打碎!'],
     ],
     clear: [
-      ['leishi', '剝離塔的入口打開了!小隼、紅綾,還有被救出來的武者們,全都跟在後面!'],
-      ['hero', '大家的星火……我收到了。'],
+      ['leishi:happy', '剝離塔的入口打開了!小隼、紅綾,還有被救出來的武者們,全都跟在後面!'],
+      ['hero:happy', '大家的星火……我收到了。'],
     ],
   },
   { // 6 武魂剝離塔
@@ -245,27 +245,27 @@ const SCRIPT_3 = [
     ],
     boss: [
       ['skyChairman', '渺小的個體。你們的武魂,將在我體內獲得永恆——這就是進化。'],
-      ['hero', '武魂不是燃料!它是傳承——是燎原的星火!'],
+      ['hero:angry', '武魂不是燃料!它是傳承——是燎原的星火!'],
     ],
     clear: [
       ['narrator', '剝離塔轟然倒塌,天幕從中裂開。被奪走的武魂化作滿天星火,飛回了世界各地的武者身上。'],
-      ['honglin', '師兄醒過來了……大家都回來了!'],
-      ['hero', '星火,已經燎原。只要還有人需要,我的拳頭就不會停下。'],
+      ['honglin:happy', '師兄醒過來了……大家都回來了!'],
+      ['hero:happy', '星火,已經燎原。只要還有人需要,我的拳頭就不會停下。'],
     ],
   },
 ];
-// 第二章結局:覺醒「炎鋼天道」
+// 第二章結局:打倒最終 BOSS 後修得新必殺技「炎鋼天道」(無相宗主傳授的護身心法)
 const AWAKEN = [
-  ['sectMaster', '好……鋼鐵的意志,不滅的烈焰。古武的源流,就交給你了。'],
-  ['narrator', '額上的烙痕燃起金色的火焰。神拳門至高拳法與體內的烈火異能,在這一刻徹底熔煉為一。'],
-  ['heroAwake', '這股力量,不是為了毀滅,而是為了守護。這就是——炎鋼天道!'],
-  ['system', '習得新必殺技「炎鋼天道」\n發動時回復 35% HP,之後 2 回合傷害減半\n出擊前可以選擇要帶的必殺技', '🔥 覺醒'],
+  ['sectMaster', '好……鋼鐵的意志,不滅的烈焰。這最後一式「天道」,就傳授給你了。'],
+  ['narrator', '無相宗主將天沙宗的護身心法傳給炎鋼。一股溫和的翠綠氣流,在他的掌心緩緩成形。'],
+  ['hero:happy', '這一招不是為了打倒誰,而是為了守住身邊的人。炎鋼天道——我記住了!'],
+  ['system', '修得新必殺技「炎鋼天道」\n發動時回復 35% HP,之後 2 回合傷害減半\n出擊前可以選擇要帶的必殺技', '📜 新必殺技'],
 ];
-// 第三章結局:必殺技進化為「星火燎原拳」(炎鋼用第三章的新戰袍頭像)
+// 第三章結局:打倒最終 BOSS 後修得新必殺技「星火燎原拳」
 const AWAKEN_3 = [
   ['narrator', '崩落的天幕之下,被解放的武魂化作點點星火,一齊匯聚到炎鋼的拳上。'],
-  ['hero', '這不只是我一個人的力量……是所有人的星火!這就是——星火燎原拳!'],
-  ['system', '習得新必殺技「星火燎原拳」\n清除機制格、打斷敵人的必殺技\n出擊前可以選擇要帶的必殺技', '🔥 覺醒'],
+  ['hero:happy', '這是大家託付給我的星火……這一拳,就叫——星火燎原拳!'],
+  ['system', '修得新必殺技「星火燎原拳」\n清除機制格、打斷敵人的必殺技\n出擊前可以選擇要帶的必殺技', '📜 新必殺技'],
 ];
 const SCRIPTS = { 1: SCRIPT_1, 2: SCRIPT_2, 3: SCRIPT_3 };
 G.dialog = {
@@ -276,16 +276,21 @@ G.dialog = {
       const el = G.$('#dialog'), face = G.$('#dlgFace'), name = G.$('#dlgName'), text = G.$('#dlgText');
       let i = -1;
       const show = () => {
-        const [who, line, extra] = lines[i];
-        // heroAwake:第二章結尾覺醒後的炎鋼(立繪到了以前先用原本的頭像)
+        const [speaker, line, extra] = lines[i];
+        // 主角和同伴依台詞情緒換表情:'hero'(正常)/ 'hero:angry' 怒 / 'hero:sad' 哀 / 'hero:happy' 樂;同伴同理('honglin:sad')
+        // heroAwake:「炎鋼・天道」頭像(目前的對話沒有用到,保留給之後的劇情)
+        const [who, mood = 'normal'] = speaker.split(':');
         const awake = who === 'heroAwake', hero = who === 'hero' || awake, nar = who === 'narrator', sys = who === 'system';
         const ally = (G.ALLIES || {})[who], e = G.ENEMIES[who] || ally; // 同伴和敵人一樣用立繪與名字
-        const img = awake ? (G.HERO_AWAKE_IMG || 'fx/credit_hero.png') : hero ? G.heroImg() : e && e.img;
+        const allyFace = ally && ally.faces && (ally.faces[mood] || ally.faces.normal);
+        const img = awake ? (G.HERO_AWAKE_IMG || 'fx/credit_hero.png') : hero ? G.HERO_FACES[mood] || G.HERO_FACES.normal : allyFace || (e && e.img);
         // 樣式名稱一律加 dlg- 前綴(避免和戰鬥畫面的 .enemy 等樣式撞名)
         el.className = 'dialog show' + (awake ? ' dlg-hero dlg-awake' : hero ? ' dlg-hero' : nar ? ' dlg-narrator' : sys ? ' dlg-system' : ally ? ' dlg-enemy dlg-ally' : ' dlg-enemy');
         face.style.backgroundImage = img ? `url('../assets/images/${img}')` : '';
         face.textContent = !img && e ? e.icon : ''; // 立繪還沒到的角色先用 emoji
-        face.style.backgroundSize = ally && ally.zoom ? ally.zoom + '% auto' : ''; // 同伴的頭像依圖片調整放大比例
+        // 同伴的頭像依圖片調整縮放與位置(表情圖用 faceSize / facePos,舊立繪用 zoom)
+        face.style.backgroundSize = allyFace ? ally.faceSize || '' : ally && ally.zoom ? ally.zoom + '% auto' : '';
+        face.style.backgroundPosition = allyFace ? ally.facePos || '' : '';
         name.textContent = awake ? G.t('炎鋼・天道') : hero ? G.t('炎鋼') : nar ? '' : sys ? G.t(extra || '') : e ? G.t(e.name) : '';
         text.textContent = G.t(line);
         G.audio.play('tap');
@@ -319,7 +324,7 @@ G.dialog = {
   script(r) { return (SCRIPTS[G.chapter()] || [])[r] || {}; },
   region(stage) { return this.once('r' + G.regionKey(stage.region), this.script(stage.region).intro || []); },
   boss(stage) { return this.once('b' + G.regionKey(stage.region), this.script(stage.region).boss || []); },
-  // 第二章結局:覺醒對話(只播一次)
+  // 第二章結局:修得新必殺技的對話(只播一次)
   awaken() { return this.once('awaken2', AWAKEN); },
   awaken3() { return this.once('awaken3', AWAKEN_3); }, // 第三章結局:星火燎原拳
   // 通關:對話 + 新招式解鎖說明

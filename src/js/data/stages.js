@@ -404,18 +404,18 @@ G.diceHtml = n => '<span class="die">' + [...Array(9).keys()].map(k => `<i${DICE
 // 區域在存檔裡的代號(通關紀錄、對話是否看過):第一章沿用舊的數字,之後的章節加上章節編號
 G.regionKey = (r, ch = G.chapter()) => ch === 1 ? String(r) : `${ch}-${r}`;
 // 第二章的美術:到了之後填上路徑(assets/images/ 底下),沒有的話沿用原本的圖
-G.HERO_AWAKE_IMG = 'fx/hero_awake.jpg'; // 炎鋼・天道覺醒立繪
+G.HERO_AWAKE_IMG = 'fx/hero_awake.jpg'; // 炎鋼・天道立繪(圖鑑)
 G.TIANDAO_ART = 'fx/ult_tiandao.webp';  // 新必殺技「炎鋼天道」過場圖
 G.SPARK_ART = 'fx/ult_spark.jpg';       // 第三章破關後的新必殺技「星火燎原拳」過場圖(右下浮水印在過場畫面外)
 // 必殺技:破關解鎖後,在出擊前的關卡資訊裡選要帶哪一招(記在 sv.ultPick;沒選過 = 最新解鎖的);教學一律用烈焰鋼拳
 // 三招各有定位(效果在 G.battle.ultimate 裡結算):
 //   base    爆發:威力最高,必定破甲(下一回合每拳 +35%)而且破綻量表直接集滿
-//   tiandao 守護:回復 heal 比例的 HP,之後 guard 次敵人攻擊受到的傷害減半(發動在防禦回合時,當下這回合也算)
+//   tiandao 守護:不攻擊(mul 0),回復 heal 比例的 HP,之後 guard 次敵人攻擊受到的傷害減半(發動在防禦回合時,當下這回合也算)
 //   spark   燎原:清除九宮格上所有敵方機制格(接下來 calm 個階段不再出現)、打斷敵人下一次必殺技、回收 refund 比例的必殺值
 G.ULTS = [
   { id: 'base',    name: '烈焰鋼拳・焚天', art: 'fx/ult_cutin_fist.webp', mul: 1.8, own: () => true,
     desc: '威力 ×1.8・必定破甲' },
-  { id: 'tiandao', name: '炎鋼天道・焚天', art: G.TIANDAO_ART, mul: 1, heal: 0.35, guard: 2, own: sv => !!sv.tiandao, // 第二章破關
+  { id: 'tiandao', name: '炎鋼天道・焚天', art: G.TIANDAO_ART, mul: 0, heal: 0.35, guard: 2, own: sv => !!sv.tiandao, // 第二章破關
     desc: '回復 35%・2 回合傷害減半' },
   { id: 'spark',   name: '星火燎原拳', art: G.SPARK_ART, mul: 1.3, calm: 2, refund: 0.3, own: sv => !!sv.spark,      // 第三章破關
     desc: '威力 ×1.3・清除機制格・打斷敵方必殺' },
@@ -426,6 +426,8 @@ G.ultNow = () => {
   const own = G.ultsOwned();
   return own.find(u => u.id === G.save.data.ultPick) || own[own.length - 1];
 };
-// 第三章換上融合科技防護與古武勁裝的新戰袍:對話頭像、地圖上站著的炎鋼都用這張
+// 第三章的新戰袍立繪(只用在圖鑑;地圖上的炎鋼不分章節都用原本的圖)
 G.HERO_SPARK_IMG = 'fx/hero_spark.webp';
-G.heroImg = () => G.chapter() >= 3 ? G.HERO_SPARK_IMG : 'fx/credit_hero.png';
+// 對話時主角的表情頭像(正常、怒、哀、樂),每句台詞在 dialog.js 用 'hero:angry' 這樣指定
+G.HERO_FACES = { normal: 'fx/hero_normal.webp', angry: 'fx/hero_angry.webp', sad: 'fx/hero_sad.webp', happy: 'fx/hero_happy.webp' };
+G.heroImg = () => 'fx/credit_hero.png'; // 地圖上站著的炎鋼:不分章節都用原本的圖

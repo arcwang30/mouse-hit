@@ -1070,7 +1070,8 @@ G.battle = {
     // 這場帶的必殺技(出擊前選的,見 G.ULTS):烈焰鋼拳 爆發 / 炎鋼天道 守護 / 星火燎原拳 燎原
     const u = G.ultNow(), lv = u.id === 'base' ? null : u.id;
     await this.cutIn(lv, wait);
-    if (u.heal) this.healPlayer(Math.round(p.maxHp * u.heal));
+    if (u.id === 'tiandao') await this.healAura(Math.round(p.maxHp * u.heal), wait); // 天道:綠色回復光芒包住炎鋼
+    else if (u.heal) this.healPlayer(Math.round(p.maxHp * u.heal));
     if (u.guard) { // 護體:之後幾次敵人攻擊傷害減半
       this.ultGuard = u.guard;
       G.$('#battle').classList.add('ult-guard');
@@ -1082,7 +1083,7 @@ G.battle = {
       this.boardCalm = u.calm;
       if (this.e && this.e.skill) { this.e.skillBroken = true; this.float('打斷敵方必殺!', 'tag armor'); }
     }
-    await this.barrage(Math.round(p.atk * p.ultMult * u.mul), wait);
+    if (u.mul > 0) await this.barrage(Math.round(p.atk * p.ultMult * u.mul), wait); // 天道(mul 0)是純守護之技,不攻擊
     if (u.id === 'base' && !this.over()) { // 爆發:必定破甲,破綻量表直接集滿
       this.brokenNext = true;
       this.float(G.t('破甲!下回合每拳 +{0}%', BROKEN_BONUS * 100), 'tag armor');
@@ -1143,9 +1144,9 @@ G.battle = {
     const el = G.$('#cutin');
     const ULT = {
       spark:   { name: '星火燎原拳', sub: '億萬星火,燎盡天幕!', art: G.SPARK_ART },
-      tiandao: { name: '炎鋼天道・焚天', sub: '鋼鐵意志與不滅烈焰,合而為一!', art: G.TIANDAO_ART },
+      tiandao: { name: '炎鋼天道・焚天', sub: '翠風護身,生生不息!', art: G.TIANDAO_ART },
     }[lv] || { name: '烈焰鋼拳・焚天', sub: '額上烈焰烙痕,燃盡一切!', art: null };
-    el.classList.toggle('tiandao', !!lv); // 天道與星火共用金色火焰的底
+    el.classList.toggle('tiandao', lv === 'tiandao'); // 天道:綠色回復系配色(星火有自己的一套)
     el.classList.toggle('spark', lv === 'spark');
     el.classList.toggle('has-art', !!ULT.art);
     el.querySelector('.cutin-title').textContent = G.t(ULT.name);
@@ -1162,10 +1163,27 @@ G.battle = {
     el.classList.add('show');
     G.audio.play('cutin');
     G.voice.say('hero', 'hero_ult', ULT.name); // 喊招
-    wait(450).then(() => G.audio.play('boom')); // 命中瞬間
+    wait(450).then(() => G.audio.play(lv === 'tiandao' ? 'tornado' : 'boom')); // 命中瞬間(天道是一陣風)
     G.haptic.buzz([0, 450, 80]);
     await wait(1700);
     el.classList.remove('show');
+  },
+
+  // 炎鋼天道的回復演出:綠色光芒從腳下湧起、光點往上飄(風聲 + 回復音),光芒最亮時補血、HP 條亮綠光
+  async healAura(n, wait = ms => G.clock.wait(ms)) {
+    const view = G.$('#battle'), fx = document.createElement('div');
+    fx.className = 'fx-heal';
+    fx.innerHTML = '<b></b>' + Array.from({ length: 22 }, () =>
+      `<i style="left:${(5 + Math.random() * 90).toFixed(1)}%;--d:${(Math.random() * 0.7).toFixed(2)}s;--s:${(0.6 + Math.random() * 0.9).toFixed(2)}"></i>`).join('');
+    view.appendChild(fx);
+    G.audio.play('healWind');
+    await wait(450);
+    this.healPlayer(n);
+    view.classList.add('heal-flash');
+    await wait(900);
+    fx.classList.add('out');
+    view.classList.remove('heal-flash');
+    setTimeout(() => fx.remove(), 450);
   },
 
   // 必殺技後的百烈拳:36 拳連打分段造成約 60% 傷害,最後一擊打出其餘傷害
@@ -2133,7 +2151,7 @@ G.battle = {
     if (finalWin) {
       if (ch === 1) sv.cleared = true; // 第一章破關:主選單「故事」可重看結局
       if (round === cd.roundMax && round < G.ROUND_LAST) cd.roundMax = round + 1; // 這一章開啟下一輪(天魔另外要看修羅的星數)
-      if (ch === 2 && round === 1 && !sv.tiandao) { tiandao = sv.tiandao = true; sv.ultPick = 'tiandao'; } // 第二章破關:覺醒新必殺技「炎鋼天道」(直接換上)
+      if (ch === 2 && round === 1 && !sv.tiandao) { tiandao = sv.tiandao = true; sv.ultPick = 'tiandao'; } // 第二章破關:修得新必殺技「炎鋼天道」(直接換上)
       if (ch === 3 && round === 1) sv.ch3Clear = true; // 第三章破關(成就用)
       if (ch === 3 && round === 1 && !sv.spark) { spark = sv.spark = true; sv.ultPick = 'spark'; } // 第三章破關:新必殺技「星火燎原拳」(直接換上)
     }
@@ -2156,8 +2174,8 @@ G.battle = {
     // 區域通關:結算畫面出來後接著播通關對話與新招式解鎖(第一章最終區域由結局漫畫收尾)
     const lastRegion = this.regionCleared === G.REGIONS.length - 1;
     if (this.regionCleared >= 0 && !(lastRegion && ch === 1)) { const r = this.regionCleared; setTimeout(() => G.dialog.cleared(r), 900); }
-    if (tiandao) setTimeout(() => G.dialog.awaken(), 900); // 第二章結局:覺醒對話
-    if (spark) setTimeout(() => G.dialog.awaken3(), 900); // 第三章結局:星火燎原拳覺醒對話
+    if (tiandao) setTimeout(() => G.dialog.awaken(), 900); // 第二章結局:修得新必殺技的對話
+    if (spark) setTimeout(() => G.dialog.awaken3(), 900); // 第三章結局:修得星火燎原拳的對話
     G.ach.check(s, win); // 結算畫面上跳出這場達成的成就
   },
 };
