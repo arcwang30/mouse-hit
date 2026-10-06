@@ -694,7 +694,6 @@ html:lang(en) .stage-bar .ch-tab b { font-size: 2.6cqw; }
 #stages .stage-card.tut-card { padding: 2.2cqw 4cqw; }
 #stages .tut-card .sc-name { font-size: 4cqw; }
 #stages .tut-card .sc-desc { display: none; }
-#stages .tut-card .sc-clear { top: 50%; transform: translateY(-50%); }
 /* 天魔:封印格(這一回合不會冒符號;點了算點空格,會反噬)——暗紫鎖鏈罩住整格 */
 .blk.seal {
   display: grid; place-items: center; position: absolute; inset: 6%; z-index: 2; border-radius: 1.8cqw; pointer-events: none;
@@ -745,3 +744,10 @@ html:lang(en) .stage-bar .ch-tab b { font-size: 2.6cqw; }
 .cell:has(.blk.shock) { box-shadow: 0 0 0 .5cqw #5a7a90; }
 .cell:has(.blk.shock.live) { box-shadow: 0 0 0 .6cqw #bff7ff, 0 0 5cqw #4ad0ff; }
 #grid.numbering .blk.shock { display: none; }
+/* 新手教學完成後:選擇關卡右上角的小型橫式按鈕(不佔地圖版面,各章節、輪次的地圖位置一致) */
+#stages .pg-head { position: relative; }
+.tut-pill { position: absolute; right: 3cqw; top: 2.2cqw; padding: .9cqw 2.6cqw; border: 0; border-radius: 99px; cursor: pointer;
+  font-family: inherit; font-size: 2.8cqw; font-weight: 700; line-height: 1.2; color: #fff; white-space: nowrap; background: linear-gradient(90deg, #13304a, #0a1a28);
+  box-shadow: inset 0 0 0 .35cqw var(--neon-y), 0 0 2cqw #ffd40040; }
+.tut-pill:hover { box-shadow: inset 0 0 0 .4cqw var(--neon-y), 0 0 3cqw #ffd40080; }
+.tut-pill[hidden] { display: none; }

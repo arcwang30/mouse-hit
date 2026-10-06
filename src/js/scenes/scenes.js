@@ -375,9 +375,13 @@ G.scenes = {
       return `<button class="ch-tab${G.chapter() === k + 1 ? ' on' : ''}${open ? '' : ' locked'}" data-ch="${k + 1}">` +
         `<b>${open ? '' : '🔒 '}${G.t(c.short)}</b><small>${G.t(c.title)}</small></button>`;
     }).join('') + '</div>';
-    // 新手教學卡片:只在第一輪最上面
-    const tut = round !== 1 || G.chapter() !== 1 ? '' : `<button class="stage-card tut-card" id="tutCard">${sv.tutorialClear ? '<span class="sc-clear">CLEAR</span>' : ''}` +
+    // 新手教學:還沒完成前是第一輪第一章最上面的卡片;完成後改成選擇關卡右上角的小按鈕(每個章節、輪次都有,不佔版面,各章地圖才會對齊)
+    const tut = sv.tutorialClear || round !== 1 || G.chapter() !== 1 ? '' : `<button class="stage-card tut-card" id="tutCard">` +
       `<div class="sc-name">🎓 ${G.t('新手教學')}</div><div class="sc-desc">${G.t('從頭學會點擊、防禦、破綻與必殺技。')}</div></button>`;
+    const head = G.$('#stages .pg-head');
+    let pill = head.querySelector('.tut-pill');
+    if (sv.tutorialClear && !pill) { pill = document.createElement('button'); pill.className = 'tut-pill'; head.appendChild(pill); }
+    if (pill) { pill.hidden = !sv.tutorialClear; pill.textContent = '🎓 ' + G.t('新手教學'); pill.onclick = () => { G.pages.current = null; G.tutorial.run(true); }; }
     // 大地圖:6 個區域左右翻頁,每區 5 個關卡節點用蜿蜒的路線連起來;目前要打的關卡上站著炎鋼
     const cur = Math.min(pr.unlocked, G.STAGES.length) - 1;
     const url = img => new URL('../assets/images/' + img, location.href).href; // CSS 變數裡的 url() 要完整網址
