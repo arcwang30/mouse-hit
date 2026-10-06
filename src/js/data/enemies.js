@@ -276,7 +276,7 @@ G.MECHS = {
   hollowFighter:  { hint: '空殼:電網格通電時別碰,錨鏈、追蹤、蜃樓輪番上陣', board: 'shock',
     rotate: [{ atk: { anchor: 0.35 }, def: { track: 0.35 } }, { def: { heavy: { chance: 0.3, holdMs: 420 }, armor: 0.3 } }, { atk: { hidden: 0.4 }, def: { mirror: 0.35 } }] },
   hookCaptain:    { hint: '船長:被錨鏈連住的兩顆要接連點掉,重擊要頂住', atk: { anchor: 0.45 }, def: { anchor: 0.45, heavy: { chance: 0.3, holdMs: 420 } } },
-  railHunter:     { hint: '獵手:龍捲風格上的符號轉眼就被吸走,準星鎖定、九宮格會轉', board: 'tornado', atk: { blink: 0.3 }, def: { lockon: 400, spin: true } },
+  railHunter:     { hint: '獵手:龍捲風格上的拳頭轉眼就被吸走,準星鎖定、九宮格會轉', board: 'tornado', atk: { blink: 0.3 }, def: { lockon: 400, spin: true } },
   geneDoctor:     { hint: '博士:拳頭裡混著 🧪,觸手蓋住的格子要敲 3 下', board: 'tentacle', atk: { bomb: 0.3, bombIcon: '🧪' }, def: { armor: 0.3 } },
   cageChampion:   { hint: '拳霸:鐵籠通了電,電網格通電時別碰;大量「頂住」重拳', board: 'shock', def: { heavy: { chance: 0.45, holdMs: 450 }, armor: 0.3 } },
   executor:       { hint: '執行官:追蹤標靶、鎖定、蜃樓、倒數炸彈輪番上陣',

@@ -3,7 +3,7 @@
 // - CSS / JS(網址帶 ?v= 版本號):快取優先;版本一換,舊版的快取整個刪掉
 // - 圖片 / 聲音(assets/):先用快取、背景再更新(stale-while-revalidate),
 //   不會每次改版都重新下載十幾 MB 的圖,改過的圖下次開啟就會換新
-const VERSION = '202610062242'; // 由 tools/bump-version.sh 在每次 commit 時自動更新
+const VERSION = '202610062346'; // 由 tools/bump-version.sh 在每次 commit 時自動更新
 const CODE = 'gangquan-code-' + VERSION;
 const ASSETS = 'gangquan-assets';
 const SHELL = ['./index.html', './manifest.webmanifest'];

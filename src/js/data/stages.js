@@ -221,7 +221,7 @@ const BGS_2 = {
 const REGIONS_2 = [
   { name: '流沙邊境', desc: '荒漠邊緣的廢棄科技前哨站。拾荒者與沙盜盤據,腳下的流沙會吞噬一切。', boss: 'sandKing', unlock: ['sand'], stars: 3 },
   { name: '磁暴荒原', desc: '電磁風暴肆虐的荒原,所有機械都會失靈。額上的烙痕第一次產生了共鳴。', boss: 'stormLord', unlock: ['spin', 'blink'], learn: ['dial'], stars: 3 },
-  { name: '沙海遺跡', desc: '半埋在沙海裡的古代神殿,牆上刻著古武源流的壁畫。', boss: 'colossus', unlock: ['ghost', 'swipe'], learn: ['kick'], stars: 4 },
+  { name: '沙海遺跡', desc: '半埋在沙海裡的古代神殿,牆上刻著古武源流的壁畫。', boss: 'colossus', unlock: ['ghost', 'swipe'], stars: 4 },
   { name: '蜃樓綠洲', desc: '水光搖曳的綠洲與海市蜃樓。真假難辨,隱世宗門的使者在此試探來者的心。', boss: 'mirageFairy', unlock: ['mirror'], stars: 4 },
   { name: '天沙宗山門', desc: '隱世宗門「天沙宗」的修練場。弟子們能將肉身與粒子能量合而為一。', boss: 'sectGuardian', unlock: ['memory'], stars: 5 },
   { name: '風暴之眼', desc: '風暴中心的古老祭壇。宗主「無相」靜候著繼承古武源流的人。', boss: 'sectMaster', unlock: [], stars: 5 },
@@ -270,7 +270,7 @@ const BGS_3 = {
   tower: { bg: 'sky',     img: 'backgrounds/ch3_tower.jpg', bgm: 'sky',     deco: ['🌀', '✨', '🗼', '✨', '🌀'] },
 };
 const REGIONS_3 = [
-  { name: '鏽蝕港', desc: '大洋彼岸的巨型貨櫃港。天幕議會的走私船在夜色中進出,碼頭被海盜把持。', boss: 'hookCaptain', unlock: ['anchor'], learn: ['chain'], stars: 3 },
+  { name: '鏽蝕港', desc: '大洋彼岸的巨型貨櫃港。天幕議會的走私船在夜色中進出,碼頭被海盜把持。', boss: 'hookCaptain', unlock: ['anchor'], stars: 3 },
   { name: '橫貫列車', desc: '橫跨大陸的磁浮列車。天幕的軍需列車載著被俘的武者,在高速中穿越荒野。', boss: 'railHunter', unlock: ['tornado'], stars: 3 },
   { name: '雨林基因廠', desc: '叢林深處的生化工廠。幽綠的培養槽裡,浸泡著被抽乾氣血的武者。', boss: 'geneDoctor', unlock: ['tentacle'], stars: 4 },
   { name: '地下鐵籠拳場', desc: '被奪走意志的武者在鐵籠裡被迫互相殘殺,黑市的歡呼聲震耳欲聾。', boss: 'cageChampion', unlock: ['shock'], stars: 4 },
@@ -323,19 +323,19 @@ const curveAt = (curve, i, n) => {
 };
 // DIP:第二章起每個區域的第 1、2 關較輕鬆(熟悉新機制的低谷),精英和 BOSS 才是高峰
 const DIP = [0.88, 0.94, 1, 1, 1];
-const buildChapter = (id, name, sub, regions, list, bgs, curve, dip) => {
+const buildChapter = (id, name, sub, regions, list, bgs, curve, dip, learn = []) => {
   regions.forEach((g, r) => { g.first = r * 5; g.last = r * 5 + 4; });
   const stages = list.map(([r, type, sname, bg, waves, events], i) => Object.assign({}, bgs[bg], {
     region: r, type, waves, events, scale: +(curveAt(curve, i, list.length) * (dip ? dip[i % 5] : 1)).toFixed(2), stars: regions[r].stars,
     name: sname, code: `${r + 1}-${i % 5 + 1}`, // 地圖上的編號,例如 1-3
   }));
   const [short, title] = name.split(' '); // 章節切換按鈕用:「第二章」+「鋼鐵與心相的試煉」
-  return { id, name, short, title, sub, regions, stages };
+  return { id, name, short, title, sub, regions, stages, learn }; // learn:這一章一開始就習得的新能力(第 1 關開打前的習得試煉)
 };
 G.CHAPTERS = [
   buildChapter(1, '第一章 鋼拳復仇', '新神州', REGIONS_1, STAGE_LIST_1, BGS, CURVE_1),
-  buildChapter(2, '第二章 鋼鐵與心相的試煉', '絕魔流沙', REGIONS_2, STAGE_LIST_2, BGS_2, CURVE_2, DIP),
-  buildChapter(3, '第三章 星火燎原的遠征', '天幕之下', REGIONS_3, STAGE_LIST_3, BGS_3, CURVE_3, DIP),
+  buildChapter(2, '第二章 鋼鐵與心相的試煉', '絕魔流沙', REGIONS_2, STAGE_LIST_2, BGS_2, CURVE_2, DIP, ['kick']), // 第一章破關後:踢擊
+  buildChapter(3, '第三章 星火燎原的遠征', '天幕之下', REGIONS_3, STAGE_LIST_3, BGS_3, CURVE_3, DIP, ['bow']), // 第二章破關後:弓箭
 ];
 // G.STAGES / G.REGIONS:目前選擇的章節(大部分程式只需要看目前這一章)
 Object.defineProperty(G, 'STAGES', { get: () => G.CHAPTERS[G.chapter() - 1].stages, configurable: true });
@@ -363,24 +363,25 @@ G.MECH_INFO = {
   spin:     { name: '磁暴', hint: '九宮格會整個旋轉,符號跟著位置跑' },
   mirror:   { name: '蜃樓', hint: '帶 ⇋ 的符號是幻影,要點左右對稱的另一格' },
   // 第三章
-  tornado:  { name: '龍捲風', hint: '紫色漩渦格上的符號轉眼就被吸走:拳頭少打一拳,盾牌沒擋到照樣受傷' },
+  tornado:  { name: '龍捲風', hint: '紫色漩渦格上的拳頭轉眼就被吸走,沒打到就少一拳;防禦時盾牌不會出現在漩渦上' },
   anchor:   { name: '錨鏈', hint: '被鐵鏈連住的兩顆要在 0.5 秒內接連點掉,只點一顆會被拉回來' },
   shock:    { name: '電網', hint: '閃著電光的格子通電時別碰,等斷電的空檔再點' },
   track:    { name: '追蹤標靶', hint: '帶紫框的符號會一格一格滑動,點它「現在」的位置;下一格會先亮紫框'  },
 };
-// 第 i 關可以出現的機制:之前章節全部 + 本章前面區域 BOSS 解鎖的(unlock 敵人招式、learn 玩家新能力);
+// 第 i 關可以出現的機制:之前章節全部 + 本章一開始習得的能力(章節的 learn)+ 本章前面區域 BOSS 解鎖的(unlock 敵人招式、learn 玩家新能力);
 // 第二、三輪本章全部開放,但不會出現之後章節才登場的東西(第一章的修羅不會冒出第二章的機制)
 const regionKeys = g => [...g.unlock, ...(g.learn || [])];
 G.mechAllowed = (i, round = G.round(), ch = G.chapter()) => {
   const c = G.CHAPTERS[ch - 1], s = c.stages[i];
-  const before = G.CHAPTERS.slice(0, ch - 1).flatMap(x => x.regions.flatMap(regionKeys));
+  const before = G.CHAPTERS.slice(0, ch).flatMap((x, k) => [...x.learn, ...(k < ch - 1 ? x.regions.flatMap(regionKeys) : [])]);
   const upto = round > 1 ? c.regions.length : s ? s.region : 0;
   return new Set([...before, ...c.regions.slice(0, upto).flatMap(regionKeys)]);
 };
-// 玩家的新能力(在區域的 learn 裡,打倒區域 BOSS 後學會;區域 BOSS 戰中就會先出現)
+// 玩家的新能力:章節的 learn 在該章第 1 關的習得試煉學會;區域的 learn 打倒區域 BOSS 後學會(區域 BOSS 戰中就會先出現)
 G.LEARN_INFO = {
   kick: { name: '踢擊', hint: '帶箭頭的綠色腳印:按住後往箭頭方向滑,傷害 ×1.5' },
   dial: { name: '旋風破綻', hint: '破綻有時會變成雷達圓盤:抓準缺口,再畫圈捲起龍捲風' },
+  bow: { name: '疾射', hint: '帶弓箭的藍色按鈕:按住往下拉,放開射箭;拉越滿越痛,拉滿 ×2' },
   chain: { name: '燎原連拳', hint: '按住拳頭不放,一路劃過相鄰的拳頭,一筆打出連段;連越長每拳越痛' },
 };
 // 某個敵人用到的所有機制(含輪換與格子狀態)

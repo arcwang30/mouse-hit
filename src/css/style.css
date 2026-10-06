@@ -802,6 +802,36 @@ h2 { margin: 0; }
 .cell.swipe-down .label  { --rot: 90deg;  --sx: 0%;   --sy: 22%; }
 .cell.swipe-left .label  { --rot: 180deg; --sx: -22%; --sy: 0%; }
 .cell.swipe-right .label { --rot: 0deg;   --sx: 22%;  --sy: 0%; }
+/* 拉弓:藍色按鈕 + 木弓與箭(SVG,由 G.grid.bowPull 依拉弓程度改弓臂、弓弦、箭的位置);往下拉時箭跟著後退,拉滿發金光 */
+.cell.bow .cap { background: linear-gradient(180deg, #a8ecff, #1f86c4 55%, #0a3a63); --edge: #04203a; }
+.cell.bow .label { background: #ffe14a; color: #04203a; }
+.bow-rig, .bow-shot { position: absolute; left: 50%; top: 60%; width: 78%; aspect-ratio: 1; transform: translate(-50%, -50%); pointer-events: none; }
+.bow-rig { z-index: 1; }
+.bow-rig svg, .bow-shot svg, .fx-arrow { display: block; width: 100%; height: 100%; overflow: visible; }
+.bow-rig .limb { fill: none; stroke: #6b3510; stroke-width: 7; stroke-linecap: round; filter: drop-shadow(0 .4cqw 0 #04203a); }
+.bow-rig .string { fill: none; stroke: #fff; stroke-width: 1.6; }
+.shaft, .fx-arrow line { stroke: #fff4d6; stroke-width: 4; stroke-linecap: round; }
+.head { fill: #ffd400; stroke: #3d2600; stroke-width: 1.5; stroke-linejoin: round; }
+.fletch { fill: #ff4a5e; stroke: #4a0010; stroke-width: 1.2; stroke-linejoin: round; }
+.cell.bow.drawing .bow-rig { filter: drop-shadow(0 0 1.2cqw #a8ecff); }
+.bow-rig.full { filter: drop-shadow(0 0 2cqw #ffd400) drop-shadow(0 0 .6cqw #fff) !important; animation: chargedShake .08s infinite; }
+/* 拉弓中:和 HOLD / 頂住一樣從底部升起水位,高度 = 拉弓程度(--pull 0~1);藍色按鈕上用金色的水,拉滿變亮金 */
+.cell.bow.drawing .cap::before {
+  content: ""; display: block; position: absolute; left: 0; right: 0; bottom: 0; top: auto; border-radius: 0; pointer-events: none;
+  height: calc(var(--pull, 0) * (100% + 1.4cqw));
+  background:
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 6' preserveAspectRatio='none'%3E%3Cpath d='M0 3 Q5 0 10 3 T20 3 T30 3 T40 3 V6 H0 Z' fill='%23ffe14a' fill-opacity='.9'/%3E%3C/svg%3E") 0 0 / 10cqw 1.4cqw repeat-x,
+    linear-gradient(180deg, transparent 1.3cqw, #ffc23d99 1.3cqw, #d98a00c0);
+  animation: waterWave .9s linear infinite;
+  transition: height .05s linear;
+}
+.cell.bow.drawing:has(.bow-rig.full) .cap::before { filter: brightness(1.25) saturate(1.2); }
+.bow-rig .arrow, .bow-shot svg { filter: drop-shadow(0 0 .35cqw #04203a); } /* 箭加深色描邊,壓在淺藍按鈕上也看得清楚 */
+.bow-rig.shot .arrow { visibility: hidden; }
+.cell.bow.hidden .bow-rig { display: none; } /* 駭入:現形前只顯示 ❓ */
+.bow-shot { z-index: 5; }
+.bow-shot.full, .fx-fist .fx-arrow { filter: drop-shadow(0 0 1.5cqw #ffd400); }
+.fx-fist:has(.fx-arrow) { width: 1em; height: 1em; }
 @keyframes swipeHint { to { transform: translate(calc(-50% + var(--sx)), calc(-50% + var(--sy))) rotate(var(--rot)); } }
 .cell.aiming .cap { box-shadow: inset 0 .9cqw 0 #ffffff70, 0 1cqw 0 var(--edge), 0 0 5cqw #b4ff4a; transform: scale(1.06); }
 /* 記憶拳:閃爍的格子(金色星光) */

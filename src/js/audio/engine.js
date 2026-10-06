@@ -215,6 +215,13 @@ const SFX = {
     a.tone(2400, 0.12, { type: 'triangle', to: 900, vol: 0.08, when: t + 0.04 });
     a.tone(140, 0.12, { to: 60, vol: 0.45, when: t + 0.08 });
   },
+  // 拉弓:搭箭時木弓「嘎吱」一聲;放開時弓弦「繃」地彈響,接著箭破空的「咻」
+  draw:    a => { a.tone(180, 0.18, { type: 'sawtooth', vol: 0.06, to: 240, lp: 900 }); a.noise(0.12, { filter: 'bandpass', freq: 600, q: 4, vol: 0.12 }); },
+  arrow:   (a, t) => {
+    a.tone(220, 0.16, { type: 'triangle', vol: 0.35, to: 140 });
+    a.tone(440, 0.08, { type: 'square', vol: 0.06, to: 300 });
+    a.noise(0.2, { filter: 'bandpass', freq: 1800, to: 6000, q: 2.2, vol: 0.4, when: t + 0.02 });
+  },
   // 踢擊打中:短促的腿風「咻」,接著像一腳踢破牆——沉重的撞擊、牆面碎裂的爆音、碎石嘩啦落下
   kick:    (a, t) => {
     // 腿風「咻——」:由低往高掃過的風聲,加一層高頻氣流,拉長一點、音量加大,擊中前先聽得清楚

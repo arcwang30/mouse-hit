@@ -42,6 +42,47 @@ G.grid = {
     c.querySelector('.icon').textContent = icon;
     c.querySelector('.label').textContent = label;
     c.querySelector('.badge').textContent = '';
+    this.bowRig(i, cls.split(' ').includes('bow'));
+  },
+
+  // 拉弓:按鈕上畫一把弓和一支箭(SVG);pull 0~1 = 弓弦往後(往下)拉的程度,箭跟著往後退
+  bowRig(i, on) {
+    const cap = this.cells[i].querySelector('.cap');
+    let el = cap.querySelector('.bow-rig');
+    if (!on) { if (el) el.remove(); return; }
+    if (!el) {
+      el = document.createElement('span');
+      el.className = 'bow-rig';
+      el.innerHTML = '<svg viewBox="0 0 100 100"><path class="limb"/><polyline class="string"/>' +
+        '<g class="arrow"><line class="shaft" x1="50" y1="10" x2="50" y2="58"/><path class="head" d="M50 0 L43 14 L57 14 Z"/>' +
+        '<path class="fletch" d="M50 46 L43 52 L43 60 L50 54 L57 60 L57 52 Z"/></g></svg>';
+      cap.prepend(el);
+    }
+    this.bowPull(i, 0);
+  },
+  bowPull(i, p) {
+    const el = this.cells[i].querySelector('.bow-rig');
+    if (!el) return;
+    this.cells[i].style.setProperty('--pull', p); // 按鈕背後的水位跟著拉弓程度上升
+    const tx = 14 + p * 7, ty = 58 + p * 4, sy = 58 + p * 30; // 弓弦越拉,弓臂越往內彎
+    el.querySelector('.limb').setAttribute('d', `M${tx} ${ty} Q50 ${-14 + p * 10} ${100 - tx} ${ty}`);
+    el.querySelector('.string').setAttribute('points', `${tx},${ty} 50,${sy} ${100 - tx},${ty}`);
+    el.querySelector('.arrow').setAttribute('transform', `translate(0 ${p * 30})`);
+    el.classList.toggle('full', p >= 1);
+  },
+  // 放開:弓上的箭消失,另一支箭從格子往上射出去
+  bowShoot(i, p) {
+    const c = this.cells[i], rig = c.querySelector('.bow-rig');
+    if (rig) rig.classList.add('shot');
+    const a = document.createElement('span');
+    a.className = 'bow-shot' + (p >= 1 ? ' full' : '');
+    a.innerHTML = '<svg viewBox="0 0 100 100"><line class="shaft" x1="50" y1="10" x2="50" y2="58"/><path class="head" d="M50 0 L43 14 L57 14 Z"/>' +
+      '<path class="fletch" d="M50 46 L43 52 L43 60 L50 54 L57 60 L57 52 Z"/></svg>';
+    c.appendChild(a);
+    a.animate([
+      { transform: `translateY(${p * 30}%)`, opacity: 1 },
+      { transform: 'translateY(-260%)', opacity: 0 },
+    ], { duration: 220, easing: 'cubic-bezier(.2, .7, .4, 1)' }).onfinish = () => a.remove();
   },
 
   setBadge(i, text) {
@@ -57,6 +98,7 @@ G.grid = {
       c.querySelector('.icon').textContent = '';
       c.querySelector('.label').textContent = '';
       c.querySelector('.badge').textContent = '';
+      this.bowRig(i, false);
     };
     if (!anim) return reset();
     c.classList.add(anim);
@@ -219,7 +261,10 @@ G.grid = {
 //     mirror 蜃樓:符號是幻影(標 ⇋),要點左右對稱的鏡像格才算打中;點幻影本身 = onMirage
 //     spin   磁暴:階段中途九宮格整個旋轉(onSpin)
 //     greed  貪婪(寶箱怪):拳頭冒出 greedAt 比例的時間後變成陷阱(decoyIcon),之前沒打中就算錯過,之後點到觸發 onDecoy
+//     bow    拉弓:按住弓往下拉、放開射箭,拉越滿越痛(onHit 的 info.bow = 拉弓程度 0~1)
 //   流沙格(格子狀態 sand)上的符號停留時間 ×SAND_LIFE
+const BOW_MIN = 0.3;    // 拉弓:至少拉到這個程度放開才射得出去(不夠的話箭掉下來,可以再拉)
+const BOW_KEY_MS = 450; // 拉弓:鍵盤按住幾毫秒拉滿
 const SAND_LIFE = 0.55; // 流沙格上符號的停留時間倍率
 const ANCHOR_MS = 550; // 錨鏈:兩顆要在幾毫秒內接連打中
 const TRACK_STEP = 420; // 追蹤標靶:每幾毫秒滑一格
@@ -260,7 +305,7 @@ G.molePhase = o => new Promise(resolve => {
   const adj8 = (p, q) => p !== q && Math.abs(p % 3 - q % 3) <= 1 && Math.abs(Math.floor(p / 3) - Math.floor(q / 3)) <= 1;
   const chainable = j => {
     const a = active.get(j);
-    return a && a.kind === 'normal' && !a.armor && !a.swipe && a.mirror === undefined &&
+    return a && a.kind === 'normal' && !a.armor && !a.swipe && !a.bow && a.mirror === undefined &&
       !cell(j).classList.contains('hidden') && !(blockAt(j) && blockAt(j).type === 'ice') && !live(j);
   };
   const endChain = () => {
@@ -269,7 +314,42 @@ G.molePhase = o => new Promise(resolve => {
     chaining = null;
     G.grid.chainTrail(null);
   };
+  // 拉弓:按住弓往下拉(以格子高度的 BOW_PULL 為拉滿),放開就射;鍵盤則是按住越久拉越滿
+  let bowing = null; // { i, a, id 手指, y 按下的高度(鍵盤為 null), t 鍵盤按下的時間, pull }
+  const BOW_PULL = 0.75;
+  const bowKeyLoop = () => {
+    if (!bowing || bowing.y != null) return;
+    bowing.pull = Math.min(1, (G.clock.now() - bowing.t) / BOW_KEY_MS);
+    G.grid.bowPull(bowing.i, bowing.pull);
+    requestAnimationFrame(bowKeyLoop);
+  };
+  const endBow = () => {
+    if (bowing.y == null) bowing.pull = Math.min(1, (G.clock.now() - bowing.t) / BOW_KEY_MS); // 鍵盤:依按住的時間算(畫面動畫停住時也正確)
+    const { i, a, pull } = bowing;
+    bowing = null;
+    cell(i).classList.remove('drawing');
+    if (finished || active.get(i) !== a) return;
+    if (pull < BOW_MIN) { // 拉不夠:箭沒射出去,弓還在,可以再拉一次
+      G.grid.bowPull(i, 0);
+      G.grid.bump(i);
+      G.grid.impact(i, 'miss');
+      G.audio.play('whiff');
+      return;
+    }
+    a.pull = pull;
+    G.grid.bowShoot(i, pull);
+    G.audio.play('arrow');
+    doHit(i, a, false);
+  };
   const onMove = e => {
+    if (bowing && bowing.y != null && e.pointerId === bowing.id && !G.clock.paused) {
+      const h = cell(bowing.i).getBoundingClientRect().height || 1;
+      const pull = Math.max(0, Math.min(1, (e.clientY - bowing.y) / (h * BOW_PULL)));
+      if (pull >= 1 && bowing.pull < 1) G.audio.play('ready'); // 拉滿的提示音
+      bowing.pull = pull;
+      G.grid.bowPull(bowing.i, pull);
+      return;
+    }
     if (chaining && e.pointerId === chaining.id && !G.clock.paused) {
       const el = document.elementFromPoint(e.clientX, e.clientY), c = el && el.closest('.cell');
       const j = c ? G.grid.cells.indexOf(c) : -1;
@@ -288,6 +368,7 @@ G.molePhase = o => new Promise(resolve => {
     endSwipe(Math.abs(dx) > Math.abs(dy) ? (dx > 0 ? 'right' : 'left') : (dy > 0 ? 'down' : 'up'));
   };
   const onUp = e => {
+    if (bowing && bowing.y != null && (!e || e.pointerId === bowing.id)) endBow();
     if (chaining && (!e || e.pointerId === chaining.id)) endChain();
     if (!swiping || swiping.x == null) return;
     const i = swiping.i;
@@ -353,6 +434,7 @@ G.molePhase = o => new Promise(resolve => {
     if (finished) return;
     finished = true;
     chaining = null;
+    bowing = null;
     G.$('#grid').querySelectorAll('.anchor-link').forEach(x => x.remove()); // 收掉錨鏈
     G.grid.cells.forEach(c => c.classList.remove('track-next')); // 收掉追蹤標靶的預告
     G.grid.chainTrail(null);
@@ -379,8 +461,11 @@ G.molePhase = o => new Promise(resolve => {
   };
   const bombDone = () => { if ((settled >= o.count && !bombsLeft()) || o.stop()) finish(); };
   // 可以放符號的格子:沒被占用、沒被預約、沒被觸手蓋住
+  // 龍捲風只吸你的攻擊指令:防禦回合(盾牌)不會冒在龍捲風格上
+  const guardPhase = o.cls.split(' ').includes('guard');
+  const noSpawn = i => { const b = blockAt(i); return !!b && (['tentacle', 'seal'].includes(b.type) || (guardPhase && b.type === 'tornado')); };
   const freeCells = () => [...Array(9).keys()].filter(i =>
-    !active.has(i) && !reserved.has(i) && !(blockAt(i) && ['tentacle', 'seal'].includes(blockAt(i).type))); // 觸手、封印格不冒符號
+    !active.has(i) && !reserved.has(i) && !noSpawn(i)); // 觸手、封印格不冒符號
   const freeCell = () => { const f = freeCells(); return f.length ? G.pick(f) : -1; };
 
   // 連線 / 掃射:整條打中就觸發獎勵
@@ -393,7 +478,7 @@ G.molePhase = o => new Promise(resolve => {
   };
 
   // 錨鏈(mods.anchor):同時冒出的兩顆被鐵鏈連住,要在 ANCHOR_MS 內接連打中;只打一顆的話它先「鬆動」,時間到被拉回原位
-  const linkable = a => a && a.kind === 'normal' && !a.armor && !a.swipe && a.mirror === undefined && !a.greed && !a.link && !a.track;
+  const linkable = a => a && a.kind === 'normal' && !a.armor && !a.swipe && !a.bow && a.mirror === undefined && !a.greed && !a.link && !a.track;
   const link = (a, b) => {
     a.link = b;
     b.link = a;
@@ -452,6 +537,7 @@ G.molePhase = o => new Promise(resolve => {
     unlink(a);
     untrack(a);
     if (swiping && swiping.a === a) { swiping = null; cell(i).classList.remove('aiming'); }
+    if (bowing && bowing.a === a) { bowing = null; cell(i).classList.remove('drawing'); }
     if (a.kind === 'timebomb') { // 倒數歸零:爆炸,波及上下左右
       G.grid.clear(i, 'press');
       G.grid.flash(i, 'bad');
@@ -599,6 +685,17 @@ G.molePhase = o => new Promise(resolve => {
       return;
     }
 
+    // 拉弓:按下只是搭箭,往下拉再放開才射
+    if (a.bow) {
+      if (bowing) return;
+      const p = G.grid.lastDown;
+      bowing = { i, a, id: p ? p.id : null, y: p ? p.y : null, t: G.clock.now(), pull: 0 };
+      cell(i).classList.add('drawing');
+      G.audio.play('draw');
+      if (!p) bowKeyLoop();
+      return;
+    }
+
     // 一般符號(學會燎原連拳後,用手指按下的拳頭可以當連段的起點)
     const p = G.grid.lastDown;
     if (o.chain && p && chainable(i)) chaining = { id: p.id, last: i, n: 1, path: [i] };
@@ -617,7 +714,7 @@ G.molePhase = o => new Promise(resolve => {
     kill(a); active.delete(i);
     G.grid.clear(i, 'press');
     G.grid.flash(i, 'good');
-    const info = { ratio, gold: a.gold, auto, swipe, chain, lava: !!(blockAt(i) && blockAt(i).type === 'lava') };
+    const info = { ratio, gold: a.gold, auto, swipe, chain, bow: a.bow && !auto ? a.pull : 0, lava: !!(blockAt(i) && blockAt(i).type === 'lava') };
     o.onHit(i, info); // onHit 可在 info 填入 grade,交給特效顯示
     a.fx && a.fx.block(info.grade);
     groupHit(a);
@@ -634,6 +731,7 @@ G.molePhase = o => new Promise(resolve => {
   const phaseStart = G.clock.now();
 
   G.grid.releaseHandler = i => {
+    if (bowing && bowing.y == null && bowing.i === i) return endBow(); // 鍵盤拉弓:放開按鍵射箭(手指拉弓由 pointerup 處理)
     const a = active.get(i);
     if (!a || a.kind !== 'hold' || !a.holding) return;
     kill(a); active.delete(i);
@@ -687,11 +785,17 @@ G.molePhase = o => new Promise(resolve => {
         cls += ' swipe kick swipe-' + a.swipe;
         label = { up: '↑', down: '↓', left: '←', right: '→' }[a.swipe];
         life *= 1.25;
+      } else if (roll(mods.bow)) { // 拉弓 🏹:按住往下拉、放開射箭;停留時間多給一點(要拉弓)
+        a.bow = true;
+        icon = '';
+        cls += ' bow';
+        label = G.t('拉弓');
+        life *= 1.3;
       }
       // 貪婪(寶箱怪):一般拳頭放太久會變成陷阱
-      if (!a.gold && !a.armor && !a.swipe && roll(mods.greed)) a.greed = true;
+      if (!a.gold && !a.armor && !a.swipe && !a.bow && roll(mods.greed)) a.greed = true;
       // 蜃樓:中間那一行沒有鏡像,左右兩行才會出現;鏡像格要空著
-      if (!a.gold && !a.armor && !a.swipe && !a.greed && i % 3 !== 1 && roll(mods.mirror)) {
+      if (!a.gold && !a.armor && !a.swipe && !a.bow && !a.greed && i % 3 !== 1 && roll(mods.mirror)) {
         const m = mirrorOf(i);
         if (!active.has(m) && !reserved.has(m)) { a.mirror = m; reserved.add(m); mirrorAt.set(m, i); cls += ' mirage'; label = '⇋'; }
       }
@@ -747,14 +851,14 @@ G.molePhase = o => new Promise(resolve => {
       }
       // 瞬移:存活到一半時跳到別格
       // 追蹤標靶:沿一排或一列滑動(和瞬移二選一)
-      if (kind === 'normal' && !a.armor && !a.swipe && a.mirror === undefined && !a.greed && !cell(i).classList.contains('hidden') && roll(mods.track)) startTrack(i, a);
+      if (kind === 'normal' && !a.armor && !a.swipe && !a.bow && a.mirror === undefined && !a.greed && !cell(i).classList.contains('hidden') && roll(mods.track)) startTrack(i, a);
       else if (a.mirror === undefined && roll(mods.blink)) a.ts.push(G.clock.after(() => blink(i, a), life * 0.45)); // 蜃樓不瞬移
     }
   };
 
   // 追蹤標靶(mods.track):每 TRACK_STEP 毫秒沿著同一排 / 同一列滑一格,撞到邊或別的符號就折返;要去的下一格先亮紫框預告
   const stepOf = (i, d) => { const r = Math.floor(i / 3) + d[0], c = i % 3 + d[1]; return r >= 0 && r < 3 && c >= 0 && c < 3 ? r * 3 + c : -1; };
-  const openFor = j => j >= 0 && !active.has(j) && !reserved.has(j) && !(blockAt(j) && ['tentacle', 'seal'].includes(blockAt(j).type));
+  const openFor = j => j >= 0 && !active.has(j) && !reserved.has(j) && !noSpawn(j);
   const trackNext = a => { // 這一步要去哪(前面擋住就折返);哪裡都去不了回傳 -1
     let to = stepOf(a.cell, a.dir);
     if (!openFor(to)) { a.dir = [-a.dir[0], -a.dir[1]]; to = stepOf(a.cell, a.dir); }
@@ -796,7 +900,7 @@ G.molePhase = o => new Promise(resolve => {
   const untrack = a => { if (a.nextEl != null) { cell(a.nextEl).classList.remove('track-next'); a.nextEl = null; } };
 
   const blink = (from, a) => {
-    if (finished || active.get(from) !== a || a.holding || a.link || (swiping && swiping.a === a)) return; // 瞄準中的滑擊拳、被錨鏈連住的不瞬移
+    if (finished || active.get(from) !== a || a.holding || a.link || (swiping && swiping.a === a) || (bowing && bowing.a === a)) return; // 瞄準中的滑擊拳、拉弓中的弓、被錨鏈連住的不瞬移
     const to = freeCell();
     if (to < 0) return;
     const left = a.life - (G.clock.now() - a.born);

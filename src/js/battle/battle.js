@@ -37,10 +37,13 @@ const REVIVE_FX_MS = 1800, REVIVE_BREATH_MS = 400; // 浴火重生:火光演出�
 const DEVIL_GOLD = 100;
 // 新機制:疾風(滑擊拳傷害倍率)、倒數炸彈(秒數再乘周回的停留倍率、爆炸傷害倍率)、幻術(記憶長度依周回、每格閃爍毫秒、每格作答時間、失敗傷害倍率)
 const SWIPE_MUL = 1.5; // 踢擊(帶箭頭、要滑)的傷害倍率
-// 踢擊是玩家在第二章沙海遺跡(colossus)學會的招式:出現率從學會的區域(全章節區域序號 KICK_FROM)起是 KICK_BASE,每往後一區 +KICK_STEP,最多 KICK_MAX;帶疾風的敵人再往上加
-const KICK_BASE = 0.1, KICK_STEP = 0.02, KICK_MAX = 0.2, KICK_CAP = 0.6, KICK_FROM = 8;
-// 燎原連拳(第三章鏽蝕港學會):一筆連段的第 n 顆每拳 +CHAIN_STEP×(n-1),最多 ×CHAIN_MAX
+// 踢擊是玩家在第二章第 1 關的習得試煉學會的招式:出現率從學會的區域(全章節區域序號 KICK_FROM)起是 KICK_BASE,每往後一區 +KICK_STEP,最多 KICK_MAX;帶疾風的敵人再往上加
+const KICK_BASE = 0.1, KICK_STEP = 0.02, KICK_MAX = 0.2, KICK_CAP = 0.6, KICK_FROM = 6;
+// 燎原連拳(目前停用:沒有任何章節或區域會學會):一筆連段的第 n 顆每拳 +CHAIN_STEP×(n-1),最多 ×CHAIN_MAX
 const CHAIN_STEP = 0.25, CHAIN_MAX = 2;
+// 疾射 / 弓箭(第三章第 1 關的習得試煉學會):出現率 BOW_RATE;傷害 ×(1 + 拉弓程度 × BOW_STEP),拉滿 = 滿弦 ×(1 + BOW_STEP)
+const BOW_RATE = 0.15, BOW_STEP = 1;
+const LEARN_GOAL = 5; // 習得試煉:成功幾次就學會
 const SHOCK_DMG = 0.05; // 電網:觸電扣最大 HP 的比例
 const TORNADO_MIN = 2; // 龍捲風:九宮格上至少幾格
 const TIMEBOMB_MS = 3000, TIMEBOMB_DMG = 1.5;
@@ -254,6 +257,14 @@ G.battle = {
     if (G.round() >= 2) await G.tips.show('shura');
     if (G.round() >= 3) await G.tips.show('tianmo');
     if (run !== this.run) return;
+    // 新章節第 1 關(第一輪):開打前先在訓練木樁上完成這一章的習得試煉(第二章踢擊、第三章弓箭)
+    if (stageIdx === 0 && G.round() === 1 && !G.tutorial.active) {
+      for (const k of G.CHAPTERS[G.chapter() - 1].learn) {
+        if ((G.save.data.learned || {})[k]) continue;
+        await this.learnTrial(k);
+        if (run !== this.run) return;
+      }
+    }
     this.preloadEnemies(); // 先在背景載入這一關所有敵人的立繪(BOSS 警報的剪影、進場時才不會空白)
     const total = this.stage.waves.length;
     for (let w = 0; w < total; w++) {
@@ -349,6 +360,7 @@ G.battle = {
     await this.mechTips(m);
     if (this.kickRate(m) > 0) await G.tips.show('kick'); // 第一次會冒出踢擊時說明
     if (this.chainOk()) await G.tips.show('chain'); // 第一次能用燎原連拳時說明
+    if (this.bowRate() > 0) await G.tips.show('bow'); // 第一次會冒出拉弓時說明
     const life = Math.round(p.moleLife * rc.fistLife); // 周回:拳頭停留時間縮短
     this.soulReady = p.comboSoul; // 連擊之魂:每回合擋一次失誤
     let api = null;
@@ -357,7 +369,7 @@ G.battle = {
       interval: Math.max(250, life * 0.45), patterns: this.patterns(),
       // 蓄力重拳:每回合其中一顆拳頭需要按住蓄力
       hold: { at: 1 + Math.floor(Math.random() * (p.attackCount - 1)), icon: '👊', label: 'HOLD', holdMs: HOLD_MS * (p.holdMaster ? 0.6 : 1) },
-      mods: { gold: GOLD_RATE * p.goldMul, goldMs: rc.goldMs, hidden: m.hidden, blink: m.blink, armor: m.armor, swipe: this.kickRate(m), mirror: m.mirror, spin: m.spin, greed: m.greed, greedAt: m.greedAt, anchor: m.anchor, track: m.track },
+      mods: { gold: GOLD_RATE * p.goldMul, goldMs: rc.goldMs, hidden: m.hidden, blink: m.blink, armor: m.armor, swipe: this.kickRate(m), bow: this.bowRate(), mirror: m.mirror, spin: m.spin, greed: m.greed, greedAt: m.greedAt, anchor: m.anchor, track: m.track },
       onMirage: () => { combo = 0; this.comboBreak(); this.float('蜃樓!', 'tag miss'); },
       onSpin: () => this.spinFx(),
       onEmpty: () => this.backlash(), // 天魔:點空格反噬
@@ -382,6 +394,7 @@ G.battle = {
         if (info.gold) { d *= GOLD_MUL; this.float('金拳!', 'tag gold'); }
         if (info.lava) { d *= 2; this.float('熔岩拳!', 'tag lava'); this.hurtPlayer(LAVA_BURN); }
         if (info.swipe) { d *= SWIPE_MUL; this.float('踢擊!', 'tag line'); }
+        if (info.bow) { d *= 1 + info.bow * BOW_STEP; this.float(info.bow >= 1 ? '滿弦!' : '射擊!', 'tag charge'); }
         if (info.chain > 1) d *= Math.min(CHAIN_MAX, 1 + CHAIN_STEP * (info.chain - 1)); // 燎原連拳:連越長越痛
         combo++;
         if (first && p.firstStrike) d *= 3;
@@ -397,7 +410,7 @@ G.battle = {
           this.float('蓄力重拳!', 'tag charge');
           this.punchFx(i % 3, { crit: true, final: true, dur: 200 });
         } else {
-          this.punchFx(i % 3, { crit, icon: info.swipe ? '🦵' : '👊' });
+          this.punchFx(i % 3, { crit, icon: info.swipe ? '🦵' : info.bow ? 'arrow' : '👊', dur: info.bow ? 110 : undefined });
         }
         this.hurtEnemy(Math.round(d), crit || charged, charged, info.swipe && !charged ? 'kick' : null); // 踢擊:腿風 + 踢中的擊中聲
         if (info.gold && !crit && !charged) this.hitStop(60); // 金拳也頓一下
@@ -1221,11 +1234,13 @@ G.battle = {
     const f = document.createElement('div');
     f.className = 'fx-fist' + (o.crit ? ' crit' : '');
     if (o.icon === '🦵') f.innerHTML = '<img class="fx-foot" src="../assets/images/ui/kick_foot.png" alt="">'; // 踢擊:飛出去的是腳印
+    else if (o.icon === 'arrow') f.innerHTML = '<svg class="fx-arrow" viewBox="0 0 100 100"><line class="shaft" x1="50" y1="10" x2="50" y2="58"/><path class="head" d="M50 0 L43 14 L57 14 Z"/><path class="fletch" d="M50 46 L43 52 L43 60 L50 54 L57 60 L57 52 Z"/></svg>'; // 拉弓:飛出去的是箭
     else f.textContent = o.icon || '👊';
     stage.appendChild(f);
+    const aim = o.icon === 'arrow' ? Math.atan2(ex - sx, sy - ey) * 180 / Math.PI : null; // 箭頭朝飛行方向
     f.animate([
-      { transform: `translate(${sx}px, ${sy}px) translate(-50%, -50%) scale(${s0}) rotate(${(col - 1) * 12}deg)`, opacity: 0.85 },
-      { transform: `translate(${ex}px, ${ey}px) translate(-50%, -50%) scale(${s1}) rotate(0deg)`, opacity: 1 },
+      { transform: `translate(${sx}px, ${sy}px) translate(-50%, -50%) scale(${s0}) rotate(${aim != null ? aim : (col - 1) * 12}deg)`, opacity: 0.85 },
+      { transform: `translate(${ex}px, ${ey}px) translate(-50%, -50%) scale(${s1}) rotate(${aim != null ? aim : 0}deg)`, opacity: 1 },
     ], { duration: o.dur || 150, easing: 'cubic-bezier(.4, .1, .6, 1)' }).onfinish = () => {
       f.remove();
       const b = document.createElement('div');
@@ -1432,8 +1447,10 @@ G.battle = {
     };
   },
   // 這一回合踢擊(🦵 帶箭頭、要滑)的出現率:依關卡進度 10% → 20%,加上敵人機制「疾風腿」的加成
-  // 學會燎原連拳了沒(第三章鏽蝕港的 BOSS 戰中就能先用)
+  // 學會燎原連拳了沒(目前停用,不會開放)
   chainOk() { return !!(this.allowedNow && this.allowedNow.has('chain')); },
+  // 疾射(弓箭)的出現率(第三章起)
+  bowRate() { return this.allowedNow && this.allowedNow.has('bow') ? BOW_RATE : 0; },
   kickRate(m) {
     if (G.tutorial.active) return m.swipe || 0;
     if (this.allowedNow && !this.allowedNow.has('kick')) return 0; // 踢擊在第二章沙海遺跡才學會
@@ -1699,6 +1716,50 @@ G.battle = {
     this.stats.bonusHits = Math.max(this.stats.bonusHits || 0, hits); // 成就「拳如雨下」
     await G.banner(`${hits} HIT!`, G.t('獲得金幣 💰 +{0}', coins), 1400);
     this.e = realEnemy;
+  },
+
+  // 習得試煉:在訓練木樁上練新能力(k = kick 踢擊 / bow 疾射),只會冒出這種按鈕,成功 LEARN_GOAL 次就習得(沒打到不扣血,也不會失敗)
+  async learnTrial(k) {
+    const info = G.LEARN_INFO[k], name = G.t(info.name), run = this.run;
+    this.e = { id: 'dummy', name: G.t('訓練木樁'), icon: '🎯', img: 'enemies/training_dummy.png', hp: 1, maxHp: 1, turn: 0 };
+    this.showSprite(this.e);
+    G.$('#enemyName').textContent = G.t('習得試煉');
+    G.$('#waveTag').textContent = 'TRIAL';
+    this.setEnemyState('idle');
+    this.render();
+    const showLeft = n => { G.$('#enemyHpText').textContent = `${n} / ${LEARN_GOAL}`; G.$('#counter').textContent = LEARN_GOAL - n; };
+    showLeft(0);
+    G.bgm.play(this.stage.bgm || 'battle0');
+    await G.banner(G.t('新的挑戰:{0}', name), G.t('在訓練木樁上成功 {0} 次,就能習得{1}!', LEARN_GOAL, name), 2000);
+    if (run !== this.run) return;
+    await G.tips.show(k); // 操作說明卡
+    if (run !== this.run) return;
+    this.phase = 'trial';
+    await this.setTurn('atk');
+    this.setPhase(G.t('習得試煉:{0} {1} 次', name, LEARN_GOAL), 'atk');
+    let n = 0;
+    await G.molePhase({
+      icon: '👊', cls: 'fist', count: 999, life: 2200, interval: 600, noCounter: true, // 次數給很大,由成功次數決定結束
+      patterns: { single: 1 },
+      mods: k === 'kick' ? { swipe: 1 } : { bow: 1 },
+      onHit: (i, hit) => {
+        if (!hit.swipe && !hit.bow) return;
+        showLeft(++n);
+        this.punchFx(i % 3, { icon: hit.swipe ? '🦵' : 'arrow', dur: hit.bow ? 110 : undefined });
+        this.setEnemyState('hit', 250);
+        G.audio.play(hit.swipe ? 'kick' : 'punch');
+        if (hit.bow) this.float(hit.bow >= 1 ? '滿弦!' : '射擊!', 'tag charge');
+      },
+      onMiss: () => {},
+      stop: () => n >= LEARN_GOAL || run !== this.run,
+    });
+    this.phase = null;
+    if (run !== this.run) return;
+    const sv = G.save.data;
+    sv.learned = Object.assign(sv.learned || {}, { [k]: true });
+    G.save.write();
+    G.audio.play('levelup');
+    await G.banner(G.t('習得!{0}', name), G.t('之後的戰鬥會開始出現{0}!', name), 1600);
   },
 
   // 金幣特效:從第 i 格往上噴出 n 枚旋轉的金幣
