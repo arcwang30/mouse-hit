@@ -13,7 +13,7 @@ G.DEX_HERO = [
   // 第二章破關後
   { id: 'awake',   name: '炎鋼・天道', img: 'fx/hero_awake.jpg', price: 350,
     bio: '在風暴之眼修得「炎鋼天道」的炎鋼。以神拳門拳法為根基,學會了守護同伴的護身心法。' },
-  { id: 'ult2',    name: '炎鋼天道・焚天', img: 'fx/ult_tiandao.webp', price: 420,
+  { id: 'ult2',    name: '炎鋼天道・焚天', img: 'fx/ult_tiandao_heal.webp', price: 420,
     bio: '無相宗主傳授的護身奧義。掌心捲起翠綠氣旋,重新燃起生命之火,並以氣勁護體擋下接下來的攻擊。' },
   // 第三章
   { id: 'spark',    name: '炎鋼・星火戰袍', img: 'fx/hero_spark.webp', price: 380,
