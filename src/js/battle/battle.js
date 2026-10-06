@@ -58,6 +58,10 @@ const DIAL_TIERS = [{ extra: 0, name: '旋風', mul: 1 }, { extra: 2, name: '暴
 // 完美:符號出現後的前 30% 時間內點中(剩餘比例 ≥ PERFECT_AT),傷害加成 +PERFECT_BONUS(和反擊、破甲、FEVER 相加)、必殺值多 PERFECT_ULT
 // 破甲成功後下一回合的傷害加成 BROKEN_BONUS(同樣和其他狀態加成相加)
 const PERFECT_AT = 0.7, PERFECT_BONUS = 0.3, PERFECT_ULT = 2, BROKEN_BONUS = 0.35;
+// 助陣夥伴的被動:小隼 ❓ 現形時間 ×HAYABUSA_REVEAL、追蹤標靶每 HAYABUSA_TRACK 毫秒才滑一格;紅綾「完美」門檻放寬 HONGLIN_PERFECT;雷獅 HOLD / 頂住按住時間 ×LEISHI_HOLD
+const HAYABUSA_REVEAL = 0.5, HAYABUSA_TRACK = 600, HONGLIN_PERFECT = 0.1, LEISHI_HOLD = 0.8;
+// 助陣夥伴的援護(每關一次):紅綾在連擊到 HONGLIN_COMBO 時打掉 HONGLIN_HITS 顆拳頭;雷獅在 HP ≤ LEISHI_HP 時預約下一個敵人回合全擋
+const HONGLIN_COMBO = 20, HONGLIN_HITS = 3, LEISHI_HP = 0.3;
 // 破綻量表(同一關內跨波段累積,0~100):每次格擋依判定加分、漏擋扣分;量表滿了而且那一回合全部擋下,才會露出破綻(露出後歸零)
 // 一次攻擊約 5~7 面盾:全部迅擋約 3 次攻擊滿一次,一般格擋約 4~5 次
 const BREAK_GAUGE = { fast: 6, block: 4, late: 2, memory: 15, miss: -15 };
@@ -203,6 +207,12 @@ G.battle = {
     this.brokenNext = false;
     this.breakGauge = 0; // 破綻量表:每一關從零開始,同一關內跨波段累積
     this.ultGuard = 0; // 炎鋼天道的護體還剩幾次
+    // 助陣夥伴(出擊前選的,見 G.ALLIES):援護技每關限一次;雷獅的獅吼護陣先預約(lionNext)再在下一個敵人回合生效(lionTurn)
+    this.ally = G.allyNow();
+    this.allyUsed = false;
+    this.lionNext = false;
+    this.lionTurn = false;
+    if (G.$('#allyPop')) G.$('#allyPop').classList.remove('show');
     this.boardCalm = 0; // 星火燎原拳:還有幾個階段不佈置機制格
     G.$('#battle').classList.remove('ult-guard');
 
@@ -354,6 +364,7 @@ G.battle = {
     await this.setTurn('atk'); // 斬擊演出播完才開始冒拳頭
     this.setPhase(bonus.length ? G.t('你的回合・{0}', bonus.join('・')) : '你的回合:點擊 👊,HOLD 要按住', 'atk');
     this.setupBoard('attack');
+    this.allyHack();
     this.render();
 
     const m = this.mech('atk'), rc = G.roundCfg();
@@ -368,8 +379,8 @@ G.battle = {
       icon: '👊', cls: 'fist', count: p.attackCount, life,
       interval: Math.max(250, life * 0.45), patterns: this.patterns(),
       // 蓄力重拳:每回合其中一顆拳頭需要按住蓄力
-      hold: { at: 1 + Math.floor(Math.random() * (p.attackCount - 1)), icon: '👊', label: 'HOLD', holdMs: HOLD_MS * (p.holdMaster ? 0.6 : 1) },
-      mods: { gold: GOLD_RATE * p.goldMul, goldMs: rc.goldMs, hidden: m.hidden, blink: m.blink, armor: m.armor, swipe: this.kickRate(m), bow: this.bowRate(), mirror: m.mirror, spin: m.spin, greed: m.greed, greedAt: m.greedAt, anchor: m.anchor, track: m.track },
+      hold: { at: 1 + Math.floor(Math.random() * (p.attackCount - 1)), icon: '👊', label: 'HOLD', holdMs: HOLD_MS * (p.holdMaster ? 0.6 : 1) * (this.ally === 'leishi' ? LEISHI_HOLD : 1) },
+      mods: { gold: GOLD_RATE * p.goldMul, goldMs: rc.goldMs, hidden: m.hidden && m.hidden * (this.ally === 'hayabusa' ? HAYABUSA_REVEAL : 1), blink: m.blink, armor: m.armor, swipe: this.kickRate(m), bow: this.bowRate(), mirror: m.mirror, spin: m.spin, greed: m.greed, greedAt: m.greedAt, anchor: m.anchor, track: m.track, trackStep: this.ally === 'hayabusa' ? HAYABUSA_TRACK : 0 },
       onMirage: () => { combo = 0; this.comboBreak(); this.float('蜃樓!', 'tag miss'); },
       onSpin: () => this.spinFx(),
       onEmpty: () => this.backlash(), // 天魔:點空格反噬
@@ -387,7 +398,7 @@ G.battle = {
       onChip: (i, type, cleared) => this.chip(type, cleared),
       onHit: (i, info) => {
         // 完美:一出現就點中(自動命中、蓄力不算)
-        const perfect = !info.auto && !info.hold && info.ratio >= PERFECT_AT;
+        const perfect = !info.auto && !info.hold && info.ratio >= PERFECT_AT - (this.ally === 'honglin' ? HONGLIN_PERFECT : 0);
         if (perfect) { this.stats.perfectHits = (this.stats.perfectHits || 0) + 1; this.float('完美', 'perfect'); this.gainUlt(PERFECT_ULT); }
         const boost = stateBonus + (perfect ? PERFECT_BONUS : 0) + (this.fever() ? FEVER_MUL - 1 : 0);
         let d = (p.atk + combo * p.combo + counter) * (1 + boost);
@@ -401,6 +412,8 @@ G.battle = {
         first = false;
         if (p.execute && e.hp < e.maxHp * 0.2) d *= 2;
         this.comboHit();
+        // 紅綾的連環助拳:連擊第一次到 HONGLIN_COMBO,幫你打掉場上幾顆拳頭
+        if (this.ally === 'honglin' && !this.allyUsed && this.comboN >= HONGLIN_COMBO && api) this.honglinAssist(api);
         const charged = info.hold && info.charged;
         if (charged) d *= 3;
         const crit = Math.random() < p.crit;
@@ -454,6 +467,7 @@ G.battle = {
     await this.setTurn('def'); // 斬擊演出播完才開始冒盾牌
     this.setPhase(s ? G.t('必殺技來襲:{0}!', G.t(s.name)) : '防禦:點擊 🛡️ 擋下攻擊!', 'def');
     this.setupBoard('defend');
+    this.allyHack();
     const m = this.mech('def');
     await this.mechTips(m);
     // 幻術:隔一回合改成記憶考驗(第 1、3、5… 次攻擊),答對等於全部擋下,一樣有破綻
@@ -468,6 +482,9 @@ G.battle = {
       return;
     }
     this.soulReady = p.comboSoul;
+    this.lionTurn = this.lionNext; // 獅吼護陣預約過的話,這一回合生效
+    this.lionNext = false;
+    if (this.lionTurn) this.float('獅吼護陣!', 'tag line');
     let missed = 0, api = null, walled = !p.autoGuard;
     await G.molePhase({
       icon: '🛡️', cls, count, life, interval: life * 0.5, patterns: this.patterns(),
@@ -475,7 +492,7 @@ G.battle = {
       decoyRate: m.fake || (s ? s.decoy : 0), decoyIcon: m.fake ? '🛡️' : undefined, decoyCls: m.fake ? 'guard fake' : undefined,
       slowFirst: p.slowmo ? SLOWMO : null,
       onReady: a => { api = a; this.phaseEnd = a.end; }, // phaseEnd:必殺技打倒敵人時用來直接結束這一回合
-      mods: { blink: m.blink, ghost: m.ghost, armor: m.armor, lockon: m.lockon, heavy: m.heavy && { ...m.heavy, holdMs: Math.round(m.heavy.holdMs * HEAVY_HOLD_MUL) }, timebomb: m.timebomb, timebombTaps: TIMEBOMB_TAPS[G.round()], timebombMs: Math.round((TIMEBOMB_MS + (TIMEBOMB_TAPS[G.round()] - 1) * TIMEBOMB_HOP) * G.roundCfg().life), mirror: m.mirror, spin: m.spin, anchor: m.anchor, track: m.track },
+      mods: { blink: m.blink, ghost: m.ghost, armor: m.armor, lockon: m.lockon, heavy: m.heavy && { ...m.heavy, holdMs: Math.round(m.heavy.holdMs * HEAVY_HOLD_MUL * (this.ally === 'leishi' ? LEISHI_HOLD : 1)) }, timebomb: m.timebomb, timebombTaps: TIMEBOMB_TAPS[G.round()], timebombMs: Math.round((TIMEBOMB_MS + (TIMEBOMB_TAPS[G.round()] - 1) * TIMEBOMB_HOP) * G.roundCfg().life), mirror: m.mirror, spin: m.spin, anchor: m.anchor, track: m.track, trackStep: this.ally === 'hayabusa' ? HAYABUSA_TRACK : 0 },
       onMirage: () => { this.comboBreak(); this.float('蜃樓!', 'tag miss'); },
       onSpin: () => this.spinFx(),
       onEmpty: () => this.backlash(), // 天魔:點空格反噬
@@ -487,6 +504,8 @@ G.battle = {
       onChip: (i, type, cleared) => this.chip(type, cleared),
       // 每個盾牌對應一發飛向玩家的攻擊,盾牌消失的瞬間正好命中
       onSpawn: (i, ms) => {
+        // 雷獅的獅吼護陣:這一回合每個盾牌都自動擋下(「頂住」的重擊擋不了,還是要自己頂)
+        if (this.lionTurn) G.clock.after(() => { if (api && api.autoHit(i)) this.float('獅吼!', 'tag armor'); }, 200);
         // 鐵壁:每次攻擊的第一個盾牌自動擋下
         // (擋不了的盾牌,例如「頂住」或已被你點掉,就留給下一個)
         if (!walled) {
@@ -550,6 +569,7 @@ G.battle = {
     // 全部擋下而且破綻量表已滿:敵人露出破綻,給一段專心連打的時間(露出後量表歸零)
     if (!missed && !this.over() && this.breakReady()) await this.breakChance();
     if (this.ultGuard > 0 && --this.ultGuard === 0) G.$('#battle').classList.remove('ult-guard'); // 炎鋼天道的護體:每次敵人攻擊結束扣一次
+    this.lionTurn = false;
   },
 
   // 破綻量表:加減後限制在 0~100,滿了時亮起
@@ -1449,6 +1469,47 @@ G.battle = {
   // 這一回合影颸(🦵 帶箭頭、要滑)的出現率:依關卡進度 10% → 20%,加上敵人機制「疾風腿」的加成
   // 學會燎原連拳了沒(目前停用,不會開放)
   chainOk() { return !!(this.allowedNow && this.allowedNow.has('chain')); },
+  // 助陣夥伴援護:畫面上跳出夥伴的頭像與台詞(每關一次,呼叫時就算用掉)
+  allyPop() {
+    const a = G.ALLIES[this.ally];
+    if (!a) return;
+    this.allyUsed = true;
+    let el = G.$('#allyPop');
+    if (!el) {
+      el = document.createElement('div');
+      el.id = 'allyPop';
+      el.innerHTML = '<i></i><div><b></b><span></span></div>';
+      G.$('#stageView').appendChild(el);
+    }
+    el.querySelector('i').style.backgroundImage = `url('${ENEMY_IMG_DIR + (a.faces.angry || a.faces.normal)}')`;
+    el.querySelector('b').textContent = G.t(a.name);
+    el.querySelector('span').textContent = G.t(a.shout);
+    el.classList.remove('show');
+    void el.offsetWidth;
+    el.classList.add('show');
+    G.audio.play('levelup');
+    clearTimeout(this.allyPopTimer);
+    this.allyPopTimer = setTimeout(() => el.classList.remove('show'), 1900);
+  },
+  // 小隼的系統入侵:這一關第一次佈置出機制格時,全部清掉,下一個階段也不佈置
+  allyHack() {
+    if (this.ally !== 'hayabusa' || this.allyUsed || !G.grid.blocks.size) return;
+    this.allyPop();
+    G.grid.clearBlocks();
+    this.boardCalm = Math.max(this.boardCalm, 1);
+    this.float('機制格清除!', 'tag line');
+  },
+  // 紅綾的連環助拳:之後約 2 秒內,每隔一小段時間打掉一顆場上的拳頭(技法也打得到的那種),打滿 HONGLIN_HITS 顆為止
+  honglinAssist(api) {
+    this.allyPop();
+    let left = HONGLIN_HITS, tries = 14;
+    const punch = () => {
+      const t = api.targets();
+      if (t.length && api.autoHit(G.pick(t))) { left--; this.float('助拳!', 'tag charge'); }
+      if (left > 0 && --tries > 0) G.clock.after(punch, 160);
+    };
+    G.clock.after(punch, 250);
+  },
   // 疾射(弓箭)的出現率(第三章起)
   bowRate() { return this.allowedNow && this.allowedNow.has('bow') ? BOW_RATE : 0; },
   kickRate(m) {
@@ -1970,6 +2031,8 @@ G.battle = {
     d = Math.max(1, Math.round(d * (1 - p.armor)));
     if (this.stats) this.stats.hurt = (this.stats.hurt || 0) + 1; // 成就「毫髮無傷」
     p.hp = Math.max(0, p.hp - d);
+    // 雷獅的獅吼護陣:HP 第一次降到 LEISHI_HP 以下,預約下一個敵人回合的盾牌全部自動擋下
+    if (this.ally === 'leishi' && !this.allyUsed && p.hp > 0 && p.hp <= p.maxHp * LEISHI_HP) { this.lionNext = true; this.allyPop(); }
     G.audio.play('hurt');
     this.float('-' + d, 'hurt', true);
     if (G.save.data.shake) { // 設定可關閉畫面震動

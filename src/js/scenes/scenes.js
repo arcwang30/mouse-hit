@@ -435,6 +435,7 @@ G.scenes = {
     const tc = G.$('#tutCard');
     if (tc) tc.onclick = () => { G.pages.current = null; G.tutorial.run(true); };
     G.pages.open('stages'); // 共用選單頁面的返回按鈕與 Esc
+    G.dialog.allyJoins(); // 破關後回到地圖:新加入的夥伴打招呼(每位只播一次)
   },
 
   // 地圖上點了關卡:下方跳出關卡資訊與「出戰」按鈕
@@ -451,6 +452,15 @@ G.scenes = {
     const ults = owned.length > 1 && s.type !== 'bonus' ? `<div class="ss-ult"><p class="ss-ult-h">${G.t('必殺技')}</p><div class="ss-ult-list">` +
       owned.map(u => `<button class="ss-ult-opt${u === pick ? ' on' : ''}" data-u="${u.id}"><i style="background-image:url('../assets/images/${u.art}')"></i>` +
         `<b>${G.t(u.name)}</b><small>${G.t(u.desc)}</small></button>`).join('') + '</div></div>' : '';
+    // 助陣夥伴:加入一位以上才出現,可以選「不帶」;狂打獎勵關用不到
+    const allies = G.alliesOwned(), ally = G.allyNow();
+    // 卡片只放頭像、名字與定位;選中的夥伴把被動與援護寫在下面
+    const allyDesc = id => { const a = G.ALLIES[id]; return a ? `<b>${G.t('被動')}</b> ${G.t(a.passive)}<br><b>${G.t('援護')}</b> ${G.t(a.assist)}` : G.t('獨自出戰,不帶夥伴'); };
+    const allyPick = allies.length && s.type !== 'bonus' ? `<div class="ss-ult ss-ally"><p class="ss-ult-h">${G.t('助陣夥伴')}</p><div class="ss-ult-list">` +
+      allies.map(id => { const a = G.ALLIES[id]; return `<button class="ss-ult-opt${id === ally ? ' on' : ''}" data-a="${id}"><i style="background-image:url('../assets/images/${a.faces.normal}')"></i>` +
+        `<b>${G.t(a.name)}</b><small>${G.t(a.role)}</small></button>`; }).join('') +
+      `<button class="ss-ult-opt none${!ally ? ' on' : ''}" data-a="none"><i>✕</i><b>${G.t('不帶')}</b><small>—</small></button></div>` +
+      `<p class="ss-ally-desc">${allyDesc(ally)}</p></div>` : '';
     G.$('#stageSheet').innerHTML =
       `<div class="ss-box t-${s.type}"${s.img ? ` style="--ssbg:url('${new URL('../assets/images/' + s.img, location.href).href}')"` : ''}><div class="ss-head"><span class="ss-type">${type.icon} ${G.t(type.name)}</span>` +
       `<span class="ss-diff" title="${G.t('難度')}">${G.t('難度')}<i class="diff-bars">${[1, 2, 3, 4, 5].map(n => `<i class="${n <= s.stars ? 'on' : ''}"></i>`).join('')}</i></span></div>` +
@@ -459,19 +469,28 @@ G.scenes = {
         : `<p class="ss-desc">${G.t('{0} 波敵人', s.waves.length)}</p><div class="ss-foes">${foes}</div>`) +
       `<div class="ss-rate">${[1, 2, 3].map(n => `<span class="${n <= st ? 'on' : ''}">★</span>`).join('')}` +
       `${pr.best[i] ? `<small>${G.t('最高分 {0}', pr.best[i])}</small>` : ''}</div>` +
-      ults +
+      ults + allyPick +
       `<div class="ss-btns"><button class="btn small" id="ssCancel">${G.t('返回')}</button><button class="btn ss-go" id="ssGo">${G.t('出戰')}</button></div></div>`;
     const el = G.$('#stageSheet');
     el.classList.add('show');
     G.audio.play('select');
     G.$('#ssGo').onclick = () => { el.classList.remove('show'); G.pages.current = null; G.battle.start(i); };
     G.$('#ssCancel').onclick = () => { el.classList.remove('show'); G.audio.play('click'); };
-    el.querySelectorAll('.ss-ult-opt').forEach(b => {
+    el.querySelectorAll('.ss-ult-opt[data-u]').forEach(b => {
       b.onclick = () => {
         sv.ultPick = b.dataset.u;
         G.save.write();
         G.audio.play('click');
-        el.querySelectorAll('.ss-ult-opt').forEach(x => x.classList.toggle('on', x === b));
+        el.querySelectorAll('.ss-ult-opt[data-u]').forEach(x => x.classList.toggle('on', x === b));
+      };
+    });
+    el.querySelectorAll('.ss-ult-opt[data-a]').forEach(b => {
+      b.onclick = () => {
+        sv.allyPick = b.dataset.a;
+        G.save.write();
+        G.audio.play('click');
+        el.querySelectorAll('.ss-ult-opt[data-a]').forEach(x => x.classList.toggle('on', x === b));
+        el.querySelector('.ss-ally-desc').innerHTML = allyDesc(b.dataset.a);
       };
     });
     el.onclick = e => { if (e.target === el) el.classList.remove('show'); };

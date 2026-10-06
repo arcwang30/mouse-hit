@@ -252,7 +252,7 @@ G.grid = {
 //     gold   金拳:停留較短、傷害高       armor  晶盾:要點兩下
 //     blink  瞬移:存活一半時跳到別格     ghost  醉影:旁邊多一個假的殘影
 //     anchor 錨鏈:同時冒出的兩顆被鐵鏈連住的機率(要在 ANCHOR_MS 內接連打中)
-//     track  追蹤標靶:符號沿一排 / 一列每 TRACK_STEP 毫秒滑一格的機率
+//     track  追蹤標靶:符號沿一排 / 一列每 TRACK_STEP 毫秒滑一格的機率(mods.trackStep 可改成別的毫秒數:小隼的被動)
 //     hidden 駭入:前段時間顯示成 ❓(數值 = 現形時間比例)
 //     lockon 鎖定:出現前先顯示準星(數值 = 提前毫秒數)
 //     heavy  { chance, holdMs } 重擊:要按住「頂住」才算擋下
@@ -887,7 +887,7 @@ G.molePhase = o => new Promise(resolve => {
     a.dir = dirs.find(d => openFor(stepOf(i, d))) || dirs[0];
     cell(i).classList.add('tracking');
     showNext(a);
-    a.ts.push(G.clock.after(() => trackStep(a), TRACK_STEP));
+    a.ts.push(G.clock.after(() => trackStep(a), mods.trackStep || TRACK_STEP));
   };
   const trackStep = a => {
     if (finished || active.get(a.cell) !== a || a.loose) return;
@@ -907,7 +907,7 @@ G.molePhase = o => new Promise(resolve => {
       active.set(to, a);
     }
     showNext(a);
-    a.ts.push(G.clock.after(() => trackStep(a), TRACK_STEP));
+    a.ts.push(G.clock.after(() => trackStep(a), mods.trackStep || TRACK_STEP));
   };
   const untrack = a => { if (a.nextEl != null) { cell(a.nextEl).classList.remove('track-next'); a.nextEl = null; } };
 

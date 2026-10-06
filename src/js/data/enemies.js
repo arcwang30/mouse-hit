@@ -188,12 +188,27 @@ G.ENEMIES = {
 G.ALLIES = {
   // faces:對話時依台詞情緒換的表情頭像(正常、怒、哀、樂;台詞用 'honglin:sad' 這樣指定);faceSize / facePos:頭像框裡的縮放與位置
   // img / zoom:圖鑑等其他地方用的立繪
-  hayabusa: { name: '小隼', img: 'allies/hayabusa.webp', zoom: 280, faceSize: 'auto 125%', facePos: 'center 12%', // 反抗軍的少年駭客
-    faces: { normal: 'allies/hayabusa_normal.webp', angry: 'allies/hayabusa_angry.webp', sad: 'allies/hayabusa_sad.webp', happy: 'allies/hayabusa_happy.webp' } },
-  honglin:  { name: '紅綾', img: 'allies/honglin.webp', zoom: 190, faceSize: '112% auto', facePos: 'center 18%', // 被救出的女拳師
-    faces: { normal: 'allies/honglin_normal.webp', angry: 'allies/honglin_angry.webp', sad: 'allies/honglin_sad.webp', happy: 'allies/honglin_happy.webp' } },
-  leishi:   { name: '雷獅', img: 'allies/leishi.webp', zoom: 280, faceSize: 'auto 125%', facePos: 'center 10%', // 從洗腦中清醒的拳王(鐵籠拳霸)
-    faces: { normal: 'allies/leishi_normal.webp', angry: 'allies/leishi_angry.webp', sad: 'allies/leishi_sad.webp', happy: 'allies/leishi_happy.webp' } },
+  // 助陣夥伴:每破一章加入一位(own),出擊前選一位帶上場(sv.allyPick);role 定位、passive 被動、assist 援護技(每關限一次,自動觸發)、shout 援護時的台詞
+  hayabusa: { name: '小隼', img: 'allies/hayabusa.webp', zoom: 280, faceSize: 'auto 125%', facePos: 'center 12%', // 新神州的少年駭客(第一章破關加入)
+    faces: { normal: 'allies/hayabusa_normal.webp', angry: 'allies/hayabusa_angry.webp', sad: 'allies/hayabusa_sad.webp', happy: 'allies/hayabusa_happy.webp' },
+    own: sv => !!sv.cleared, role: '機關', passive: '❓ 提早現形・追蹤標靶變慢',
+    assist: '系統入侵:第一次出現機制格時全部清除,下個階段也不佈置', shout: '系統入侵!這些機關交給我!' },
+  honglin:  { name: '紅綾', img: 'allies/honglin.webp', zoom: 190, faceSize: '112% auto', facePos: 'center 18%', // 天沙宗的女拳師(第二章破關加入)
+    faces: { normal: 'allies/honglin_normal.webp', angry: 'allies/honglin_angry.webp', sad: 'allies/honglin_sad.webp', happy: 'allies/honglin_happy.webp' },
+    own: sv => !!sv.tiandao, role: '攻擊', passive: '「完美」的判定時間放寬',
+    assist: '連環助拳:連擊第一次到 20 時,幫你打掉場上 3 顆拳頭', shout: '連環助拳!我來助你!' },
+  leishi:   { name: '雷獅', img: 'allies/leishi.webp', zoom: 280, faceSize: 'auto 125%', facePos: 'center 10%', // 從洗腦中清醒的拳王(第三章破關加入)
+    faces: { normal: 'allies/leishi_normal.webp', angry: 'allies/leishi_angry.webp', sad: 'allies/leishi_sad.webp', happy: 'allies/leishi_happy.webp' },
+    own: sv => !!(sv.ch3Clear || sv.spark), role: '防守', passive: 'HOLD 與「頂住」按住的時間縮短 20%',
+    assist: '獅吼護陣:HP 第一次降到 30% 以下時,下一個敵人回合的盾牌全部自動擋下', shout: '獅吼護陣!下一波我替你扛!' },
+};
+// 已加入的夥伴(依加入順序);目前帶上場的夥伴(sv.allyPick:'none' = 不帶;沒選過 = 最新加入的);教學不帶
+G.alliesOwned = () => Object.keys(G.ALLIES).filter(id => G.ALLIES[id].own(G.save.data));
+G.allyNow = () => {
+  if (G.tutorial && G.tutorial.active) return null;
+  const own = G.alliesOwned(), pick = G.save.data.allyPick;
+  if (pick === 'none') return null;
+  return own.includes(pick) ? pick : own[own.length - 1] || null;
 };
 // 寶箱怪:神秘寶箱事件才會出現的敵人(不在關卡裡,所以不放進 G.ENEMIES);強度跟著當下的關卡與波次
 G.MIMIC = { name: '寶箱怪', icon: '🧰', img: 'enemies/mimic.webp', shot: '💰', hp: 90, atk: 11, atkCount: 6, guardLife: 950 };
