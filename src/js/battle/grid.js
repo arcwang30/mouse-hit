@@ -15,7 +15,7 @@ G.grid = {
       c.className = 'cell';
       c.innerHTML = '<span class="blk"></span><span class="cap"><span class="label"></span><span class="icon"></span><span class="badge"></span></span><span class="stag"></span>';
       // 記下按下的位置(滑擊拳要算滑動方向);鍵盤按的沒有位置
-      c.addEventListener('pointerdown', e => { e.preventDefault(); this.lastDown = { x: e.clientX, y: e.clientY }; this.tap(i); this.lastDown = null; });
+      c.addEventListener('pointerdown', e => { e.preventDefault(); this.lastDown = { x: e.clientX, y: e.clientY, id: e.pointerId }; this.tap(i); this.lastDown = null; });
       ['pointerup', 'pointercancel', 'pointerleave'].forEach(ev => c.addEventListener(ev, () => this.release(i)));
       el.appendChild(c);
       this.cells.push(c);
@@ -68,6 +68,22 @@ G.grid = {
       const c = this.cells[i];
       if (!['press', 'sink', 'suck'].some(k => c.classList.contains(k))) this.clear(i);
     }
+  },
+
+  // 燎原連拳的火焰軌跡:path 依序經過的格子;null = 收起(淡出)
+  chainTrail(path) {
+    const wrap = G.$('.grid-wrap');
+    if (!wrap) return;
+    let el = wrap.querySelector('.chain-trail:not(.fade)');
+    if (!path || path.length < 2) {
+      if (el) { el.classList.add('fade'); setTimeout(() => el.remove(), 350); }
+      return;
+    }
+    if (!el) { el = document.createElement('div'); el.className = 'chain-trail'; wrap.appendChild(el); }
+    const w = wrap.getBoundingClientRect();
+    const pts = path.map(i => { const r = this.cells[i].getBoundingClientRect(); return `${r.left + r.width / 2 - w.left},${r.top + r.height / 2 - w.top}`; }).join(' ');
+    el.innerHTML = `<svg viewBox="0 0 ${w.width || 1} ${w.height || 1}"><polyline class="glow" points="${pts}"/><polyline points="${pts}"/></svg>` +
+      `<b style="left:${pts.split(' ').pop().split(',')[0]}px;top:${pts.split(' ').pop().split(',')[1]}px">×${path.length}</b>`;
   },
 
   flash(i, kind) {
@@ -233,13 +249,40 @@ G.molePhase = o => new Promise(resolve => {
     o.onMiss(i);
     settle();
   };
+  // 燎原連拳(o.chain):按住一顆拳頭不放,劃過相鄰(含斜角)的拳頭,一筆連續打中;第 n 顆的連段數放在 onHit 的 info.chain
+  let chaining = null; // { id 手指, last 最後一格, n 連段數, path 走過的格子 }
+  const adj8 = (p, q) => p !== q && Math.abs(p % 3 - q % 3) <= 1 && Math.abs(Math.floor(p / 3) - Math.floor(q / 3)) <= 1;
+  const chainable = j => {
+    const a = active.get(j);
+    return a && a.kind === 'normal' && !a.armor && !a.swipe && a.mirror === undefined &&
+      !cell(j).classList.contains('hidden') && !(blockAt(j) && blockAt(j).type === 'ice');
+  };
+  const endChain = () => {
+    if (!chaining) return;
+    if (chaining.n >= 2 && !finished) o.onChain && o.onChain(chaining.n);
+    chaining = null;
+    G.grid.chainTrail(null);
+  };
   const onMove = e => {
+    if (chaining && e.pointerId === chaining.id && !G.clock.paused) {
+      const el = document.elementFromPoint(e.clientX, e.clientY), c = el && el.closest('.cell');
+      const j = c ? G.grid.cells.indexOf(c) : -1;
+      if (j >= 0 && !chaining.path.includes(j) && adj8(chaining.last, j) && chainable(j)) {
+        chaining.n++;
+        chaining.path.push(j);
+        chaining.last = j;
+        G.grid.chainTrail(chaining.path);
+        doHit(j, active.get(j), false, false, chaining.n);
+      }
+      return;
+    }
     if (!swiping || swiping.x == null) return;
     const dx = e.clientX - swiping.x, dy = e.clientY - swiping.y;
     if (Math.hypot(dx, dy) < Math.max(12, cell(swiping.i).getBoundingClientRect().width * 0.35)) return; // 至少滑 12px,避免手指抖一下就判定
     endSwipe(Math.abs(dx) > Math.abs(dy) ? (dx > 0 ? 'right' : 'left') : (dy > 0 ? 'down' : 'up'));
   };
-  const onUp = () => {
+  const onUp = e => {
+    if (chaining && (!e || e.pointerId === chaining.id)) endChain();
     if (!swiping || swiping.x == null) return;
     const i = swiping.i;
     swiping = null;
@@ -281,6 +324,8 @@ G.molePhase = o => new Promise(resolve => {
   const finish = () => {
     if (finished) return;
     finished = true;
+    chaining = null;
+    G.grid.chainTrail(null);
     document.removeEventListener('pointermove', onMove);
     document.removeEventListener('pointerup', onUp);
     document.removeEventListener('pointercancel', onUp);
@@ -466,12 +511,14 @@ G.molePhase = o => new Promise(resolve => {
       return;
     }
 
-    // 一般符號
+    // 一般符號(學會燎原連拳後,用手指按下的拳頭可以當連段的起點)
+    const p = G.grid.lastDown;
+    if (o.chain && p && chainable(i)) chaining = { id: p.id, last: i, n: 1, path: [i] };
     doHit(i, a, false);
   };
 
-  // 結算一次命中。auto = 由技法自動打中(連鎖、爆裂、蓄力大師);swipe = 滑擊拳滑對方向
-  const doHit = (i, a, auto, swipe = false) => {
+  // 結算一次命中。auto = 由技法自動打中(連鎖、爆裂、蓄力大師);swipe = 滑擊拳滑對方向;chain = 燎原連拳的第幾顆
+  const doHit = (i, a, auto, swipe = false, chain = 0) => {
     goneAt[i] = G.clock.now();
     G.grid.impact(i, o.cls.includes('guard') ? 'guard' : a.gold ? 'num' : 'fist', a.gold || auto);
     const ratio = Math.max(0, a.life - (G.clock.now() - a.born)) / a.life;
@@ -480,7 +527,7 @@ G.molePhase = o => new Promise(resolve => {
     kill(a); active.delete(i);
     G.grid.clear(i, 'press');
     G.grid.flash(i, 'good');
-    const info = { ratio, gold: a.gold, auto, swipe, lava: !!(blockAt(i) && blockAt(i).type === 'lava') };
+    const info = { ratio, gold: a.gold, auto, swipe, chain, lava: !!(blockAt(i) && blockAt(i).type === 'lava') };
     o.onHit(i, info); // onHit 可在 info 填入 grade,交給特效顯示
     a.fx && a.fx.block(info.grade);
     groupHit(a);
@@ -655,6 +702,20 @@ G.molePhase = o => new Promise(resolve => {
     spawnOne(i, kind, lifeMul, gid);
   };
 
+  // 在空格裡找 n 格彼此相連(含斜角)的一串,找不到就隨便挑
+  const cluster = (free, n) => {
+    for (const s of G.shuffle(free)) {
+      const path = [s];
+      while (path.length < n) {
+        const next = G.shuffle(free).find(j => !path.includes(j) && adj8(path[path.length - 1], j));
+        if (next === undefined) break;
+        path.push(next);
+      }
+      if (path.length === n) return path;
+    }
+    return G.shuffle(free).slice(0, n);
+  };
+
   const spawnGroup = () => {
     if (finished) return;
     if (o.stop()) { finish(); return; }
@@ -665,7 +726,8 @@ G.molePhase = o => new Promise(resolve => {
     let pat = holdNow ? 'single' : pickPattern();
     let cells = null, gap = 0;
     const line = G.shuffle(LINES).find(l => l.every(i => free.includes(i)));
-    if (pat === 'pair') cells = G.shuffle(free).slice(0, 2);
+    if (o.chain && (pat === 'pair' || pat === 'triple')) cells = cluster(free, pat === 'pair' ? 2 : 3); // 學會燎原連拳:多發排成相連的形狀
+    else if (pat === 'pair') cells = G.shuffle(free).slice(0, 2);
     else if (pat === 'triple') cells = G.shuffle(free).slice(0, 3);
     else if (pat === 'line') cells = line;
     else if (pat === 'sweep' && line) { cells = Math.random() < 0.5 ? line : line.slice().reverse(); gap = 110; }

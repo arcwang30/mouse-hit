@@ -324,10 +324,12 @@ G.dialog = {
   awaken3() { return this.once('awaken3', AWAKEN_3); }, // 第三章結局:星火燎原拳
   // 通關:對話 + 新招式解鎖說明
   cleared(r) {
-    const unlock = G.REGIONS[r].unlock;
+    const unlock = G.REGIONS[r].unlock, learn = G.REGIONS[r].learn || [];
     const lines = (this.script(r).clear || []).slice();
     if (unlock.length) lines.push(['system', unlock.map(k => `${G.t(G.MECH_INFO[k].name)}:${G.t(G.MECH_INFO[k].hint)}`).join('\n') +
       '\n' + G.t('之後的敵人會開始使用這些招式!'), '⚔️ 新招式解鎖']);
+    if (learn.length) lines.push(['system', learn.map(k => `${G.t(G.LEARN_INFO[k].name)}:${G.t(G.LEARN_INFO[k].hint)}`).join('\n') +
+      '\n' + G.t('炎鋼學會了新的能力!'), '🔥 新能力']);
     return this.once('c' + G.regionKey(r), lines);
   },
 };

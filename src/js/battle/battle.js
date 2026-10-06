@@ -37,8 +37,10 @@ const REVIVE_FX_MS = 1800, REVIVE_BREATH_MS = 400; // 浴火重生:火光演出�
 const DEVIL_GOLD = 100;
 // 新機制:疾風(滑擊拳傷害倍率)、倒數炸彈(秒數再乘周回的停留倍率、爆炸傷害倍率)、幻術(記憶長度依周回、每格閃爍毫秒、每格作答時間、失敗傷害倍率)
 const SWIPE_MUL = 1.5; // 踢擊(帶箭頭、要滑)的傷害倍率
-// 踢擊是固定招式:出現率從第一章第 1 區的 KICK_BASE 起,每往後一區 +KICK_STEP,最多 KICK_MAX(第二章固定最高);帶疾風的敵人再往上加
-const KICK_BASE = 0.1, KICK_STEP = 0.02, KICK_MAX = 0.2, KICK_CAP = 0.6;
+// 踢擊是玩家在第二章沙海遺跡(colossus)學會的招式:出現率從學會的區域(全章節區域序號 KICK_FROM)起是 KICK_BASE,每往後一區 +KICK_STEP,最多 KICK_MAX;帶疾風的敵人再往上加
+const KICK_BASE = 0.1, KICK_STEP = 0.02, KICK_MAX = 0.2, KICK_CAP = 0.6, KICK_FROM = 8;
+// 燎原連拳(第三章鏽蝕港學會):一筆連段的第 n 顆每拳 +CHAIN_STEP×(n-1),最多 ×CHAIN_MAX
+const CHAIN_STEP = 0.25, CHAIN_MAX = 2;
 const TIMEBOMB_MS = 3000, TIMEBOMB_DMG = 1.5;
 // 倒數炸彈要點幾下才拆得掉(依周回;每點一下跳到別格),每多一下倒數多給 TIMEBOMB_HOP 毫秒
 const TIMEBOMB_TAPS = { 1: 2, 2: 3, 3: 3 }, TIMEBOMB_HOP = 600;
@@ -263,7 +265,7 @@ G.battle = {
       if (!G.save.data.seen[this.e.id]) { G.save.data.seen[this.e.id] = true; G.save.write(); } // 敵人圖鑑:遇過才顯示
       // 區域 BOSS 會先使出自己的招式(打倒後這些招式才開放給之後的敵人)
       const regionBoss = this.stage.type === 'boss' && this.e.id === G.REGIONS[this.stage.region].boss;
-      this.allowedNow = this.allowedBase && regionBoss ? new Set([...this.allowedBase, ...G.mechKeysOf(this.e.id)]) : this.allowedBase;
+      this.allowedNow = this.allowedBase && regionBoss ? new Set([...this.allowedBase, ...G.mechKeysOf(this.e.id), ...(G.REGIONS[this.stage.region].learn || [])]) : this.allowedBase;
       if (this.e.boss && w === total - 1) await this.bossWarning(this.e); // 最終 BOSS 前的警報演出
       if (run !== this.run) return;
       if (regionBoss && G.round() === 1) await G.dialog.boss(this.stage, this.e.id); // BOSS 登場對話
@@ -343,6 +345,8 @@ G.battle = {
 
     const m = this.mech('atk'), rc = G.roundCfg();
     await this.mechTips(m);
+    if (this.kickRate(m) > 0) await G.tips.show('kick'); // 第一次會冒出踢擊時說明
+    if (this.chainOk()) await G.tips.show('chain'); // 第一次能用燎原連拳時說明
     const life = Math.round(p.moleLife * rc.fistLife); // 周回:拳頭停留時間縮短
     this.soulReady = p.comboSoul; // 連擊之魂:每回合擋一次失誤
     let api = null;
@@ -363,6 +367,8 @@ G.battle = {
       decoySafe: p.defuse,
       onDecoy: () => p.defuse ? this.defuseBomb() : this.bomb(m.bombIcon || '💣'),
       onLine: () => this.lineBonus(),
+      chain: this.chainOk(),
+      onChain: n => { this.float(G.t('燎原 ×{0}!', n), 'tag lava'); G.audio.play(n >= 4 ? 'crit' : 'combo', n * 10); this.stats.chains = Math.max(this.stats.chains || 0, n); },
       onChip: (i, type, cleared) => this.chip(type, cleared),
       onHit: (i, info) => {
         // 完美:一出現就點中(自動命中、蓄力不算)
@@ -373,6 +379,7 @@ G.battle = {
         if (info.gold) { d *= GOLD_MUL; this.float('金拳!', 'tag gold'); }
         if (info.lava) { d *= 2; this.float('熔岩拳!', 'tag lava'); this.hurtPlayer(LAVA_BURN); }
         if (info.swipe) { d *= SWIPE_MUL; this.float('踢擊!', 'tag line'); }
+        if (info.chain > 1) d *= Math.min(CHAIN_MAX, 1 + CHAIN_STEP * (info.chain - 1)); // 燎原連拳:連越長越痛
         combo++;
         if (first && p.firstStrike) d *= 3;
         first = false;
@@ -548,7 +555,8 @@ G.battle = {
     const e = this.e;
     const hits = e.boss ? 14 : e.elite ? 12 : 10;
     this.setEnemyState('stagger');
-    if (!G.tutorial.active && Math.random() < DIAL_CHANCE) return this.dialBreak(); // 另一種玩法:旋風破綻
+    const dialOk = !this.allowedNow || this.allowedNow.has('dial'); // 旋風破綻在第二章磁暴荒原才學會
+    if (!G.tutorial.active && dialOk && Math.random() < DIAL_CHANCE) return this.dialBreak(); // 另一種玩法:旋風破綻
     const { breakLen } = G.roundCfg(); // 第二、三輪數字更多
     const breakTime = G.tutorial.active ? BREAK_TUTORIAL_MS : G.roundCfg().breakTime; // 新手教學給寬鬆一點的時間
     // 每次破綻隨機:數字 / 希臘數字 / 骰子(教學固定用數字)
@@ -1397,9 +1405,12 @@ G.battle = {
     };
   },
   // 這一回合踢擊(🦵 帶箭頭、要滑)的出現率:依關卡進度 10% → 20%,加上敵人機制「疾風腿」的加成
+  // 學會燎原連拳了沒(第三章鏽蝕港的 BOSS 戰中就能先用)
+  chainOk() { return !!(this.allowedNow && this.allowedNow.has('chain')); },
   kickRate(m) {
     if (G.tutorial.active) return m.swipe || 0;
-    const progress = (G.chapter() - 1) * 6 + (this.stage ? this.stage.region : 0);
+    if (this.allowedNow && !this.allowedNow.has('kick')) return 0; // 踢擊在第二章沙海遺跡才學會
+    const progress = Math.max(0, (G.chapter() - 1) * 6 + (this.stage ? this.stage.region : 0) - KICK_FROM); // 從學會的區域起算
     return Math.min(KICK_CAP, Math.min(KICK_MAX, KICK_BASE + KICK_STEP * progress) + (m.swipe || 0));
   },
 

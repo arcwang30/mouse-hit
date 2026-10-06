@@ -1261,3 +1261,13 @@ body.kb .dial-kb { display: block; }
 @keyframes tttThink { to { rotate: 360deg; } }
 /* 炎鋼天道的護體:效果期間 HP 條外圍亮金光 */
 #battle.ult-guard :has(> #playerHpFill) { box-shadow: 0 0 0 .4cqw #ffd84a, 0 0 3cqw #ffd84a90; }
+/* 燎原連拳:手指劃過的拳頭之間拉出一道火焰軌跡,最後一格標出連段數 */
+.chain-trail { position: absolute; inset: 0; z-index: 5; pointer-events: none; transition: opacity .3s; }
+.chain-trail.fade { opacity: 0; }
+.chain-trail svg { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; }
+.chain-trail polyline { fill: none; stroke: #ffe08a; stroke-width: 1.6cqw; stroke-linecap: round; stroke-linejoin: round; }
+.chain-trail polyline.glow { stroke: #ff6a1f; stroke-width: 4.5cqw; opacity: .55; filter: blur(.8cqw); animation: chainFlicker .18s ease-in-out infinite alternate; }
+@keyframes chainFlicker { from { opacity: .4; } to { opacity: .75; } }
+.chain-trail b { position: absolute; transform: translate(-50%, -150%); font: 900 5.5cqw/1 var(--tech, sans-serif); color: #fff3c0;
+  text-shadow: 0 0 1.5cqw #ff6a1f, 0 .3cqw 0 #8a2a00; animation: chainPop .2s cubic-bezier(.3, 1.8, .5, 1); }
+@keyframes chainPop { from { scale: 1.6; } }

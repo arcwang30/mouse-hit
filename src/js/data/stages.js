@@ -56,7 +56,8 @@ G.roundExtras = (id, r = G.round()) => {
   // 敵人原本就有的機制不重複給
   const m = G.MECHS[id] || {};
   const has = phase => Object.assign({}, m[phase], ...(m.rotate || []).map(x => x[phase] || {}));
-  const pool = G.ROUND_EXTRAS.filter(x => !(x.atk && x.key in has('atk')) && !(x.def && x.key in has('def')));
+  const ok = G.mechAllowed(0, r); // 只給這一章(含之前)已經登場的機制
+  const pool = G.ROUND_EXTRAS.filter(x => ok.has(x.key) && !(x.atk && x.key in has('atk')) && !(x.def && x.key in has('def')));
   // 依 id 決定起點,同一個敵人每次拿到的都一樣;第二個盡量換一個階段(一個攻、一個守)
   let seed = [...id].reduce((s, c) => s * 31 + c.charCodeAt(0), 7) >>> 0;
   const out = [];
@@ -162,9 +163,9 @@ const BGS = {
 const REGIONS_1 = [
   { name: '山腳小鎮', desc: '炎鋼下山後的第一站。紅磚老街與漁港,地痞流氓橫行。', boss: 'fatKing', unlock: ['heavy', 'armor'], stars: 1 },
   { name: '未來都心', desc: '全息投影與古老鐘塔交錯的市中心,地下擂台的喧囂徹夜不息。', boss: 'mechGeneral', unlock: ['lockon', 'timebomb'], stars: 2 },
-  { name: '鋼鐵熔爐', desc: '日夜不息的煉鋼廠,改造戰士在火光中列隊。', boss: 'forgeMaster', unlock: ['lava', 'blink', 'swipe'], stars: 3 },
-  { name: '雪嶺古寺', desc: '終年積雪的山頂古寺,寒風裡傳來誦經與拳風。', boss: 'snowWitch', unlock: ['ice', 'ghost'], stars: 3 },
-  { name: '霓虹夜城', desc: '末班列車與停演的老劇院,人偶在月台上獨自起舞。', boss: 'puppetLord', unlock: ['tentacle', 'hidden', 'memory'], stars: 4 },
+  { name: '鋼鐵熔爐', desc: '日夜不息的煉鋼廠,改造戰士在火光中列隊。', boss: 'forgeMaster', unlock: ['lava'], stars: 3 },
+  { name: '雪嶺古寺', desc: '終年積雪的山頂古寺,寒風裡傳來誦經與拳風。', boss: 'snowWitch', unlock: ['ice'], stars: 3 },
+  { name: '霓虹夜城', desc: '末班列車與停演的老劇院,人偶在月台上獨自起舞。', boss: 'puppetLord', unlock: ['hidden'], stars: 4 },
   { name: '天空要塞', desc: '飛行船環繞的浮空城。一切的終點,鋼拳帝王在雲端等待。', boss: 'steelEmperor', unlock: [], stars: 5 },
 ];
 // 關卡類型:normal 一般 / bonus 特訓(只有狂打獎勵關)/ elite 精英 / boss 區域 BOSS
@@ -219,10 +220,10 @@ const BGS_2 = {
 };
 const REGIONS_2 = [
   { name: '流沙邊境', desc: '荒漠邊緣的廢棄科技前哨站。拾荒者與沙盜盤據,腳下的流沙會吞噬一切。', boss: 'sandKing', unlock: ['sand'], stars: 3 },
-  { name: '磁暴荒原', desc: '電磁風暴肆虐的荒原,所有機械都會失靈。額上的烙痕第一次產生了共鳴。', boss: 'stormLord', unlock: ['spin'], stars: 3 },
-  { name: '沙海遺跡', desc: '半埋在沙海裡的古代神殿,牆上刻著古武源流的壁畫。', boss: 'colossus', unlock: [], stars: 4 },
+  { name: '磁暴荒原', desc: '電磁風暴肆虐的荒原,所有機械都會失靈。額上的烙痕第一次產生了共鳴。', boss: 'stormLord', unlock: ['spin', 'blink'], learn: ['dial'], stars: 3 },
+  { name: '沙海遺跡', desc: '半埋在沙海裡的古代神殿,牆上刻著古武源流的壁畫。', boss: 'colossus', unlock: ['ghost', 'swipe'], learn: ['kick'], stars: 4 },
   { name: '蜃樓綠洲', desc: '水光搖曳的綠洲與海市蜃樓。真假難辨,隱世宗門的使者在此試探來者的心。', boss: 'mirageFairy', unlock: ['mirror'], stars: 4 },
-  { name: '天沙宗山門', desc: '隱世宗門「天沙宗」的修練場。弟子們能將肉身與粒子能量合而為一。', boss: 'sectGuardian', unlock: [], stars: 5 },
+  { name: '天沙宗山門', desc: '隱世宗門「天沙宗」的修練場。弟子們能將肉身與粒子能量合而為一。', boss: 'sectGuardian', unlock: ['memory'], stars: 5 },
   { name: '風暴之眼', desc: '風暴中心的古老祭壇。宗主「無相」靜候著繼承古武源流的人。', boss: 'sectMaster', unlock: [], stars: 5 },
 ];
 const STAGE_LIST_2 = [
@@ -269,10 +270,10 @@ const BGS_3 = {
   tower: { bg: 'sky',     img: 'backgrounds/ch3_tower.jpg', bgm: 'sky',     deco: ['🌀', '✨', '🗼', '✨', '🌀'] },
 };
 const REGIONS_3 = [
-  { name: '鏽蝕港', desc: '大洋彼岸的巨型貨櫃港。天幕議會的走私船在夜色中進出,碼頭被海盜把持。', boss: 'hookCaptain', unlock: [], stars: 5 },
-  { name: '橫貫列車', desc: '橫跨大陸的磁浮列車。天幕的軍需列車載著被俘的武者,在高速中穿越荒野。', boss: 'railHunter', unlock: ['tornado'], stars: 5 },
-  { name: '雨林基因廠', desc: '叢林深處的生化工廠。幽綠的培養槽裡,浸泡著被抽乾氣血的武者。', boss: 'geneDoctor', unlock: [], stars: 5 },
-  { name: '地下鐵籠拳場', desc: '被奪走意志的武者在鐵籠裡被迫互相殘殺,黑市的歡呼聲震耳欲聾。', boss: 'cageChampion', unlock: [], stars: 5 },
+  { name: '鏽蝕港', desc: '大洋彼岸的巨型貨櫃港。天幕議會的走私船在夜色中進出,碼頭被海盜把持。', boss: 'hookCaptain', unlock: [], learn: ['chain'], stars: 3 },
+  { name: '橫貫列車', desc: '橫跨大陸的磁浮列車。天幕的軍需列車載著被俘的武者,在高速中穿越荒野。', boss: 'railHunter', unlock: ['tornado'], stars: 3 },
+  { name: '雨林基因廠', desc: '叢林深處的生化工廠。幽綠的培養槽裡,浸泡著被抽乾氣血的武者。', boss: 'geneDoctor', unlock: ['tentacle'], stars: 4 },
+  { name: '地下鐵籠拳場', desc: '被奪走意志的武者在鐵籠裡被迫互相殘殺,黑市的歡呼聲震耳欲聾。', boss: 'cageChampion', unlock: [], stars: 4 },
   { name: '天幕都市', desc: '巨型穹頂籠罩的監控都市。宣傳螢幕日夜播放著議會的「和平」。', boss: 'executor', unlock: [], stars: 5 },
   { name: '武魂剝離塔', desc: '都市中心直通天際的高塔。無數武魂在塔頂的漩渦中哀號。', boss: 'skyChairman', unlock: [], stars: 5 },
 ];
@@ -310,18 +311,22 @@ const STAGE_LIST_3 = [
 ];
 
 // ---- 建立章節 ----
-// 難度(敵人強度倍率)曲線:第一章沿用舊版 10 關的曲線,第二、三章接著往上;依 30 關的位置內插
+// 難度(敵人強度倍率)曲線:依 30 關的位置內插。第二、三章不再接著第一章往上疊數值(玩家的成長追不上),
+// 而是配合當時的成長等級從較低處重新爬升,章節之間的難度改靠新機制;曲線是用戰鬥模擬調的:
+// 「要擋下幾成盾牌才過得了關」第一章約 35% → 77%,第二章 66% → 86%,第三章 70% → 90%,每波約 3～3.5 回合
 const CURVE_1 = [1, 1.2, 1.4, 1.55, 1.7, 1.8, 1.9, 2, 2.05, 2.1];
-const CURVE_2 = [2.15, 2.3, 2.45, 2.55, 2.65, 2.75, 2.82, 2.9, 2.95, 3];
-const CURVE_3 = [3.05, 3.2, 3.35, 3.45, 3.55, 3.65, 3.72, 3.8, 3.86, 3.92];
+const CURVE_2 = [1.45, 1.54, 1.63, 1.72, 1.81, 1.89, 1.98, 2.07, 2.16, 2.25];
+const CURVE_3 = [1.7, 1.8, 1.9, 2, 2.1, 2.2, 2.3, 2.4, 2.5, 2.6];
 const curveAt = (curve, i, n) => {
   const x = i / (n - 1) * (curve.length - 1), k = Math.floor(x), f = x - k;
   return +(curve[k] + ((curve[k + 1] || curve[k]) - curve[k]) * f).toFixed(2);
 };
-const buildChapter = (id, name, sub, regions, list, bgs, curve) => {
+// DIP:第二章起每個區域的第 1、2 關較輕鬆(熟悉新機制的低谷),精英和 BOSS 才是高峰
+const DIP = [0.88, 0.94, 1, 1, 1];
+const buildChapter = (id, name, sub, regions, list, bgs, curve, dip) => {
   regions.forEach((g, r) => { g.first = r * 5; g.last = r * 5 + 4; });
   const stages = list.map(([r, type, sname, bg, waves, events], i) => Object.assign({}, bgs[bg], {
-    region: r, type, waves, events, scale: curveAt(curve, i, list.length), stars: regions[r].stars,
+    region: r, type, waves, events, scale: +(curveAt(curve, i, list.length) * (dip ? dip[i % 5] : 1)).toFixed(2), stars: regions[r].stars,
     name: sname, code: `${r + 1}-${i % 5 + 1}`, // 地圖上的編號,例如 1-3
   }));
   const [short, title] = name.split(' '); // 章節切換按鈕用:「第二章」+「鋼鐵與心相的試煉」
@@ -329,8 +334,8 @@ const buildChapter = (id, name, sub, regions, list, bgs, curve) => {
 };
 G.CHAPTERS = [
   buildChapter(1, '第一章 鋼拳復仇', '新神州', REGIONS_1, STAGE_LIST_1, BGS, CURVE_1),
-  buildChapter(2, '第二章 鋼鐵與心相的試煉', '絕魔流沙', REGIONS_2, STAGE_LIST_2, BGS_2, CURVE_2),
-  buildChapter(3, '第三章 星火燎原的遠征', '天幕之下', REGIONS_3, STAGE_LIST_3, BGS_3, CURVE_3),
+  buildChapter(2, '第二章 鋼鐵與心相的試煉', '絕魔流沙', REGIONS_2, STAGE_LIST_2, BGS_2, CURVE_2, DIP),
+  buildChapter(3, '第三章 星火燎原的遠征', '天幕之下', REGIONS_3, STAGE_LIST_3, BGS_3, CURVE_3, DIP),
 ];
 // G.STAGES / G.REGIONS:目前選擇的章節(大部分程式只需要看目前這一章)
 Object.defineProperty(G, 'STAGES', { get: () => G.CHAPTERS[G.chapter() - 1].stages, configurable: true });
@@ -360,12 +365,20 @@ G.MECH_INFO = {
   // 第三章
   tornado:  { name: '龍捲風', hint: '紫色漩渦格上的符號轉眼就被吸走:拳頭少打一拳,盾牌沒擋到照樣受傷' },
 };
-// 第 i 關可以出現的機制:第一輪只有之前章節全部 + 本章前面區域 BOSS 解鎖的;第二、三輪全部開放(回傳 null = 不限制)
+// 第 i 關可以出現的機制:之前章節全部 + 本章前面區域 BOSS 解鎖的(unlock 敵人招式、learn 玩家新能力);
+// 第二、三輪本章全部開放,但不會出現之後章節才登場的東西(第一章的修羅不會冒出第二章的機制)
+const regionKeys = g => [...g.unlock, ...(g.learn || [])];
 G.mechAllowed = (i, round = G.round(), ch = G.chapter()) => {
-  if (round > 1) return null;
   const c = G.CHAPTERS[ch - 1], s = c.stages[i];
-  const before = G.CHAPTERS.slice(0, ch - 1).flatMap(x => x.regions.flatMap(g => g.unlock));
-  return new Set([...before, ...c.regions.slice(0, s ? s.region : 0).flatMap(g => g.unlock)]);
+  const before = G.CHAPTERS.slice(0, ch - 1).flatMap(x => x.regions.flatMap(regionKeys));
+  const upto = round > 1 ? c.regions.length : s ? s.region : 0;
+  return new Set([...before, ...c.regions.slice(0, upto).flatMap(regionKeys)]);
+};
+// 玩家的新能力(在區域的 learn 裡,打倒區域 BOSS 後學會;區域 BOSS 戰中就會先出現)
+G.LEARN_INFO = {
+  kick: { name: '踢擊', hint: '帶箭頭的綠色腳印:按住後往箭頭方向滑,傷害 ×1.5' },
+  dial: { name: '旋風破綻', hint: '破綻有時會變成雷達圓盤:抓準缺口,再畫圈捲起龍捲風' },
+  chain: { name: '燎原連拳', hint: '按住拳頭不放,一路劃過相鄰的拳頭,一筆打出連段;連越長每拳越痛' },
 };
 // 某個敵人用到的所有機制(含輪換與格子狀態)
 G.mechKeysOf = id => {
