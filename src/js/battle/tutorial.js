@@ -4,7 +4,7 @@
 // FEVER / 技能三選一 / 分歧 不在這裡教,正式關卡第一次遇到時由 G.tips 說明。
 (function () {
   const LONG = 1e9;       // 符號停留時間給到無限大:不會消失,等玩家點
-  const STEPS = 8; // 踢擊移到第二章(沙海遺跡)才學,第一次遇到時用說明卡教
+  const STEPS = 8; // 影颸移到第二章(沙海遺跡)才學,第一次遇到時用說明卡教
 
   // ---- 教練提示框與手指指示 ----
   const coach = (step, text) => {
@@ -99,7 +99,7 @@
             r.hits++;
             if (info.gold) { r.golds++; b.float('金拳!', 'tag gold'); }
             if (info.charged) { r.charged = true; b.float('蓄力重拳!', 'tag line'); }
-            if (info.swipe) { r.kicks++; b.float('踢擊!', 'tag line'); }
+            if (info.swipe) { r.kicks++; b.float('影颸!', 'tag line'); }
             const d = b.p.atk * (info.gold ? 2.5 : 1) * (info.charged ? 3 : 1) * (info.swipe ? 1.5 : 1);
             b.punchFx(i % 3, { crit: info.gold || info.charged, icon: info.swipe ? '🦵' : '👊' });
             b.hurtEnemy(Math.round(d), info.gold, info.charged, info.swipe ? 'kick' : null);
@@ -325,7 +325,7 @@
     anchor: { icon: '⚓', title: '錨鏈連擊', text: '被鐵鏈連住的兩顆符號,要在 0.5 秒內接連點掉!只點一顆的話它會鬆動搖晃,時間一到就被鐵鏈拉回原位,要重新點。盾牌也一樣,沒處理完照樣會打到你。' },
     chain:  { icon: '🔥', title: '燎原連拳', text: '按住一顆拳頭不放,手指一路劃過相鄰(斜角也算)的拳頭,一筆連續打中!連段越長,每拳傷害越高(第 2 顆 +25%、第 3 顆 +50%…最多 ×2)。同時冒出來的拳頭會排成相連的形狀。' },
     bow:    { icon: '🏹', title: '疾射', text: '帶弓箭的藍色按鈕是拉弓!按住它往下拉,弓弦會跟著往後拉,放開就射出去。拉越滿傷害越高,拉滿是「滿弦」×2;拉得太少箭射不出去,可以再拉一次。鍵盤:按住格子鍵,按越久拉越滿,放開射箭。' },
-    kick:   { icon: '🦵', title: '踢擊', text: '帶黃色箭頭的綠色腳印是踢擊!按住它,往箭頭的方向滑過去,傷害 ×1.5。滑錯方向算失誤。' },
+    kick:   { icon: '🦵', title: '影颸', text: '帶黃色箭頭的綠色腳印是影颸!按住它,往箭頭的方向滑過去,傷害 ×1.5。滑錯方向算失誤。' },
     dial:   { icon: '🌀', title: '旋風破綻', text: '雷達指針轉進發亮的缺口時,點一下抓住破綻!接著在限時內用手指在圓盤上畫圈,每轉一圈就捲起一道龍捲風繞住敵人。轉滿最低圈數就能破甲,轉越多風級越高(旋風 → 暴風 ×1.25 → 颶風 ×1.5),轉到颶風就立刻收招,把敵人捲上天再狠狠摔下!' },
     branch: { icon: '🔀', title: '選擇路線', text: '第 3、5 波打完後會出現分歧,兩條路只能選一條:休息回血、狂打賺金幣、精英挑戰、修行,偶爾還會遇到流浪商人、神秘寶箱或惡魔交易,依照當下狀況決定吧!' },
   };

@@ -334,7 +334,7 @@ const buildChapter = (id, name, sub, regions, list, bgs, curve, dip, learn = [])
 };
 G.CHAPTERS = [
   buildChapter(1, '第一章 鋼拳復仇', '新神州', REGIONS_1, STAGE_LIST_1, BGS, CURVE_1),
-  buildChapter(2, '第二章 鋼鐵與心相的試煉', '絕魔流沙', REGIONS_2, STAGE_LIST_2, BGS_2, CURVE_2, DIP, ['kick']), // 第一章破關後:踢擊
+  buildChapter(2, '第二章 鋼鐵與心相的試煉', '絕魔流沙', REGIONS_2, STAGE_LIST_2, BGS_2, CURVE_2, DIP, ['kick']), // 第一章破關後:影颸
   buildChapter(3, '第三章 星火燎原的遠征', '天幕之下', REGIONS_3, STAGE_LIST_3, BGS_3, CURVE_3, DIP, ['bow']), // 第二章破關後:弓箭
 ];
 // G.STAGES / G.REGIONS:目前選擇的章節(大部分程式只需要看目前這一章)
@@ -352,7 +352,7 @@ G.MECH_INFO = {
   timebomb: { name: '倒數炸彈', hint: '點燃的 💣 會跳格,要追著點 2~3 下才拆得掉' },
   lava:     { name: '熔岩', hint: '燒紅格子的拳頭傷害 ×2,但會燙傷自己' },
   blink:    { name: '瞬移', hint: '符號會跳到別格' },
-  swipe:    { name: '疾風腿', hint: '踢擊(綠色腳印)特別多,要往箭頭方向滑' },
+  swipe:    { name: '疾風腿', hint: '影颸(綠色腳印)特別多,要往箭頭方向滑' },
   ice:      { name: '冰封', hint: '結冰的格子要先敲破冰' },
   ghost:    { name: '殘影', hint: '點到半透明殘影會中斷連擊' },
   tentacle: { name: '觸手', hint: '觸手蓋住的格子,敲 3 下清掉' },
@@ -379,7 +379,7 @@ G.mechAllowed = (i, round = G.round(), ch = G.chapter()) => {
 };
 // 玩家的新能力:章節的 learn 在該章第 1 關的習得試煉學會;區域的 learn 打倒區域 BOSS 後學會(區域 BOSS 戰中就會先出現)
 G.LEARN_INFO = {
-  kick: { name: '踢擊', hint: '帶箭頭的綠色腳印:按住後往箭頭方向滑,傷害 ×1.5' },
+  kick: { name: '影颸', hint: '帶箭頭的綠色腳印:按住後往箭頭方向滑,傷害 ×1.5' },
   dial: { name: '旋風破綻', hint: '破綻有時會變成雷達圓盤:抓準缺口,再畫圈捲起龍捲風' },
   bow: { name: '疾射', hint: '帶弓箭的藍色按鈕:按住往下拉,放開射箭;拉越滿越痛,拉滿 ×2' },
   chain: { name: '燎原連拳', hint: '按住拳頭不放,一路劃過相鄰的拳頭,一筆打出連段;連越長每拳越痛' },

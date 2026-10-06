@@ -791,7 +791,7 @@ G.molePhase = o => new Promise(resolve => {
       // 金拳:停留很短,場上同時最多一顆(避免一次冒出好幾顆 ×2.5)
       if (roll(mods.gold) && ![...active.values()].some(x => x.gold)) { a.gold = true; cls += ' gold'; label = '×2.5'; life = mods.goldMs ? Math.min(Math.max(life * GOLD_LIFE, mods.goldMs[0]), mods.goldMs[1]) : life * GOLD_LIFE; }
       else if (roll(mods.armor)) { a.armor = 1; cls += ' crystal'; }
-      else if (roll(mods.swipe)) { // 踢擊 🦵:隨機一個方向,要往箭頭方向滑;停留時間多給一點(滑動比點擊慢)
+      else if (roll(mods.swipe)) { // 影颸 🦵:隨機一個方向,要往箭頭方向滑;停留時間多給一點(滑動比點擊慢)
         a.swipe = G.pick(['up', 'down', 'left', 'right']);
         icon = '🦵';
         cls += ' swipe kick swipe-' + a.swipe;

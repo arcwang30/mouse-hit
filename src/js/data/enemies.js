@@ -246,17 +246,17 @@ G.MECHS = {
   scorpion:     { hint: '毒蠍:拳頭先顯示 ❓,盾牌要頂住', atk: { hidden: 0.35 }, def: { heavy: { chance: 0.3, holdMs: 400 } } },
   ruinGuard:    { hint: '石衛:流沙格加上晶盾', board: 'sand', def: { armor: 0.35 } },
   dunesDancer:  { hint: '幻舞:殘影與蜃樓交錯', def: { ghost: 0.4, mirror: 0.35 } },
-  sectDisciple: { hint: '宗門:踢擊特別多,盾牌裡混著倒數炸彈', atk: { swipe: 0.4 }, def: { timebomb: 0.3 } },
+  sectDisciple: { hint: '宗門:影颸特別多,盾牌裡混著倒數炸彈', atk: { swipe: 0.4 }, def: { timebomb: 0.3 } },
   drillBot:     { hint: '鑽探:流沙格,拳頭先顯示 ❓', board: 'sand', atk: { hidden: 0.35 } },
   emRonin:      { hint: '浪人:九宮格會旋轉,拳頭會瞬移', atk: { blink: 0.35 }, def: { spin: true } },
-  mummyMonk:    { hint: '木乃伊:踢擊特別多,盾牌帶著殘影', atk: { swipe: 0.4 }, def: { ghost: 0.4 } },
+  mummyMonk:    { hint: '木乃伊:影颸特別多,盾牌帶著殘影', atk: { swipe: 0.4 }, def: { ghost: 0.4 } },
   mirageBlade:  { hint: '劍舞:帶 ⇋ 的是幻影,還會考驗記憶', rotate: [{ def: { mirror: 0.4 } }, { atk: { swipe: 0.3 }, def: { memory: true } }] },
   particleMonk: { hint: '粒子:拳頭會瞬移,還會考驗記憶', atk: { blink: 0.35 }, def: { memory: true } },
   sandKing:     { hint: '流沙:流沙格上的符號沉得特別快;盾牌要頂住', board: 'sand', def: { heavy: { chance: 0.3, holdMs: 420 } } },
   stormLord:    { hint: '磁暴:九宮格會整個旋轉,準星一亮盾牌就到', def: { spin: true, lockon: 420 }, atk: { blink: 0.3 } },
-  colossus:     { hint: '巨像:流沙格,重拳要頂住,還有殘影;拳頭裡混著踢擊', board: 'sand', atk: { swipe: 0.3 }, def: { heavy: { chance: 0.4, holdMs: 450 }, ghost: 0.35 } },
+  colossus:     { hint: '巨像:流沙格,重拳要頂住,還有殘影;拳頭裡混著影颸', board: 'sand', atk: { swipe: 0.3 }, def: { heavy: { chance: 0.4, holdMs: 450 }, ghost: 0.35 } },
   mirageFairy:  { hint: '蜃樓:帶 ⇋ 的是幻影,要點左右對稱的另一格', def: { mirror: 0.45, ghost: 0.3 } },
-  sectGuardian: { hint: '護法:踢擊帶晶盾、倒數炸彈,還會考驗記憶', rotate: [{ atk: { swipe: 0.35, armor: 0.3 }, def: { timebomb: 0.35, heavy: { chance: 0.25, holdMs: 400 } } }, { def: { memory: true } }] },
+  sectGuardian: { hint: '護法:影颸帶晶盾、倒數炸彈,還會考驗記憶', rotate: [{ atk: { swipe: 0.35, armor: 0.3 }, def: { timebomb: 0.35, heavy: { chance: 0.25, holdMs: 400 } } }, { def: { memory: true } }] },
   sectMaster:   { hint: '無相:流沙之上,蜃樓、磁暴、幻術輪番上陣', board: 'sand',
     rotate: [{ def: { mirror: 0.4 } }, { atk: { swipe: 0.3 }, def: { spin: true } }, { atk: { hidden: 0.4 }, def: { lockon: 400 } }, { def: { memory: true } }] },
   // 第三章:新機制「錨鏈」(鐵錨船長解鎖)、「龍捲風」(軌道獵手解鎖)、觸手(基因博士解鎖)、「電網」(鐵籠拳霸解鎖)、「追蹤標靶」(執行官解鎖),其餘組合前兩章的機制
@@ -286,5 +286,5 @@ G.MECHS = {
              { def: { mirror: 0.4, spin: true } }, { atk: { swipe: 0.35, anchor: 0.3 }, def: { timebomb: 0.35, anchor: 0.35 } }, { def: { memory: true } }] },
   steelEmperor:{ hint: '帝王:歷代強敵的招式輪番上陣,熔岩格拳頭 ×2', board: 'lava',
     rotate: [{ def: { heavy: { chance: 0.35, holdMs: 420 } } }, { atk: { hidden: 0.4, bomb: 0.3 }, def: { lockon: 400 } },
-             { atk: { armor: 0.3 }, def: { armor: 0.35 } }, { def: { timebomb: 0.35, lockon: 420 } }] }, // 只用第一章的機制(瞬移、殘影、踢擊、幻術在第二章才登場)
+             { atk: { armor: 0.3 }, def: { armor: 0.35 } }, { def: { timebomb: 0.35, lockon: 420 } }] }, // 只用第一章的機制(瞬移、殘影、影颸、幻術在第二章才登場)
 };

@@ -237,7 +237,7 @@ const SFX = {
     a.noise(0.06, { filter: 'highpass', freq: 3500, vol: 0.35, when: hit });
     a.noise(0.16, { filter: 'bandpass', freq: 900, to: 300, q: 1.5, vol: 0.4, when: hit });
   },
-  // 踢擊打中:短促的腿風「咻」,接著像一腳踢破牆——沉重的撞擊、牆面碎裂的爆音、碎石嘩啦落下
+  // 影颸打中:短促的腿風「咻」,接著像一腳踢破牆——沉重的撞擊、牆面碎裂的爆音、碎石嘩啦落下
   kick:    (a, t) => {
     // 腿風「咻——」:由低往高掃過的風聲,加一層高頻氣流,拉長一點、音量加大,擊中前先聽得清楚
     a.noise(0.2, { filter: 'bandpass', freq: 700, to: 4500, q: 1.6, vol: 0.75 });

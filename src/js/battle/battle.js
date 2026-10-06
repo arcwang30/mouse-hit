@@ -36,8 +36,8 @@ const PHOENIX_STEP = 0.15, PHOENIX_MAX = 0.6;
 const REVIVE_FX_MS = 1800, REVIVE_BREATH_MS = 400; // 浴火重生:火光演出時間、演出結束後再停一下的喘息時間(這段期間戰鬥都停住)
 const DEVIL_GOLD = 100;
 // 新機制:疾風(滑擊拳傷害倍率)、倒數炸彈(秒數再乘周回的停留倍率、爆炸傷害倍率)、幻術(記憶長度依周回、每格閃爍毫秒、每格作答時間、失敗傷害倍率)
-const SWIPE_MUL = 1.5; // 踢擊(帶箭頭、要滑)的傷害倍率
-// 踢擊是玩家在第二章第 1 關的習得試煉學會的招式:出現率從學會的區域(全章節區域序號 KICK_FROM)起是 KICK_BASE,每往後一區 +KICK_STEP,最多 KICK_MAX;帶疾風的敵人再往上加
+const SWIPE_MUL = 1.5; // 影颸(帶箭頭、要滑)的傷害倍率
+// 影颸是玩家在第二章第 1 關的習得試煉學會的招式:出現率從學會的區域(全章節區域序號 KICK_FROM)起是 KICK_BASE,每往後一區 +KICK_STEP,最多 KICK_MAX;帶疾風的敵人再往上加
 const KICK_BASE = 0.1, KICK_STEP = 0.02, KICK_MAX = 0.2, KICK_CAP = 0.6, KICK_FROM = 6;
 // 燎原連拳(目前停用:沒有任何章節或區域會學會):一筆連段的第 n 顆每拳 +CHAIN_STEP×(n-1),最多 ×CHAIN_MAX
 const CHAIN_STEP = 0.25, CHAIN_MAX = 2;
@@ -257,7 +257,7 @@ G.battle = {
     if (G.round() >= 2) await G.tips.show('shura');
     if (G.round() >= 3) await G.tips.show('tianmo');
     if (run !== this.run) return;
-    // 新章節第 1 關(第一輪):開打前先在訓練木樁上完成這一章的習得試煉(第二章踢擊、第三章弓箭)
+    // 新章節第 1 關(第一輪):開打前先在訓練木樁上完成這一章的習得試煉(第二章影颸、第三章弓箭)
     if (stageIdx === 0 && G.round() === 1 && !G.tutorial.active) {
       for (const k of G.CHAPTERS[G.chapter() - 1].learn) {
         if ((G.save.data.learned || {})[k]) continue;
@@ -343,7 +343,7 @@ G.battle = {
     this.counterPct = 0;
     this.brokenNext = false;
     // 狀態加成改成「相加」再乘一次:反擊力 + 破甲 + FEVER + 完美(每拳另外算),避免老手全部吃滿時倍數暴增
-    // (金拳、熔岩、踢擊、蓄力、暴擊這些和「哪一顆拳」有關的倍率照舊相乘)
+    // (金拳、熔岩、影颸、蓄力、暴擊這些和「哪一顆拳」有關的倍率照舊相乘)
     const stateBonus = power / 100 + (broken ? BROKEN_BONUS : 0);
 
     const bonus = [];
@@ -358,7 +358,7 @@ G.battle = {
 
     const m = this.mech('atk'), rc = G.roundCfg();
     await this.mechTips(m);
-    if (this.kickRate(m) > 0) await G.tips.show('kick'); // 第一次會冒出踢擊時說明
+    if (this.kickRate(m) > 0) await G.tips.show('kick'); // 第一次會冒出影颸時說明
     if (this.chainOk()) await G.tips.show('chain'); // 第一次能用燎原連拳時說明
     if (this.bowRate() > 0) await G.tips.show('bow'); // 第一次會冒出拉弓時說明
     const life = Math.round(p.moleLife * rc.fistLife); // 周回:拳頭停留時間縮短
@@ -393,7 +393,7 @@ G.battle = {
         let d = (p.atk + combo * p.combo + counter) * (1 + boost);
         if (info.gold) { d *= GOLD_MUL; this.float('金拳!', 'tag gold'); }
         if (info.lava) { d *= 2; this.float('熔岩拳!', 'tag lava'); this.hurtPlayer(LAVA_BURN); }
-        if (info.swipe) { d *= SWIPE_MUL; this.float('踢擊!', 'tag line'); }
+        if (info.swipe) { d *= SWIPE_MUL; this.float('影颸!', 'tag line'); }
         if (info.bow) { d *= 1 + info.bow * BOW_STEP; this.float(info.bow >= 1 ? '滿弦!' : '射擊!', 'tag charge'); }
         if (info.chain > 1) d *= Math.min(CHAIN_MAX, 1 + CHAIN_STEP * (info.chain - 1)); // 燎原連拳:連越長越痛
         combo++;
@@ -412,7 +412,7 @@ G.battle = {
         } else {
           this.punchFx(i % 3, { crit, icon: info.swipe ? '🦵' : info.bow ? 'arrow' : '👊', dur: info.bow ? 110 : undefined });
         }
-        this.hurtEnemy(Math.round(d), crit || charged, charged, info.swipe && !charged ? 'kick' : info.bow ? 'arrowHit' : null); // 踢擊:腿風 + 踢中的擊中聲;疾射:箭插進去的聲音
+        this.hurtEnemy(Math.round(d), crit || charged, charged, info.swipe && !charged ? 'kick' : info.bow ? 'arrowHit' : null); // 影颸:腿風 + 踢中的擊中聲;疾射:箭插進去的聲音
         if (info.gold && !crit && !charged) this.hitStop(60); // 金拳也頓一下
         if (p.lifesteal) this.healPlayer(p.lifesteal, true);
         this.gainUlt(p.ultGain);
@@ -1233,7 +1233,7 @@ G.battle = {
 
     const f = document.createElement('div');
     f.className = 'fx-fist' + (o.crit ? ' crit' : '');
-    if (o.icon === '🦵') f.innerHTML = '<img class="fx-foot" src="../assets/images/ui/kick_foot.png" alt="">'; // 踢擊:飛出去的是腳印
+    if (o.icon === '🦵') f.innerHTML = '<img class="fx-foot" src="../assets/images/ui/kick_foot.png" alt="">'; // 影颸:飛出去的是腳印
     else if (o.icon === 'arrow') f.innerHTML = '<svg class="fx-arrow" viewBox="0 0 100 100"><line class="shaft" x1="50" y1="10" x2="50" y2="58"/><path class="head" d="M50 0 L43 14 L57 14 Z"/><path class="fletch" d="M50 46 L43 52 L43 60 L50 54 L57 60 L57 52 Z"/></svg>'; // 拉弓:飛出去的是箭
     else f.textContent = o.icon || '👊';
     stage.appendChild(f);
@@ -1446,14 +1446,14 @@ G.battle = {
       bg.style.backgroundImage = before.bg;
     };
   },
-  // 這一回合踢擊(🦵 帶箭頭、要滑)的出現率:依關卡進度 10% → 20%,加上敵人機制「疾風腿」的加成
+  // 這一回合影颸(🦵 帶箭頭、要滑)的出現率:依關卡進度 10% → 20%,加上敵人機制「疾風腿」的加成
   // 學會燎原連拳了沒(目前停用,不會開放)
   chainOk() { return !!(this.allowedNow && this.allowedNow.has('chain')); },
   // 疾射(弓箭)的出現率(第三章起)
   bowRate() { return this.allowedNow && this.allowedNow.has('bow') ? BOW_RATE : 0; },
   kickRate(m) {
     if (G.tutorial.active) return m.swipe || 0;
-    if (this.allowedNow && !this.allowedNow.has('kick')) return 0; // 踢擊在第二章沙海遺跡才學會
+    if (this.allowedNow && !this.allowedNow.has('kick')) return 0; // 影颸在第二章沙海遺跡才學會
     const progress = Math.max(0, (G.chapter() - 1) * 6 + (this.stage ? this.stage.region : 0) - KICK_FROM); // 從學會的區域起算
     return Math.min(KICK_CAP, Math.min(KICK_MAX, KICK_BASE + KICK_STEP * progress) + (m.swipe || 0));
   },
@@ -1718,7 +1718,7 @@ G.battle = {
     this.e = realEnemy;
   },
 
-  // 習得試煉:在訓練木樁上練新能力(k = kick 踢擊 / bow 疾射),只會冒出這種按鈕,成功 LEARN_GOAL 次就習得(沒打到不扣血,也不會失敗)
+  // 習得試煉:在訓練木樁上練新能力(k = kick 影颸 / bow 疾射),只會冒出這種按鈕,成功 LEARN_GOAL 次就習得(沒打到不扣血,也不會失敗)
   async learnTrial(k) {
     const info = G.LEARN_INFO[k], name = G.t(info.name), run = this.run;
     this.e = { id: 'dummy', name: G.t('訓練木樁'), icon: '🎯', img: 'enemies/training_dummy.png', hp: 1, maxHp: 1, turn: 0 };
