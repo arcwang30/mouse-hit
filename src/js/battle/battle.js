@@ -412,7 +412,7 @@ G.battle = {
         } else {
           this.punchFx(i % 3, { crit, icon: info.swipe ? '🦵' : info.bow ? 'arrow' : '👊', dur: info.bow ? 110 : undefined });
         }
-        this.hurtEnemy(Math.round(d), crit || charged, charged, info.swipe && !charged ? 'kick' : null); // 踢擊:腿風 + 踢中的擊中聲
+        this.hurtEnemy(Math.round(d), crit || charged, charged, info.swipe && !charged ? 'kick' : info.bow ? 'arrowHit' : null); // 踢擊:腿風 + 踢中的擊中聲;疾射:箭插進去的聲音
         if (info.gold && !crit && !charged) this.hitStop(60); // 金拳也頓一下
         if (p.lifesteal) this.healPlayer(p.lifesteal, true);
         this.gainUlt(p.ultGain);
@@ -1747,7 +1747,7 @@ G.battle = {
         showLeft(++n);
         this.punchFx(i % 3, { icon: hit.swipe ? '🦵' : 'arrow', dur: hit.bow ? 110 : undefined });
         this.setEnemyState('hit', 250);
-        G.audio.play(hit.swipe ? 'kick' : 'punch');
+        G.audio.play(hit.swipe ? 'kick' : 'arrowHit');
         if (hit.bow) this.float(hit.bow >= 1 ? '滿弦!' : '射擊!', 'tag charge');
       },
       onMiss: () => {},

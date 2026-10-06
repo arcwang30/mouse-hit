@@ -323,6 +323,14 @@ G.molePhase = o => new Promise(resolve => {
     G.grid.bowPull(bowing.i, bowing.pull);
     requestAnimationFrame(bowKeyLoop);
   };
+  // 拉弓維持的音效:拉著的期間每 BOW_SND_MS 播一小段,音高跟著拉弓程度(用遊戲時鐘,暫停時跟著停)
+  const BOW_SND_MS = 100;
+  const bowSound = b => {
+    if (bowing !== b || finished) return;
+    const pull = b.y == null ? Math.min(1, (G.clock.now() - b.t) / BOW_KEY_MS) : b.pull;
+    G.audio.play('bowHold', pull);
+    G.clock.after(() => bowSound(b), BOW_SND_MS);
+  };
   const endBow = () => {
     if (bowing.y == null) bowing.pull = Math.min(1, (G.clock.now() - bowing.t) / BOW_KEY_MS); // 鍵盤:依按住的時間算(畫面動畫停住時也正確)
     const { i, a, pull } = bowing;
@@ -338,7 +346,7 @@ G.molePhase = o => new Promise(resolve => {
     }
     a.pull = pull;
     G.grid.bowShoot(i, pull);
-    G.audio.play('arrow');
+    G.audio.play('arrow', pull >= 1);
     doHit(i, a, false);
   };
   const onMove = e => {
@@ -692,6 +700,8 @@ G.molePhase = o => new Promise(resolve => {
       bowing = { i, a, id: p ? p.id : null, y: p ? p.y : null, t: G.clock.now(), pull: 0 };
       cell(i).classList.add('drawing');
       G.audio.play('draw');
+      const b = bowing;
+      G.clock.after(() => bowSound(b), BOW_SND_MS);
       if (!p) bowKeyLoop();
       return;
     }

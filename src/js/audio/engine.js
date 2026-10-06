@@ -217,10 +217,25 @@ const SFX = {
   },
   // 拉弓:搭箭時木弓「嘎吱」一聲;放開時弓弦「繃」地彈響,接著箭破空的「咻」
   draw:    a => { a.tone(180, 0.18, { type: 'sawtooth', vol: 0.06, to: 240, lp: 900 }); a.noise(0.12, { filter: 'bandpass', freq: 600, q: 4, vol: 0.12 }); },
-  arrow:   (a, t) => {
-    a.tone(220, 0.16, { type: 'triangle', vol: 0.35, to: 140 });
-    a.tone(440, 0.08, { type: 'square', vol: 0.06, to: 300 });
-    a.noise(0.2, { filter: 'bandpass', freq: 1800, to: 6000, q: 2.2, vol: 0.4, when: t + 0.02 });
+  // 拉弓維持:拉弓期間每 0.1 秒播一小段(彼此重疊成連續的聲音);p = 拉弓程度 0~1,越拉木弓的嘎吱聲與弓弦的緊繃音越高越大,拉滿多一層顫動的高音
+  bowHold: (a, t, p = 0) => {
+    a.noise(0.15, { filter: 'bandpass', freq: 350 + p * 700, q: 6, vol: 0.05 + p * 0.08 });
+    a.tone(110 + p * 220, 0.15, { type: 'triangle', vol: 0.03 + p * 0.05, lp: 1400, attack: 0.03 });
+    if (p >= 1) a.tone(Math.random() < 0.5 ? 1320 : 1370, 0.14, { type: 'sine', vol: 0.035, attack: 0.03 });
+  },
+  // 射箭:弓弦「繃」地彈回 + 箭破空的「咻——」;滿弦(full)弦聲更沉、破空聲更長更響
+  arrow:   (a, t, full) => {
+    a.tone(full ? 165 : 220, 0.25, { type: 'triangle', vol: 0.4, to: full ? 82 : 110 });
+    a.tone(full ? 330 : 440, 0.1, { type: 'square', vol: 0.07, to: 260, lp: 2500 });
+    a.noise(full ? 0.32 : 0.24, { filter: 'bandpass', freq: 1200, to: 7000, q: 2.2, vol: full ? 0.55 : 0.42, when: t + 0.02 });
+    if (full) a.noise(0.18, { filter: 'highpass', freq: 5000, vol: 0.2, when: t + 0.06 });
+  },
+  // 箭射中敵人:飛行一小段後「噗」地插進去,短促的悶響加木頭碎裂的脆響
+  arrowHit: (a, t) => {
+    const hit = t + 0.1;
+    a.tone(150, 0.14, { to: 60, vol: 0.7, when: hit });
+    a.noise(0.06, { filter: 'highpass', freq: 3500, vol: 0.35, when: hit });
+    a.noise(0.16, { filter: 'bandpass', freq: 900, to: 300, q: 1.5, vol: 0.4, when: hit });
   },
   // 踢擊打中:短促的腿風「咻」,接著像一腳踢破牆——沉重的撞擊、牆面碎裂的爆音、碎石嘩啦落下
   kick:    (a, t) => {
