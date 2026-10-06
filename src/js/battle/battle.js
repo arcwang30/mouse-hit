@@ -42,6 +42,7 @@ const KICK_BASE = 0.1, KICK_STEP = 0.02, KICK_MAX = 0.2, KICK_CAP = 0.6, KICK_FR
 // 燎原連拳(第三章鏽蝕港學會):一筆連段的第 n 顆每拳 +CHAIN_STEP×(n-1),最多 ×CHAIN_MAX
 const CHAIN_STEP = 0.25, CHAIN_MAX = 2;
 const SHOCK_DMG = 0.05; // 電網:觸電扣最大 HP 的比例
+const TORNADO_MIN = 2; // 龍捲風:九宮格上至少幾格
 const TIMEBOMB_MS = 3000, TIMEBOMB_DMG = 1.5;
 // 倒數炸彈要點幾下才拆得掉(依周回;每點一下跳到別格),每多一下倒數多給 TIMEBOMB_HOP 毫秒
 const TIMEBOMB_TAPS = { 1: 2, 2: 3, 3: 3 }, TIMEBOMB_HOP = 600;
@@ -1339,14 +1340,12 @@ G.battle = {
       g.clearBlocks('sand');
       G.shuffle(open()).slice(0, 3).forEach(i => g.setBlock(i, 'sand'));
     }
-    if (type === 'tornado') { // 龍捲風:一般敵人固定 1 格;tornadoMove 的敵人每個階段把 tornadoN 格搬到別處
-      const m = G.MECHS[this.e.id], has = [...g.blocks.values()].some(b => b.type === 'tornado');
-      if (m.tornadoMove || !has) {
-        const prev = [...g.blocks.keys()].filter(i => g.blocks.get(i).type === 'tornado');
-        g.clearBlocks('tornado');
-        const pool = open(), fresh = pool.filter(i => !prev.includes(i)); // 移動:盡量換到之前沒有龍捲風的格子
-        G.shuffle(fresh).concat(G.shuffle(pool.filter(i => prev.includes(i)))).slice(0, m.tornadoN || 1).forEach(i => g.setBlock(i, 'tornado'));
-      }
+    if (type === 'tornado') { // 龍捲風:每個階段隨機換位置,至少 TORNADO_MIN 格(tornadoN 可以更多)
+      const n = Math.max(TORNADO_MIN, G.MECHS[this.e.id].tornadoN || 0);
+      const prev = [...g.blocks.keys()].filter(i => g.blocks.get(i).type === 'tornado');
+      g.clearBlocks('tornado');
+      const pool = open(), fresh = pool.filter(i => !prev.includes(i)); // 移動:盡量換到之前沒有龍捲風的格子
+      G.shuffle(fresh).concat(G.shuffle(pool.filter(i => prev.includes(i)))).slice(0, n).forEach(i => g.setBlock(i, 'tornado'));
     }
     if (type === 'shock') { // 電網:每個階段換一批(BOSS 3 格,其他 2 格)
       g.clearBlocks('shock');

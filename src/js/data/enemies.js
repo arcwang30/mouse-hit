@@ -97,6 +97,11 @@ G.ENEMIES = {
   dunesDancer:  { name: '幻沙舞姬',   icon: '💃', img: 'enemies/dunes_dancer.webp', shot: '✨', hp: 90,  atk: 13, atkCount: 6, guardLife: 900 },
   sectDisciple: { name: '天沙宗弟子', icon: '🥋', img: 'enemies/sect_disciple.webp', shot: '💫', hp: 100, atk: 14, atkCount: 6, guardLife: 900 },
   particleMonk: { name: '粒子武僧',   icon: '🔆', img: 'enemies/particle_monk.webp', shot: '🔆', hp: 105, atk: 14, atkCount: 5, guardLife: 950 },
+  // 第二章追加(每個區域的招牌敵人)
+  drillBot:     { name: '沙暴鑽探機', icon: '🛠️', img: 'enemies/drill_bot.webp', shot: '🪨', hp: 110, atk: 12, atkCount: 4, guardLife: 1050 },
+  emRonin:      { name: '電磁浪人',   icon: '🧲', img: 'enemies/em_ronin.webp', shot: '⚡', hp: 95,  atk: 14, atkCount: 5, guardLife: 900 },
+  mummyMonk:    { name: '遺跡木乃伊拳僧', icon: '🧟', img: 'enemies/mummy_monk.webp', shot: '🩹', hp: 115, atk: 13, atkCount: 5, guardLife: 1000 },
+  mirageBlade:  { name: '蜃影劍舞者', icon: '💧', img: 'enemies/mirage_blade.webp', shot: '🌊', hp: 95,  atk: 14, atkCount: 6, guardLife: 900 },
 
   // ---- 第二章 區域 BOSS ----
   sandKing: {
@@ -139,6 +144,13 @@ G.ENEMIES = {
   drainedFighter: { name: '被洗腦的武者', icon: '😶', img: 'enemies/drained_fighter.webp', shot: '🗡️', hp: 105, atk: 15, atkCount: 5, guardLife: 950 },
   camoNinja:      { name: '光學迷彩刺客', icon: '👻', img: 'enemies/camo_ninja.webp', shot: '💠', hp: 100, atk: 16, atkCount: 6, guardLife: 880 },
   eliteGuard:     { name: '議會精英衛隊', icon: '🛡️', img: 'enemies/elite_guard.webp', shot: '⚔️', hp: 140, atk: 17, atkCount: 6, guardLife: 900 },
+  // 第三章追加(每個區域的招牌敵人)
+  smuggler:       { name: '走私船水手',   icon: '🏴‍☠️', img: 'enemies/smuggler.webp', shot: '⛓️', hp: 105, atk: 15, atkCount: 5, guardLife: 950 },
+  trainRaider:    { name: '列車劫匪',     icon: '🛹', img: 'enemies/train_raider.webp', shot: '💨', hp: 100, atk: 15, atkCount: 6, guardLife: 880 },
+  vatMutant:      { name: '培養槽變異體', icon: '🦠', img: 'enemies/vat_mutant.webp', shot: '🧪', hp: 130, atk: 16, atkCount: 4, guardLife: 1050 },
+  cageBouncer:    { name: '拳場莊家保鑣', icon: '🕶️', img: 'enemies/cage_bouncer.webp', shot: '💢', hp: 135, atk: 17, atkCount: 5, guardLife: 1000 },
+  patrolEye:      { name: '監控巡邏機',   icon: '👁️', img: 'enemies/patrol_eye.webp', shot: '🔴', hp: 100, atk: 16, atkCount: 6, guardLife: 880 },
+  hollowFighter:  { name: '武魂空殼',     icon: '👤', img: 'enemies/hollow_fighter.webp', shot: '💠', hp: 140, atk: 17, atkCount: 6, guardLife: 880 },
 
   // ---- 第三章 區域 BOSS ----
   hookCaptain: {
@@ -182,7 +194,7 @@ G.ALLIES = {
 G.MIMIC = { name: '寶箱怪', icon: '🧰', img: 'enemies/mimic.webp', shot: '💰', hp: 90, atk: 11, atkCount: 6, guardLife: 950 };
 
 // 敵人專屬機制(第二階段):讓每種敵人玩起來不一樣
-// hint:登場時的提示;atk:你的攻擊回合;def:敵人攻擊回合;board:放在格子上的狀態(ice / tentacle / lava / sand / tornado / shock;tornadoN 龍捲風格數、tornadoMove 每個階段移動)
+// hint:登場時的提示;atk:你的攻擊回合;def:敵人攻擊回合;board:放在格子上的狀態(ice / tentacle / lava / sand / tornado / shock;tornadoN 龍捲風格數(至少 2 格,每個階段都會換位置))
 // 數值意義見 grid.js molePhase 的 mods 說明;bomb 為炸彈出現機率,bombIcon 為炸彈圖示
 // rotate:每次攻擊輪流換一種機制
 G.MECHS = {
@@ -230,6 +242,10 @@ G.MECHS = {
   ruinGuard:    { hint: '石衛:流沙格加上晶盾', board: 'sand', def: { armor: 0.35 } },
   dunesDancer:  { hint: '幻舞:殘影與蜃樓交錯', def: { ghost: 0.4, mirror: 0.35 } },
   sectDisciple: { hint: '宗門:踢擊特別多,盾牌裡混著倒數炸彈', atk: { swipe: 0.4 }, def: { timebomb: 0.3 } },
+  drillBot:     { hint: '鑽探:流沙格,拳頭先顯示 ❓', board: 'sand', atk: { hidden: 0.35 } },
+  emRonin:      { hint: '浪人:九宮格會旋轉,拳頭會瞬移', atk: { blink: 0.35 }, def: { spin: true } },
+  mummyMonk:    { hint: '木乃伊:踢擊特別多,盾牌帶著殘影', atk: { swipe: 0.4 }, def: { ghost: 0.4 } },
+  mirageBlade:  { hint: '劍舞:帶 ⇋ 的是幻影,還會考驗記憶', rotate: [{ def: { mirror: 0.4 } }, { atk: { swipe: 0.3 }, def: { memory: true } }] },
   particleMonk: { hint: '粒子:拳頭會瞬移,還會考驗記憶', atk: { blink: 0.35 }, def: { memory: true } },
   sandKing:     { hint: '流沙:流沙格上的符號沉得特別快;盾牌要頂住', board: 'sand', def: { heavy: { chance: 0.3, holdMs: 420 } } },
   stormLord:    { hint: '磁暴:九宮格會整個旋轉,準星一亮盾牌就到', def: { spin: true, lockon: 420 }, atk: { blink: 0.3 } },
@@ -247,13 +263,20 @@ G.MECHS = {
   drainedFighter: { hint: '洗腦:電網格通電時別碰,盾牌帶著殘影,還會考驗記憶', board: 'shock', rotate: [{ def: { ghost: 0.4 } }, { def: { memory: true } }] },
   camoNinja:      { hint: '迷彩:電網格通電時別碰,拳頭先顯示 ❓,殘影與蜃樓交錯', board: 'shock', atk: { hidden: 0.4 }, def: { ghost: 0.35, mirror: 0.3 } },
   eliteGuard:     { hint: '衛隊:龍捲風格,拳頭會滑動追蹤,盾牌帶晶盾還混著倒數炸彈', board: 'tornado', atk: { track: 0.35 }, def: { armor: 0.35, timebomb: 0.3 } },
+  smuggler:       { hint: '水手:被錨鏈連住的兩顆要接連點掉', atk: { anchor: 0.4 }, def: { anchor: 0.3 } },
+  trainRaider:    { hint: '劫匪:龍捲風格,拳頭會瞬移', board: 'tornado', atk: { blink: 0.3 } },
+  vatMutant:      { hint: '變異體:觸手蓋住的格子要敲 3 下,盾牌帶晶盾', board: 'tentacle', def: { armor: 0.3 } },
+  cageBouncer:    { hint: '保鑣:電網格通電時別碰,重擊要頂住', board: 'shock', def: { heavy: { chance: 0.35, holdMs: 420 } } },
+  patrolEye:      { hint: '巡邏機:拳頭會滑動追蹤,盾牌先亮準星', atk: { track: 0.4 }, def: { lockon: 450, track: 0.3 } },
+  hollowFighter:  { hint: '空殼:電網格通電時別碰,錨鏈、追蹤、蜃樓輪番上陣', board: 'shock',
+    rotate: [{ atk: { anchor: 0.35 }, def: { track: 0.35 } }, { def: { heavy: { chance: 0.3, holdMs: 420 }, armor: 0.3 } }, { atk: { hidden: 0.4 }, def: { mirror: 0.35 } }] },
   hookCaptain:    { hint: '船長:被錨鏈連住的兩顆要接連點掉,重擊要頂住', atk: { anchor: 0.45 }, def: { anchor: 0.45, heavy: { chance: 0.3, holdMs: 420 } } },
   railHunter:     { hint: '獵手:龍捲風格上的符號轉眼就被吸走,準星鎖定、九宮格會轉', board: 'tornado', atk: { blink: 0.3 }, def: { lockon: 400, spin: true } },
   geneDoctor:     { hint: '博士:拳頭裡混著 🧪,觸手蓋住的格子要敲 3 下', board: 'tentacle', atk: { bomb: 0.3, bombIcon: '🧪' }, def: { armor: 0.3 } },
   cageChampion:   { hint: '拳霸:鐵籠通了電,電網格通電時別碰;大量「頂住」重拳', board: 'shock', def: { heavy: { chance: 0.45, holdMs: 450 }, armor: 0.3 } },
   executor:       { hint: '執行官:追蹤標靶、鎖定、蜃樓、倒數炸彈輪番上陣',
     rotate: [{ atk: { track: 0.45 }, def: { track: 0.45 } }, { def: { lockon: 400, blink: 0.35 } }, { atk: { track: 0.35 }, def: { mirror: 0.4, ghost: 0.3 } }, { atk: { swipe: 0.35 }, def: { timebomb: 0.35, track: 0.3 } }] },
-  skyChairman:    { hint: '議長:吸收的武魂化為歷代強敵的招式,兩道龍捲風每個階段都會移動', board: 'tornado', tornadoN: 2, tornadoMove: true,
+  skyChairman:    { hint: '議長:吸收的武魂化為歷代強敵的招式,三道龍捲風每個階段都會移動', board: 'tornado', tornadoN: 3,
     rotate: [{ atk: { track: 0.35 }, def: { heavy: { chance: 0.35, holdMs: 420 }, armor: 0.3 } }, { atk: { hidden: 0.4, bomb: 0.3 }, def: { lockon: 400 } },
              { def: { mirror: 0.4, spin: true } }, { atk: { swipe: 0.35, anchor: 0.3 }, def: { timebomb: 0.35, anchor: 0.35 } }, { def: { memory: true } }] },
   steelEmperor:{ hint: '帝王:歷代強敵的招式輪番上陣,熔岩格拳頭 ×2', board: 'lava',
