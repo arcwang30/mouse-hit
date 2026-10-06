@@ -744,10 +744,10 @@ html:lang(en) .stage-bar .ch-tab b { font-size: 2.6cqw; }
 .cell:has(.blk.shock) { box-shadow: 0 0 0 .5cqw #5a7a90; }
 .cell:has(.blk.shock.live) { box-shadow: 0 0 0 .6cqw #bff7ff, 0 0 5cqw #4ad0ff; }
 #grid.numbering .blk.shock { display: none; }
-/* 新手教學完成後:選擇關卡右上角的小型橫式按鈕(不佔地圖版面,各章節、輪次的地圖位置一致) */
-#stages .pg-head { position: relative; }
-.tut-pill { position: absolute; right: 3cqw; top: 2.2cqw; padding: .9cqw 2.6cqw; border: 0; border-radius: 99px; cursor: pointer;
-  font-family: inherit; font-size: 2.8cqw; font-weight: 700; line-height: 1.2; color: #fff; white-space: nowrap; background: linear-gradient(90deg, #13304a, #0a1a28);
-  box-shadow: inset 0 0 0 .35cqw var(--neon-y), 0 0 2cqw #ffd40040; }
-.tut-pill:hover { box-shadow: inset 0 0 0 .4cqw var(--neon-y), 0 0 3cqw #ffd40080; }
+/* 新手教學完成後:選擇關卡畫面右上角(貼在外框線內)的小型橫式按鈕,用和 CLEAR 一樣的綠色;不佔地圖版面,各章節、輪次的地圖位置一致 */
+.tut-pill { position: absolute; right: 2.4cqw; top: 2.4cqw; z-index: 3; padding: 1cqw 3cqw 1cqw 3.4cqw; border: 0; cursor: pointer;
+  font-family: inherit; font-size: 2.8cqw; font-weight: 800; line-height: 1.2; color: #04110a; white-space: nowrap;
+  background: linear-gradient(180deg, #b8ffd6, #3ddc84 55%, #0f9d58); clip-path: polygon(8% 0, 100% 0, 92% 100%, 0 100%);
+  filter: drop-shadow(0 0 1.5cqw #3ddc8480); }
+.tut-pill:hover { filter: brightness(1.1) drop-shadow(0 0 2cqw #3ddc84); }
 .tut-pill[hidden] { display: none; }

@@ -351,9 +351,19 @@ G.scenes = {
   mapTo(n) {
     const map = G.$('#worldMap');
     if (!map) return;
-    n = Math.max(0, Math.min(map.children.length - 1, n));
+    const last = map.children.length - 1;
+    if (n > last) return this.chapterStep(1);  // 最後一區再往後:接到下一章
+    if (n < 0) return this.chapterStep(-1);    // 第一區再往前:回到上一章
     if (n !== this.mapPage) G.audio.play('click');
     map.scrollTo({ left: n * map.clientWidth, behavior: 'smooth' });
+  },
+  // 地圖翻頁跨章節:往後(dir 1)從區域 6 接到下一個已開放章節的區域 1,沒有下一章就回到第一章;往前(dir -1)反過來接到上一章的區域 6
+  chapterStep(dir) {
+    const open = G.CHAPTERS.map((c, k) => k + 1).filter(ch => G.chapterOpen(ch)), i = open.indexOf(G.chapter());
+    const ch = open[(i + dir + open.length) % open.length];
+    const page = dir > 0 ? 0 : G.CHAPTERS[ch - 1].regions.length - 1;
+    if (ch === G.chapter()) return this.mapTo(page); // 只開放一章:在同一章裡繞回去
+    this.setChapter(ch, page);
   },
 
   stages(keepPage) {
@@ -375,10 +385,10 @@ G.scenes = {
       return `<button class="ch-tab${G.chapter() === k + 1 ? ' on' : ''}${open ? '' : ' locked'}" data-ch="${k + 1}">` +
         `<b>${open ? '' : '🔒 '}${G.t(c.short)}</b><small>${G.t(c.title)}</small></button>`;
     }).join('') + '</div>';
-    // 新手教學:還沒完成前是第一輪第一章最上面的卡片;完成後改成選擇關卡右上角的小按鈕(每個章節、輪次都有,不佔版面,各章地圖才會對齊)
+    // 新手教學:還沒完成前是第一輪第一章最上面的卡片;完成後改成選擇關卡畫面右上角(外框內)的小按鈕(每個章節、輪次都有,不佔版面,各章地圖才會對齊)
     const tut = sv.tutorialClear || round !== 1 || G.chapter() !== 1 ? '' : `<button class="stage-card tut-card" id="tutCard">` +
       `<div class="sc-name">🎓 ${G.t('新手教學')}</div><div class="sc-desc">${G.t('從頭學會點擊、防禦、破綻與必殺技。')}</div></button>`;
-    const head = G.$('#stages .pg-head');
+    const head = G.$('#stages');
     let pill = head.querySelector('.tut-pill');
     if (sv.tutorialClear && !pill) { pill = document.createElement('button'); pill.className = 'tut-pill'; head.appendChild(pill); }
     if (pill) { pill.hidden = !sv.tutorialClear; pill.textContent = '🎓 ' + G.t('新手教學'); pill.onclick = () => { G.pages.current = null; G.tutorial.run(true); }; }
@@ -433,6 +443,18 @@ G.scenes = {
     map.addEventListener('scroll', () => {
       const n = Math.round(map.scrollLeft / map.clientWidth);
       if (n !== this.mapPage) { this.mapPage = n; markDots(n); }
+    }, { passive: true });
+    // 手機:在區域 6 繼續往後滑 → 下一章(沒有就回第一章);在區域 1 繼續往前滑 → 上一章的區域 6
+    // (地圖本身已經滑不動了,所以看手指的水平位移;要從那一頁開始滑才算,避免從區域 5 滑到 6 時誤觸)
+    let swipe = null;
+    map.addEventListener('touchstart', e => { const t = e.touches[0]; swipe = e.touches.length === 1 ? { x: t.clientX, y: t.clientY, page: this.mapPage } : null; }, { passive: true });
+    map.addEventListener('touchend', e => {
+      if (!swipe) return;
+      const t = e.changedTouches[0], dx = t.clientX - swipe.x, dy = t.clientY - swipe.y, last = map.children.length - 1, from = swipe.page;
+      swipe = null;
+      if (Math.abs(dx) < map.clientWidth * 0.18 || Math.abs(dx) < Math.abs(dy) * 1.5) return;
+      if (dx < 0 && from === last && this.mapPage === last) this.chapterStep(1);
+      else if (dx > 0 && from === 0 && this.mapPage === 0) this.chapterStep(-1);
     }, { passive: true });
     G.$('#stageList').querySelectorAll('.md-dot').forEach(d => { d.onclick = () => this.mapTo(+d.dataset.r); });
     G.$('#stageList').querySelectorAll('.md-arrow').forEach(d => { d.onclick = () => this.mapTo(this.mapPage + +d.dataset.d); });
@@ -503,7 +525,7 @@ G.scenes = {
   },
 
   // 切換章節:還沒開放的只提示條件
-  setChapter(ch) {
+  setChapter(ch, page) { // page:切過去後要停在哪一區(地圖跨章節翻頁用;沒給就是目前關卡所在的區域)
     const sv = G.save.data;
     if (ch === G.chapter()) return;
     if (!G.chapterOpen(ch)) {
@@ -514,7 +536,7 @@ G.scenes = {
     sv.chapter = ch;
     G.save.write();
     G.audio.play('select');
-    this.stages();
+    this.stages(page);
   },
 
   // 切換周回(點分頁、左右滑或 ← →);只能切到已開啟的輪次,不循環。回傳是否有切換
