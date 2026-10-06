@@ -765,6 +765,8 @@ G.I18N = {
   '保鑣:電網格通電時別碰,重擊要頂住': ['用心棒:電撃ネットは通電中に触るな、重撃は踏ん張れ', 'Bouncer: avoid live shock cells; brace against heavy blows'],
   '巡邏機:拳頭會滑動追蹤,盾牌先亮準星': ['パトロール機:拳は滑って動く、盾は照準が先に光る', 'Patrol Eye: fists slide around; crosshairs flash before shields'],
   '空殼:電網格通電時別碰,錨鏈、追蹤、蜃樓輪番上陣': ['抜け殻:電撃ネットに注意、錨鎖・追尾・蜃気楼を順番に', 'Hollow: avoid live shock cells; anchor chains, tracking and mirages in turn'],
+  '省電模式': ['省電力モード', 'Battery Saver'],
+  '關掉背景的裝飾動畫(下雨、壁紙、光環等),手機比較不耗電': ['背景の装飾アニメ(雨・壁紙・オーラなど)を止めて、スマホの電池を長持ちさせる', 'Turns off decorative background animations (rain, wallpapers, auras) to save battery'],
   '龍捲風': ['竜巻', 'Tornado'],
   '龍捲風格': ['竜巻マス', 'Tornado Cell'],
   '紫色漩渦格上的符號轉眼就被吸走:拳頭少打一拳,盾牌沒擋到照樣受傷': ['紫の渦マスの記号は一瞬で吸い込まれる。拳は 1 発減り、盾は防げずダメージを受ける', 'Symbols on the purple vortex get sucked away fast: a lost punch, or an unblocked shield that still hurts'],

@@ -1,4 +1,4 @@
-// 背景音樂:用音階 + 固定種子亂數生成 4 小節循環曲,不需要音檔。
+// 背景音樂:用音階 + 固定種子亂數生成循環曲,不需要音檔;第一次播放時先錄成一段循環音(省電,見下方 render)。
 // 之後有正式配樂時,可改為播放 assets/audio/bgm/ 內的檔案。
 (function () {
   const midi = n => 440 * 2 ** ((n - 69) / 12);
@@ -126,11 +126,117 @@
     }
   });
 
-  G.bgm = {
-    cur: null, tr: null, step: 0, next: 0, timer: null, rate: 1,
+  // 把第 i 步(16 分音符)的音符排進 a 這個音效引擎(t 秒時發聲,sd 為一步的秒數)
+  const schedule = (a, tr, i, t, sd) => {
+    const dest = a.bgmBus;
+    if (tr.custom) return tr.custom(i, t, sd, a, dest);
+    const s = i % 16, chord = tr.prog[Math.floor(i / 16)];
+    if (tr.kick[s] === 'x') a.tone(150, 0.15, { to: 45, vol: 0.8, dest, when: t });
+    if (tr.snare[s] === 'x') a.noise(0.12, { filter: 'highpass', freq: 1500, vol: 0.35, dest, when: t });
+    if (tr.hat[s] === 'x') a.noise(0.03, { filter: 'highpass', freq: 7000, vol: 0.12, dest, when: t });
+    if (tr.bassPat[s] === 'x') a.tone(midi(noteOf(tr, chord) - 24), sd * 1.8, { type: tr.bass, vol: 0.3, dest, when: t });
+    if (tr.pad && s === 0) {
+      [0, 2, 4].forEach(k => a.tone(midi(noteOf(tr, chord + k) - 12), sd * 16, { type: 'triangle', vol: 0.06, attack: 0.4, dest, when: t }));
+    }
+    const m = tr.melody[i];
+    if (m) a.tone(midi(noteOf(tr, m.d)), sd * m.len * 1.1, { type: tr.lead, vol: 0.14, attack: 0.01, dest, when: t });
+  };
 
-    // FEVER 時加快節奏(1 = 原速)
-    setRate(r) { this.rate = r; },
+  // ---- 省電:曲子先「錄」成一段循環音,之後只循環播放錄好的聲音 ----
+  // 以前是邊玩邊即時合成(計時器每秒醒來 40 次、每個音符都新建發聲器 + 回音),手機會一直很耗電。
+  // 現在每首曲子(每種播放速度)第一次播放時,用 OfflineAudioContext 錄一輪 + 回音尾巴(尾巴疊回開頭,循環接縫不斷),
+  // 之後循環播放這段聲音;還沒錄好之前先即時合成頂著,錄好後從同一個位置無縫換過去。周回 / FEVER 換速度時另外錄一版。
+  // 音樂音量 0 時完全不錄、不播。
+  const SR = 24000, CACHE_MAX = 6, FADE = 0.12, TAIL = 3; // TAIL:錄完一輪後多錄幾秒的回音 / 長音尾巴
+  const OAC = window.OfflineAudioContext || window.webkitOfflineAudioContext;
+  const cache = new Map(); // 'battle1@1.2' → Promise<AudioBuffer>(最近用過的留著,最多 CACHE_MAX 份)
+  const ready = new Map(); // 已經錄好的:'battle1@1.2' → AudioBuffer
+  const renderDone = off => new Promise((res, rej) => {
+    off.oncomplete = e => res(e.renderedBuffer);
+    const p = off.startRendering();
+    if (p && p.then) p.then(res, rej);
+  });
+  const render = (name, rate) => {
+    const key = name + '@' + rate;
+    if (cache.has(key)) { const p = cache.get(key); cache.delete(key); cache.set(key, p); return p; }
+    const tr = TRACKS[name], steps = tr.steps || 64, sd = 60 / (tr.bpm * rate) / 4;
+    const loopLen = Math.round(steps * sd * SR);
+    const tailLen = Math.round(TAIL * SR), off = new OAC(1, loopLen + tailLen, SR);
+    // 借用 G.audio 的 tone / noise,但換成離線的 context、匯流排與回音(設定和 engine.js 相同)
+    const a = Object.create(G.audio);
+    a.ctx = off;
+    a.bgmBus = a.sfxBus = off.createGain();
+    a.bgmBus.connect(off.destination);
+    const delay = a.bgmDelay = a.bgmSend = off.createDelay(1);
+    delay.delayTime.value = 0.45;
+    const fb = off.createGain(), damp = off.createBiquadFilter(), wet = off.createGain();
+    fb.gain.value = 0.38;
+    damp.type = 'lowpass';
+    damp.frequency.value = 2400;
+    wet.gain.value = 0.45;
+    delay.connect(damp);
+    damp.connect(fb);
+    fb.connect(delay);
+    damp.connect(wet);
+    wet.connect(a.bgmBus);
+    const nb = a.noiseBuf = off.createBuffer(1, SR, SR), nd = nb.getChannelData(0);
+    for (let k = 0; k < nd.length; k++) nd[k] = Math.random() * 2 - 1;
+    for (let i = 0; i < steps; i++) schedule(a, tr, i, i * sd, sd);
+    const p = renderDone(off).then(buf => {
+      const src = buf.getChannelData(0), out = G.audio.ctx.createBuffer(1, loopLen, SR), d = out.getChannelData(0);
+      d.set(src.subarray(0, loopLen));
+      for (let k = 0; k < tailLen && k < loopLen; k++) d[k] += src[loopLen + k]; // 一輪結束後的回音尾巴疊回開頭,循環時接得上
+      ready.set(key, out);
+      while (ready.size > CACHE_MAX) ready.delete(ready.keys().next().value);
+      return out;
+    });
+    p.catch(() => cache.delete(key));
+    cache.set(key, p);
+    while (cache.size > CACHE_MAX) cache.delete(cache.keys().next().value);
+    return p;
+  };
+
+  // 還沒錄好時的替身:即時合成(和以前的做法一樣),錄好後換掉
+  const live = { timer: null, out: null, tr: null, step: 0, next: 0, sd: 0, steps: 0 };
+  const startLive = (tr, rate, frac) => {
+    const A = G.audio, out = A.ctx.createGain();
+    out.connect(A.bgmBus);
+    const a = Object.create(A);
+    a.bgmBus = out; // 樂器聲走自己的音量節點(換掉時可以淡出);回音沿用 engine.js 的
+    const steps = tr.steps || 64, sd = 60 / (tr.bpm * rate) / 4;
+    Object.assign(live, { out, tr, steps, sd, step: Math.floor(frac * steps) % steps, next: A.ctx.currentTime + 0.05 });
+    live.timer = setInterval(() => {
+      while (live.next < A.ctx.currentTime + 0.12) {
+        schedule(a, live.tr, live.step, live.next, live.sd);
+        live.next += live.sd;
+        live.step = (live.step + 1) % live.steps;
+      }
+    }, 25);
+  };
+  const liveFrac = () => { // 即時合成目前播到這一輪的哪裡(0~1)
+    const x = (live.step - (live.next - G.audio.ctx.currentTime) / live.sd) / live.steps;
+    return x - Math.floor(x);
+  };
+  const stopLive = () => {
+    if (!live.timer) return;
+    clearInterval(live.timer);
+    live.timer = null;
+    const out = live.out, t = G.audio.ctx.currentTime;
+    out.gain.setValueAtTime(1, t);
+    out.gain.linearRampToValueAtTime(0, t + FADE + 0.15); // 已經排進去的音符一起淡掉
+    setTimeout(() => out.disconnect(), 1500);
+  };
+  const musicOff = () => !(G.save.data.vol && G.save.data.vol.music > 0);
+
+  G.bgm = {
+    cur: null, rate: 1, src: null, gain: null, startAt: 0, dur: 0, token: 0,
+
+    // 周回 / FEVER 加快節奏(1 = 原速):換成那個速度錄好的版本,從同一個位置接下去
+    setRate(r) {
+      if (r === this.rate) return;
+      this.rate = r;
+      if (this.cur) this.start(true);
+    },
 
     play(name) {
       const a = G.audio;
@@ -138,43 +244,73 @@
       if (!a.ctx) { a.pendingBgm = name; return; }
       a.pendingBgm = null;
       if (this.cur === name) return;
-      this.stop();
+      this.cut();
       this.cur = name;
-      this.tr = TRACKS[name];
-      this.step = 0;
-      this.next = a.ctx.currentTime + 0.1;
-      this.timer = setInterval(() => this.tick(), 25);
+      this.start(false);
     },
 
     stop() {
-      clearInterval(this.timer);
-      this.timer = null;
+      this.cut();
       this.cur = null;
       G.audio.pendingBgm = null;
     },
 
-    tick() {
-      const a = G.audio, sd = 60 / (this.tr.bpm * this.rate) / 4;
-      while (this.next < a.ctx.currentTime + 0.12) {
-        this.schedule(this.step, this.next, sd);
-        this.next += sd;
-        this.step = (this.step + 1) % (this.tr.steps || 64);
-      }
+    // 音樂音量改變時呼叫:調到 0 就停掉(不再耗電),從 0 調上來就重新開始播
+    refresh() {
+      if (!this.cur || !G.audio.ctx) return;
+      if (musicOff()) this.cut();
+      else if (!this.src && !live.timer) this.start(false);
     },
 
-    schedule(i, t, sd) {
-      const a = G.audio, tr = this.tr, dest = a.bgmBus;
-      if (tr.custom) return tr.custom(i, t, sd, a, dest);
-      const s = i % 16, chord = tr.prog[Math.floor(i / 16)];
-      if (tr.kick[s] === 'x') a.tone(150, 0.15, { to: 45, vol: 0.8, dest, when: t });
-      if (tr.snare[s] === 'x') a.noise(0.12, { filter: 'highpass', freq: 1500, vol: 0.35, dest, when: t });
-      if (tr.hat[s] === 'x') a.noise(0.03, { filter: 'highpass', freq: 7000, vol: 0.12, dest, when: t });
-      if (tr.bassPat[s] === 'x') a.tone(midi(noteOf(tr, chord) - 24), sd * 1.8, { type: tr.bass, vol: 0.3, dest, when: t });
-      if (tr.pad && s === 0) {
-        [0, 2, 4].forEach(k => a.tone(midi(noteOf(tr, chord + k) - 12), sd * 16, { type: 'triangle', vol: 0.06, attack: 0.4, dest, when: t }));
-      }
-      const m = tr.melody[i];
-      if (m) a.tone(midi(noteOf(tr, m.d)), sd * m.len * 1.1, { type: tr.lead, vol: 0.14, attack: 0.01, dest, when: t });
+    // 開始播放(換速度時 keepPos 從目前的位置接下去):錄好的直接循環播放;還沒錄好就先即時合成頂著,錄好再無縫換過去
+    start(keepPos) {
+      const name = this.cur, rate = this.rate, tok = ++this.token, key = name + '@' + rate;
+      if (!OAC || musicOff()) return this.cut();
+      const frac = keepPos ? this.position() : 0;
+      if (ready.has(key)) return this.playBuffer(ready.get(key), frac);
+      if (!this.src && !live.timer) startLive(TRACKS[name], rate, frac); // 現在沒有聲音:先即時合成
+      render(name, rate).then(buf => {
+        if (tok !== this.token || this.cur !== name || musicOff()) return;
+        this.playBuffer(buf, this.position()); // 從即時合成(或換速度前那一版)目前的位置接下去
+      }).catch(() => {});
+    },
+
+    playBuffer(buf, frac) {
+      const a = G.audio, ctx = a.ctx, t = ctx.currentTime + 0.03;
+      const g = ctx.createGain();
+      g.gain.setValueAtTime(0.0001, t);
+      g.gain.exponentialRampToValueAtTime(1, t + FADE);
+      g.connect(a.bgmBus);
+      const src = ctx.createBufferSource();
+      src.buffer = buf;
+      src.loop = true;
+      src.connect(g);
+      src.start(t, frac * buf.duration);
+      this.cut(); // 舊的聲音(即時合成 / 換速度前那一版)淡出
+      this.src = src;
+      this.gain = g;
+      this.dur = buf.duration;
+      this.startAt = t - frac * buf.duration;
+    },
+
+    // 目前播到這一輪的哪裡(0~1)
+    position() {
+      if (!this.src) return live.timer ? liveFrac() : 0;
+      const x = (G.audio.ctx.currentTime - this.startAt) / this.dur;
+      return x - Math.floor(x);
+    },
+
+    // 停掉目前的聲音(短淡出,避免爆音)
+    cut() {
+      stopLive();
+      const { src, gain } = this;
+      if (!src) return;
+      const t = G.audio.ctx.currentTime;
+      gain.gain.cancelScheduledValues(t);
+      gain.gain.setValueAtTime(Math.max(0.0001, gain.gain.value), t);
+      gain.gain.exponentialRampToValueAtTime(0.0001, t + FADE);
+      try { src.stop(t + FADE + 0.02); } catch (e) {}
+      this.src = this.gain = null;
     },
   };
 })();

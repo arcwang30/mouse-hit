@@ -4,6 +4,9 @@ G.applyI18n();
 // 必殺技按鈕位置(左 / 右手)
 G.applyUltSide = () => G.$('#battle').classList.toggle('ult-left', G.save.data.ultSide === 'left');
 G.applyUltSide();
+// 省電模式:#app 加上 low-power,停掉純裝飾的循環動畫(見 cyber-ui.css 最後)
+G.applyLowPower = () => G.$('#app').classList.toggle('low-power', !!G.save.data.lowPower);
+G.applyLowPower();
 G.skin.grantLegacy(); // 改成販售的造型:老玩家已達成原條件的直接送
 G.skin.apply(); // 九宮格造型
 G.wall.apply(); // 桌布

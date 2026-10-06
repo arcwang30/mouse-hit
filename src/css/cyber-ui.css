@@ -1318,3 +1318,13 @@ body.kb .dial-kb { display: block; }
 @keyframes healSwell { 0% { scale: .6; opacity: .3; } 40% { scale: 1; opacity: 1; } 100% { scale: 1.05; opacity: .7; } }
 @keyframes healMote { 0% { opacity: 0; translate: 0 0; } 20% { opacity: 1; } 100% { opacity: 0; translate: calc((var(--s) - 1) * 12cqw) -75cqh; } }
 #battle.heal-flash #playerHpFill { background: linear-gradient(90deg, #2ee68a, #b8ffd0) !important; box-shadow: 0 0 3cqw #5aff9a !important; } /* 補血瞬間 HP 條轉成翠綠 */
+/* ---- 省電模式(設定 → 省電模式):停掉純裝飾、每一幀都要重畫的循環動畫與模糊;遊戲判斷需要的提示動畫(金拳、準星、電網、追蹤…)保留 ---- */
+#app.low-power .rain, #app.low-power #artBg .art-img, #app.low-power .title-bg, #app.low-power .stage-bg,
+#app.low-power .btn::after, #app.low-power .ss-flame, #app.low-power .ss-ring, #app.low-power .ss-core::after, #app.low-power .ss-kanji,
+#app.low-power .wp-layer, #app.low-power .wp-layer::before, #app.low-power .wp-layer::after, #app.low-power .wp-layer *,
+#app.low-power .enemy.idle .sprite, #app.low-power #battle.round-2 .sprite img, #app.low-power #battle.round-3 .sprite img,
+#app.low-power .deco span, #app.low-power #battle.skin-rainbow .cell,
+#app.low-power.fever .grid-wrap, #app.low-power.fever .hud::before, #app.low-power .combo.fever b { animation: none !important; }
+#app.low-power .ss-flame { filter: none; }
+#app.low-power.fever .stage-bg { filter: brightness(.9) saturate(1.5) hue-rotate(-20deg); }
+#app.low-power .btn::after, #app.low-power .embers { display: none; } /* 標題畫面飄的火星(26 顆)直接不顯示 */

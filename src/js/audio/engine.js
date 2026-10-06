@@ -83,6 +83,7 @@ G.audio = {
     const v = G.save.data.vol, t = this.ctx.currentTime;
     this.bgmBus.gain.setTargetAtTime(0.22 * v.music / 3, t, 0.05);
     this.sfxBus.gain.setTargetAtTime(0.55 * v.sfx / 4, t, 0.05);
+    if (G.bgm) G.bgm.refresh(); // 音樂調到 0 就停掉錄好的音樂(不耗電),調上來再播
   },
 
   setMuted(m) {

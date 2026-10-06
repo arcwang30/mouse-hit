@@ -241,6 +241,7 @@ G.pages = {
       : lang() + vol('music', '音樂') + vol('sfx', '音效') +
         vibrate() +
         toggle('shake', '畫面震動', '受傷、重擊時畫面搖晃') +
+        toggle('lowPower', '省電模式', '關掉背景的裝飾動畫(下雨、壁紙、光環等),手機比較不耗電') +
         (G.VOICE_ENABLED ? toggle('voice', '角色語音', '必殺技時喊出招式名(裝置內建的 AI 語音)') : '') +
         side() +
         (G.clock.paused ? '' : G.pwa.html()) + // PAUSE 中開設定時不顯示安裝引導
@@ -326,6 +327,7 @@ G.pages = {
       G.save.write();
       G.audio.play('select');
       if (k === 'vibrate') G.haptic.buzz(30, true); // 打開時試震一下
+      if (k === 'lowPower') G.applyLowPower();
       if (k === 'voice' && G.save.data.voice) G.voice.say('hero', 'hero_ult', '烈焰鋼拳・焚天'); // 打開時試聽一次
       return this.renderSettings();
     }
@@ -338,7 +340,7 @@ G.pages = {
         return this.renderSettings();
       }
       this.resetArmed = false;
-      const keep = { lang: G.save.data.lang, vol: G.save.data.vol, vibrate: G.save.data.vibrate, shake: G.save.data.shake, voice: G.save.data.voice, ultSide: G.save.data.ultSide };
+      const keep = { lang: G.save.data.lang, vol: G.save.data.vol, vibrate: G.save.data.vibrate, shake: G.save.data.shake, lowPower: G.save.data.lowPower, voice: G.save.data.voice, ultSide: G.save.data.ultSide };
       try { localStorage.removeItem(G.save.key); } catch (err) {}
       G.save.load();
       Object.assign(G.save.data, keep); // 重置進度,保留設定
