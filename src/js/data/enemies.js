@@ -200,7 +200,7 @@ G.ALLIES = {
   leishi:   { name: '雷獅', img: 'allies/leishi.webp', zoom: 280, faceSize: 'auto 125%', facePos: 'center 10%', // 從洗腦中清醒的拳王(第三章破關加入)
     faces: { normal: 'allies/leishi_normal.webp', angry: 'allies/leishi_angry.webp', sad: 'allies/leishi_sad.webp', happy: 'allies/leishi_happy.webp' },
     own: sv => !!(sv.ch3Clear || sv.spark), role: '防守', passive: 'HOLD 與「頂住」按住的時間縮短 20%',
-    assist: '獅吼護陣:HP 第一次降到 30% 以下時,下一個敵人回合的盾牌全部自動擋下', shout: '獅吼護陣!下一波我替你扛!' },
+    assist: '獅吼護陣:HP 首次低於 30%,下回合盾牌全部自動擋下', shout: '獅吼護陣!下一波我替你扛!' },
 };
 // 已加入的夥伴(依加入順序);目前帶上場的夥伴(sv.allyPick:'none' = 不帶;沒選過或選的還沒加入 = 最新加入的);教學不帶
 G.alliesOwned = () => Object.keys(G.ALLIES).filter(id => G.ALLIES[id].own(G.save.data));

@@ -965,7 +965,20 @@ h2 { margin: 0; }
   clip-path: polygon(50% 0, 93% 25%, 93% 75%, 50% 100%, 7% 75%, 7% 25%);
   background: radial-gradient(circle, #fff6c8 0 18%, #ffd84a 40%, #d98a00 70%, #7a4200);
   transform: translate(-50%, -50%) scale(0); opacity: 0; animation: afxShield 2.1s cubic-bezier(.3, 1.6, .5, 1) both; }
-.afx-shield::after { content: "獅"; font: 900 20cqw/1 serif; color: #5a3300; text-shadow: 0 .4cqw 0 #fff6c8; }
+/* 「獅」:和主畫面「戰」同一套毛筆字體(只含這個字的子集),赤紅漸層 + 金色描邊與火光;護盾成形時從大到小重重砸下 */
+@font-face { font-family: "ShiBrush"; src: url("../../assets/fonts/yuji-boku-shi.ttf") format("truetype"); font-display: block; }
+.afx-shi { left: 50%; top: 60%; z-index: 3; font-family: "ShiBrush", "Noto Serif TC", serif; font-size: 42cqw; line-height: 1;
+  filter: drop-shadow(0 0 2.5cqw #ff7a1a) drop-shadow(0 .6cqw 0 #000c);
+  transform: translate(-50%, -50%) scale(3) rotate(-8deg); opacity: 0; animation: afxShi 2.1s cubic-bezier(.6, 0, .4, 1) both; }
+.afx-shi b { display: block; font-weight: 400; }
+.afx-shi b:first-child { color: #5a0000; -webkit-text-stroke: 2.6cqw #5a0000; text-shadow: 0 0 .5cqw #fff2b0, 0 0 .5cqw #fff2b0; } /* 底層:深紅粗描邊把毛筆筆畫撐粗,外緣一圈淡金 */
+.afx-shi b:last-child { position: absolute; inset: 0; -webkit-text-stroke: .25cqw #ffe9a8;
+  background: linear-gradient(180deg, #fff6c8 0%, #ffb02a 28%, #ff3a1a 55%, #a00800 100%); -webkit-background-clip: text; background-clip: text; color: transparent; } /* 上層:赤金漸層 */
+@keyframes afxShi { 0%, 38% { opacity: 0; transform: translate(-50%, -50%) scale(3) rotate(-8deg); filter: blur(1.5cqw) drop-shadow(0 0 2.5cqw #ff7a1a); }
+  45% { opacity: 1; transform: translate(-50%, -50%) scale(.92) rotate(-4deg); filter: blur(0) brightness(1.8) drop-shadow(0 0 5cqw #fff); }
+  50% { transform: translate(-50%, -50%) scale(1.04) rotate(-4deg); filter: drop-shadow(0 0 3.5cqw #ff7a1a) drop-shadow(0 .6cqw 0 #000c); }
+  54%, 86% { opacity: 1; transform: translate(-50%, -50%) scale(1) rotate(-4deg); filter: drop-shadow(0 0 2.5cqw #ff7a1a) drop-shadow(0 .6cqw 0 #000c); }
+  100% { opacity: 0; transform: translate(-50%, -50%) scale(1.15) rotate(-4deg); } }
 @keyframes afxRoar   { 0% { opacity: 1; transform: scale(.2); } 100% { opacity: 0; transform: scale(4.5); } }
 @keyframes afxShield { 0%, 33% { opacity: 0; transform: translate(-50%, -50%) scale(0) rotate(-60deg); } 43% { opacity: 1; transform: translate(-50%, -50%) scale(1.1) rotate(0); }
   50% { transform: translate(-50%, -50%) scale(1); filter: brightness(1.6); } 70% { filter: brightness(1); } 86% { opacity: 1; transform: translate(-50%, -50%) scale(1); } 100% { opacity: 0; transform: translate(-50%, -50%) scale(1.3); } }

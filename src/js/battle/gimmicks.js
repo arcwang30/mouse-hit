@@ -27,7 +27,7 @@
   const TICTAC = { 1: { smart: 0.5, think: 4000 }, 2: { smart: 0.8, think: 3500 }, 3: { smart: 1, think: 3000 } }; // 敵人下最佳步的機率、每步思考時間
   // 第三章
   const DODGE = { 1: { rounds: 6, warn: 1000, cross: 0.2, allow: 2 }, 2: { rounds: 8, warn: 820, cross: 0.4, allow: 1 }, 3: { rounds: 10, warn: 680, cross: 0.55, allow: 1 } }; // 輪數、預告毫秒、十字機率、可被轟幾次
-  const STROOP = { 1: { rounds: 8, ms: 2200, fake: false, allow: 2 }, 2: { rounds: 10, ms: 1800, fake: true, allow: 2 }, 3: { rounds: 12, ms: 1500, fake: true, allow: 2 } }; // 題數、每題限時、色塊寫誤導字、可錯幾次
+  const STROOP = { 1: { rounds: 8, ms: 3000, fake: false, allow: 2 }, 2: { rounds: 10, ms: 2500, fake: false, allow: 2 }, 3: { rounds: 12, ms: 2100, fake: false, allow: 2 } }; // 題數、每題限時、色塊寫誤導字(目前都不寫,只靠限時加難)、可錯幾次
   const SHOOT = { 1: { n: 10, step: 560, gap: 700, hostage: 0.2 }, 2: { n: 12, step: 470, gap: 600, hostage: 0.25 }, 3: { n: 14, step: 400, gap: 520, hostage: 0.3 } }; // 數量、滑一格毫秒、出現間隔、人質比例
   const SHOOT_PASS = 0.7; // 打中七成以上的靶子算成功
   // 第三章的進階版:列車節奏(打鐵節奏 + 反拍、雙拍、加速)、鐵籠對拳(對拳拼勁 + 換位、假動作)
@@ -839,6 +839,11 @@
       await G.banner('洗腦干擾!', G.t('{0}想擾亂你的心神!中間的字是用什麼「顏色」寫的,就點那個顏色的格子,別被字義騙了。', e.name), 2100);
       const COLORS = [{ id: 'red', name: '紅', ink: '#ff4545' }, { id: 'blue', name: '藍', ink: '#4a8cff' }, { id: 'yellow', name: '黃', ink: '#ffd84a' }, { id: 'green', name: '綠', ink: '#3fdc78' }];
       const icon4 = G.grid.cells[4].querySelector('.icon');
+      // 規則整場固定:在九宮格上緣一直掛著「點字的顏色」,答題時不用回想要看哪一個
+      const rule = document.createElement('div');
+      rule.className = 'stroop-rule';
+      rule.textContent = G.t('🎨 點「字的顏色」');
+      G.$('.grid-wrap').appendChild(rule);
       let wrong = 0;
       for (let k = 0; k < rounds && !this.over(); k++) {
         this.setPhase(G.t('看「顏色」不看字!{0} / {1}', k + 1, rounds), 'def');
@@ -860,6 +865,7 @@
         G.grid.clearAll();
         await G.clock.wait(120);
       }
+      rule.remove();
       return wrong <= allow;
     },
 

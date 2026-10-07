@@ -1335,3 +1335,7 @@ body.kb .dial-kb { display: block; }
 #app.low-power .ss-flame { filter: none; }
 #app.low-power.fever .stage-bg { filter: brightness(.9) saturate(1.5) hue-rotate(-20deg); }
 #app.low-power .btn::after, #app.low-power .embers { display: none; } /* 標題畫面飄的火星(26 顆)直接不顯示 */
+/* 洗腦干擾:規則一直掛在九宮格上緣(整場固定看「字的顏色」) */
+.stroop-rule { position: absolute; left: 50%; top: 0; z-index: 4; transform: translate(-50%, -55%); padding: 1cqw 4cqw; white-space: nowrap; pointer-events: none;
+  font-size: 4.4cqw; font-weight: 900; color: #fff; background: linear-gradient(90deg, #ff4545, #ffd84a, #3fdc78, #4a8cff); border-radius: 99px;
+  text-shadow: 0 .3cqw 0 #000, 0 0 1cqw #000; box-shadow: 0 0 0 .4cqw #000a, 0 0 3cqw #ffffff40; }

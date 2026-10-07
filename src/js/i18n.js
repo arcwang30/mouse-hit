@@ -1007,6 +1007,7 @@ G.I18N = {
   '鐵鉤船長': ['鉄鉤船長', 'Captain Ironhook'], '軌道獵手': ['軌道ハンター', 'Rail Hunter'], '基因博士': ['遺伝子博士', 'Doctor Gene'], '鐵籠拳霸': ['鉄檻の拳覇', 'Cage Champion'], '議會執行官': ['議会執行官', 'Council Executor'], '天幕議長': ['天幕議長', 'Canopy Chairman'],
   '小隼': ['ハヤブサ', 'Hayabusa'], '紅綾': ['紅綾', 'Hongling'], '雷獅': ['雷獅', 'Leishi'],
   // 助陣夥伴
+  '🎨 點「字的顏色」': ['🎨「文字の色」をタップ', '🎨 Tap the INK color'],
   '助陣夥伴': ['助っ人', 'Partner'], '被動': ['常時', 'Passive'], '援護': ['援護', 'Assist'],
   '再點一次可取消': ['もう一度タップで解除', 'Tap again to deselect'], '不帶夥伴出戰': ['仲間を連れずに出撃', 'Going in without a partner'],
   '每破一章加入一位夥伴(小隼、紅綾、雷獅)。出擊前在關卡資訊裡選一位帶上場:被動效果整場生效,援護技每關自動發動一次。': ['章をクリアするたびに仲間が一人加わる(ハヤブサ、紅綾、雷獅)。出撃前にステージ情報で一人選んで連れて行こう:常時効果はずっと有効、援護は各ステージで一度だけ自動発動。', 'Clearing each chapter adds a partner (Hayabusa, Hongling, Leishi). Pick one in the stage info before battle: their passive lasts the whole stage, and their assist triggers automatically once per stage.'],
@@ -1016,7 +1017,7 @@ G.I18N = {
   'HOLD 與「頂住」按住的時間縮短 20%': ['HOLD と「耐えろ」の長押し時間が 20% 短くなる', 'HOLD and Brace need 20% less hold time'],
   '系統入侵:第一次出現機制格時全部清除,下個階段也不佈置': ['システム侵入:最初に仕掛けマスが出たとき全部消し、次のフェーズも置かせない', 'System Breach: the first time gimmick cells appear, clear them all and block the next phase too'],
   '連環助拳:連擊第一次到 20 時,幫你打掉場上 3 顆拳頭': ['連環助拳:コンボが初めて 20 に届くと、場の拳を 3 つ打ち抜いてくれる', 'Chain Assist: when your combo first hits 20, she knocks out 3 fists on the board'],
-  '獅吼護陣:HP 第一次降到 30% 以下時,下一個敵人回合的盾牌全部自動擋下': ['獅吼護陣:HP が初めて 30% 以下になると、次の敵ターンの盾をすべて自動で防ぐ', 'Lion\'s Roar Guard: when your HP first drops to 30% or less, every shield on the next enemy turn is blocked for you'],
+  '獅吼護陣:HP 首次低於 30%,下回合盾牌全部自動擋下': ['獅吼護陣:HP が初めて 30% を切ると、次の敵ターンの盾を全自動で防ぐ', 'Lion\'s Roar Guard: first time HP falls below 30%, all shields next turn are auto-blocked'],
   '系統入侵!這些機關交給我!': ['システム侵入!この仕掛けはオレに任せな!', 'System breach! Leave these gimmicks to me!'],
   '連環助拳!我來助你!': ['連環助拳!加勢するわ!', 'Chain Assist! I\'ve got your back!'],
   '獅吼護陣!下一波我替你扛!': ['獅吼護陣!次の攻撃は俺が受ける!', 'Lion\'s Roar Guard! I\'ll take the next wave for you!'],

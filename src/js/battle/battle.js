@@ -219,7 +219,7 @@ G.battle = {
     this.allyUsed = false;
     this.lionNext = false;
     this.lionTurn = false;
-    document.querySelectorAll('#allyFx').forEach(x => x.remove()); // 援護演出中途離開戰鬥的殘留
+    document.querySelectorAll('#allyFx, .stroop-rule').forEach(x => x.remove()); // 援護演出、洗腦干擾規則條:中途離開戰鬥的殘留
     this.boardCalm = 0; // 星火燎原拳:還有幾個階段不佈置機制格
     G.$('#battle').classList.remove('ult-guard');
 
@@ -1523,7 +1523,7 @@ G.battle = {
         '<i class="afx-burst"></i>';
     }
     return '<i class="afx-lines"></i>' + [0, 1, 2].map(k => `<i class="afx-roar" style="--d:${(0.7 + k * 0.17).toFixed(2)}s"></i>`).join('') +
-      '<i class="afx-shield"></i><i class="afx-burst"></i>';
+      '<i class="afx-shield"></i><i class="afx-burst"></i><i class="afx-shi"><b>獅</b><b>獅</b></i>'; // 兩層:深紅粗描邊墊底 + 赤金漸層字
   },
   // 小隼的系統入侵:這一關第一次佈置出機制格時,演出後全部清掉,下一個階段也不佈置
   async allyHack() {
