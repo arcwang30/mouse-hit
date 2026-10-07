@@ -44,18 +44,20 @@ document.addEventListener('pointerdown', e => {
 });
 
 G.$('#btnUpgrade').onclick = () => G.scenes.upgrade();
-// 故事:破關後可選擇看開場或結局(第二、三章破關後各多一個該章結局),否則直接播開場;看完(或跳過)都回到主選單
-G.$('#btnStory').onclick = () => {
+// 故事:破關後可選擇看開場或結局(第二、三章破關後各多一個該章結局),看完(或跳過)回到故事選單,可以接著選別的;還沒破關就直接播開場,看完回主選單
+const storyPick = () => {
   const sv = G.save.data;
-  if (!sv.cleared) return G.scenes.story('opening', () => G.scenes.menu());
   G.$('#pickEnding2').hidden = !sv.tiandao; // 第二章破關後
   G.$('#pickEnding3').hidden = !(sv.ch3Clear || sv.spark);
+  G.bgm.setRate(1);
+  G.bgm.play('menu'); // 從過場回來時,換回主選單的音樂
   G.show('storyPick');
 };
-G.$('#pickOpening').onclick = () => G.scenes.story('opening', () => G.scenes.menu());
-G.$('#pickEnding').onclick = () => G.scenes.story('ending', () => G.scenes.menu());
-G.$('#pickEnding2').onclick = () => G.scenes.story('ending2', () => G.scenes.menu());
-G.$('#pickEnding3').onclick = () => G.scenes.story('ending3', () => G.scenes.menu());
+G.$('#btnStory').onclick = () => G.save.data.cleared ? storyPick() : G.scenes.story('opening', () => G.scenes.menu());
+G.$('#pickOpening').onclick = () => G.scenes.story('opening', storyPick);
+G.$('#pickEnding').onclick = () => G.scenes.story('ending', storyPick);
+G.$('#pickEnding2').onclick = () => G.scenes.story('ending2', storyPick);
+G.$('#pickEnding3').onclick = () => G.scenes.story('ending3', storyPick);
 G.$('#pickBack').onclick = () => G.scenes.menu();
 G.$('#upBack').onclick = () => G.scenes.menu();
 G.$('#resultBack').onclick = () => {
