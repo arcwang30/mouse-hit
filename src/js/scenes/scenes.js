@@ -1,6 +1,6 @@
 // 非戰鬥畫面:故事開場、主選單、成長、技能三選一、結算
 
-// 過場漫畫:開場 assets/images/story/opening_v2.jpg(1408×768;換過圖,所以換檔名避開舊快取)、破關結局 ending.jpg(1380×752)
+// 過場漫畫:開場 assets/images/story/opening_v2.jpg(1408×768;換過圖,所以換檔名避開舊快取)、破關結局 ending_v2.jpg(1380×752;同樣換過圖)
 // crop:該格在原圖上的位置;pan:寬畫面改成由左往右橫搖(view 為可視寬度)
 // fx:fire 火光 / impact 震動 / shock 紫光+震動 / rage 怒火+震動;tilt:格子傾斜角度;focus:鏡頭推近的中心
 // title:這一句是章節標題(置中、放大)
@@ -21,21 +21,21 @@ const STORY = [
     text: '炎鋼走下群山,迎向霓虹閃爍的未來都市。\n「用這雙鐵拳,砸碎幕後的陰謀!」' },
 ];
 
-// 破關結局:打倒最終 BOSS 後播放
+// 第一章破關結局:打倒最終 BOSS 後播放(右下大格的橫搖停在浮水印之前)
 const ENDING = [
-  { crop: { x: 29, y: 30, w: 640, h: 333 }, tilt: -1, focus: '50% 45%', sfx: 'thunder', title: true,
+  { crop: { x: 34, y: 16, w: 648, h: 338 }, tilt: -1, focus: '50% 45%', sfx: 'thunder', title: true,
     text: '烈火淬煉的孤星\n最終章・踏上無盡的拳道' },
-  { crop: { x: 29, y: 30, w: 640, h: 333 }, fx: 'impact', tilt: -1.5, focus: '60% 45%', sfx: 'boom',
+  { crop: { x: 34, y: 16, w: 648, h: 338 }, fx: 'impact', tilt: -1.5, focus: '60% 45%', sfx: 'boom',
     text: '在新神州科技堡壘的最深處，炎鋼施展神拳門終極絕學「烈炎崩天拳」，徹底擊碎了融合改造義體與叛門武學的魔王「暗曜」。' },
-  { crop: { x: 723, y: 30, w: 641, h: 333 }, tilt: 1, focus: '45% 60%', sfx: 'ko',
+  { crop: { x: 738, y: 16, w: 638, h: 338 }, tilt: 1, focus: '45% 60%', sfx: 'ko',
     text: '隨著魔王化為灰燼，殺師之仇與父母慘案的幕後陰謀終於真相大白。' },
-  { crop: { x: 28, y: 401, w: 427, h: 333 }, tilt: -1.5, focus: '55% 30%', sfx: 'chip',
+  { crop: { x: 34, y: 395, w: 432, h: 338 }, tilt: -1.5, focus: '55% 30%', sfx: 'chip',
     text: '大仇得報後，炎鋼從魔王殘留的晶片中發現，新神州之外的「不毛混沌界」隱藏著更龐大的科技巨擘與更古老的武學源頭。' },
-  { crop: { x: 470, y: 401, w: 199, h: 333 }, fx: 'shock', tilt: 2, focus: '50% 35%', sfx: 'bossSkill', tone: 'shock',
+  { crop: { x: 482, y: 395, w: 200, h: 338 }, fx: 'shock', tilt: 2, focus: '50% 35%', sfx: 'bossSkill', tone: 'shock',
     text: '魔王不過是一枚棋子。' },
-  { crop: { x: 723, y: 401, w: 420, h: 333 }, tilt: -1, focus: '40% 60%',
+  { crop: { x: 738, y: 395, w: 420, h: 338 }, tilt: -1, focus: '40% 60%',
     text: '三天後，炎鋼在師傅墓前灑酒告別。他放棄了新神州的權力，毅然背起行囊，迎著朝陽踏向未知的荒野。' },
-  { crop: { x: 723, y: 401, w: 641, h: 333 }, pan: { view: 400 }, tilt: 0, sfx: 'fire',
+  { crop: { x: 738, y: 395, w: 560, h: 338 }, pan: { view: 400 }, tilt: 0, sfx: 'fire',
     text: '他的眼中不再有仇恨，只有對武道巔峰的追求。烈火淬煉完畢，這顆孤星將在更廣闊的世界，展開全新的修練旅程。' },
 ];
 
@@ -99,7 +99,7 @@ const MAP_POS = [
 ];
 const COMICS = {
   opening: { src: '../assets/images/story/opening_v2.jpg', w: 1408, h: 768, beats: STORY },
-  ending:  { src: '../assets/images/story/ending.jpg',  w: 1380, h: 752, beats: ENDING },
+  ending:  { src: '../assets/images/story/ending_v2.jpg', w: 1380, h: 752, beats: ENDING }, // 換過圖,所以換檔名避開舊快取
   ending2: { src: '../assets/images/story/ending2.jpg', w: 1380, h: 752, beats: ENDING_2 },
   ending3: { src: '../assets/images/story/ending3.jpg', w: 1380, h: 752, beats: ENDING_3 },
 };
