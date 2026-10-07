@@ -181,6 +181,7 @@ G.I18N = {
   '今天就讓它徹底停擺!': ['今日ここで、完全に止めてやるわ!', 'Today we shut it down for good!'],
   '大家,把力量借給我。': ['みんな、力を貸してくれ。', 'Everyone, lend me your strength.'],
   '說什麼借——我們一起上!': ['貸すだなんて水くさい——全員で行くぞ!', 'Lend? Forget that—we\'re all going in together!'],
+  '大仇已報,拳道未竟\n下一章\n鋼鐵與心相的試煉': ['仇は討った、拳の道はまだ続く\n次章\n鋼鉄と心の試練', 'Vengeance done, the path goes on\nNext\nTrial of Steel and Heart'],
   // 第二章結局漫畫
   '鋼鐵與心相的試煉・終章\n拳為誰而揮': ['鋼鉄と心相の試練・終章\n拳は誰がために', 'Trials of Steel and Spirit — Finale\nFor whom the fist is raised'],
   '「炎鋼,你的拳,為誰而揮?」\n「為了守護,為了傳承!」': ['「炎鋼、お前の拳は誰のために振るう?」\n「守るため、受け継ぐためだ!」', '"Yan Gang, for whom do you raise your fist?"\n"To protect, and to pass it on!"'],
