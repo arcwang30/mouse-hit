@@ -255,7 +255,7 @@ G.battle = {
     G.$('#enemySprite').innerHTML = '';
     G.$('#enemyName').textContent = '';
     G.$('#waveTag').textContent = '';
-    if (G.round() === 1 && this.stage.type !== 'bonus') await G.dialog.region(this.stage);
+    if (G.round() === 1 && this.stage.type !== 'bonus') { await G.dialog.region(this.stage); await G.dialog.stage(stageIdx); } // 區域開場 + 關卡開場的簡短對話
     if (run !== this.run) return;
 
     // 特訓關:只有一場狂打獎勵關,不會輸

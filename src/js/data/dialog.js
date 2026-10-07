@@ -293,6 +293,35 @@ const ALLY_JOIN = {
   ],
 };
 const SCRIPTS = { 1: SCRIPT_1, 2: SCRIPT_2, 3: SCRIPT_3 };
+// 關卡開場的簡短對話:第一次進入某一關時播(第一輪);每區第 1 關已經有區域開場,所以從第 2 關開始。key = 該章的關卡序號
+const STAGE_LINES = {
+  1: {
+    1: [['hero', '公園裡的孩子們都躲得遠遠的……這些混混,把整條街都嚇壞了。']],
+    2: [['narrator', '魚販們紛紛拉下鐵門,巷口傳來醉漢的叫罵聲。'], ['hero:angry', '徽章的線索指向港口。擋路的,一個都別想走!']],
+    3: [['hero', '倉庫裡堆滿印著拳印的木箱……是帝王軍的貨。'], ['hero:angry', '守在這裡的傢伙身手不一樣,得小心點。']],
+    4: [['hero', '胖子魔王就在碼頭盡頭。師父,我離真相又近了一步。']],
+    6: [['hayabusa', '鐘塔的監視器我接管了!前面有槍手埋伏,小心!'], ['hero', '謝了,小隼。剩下的交給我。']],
+    7: [['hero', '站在這裡,整座新神州一覽無遺……指揮塔就在對面。'], ['hayabusa:happy', '從天台跳過去最快——別看我,我可不跳!']],
+    8: [['narrator', '地下擂台的歡呼聲震耳欲聾。觀眾押注的,是挑戰者能撐幾回合。'], ['hero:angry', '我不是來表演的——但這一場,我奉陪!']],
+    9: [['hayabusa', '最後一道門禁破解完成!炎鋼,將軍就在頂樓!'], ['hero', '好。帝王軍的據點,今天就拆了它!']],
+    11: [['hero:sad', '輸送帶上……是穿著武服的人。他們被當成材料運送。'], ['hayabusa:angry', '可惡,這哪是工廠,根本是改造人的屠宰場!']],
+    12: [['hero:angry', '把人鑄成鋼鐵戰士的模具……我一個也不會留!']],
+    13: [['narrator', '坑道裡熱浪翻騰,腳下隨時可能噴出熔岩。'], ['hero', '腳步要穩——這裡的敵人,比外面難纏得多。']],
+    14: [['hayabusa', '熔爐的溫度在飆升!再不阻止巨匠,整座廠都會爆炸!'], ['hero:angry', '那就速戰速決!']],
+    16: [['hero', '石階結了厚厚一層冰。師父說過,修行的路從來不好走。']],
+    17: [['hero:sad', '山門的匾額還刻著神拳門的拳印……這裡真的是師父修行過的地方。']],
+    18: [['narrator', '古鐘無風自鳴。迴廊盡頭,傳來不屬於人間的笑聲。'], ['hayabusa:sad', '炎鋼……這裡讓我全身發毛。']],
+    19: [['hero', '雪女就在山巔。她一定知道師父的過去。']],
+    21: [['hayabusa', '隧道裡的訊號全被干擾了,有人躲在暗處操控一切。'], ['hero', '傀儡的線……一定牽在某個人手上。']],
+    22: [['narrator', '空蕩的月台上,一具具木偶整齊排列,緩緩轉頭看向炎鋼。'], ['hero:angry', '裝神弄鬼!要打就出來!']],
+    23: [['hero', '劇院的布幕自己升起來了……這是在邀請我上台?']],
+    24: [['hayabusa:angry', '千面傀儡師就在舞台中央!小心,他的線能操控人心!'], ['hero:angry', '我的心,誰都操控不了!']],
+    26: [['hero', '腳下就是萬丈雲海。暗曜……你就在上面等著我吧。']],
+    27: [['hayabusa', '要塞的砲台全對準這裡了!我盡量干擾它們的瞄準!'], ['hero', '足夠了。一路打上去!']],
+    28: [['narrator', '帝王之門前,暗曜的親衛隊列陣以待。'], ['hero:angry', '師父的仇,就在這扇門後!']],
+    29: [['hero:sad', '師父,這是最後一戰了。'], ['hero:angry', '暗曜——我來了!']],
+  },
+};
 G.dialog = {
   // 依序播放對話;回傳 Promise,點畫面下一句,按「跳過」直接結束
   play(lines) {
@@ -349,6 +378,11 @@ G.dialog = {
   script(r) { return (SCRIPTS[G.chapter()] || [])[r] || {}; },
   region(stage) { return this.once('r' + G.regionKey(stage.region), this.script(stage.region).intro || []); },
   boss(stage) { return this.once('b' + G.regionKey(stage.region), this.script(stage.region).boss || []); },
+  // 關卡開場的簡短對話(STAGE_LINES;存檔代號 s3、第二章起 s2-3)
+  stage(i) {
+    const ch = G.chapter(), lines = (STAGE_LINES[ch] || {})[i];
+    return lines ? this.once('s' + (ch === 1 ? i : `${ch}-${i}`), lines) : Promise.resolve();
+  },
   // 第二章結局:修得新必殺技的對話(只播一次)
   awaken() { return this.once('awaken2', AWAKEN); },
   awaken3() { return this.once('awaken3', AWAKEN_3); }, // 第三章結局:星火燎原拳
