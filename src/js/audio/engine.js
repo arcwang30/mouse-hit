@@ -336,13 +336,35 @@ const SFX = {
   revive:  (a, t) => arp(a, t, 392, [0, 4, 7, 11, 12, 16], 0.07, { type: 'triangle', vol: 0.22, dur: 0.4 }),
 
   // 結算
+  // 過關:賽博龐克的勝利短曲——上衝的掃頻 → 重拍 → 鋸齒波琶音一路爬升 → 大七和弦合成器長音 + 回音裡的方波主音
   win: (a, t) => {
-    [[0, 0.15], [4, 0.15], [7, 0.15], [12, 0.45], [7, 0.15], [12, 0.8]].reduce((w, [n, d]) => {
-      a.tone(semi(523, n), d + 0.1, { type: 'square', vol: 0.18, when: w });
-      a.tone(semi(262, n), d + 0.1, { type: 'triangle', vol: 0.2, when: w });
+    a.noise(0.35, { filter: 'bandpass', freq: 600, to: 6500, q: 1.4, vol: 0.3 });                  // 上衝的掃頻
+    const hit = t + 0.32;
+    a.tone(150, 0.3, { to: 40, vol: 0.9, when: hit });                                              // 重拍大鼓
+    a.noise(0.9, { filter: 'highpass', freq: 5000, vol: 0.18, when: hit });                          // 鑔片
+    [0, 4, 7, 12, 16, 19, 24, 28].forEach((n, i) =>                                                 // 鋸齒波琶音,濾波一路打開
+      a.tone(semi(330, n), 0.14, { type: 'sawtooth', vol: 0.11, lp: 1200 + i * 700, q: 6, send: true, when: hit + i * 0.065 }));
+    const stab = hit + 0.6;
+    a.tone(130, 0.25, { to: 45, vol: 0.8, when: stab });
+    a.noise(0.25, { filter: 'bandpass', freq: 1800, q: 0.8, vol: 0.35, when: stab });                // 小鼓
+    [0, 4, 7, 11].forEach(n => [0.995, 1.005].forEach(k =>                                          // 大七和弦合成器長音(兩把微走音的鋸齒波)
+      a.tone(semi(165, n) * k, 1.5, { type: 'sawtooth', vol: 0.05, attack: 0.02, lp: 3200, lpTo: 700, q: 2, when: stab })));
+    a.tone(semi(165, -12), 1.4, { type: 'sawtooth', vol: 0.25, lp: 600, lpTo: 150, q: 4, when: stab }); // 低音
+    [[12, 0.18], [16, 0.18], [19, 0.9]].reduce((w, [n, d]) => {                                     // 回音裡的方波主音
+      a.tone(semi(659, n - 12), d, { type: 'square', vol: 0.11, lp: 3800, q: 2, send: true, when: w });
       return w + d;
-    }, t);
+    }, stab + 0.05);
   },
-  lose: (a, t) => [0, -1, -2, -5].forEach((n, i) =>
-    a.tone(semi(262, n), i === 3 ? 1 : 0.35, { type: 'triangle', vol: 0.25, when: t + i * 0.35 })),
+  // 挑戰失敗:系統故障——一串亂碼般的嗶嗶聲,接著小調和弦「斷電」般往下沉,最後只剩低頻嗡鳴
+  lose: (a, t) => {
+    for (let k = 0; k < 7; k++) a.tone(1800 - k * 180 + Math.random() * 300, 0.04, { type: 'square', vol: 0.07, when: t + k * 0.05 }); // 故障嗶嗶聲
+    a.noise(0.08, { filter: 'highpass', freq: 4000, vol: 0.2, when: t + 0.38 });
+    const down = t + 0.4;
+    [0, 3, 7].forEach(n => [0.993, 1.007].forEach(k =>                                              // 小調和弦降頻斷電
+      a.tone(semi(220, n) * k, 1.4, { type: 'sawtooth', vol: 0.06, to: semi(220, n) * k * 0.45, lp: 2200, lpTo: 160, q: 3, when: down })));
+    a.noise(1.3, { filter: 'bandpass', freq: 3000, to: 150, q: 1.2, vol: 0.18, when: down });        // 往下掉的雜訊
+    for (let k = 0; k < 4; k++) a.tone(semi(110, -k * 2), 0.09, { type: 'square', vol: 0.06, lp: 900, when: down + 0.35 + k * 0.11 }); // 斷斷續續的故障
+    a.tone(55, 1.6, { type: 'sawtooth', vol: 0.22, to: 38, lp: 300, q: 2, attack: 0.05, when: t + 1.1 }); // 低頻嗡鳴
+    a.tone(330, 0.9, { type: 'sawtooth', vol: 0.08, to: 40, lp: 1500, lpTo: 100, send: true, when: t + 1.15 }); // 磁帶停轉般的降頻
+  },
 };

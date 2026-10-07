@@ -147,7 +147,8 @@ G.scenes = {
   story(name = 'opening', onDone) {
     const comic = COMICS[name], beats = comic.beats;
     G.show('story');
-    G.bgm.play('menu');
+    G.bgm.setRate(1); // 從戰鬥結算過來時,周回加快的速度要還原
+    G.bgm.play({ opening: 'story', ending: 'finale1', ending2: 'finale2', ending3: 'finale3' }[name] || 'story'); // 序章、各章破關漫畫各自的配樂
     const root = G.$('#story'), panel = G.$('#storyPanel'), img = G.$('#panelImg');
     const caption = G.$('#storyCaption'), text = G.$('#storyText'), speaker = G.$('#storySpeaker');
     const hint = root.querySelector('.story-hint');
