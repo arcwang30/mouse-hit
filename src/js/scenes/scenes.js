@@ -39,6 +39,30 @@ const ENDING = [
     text: '他的眼中不再有仇恨，只有對武道巔峰的追求。烈火淬煉完畢，這顆孤星將在更廣闊的世界，展開全新的修練旅程。' },
 ];
 
+// 第二章結局:打倒無相宗主(6-5)後播放;ending2.jpg(1380×752,上下兩排各四格,第 1/2、7/8 格之間是斜切線,裁切避開;右下角浮水印也裁掉)
+const ENDING_2 = [
+  { crop: { x: 14, y: 18, w: 394, h: 348 }, tilt: -1, focus: '35% 45%', sfx: 'thunder', title: true,
+    text: '鋼鐵與心相的試煉・終章\n拳為誰而揮' },
+  { crop: { x: 14, y: 18, w: 394, h: 348 }, fx: 'impact', tilt: -1.5, focus: '50% 50%', sfx: 'boom',
+    text: '「炎鋼,你的拳,為誰而揮?」\n「為了守護,為了傳承!」' },
+  { crop: { x: 514, y: 18, w: 250, h: 348 }, tilt: 1.5, focus: '50% 25%', sfx: 'ding',
+    text: '炎鋼的烈焰穿透了宗主的護身罡氣。肆虐千年的風暴,在這一刻靜了下來。' },
+  { crop: { x: 784, y: 18, w: 288, h: 348 }, tilt: -1, focus: '50% 45%', sfx: 'healWind',
+    text: '一股翠綠的氣流在兩人掌間盤旋——那是守護之心凝成的力量,天沙宗的護身心法「天道」。' },
+  { crop: { x: 1091, y: 18, w: 284, h: 348 }, tilt: 1, focus: '50% 55%', sfx: 'select',
+    text: '天沙宗山門前,紅綾背起行囊,向宗主與護法師兄深深一拜:「炎鋼,路上可別嫌我礙事!」' },
+  { crop: { x: 14, y: 386, w: 322, h: 346 }, tilt: -1.5, focus: '60% 55%', sfx: 'coin',
+    text: '「訊號!終於有訊號了!」小隼抱著電腦在沙丘上又叫又跳,紅綾忍不住笑出聲。' },
+  { crop: { x: 355, y: 386, w: 328, h: 346 }, fx: 'impact', tilt: 1.5, focus: '55% 60%', sfx: 'boom',
+    text: '那天夜裡,一架殘破的無人機墜落在營火旁。艙裡只有一枚匿名的加密晶片,刻著:「致神拳門的傳人」。' },
+  { crop: { x: 702, y: 386, w: 274, h: 346 }, fx: 'shock', tone: 'shock', tilt: -2, focus: '60% 40%', sfx: 'bossSkill', speaker: '小隼',
+    text: '「資助暗曜的,只是『天幕議會』的一個小分部……他們正在全世界抽乾武者的武魂!」' },
+  { crop: { x: 1068, y: 386, w: 266, h: 320 }, tilt: 1, focus: '35% 60%', sfx: 'thunder', speaker: '炎鋼',
+    text: '「被囚禁的武者們……我不會讓你們等太久。這一次,我要砸碎整片天幕!」' },
+  { crop: { x: 1068, y: 386, w: 266, h: 320 }, tilt: 0, focus: '60% 30%', sfx: 'fire', title: true,
+    text: '復仇的火焰\n化作守護的光\n下一章・星火燎原的遠征' },
+];
+
 // 第三章結局:打倒天幕議長(3-6 區域最終 BOSS)後播放;ending3.jpg(1380×752,左半邊是斜切的分格,裁切避開相鄰格;右下角的浮水印也裁掉)
 const ENDING_3 = [
   { crop: { x: 0, y: 0, w: 696, h: 262 }, tilt: -1, focus: '25% 45%', sfx: 'thunder', title: true,
@@ -76,6 +100,7 @@ const MAP_POS = [
 const COMICS = {
   opening: { src: '../assets/images/story/opening_v2.jpg', w: 1408, h: 768, beats: STORY },
   ending:  { src: '../assets/images/story/ending.jpg',  w: 1380, h: 752, beats: ENDING },
+  ending2: { src: '../assets/images/story/ending2.jpg', w: 1380, h: 752, beats: ENDING_2 },
   ending3: { src: '../assets/images/story/ending3.jpg', w: 1380, h: 752, beats: ENDING_3 },
 };
 

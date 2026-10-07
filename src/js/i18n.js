@@ -47,7 +47,7 @@ G.I18N = {
   '⚙️ 設定': ['⚙️ 設定', '⚙️ Settings'],
   '📜 故事': ['📜 ストーリー', '📜 Story'],
   '故事': ['ストーリー', 'Story'], '開場故事': ['オープニング', 'Opening'], '破關結局': ['エンディング', 'Ending'],
-  '第一章結局': ['第一章エンディング', 'Chapter 1 Ending'], '第三章結局': ['第三章エンディング', 'Chapter 3 Ending'],
+  '第一章結局': ['第一章エンディング', 'Chapter 1 Ending'], '第二章結局': ['第二章エンディング', 'Chapter 2 Ending'], '第三章結局': ['第三章エンディング', 'Chapter 3 Ending'],
   // 第一章:關卡開場的簡短對話
   '公園裡的孩子們都躲得遠遠的……這些混混,把整條街都嚇壞了。': ['公園の子どもたちはみんな遠くに隠れてる……このチンピラども、街じゅうを怯えさせてやがる。', 'The kids in the park are all hiding… these thugs have the whole street scared.'],
   '魚販們紛紛拉下鐵門,巷口傳來醉漢的叫罵聲。': ['魚屋たちは次々とシャッターを下ろし、路地の入口から酔っ払いの怒鳴り声が響く。', 'The fishmongers slam their shutters down as a drunk yells from the end of the alley.'],
@@ -181,6 +181,17 @@ G.I18N = {
   '今天就讓它徹底停擺!': ['今日ここで、完全に止めてやるわ!', 'Today we shut it down for good!'],
   '大家,把力量借給我。': ['みんな、力を貸してくれ。', 'Everyone, lend me your strength.'],
   '說什麼借——我們一起上!': ['貸すだなんて水くさい——全員で行くぞ!', 'Lend? Forget that—we\'re all going in together!'],
+  // 第二章結局漫畫
+  '鋼鐵與心相的試煉・終章\n拳為誰而揮': ['鋼鉄と心相の試練・終章\n拳は誰がために', 'Trials of Steel and Spirit — Finale\nFor whom the fist is raised'],
+  '「炎鋼,你的拳,為誰而揮?」\n「為了守護,為了傳承!」': ['「炎鋼、お前の拳は誰のために振るう?」\n「守るため、受け継ぐためだ!」', '"Yan Gang, for whom do you raise your fist?"\n"To protect, and to pass it on!"'],
+  '炎鋼的烈焰穿透了宗主的護身罡氣。肆虐千年的風暴,在這一刻靜了下來。': ['炎鋼の烈火が宗主の護身の気を貫いた。千年荒れ狂った嵐が、この瞬間に静まった。', 'Yan Gang\'s flames pierced the Master\'s protective aura, and the storm that had raged for a thousand years finally fell silent.'],
+  '一股翠綠的氣流在兩人掌間盤旋——那是守護之心凝成的力量,天沙宗的護身心法「天道」。': ['二人の掌の間に翠緑の気流が渦巻く——守る心が凝り固まった力、天砂宗の護身の心法「天道」だ。', 'A jade-green current swirled between their palms—strength born of a protective heart: Tiansha\'s guarding art, "Heavenly Way."'],
+  '天沙宗山門前,紅綾背起行囊,向宗主與護法師兄深深一拜:「炎鋼,路上可別嫌我礙事!」': ['天砂宗の山門の前で、紅綾は荷を背負い、宗主と護法の兄弟子に深く一礼した。「炎鋼、道中で足手まといだなんて言わないでよ!」', 'At the Tiansha gate, Hongling shouldered her pack and bowed deeply to the Master and her senior brother. "Yan Gang, don\'t you dare call me dead weight on the road!"'],
+  '「訊號!終於有訊號了!」小隼抱著電腦在沙丘上又叫又跳,紅綾忍不住笑出聲。': ['「電波!やっと電波が来た!」ハヤブサはPCを抱えて砂丘で跳ね回り、紅綾は思わず吹き出した。', '"Signal! Finally, a signal!" Hayabusa hugged his computer, whooping and leaping on the dunes, and Hongling burst out laughing.'],
+  '那天夜裡,一架殘破的無人機墜落在營火旁。艙裡只有一枚匿名的加密晶片,刻著:「致神拳門的傳人」。': ['その夜、壊れたドローンが焚き火のそばに墜落した。中には匿名の暗号チップが一枚だけ。刻まれていた文字は——「神拳門の継承者へ」。', 'That night, a battered drone crashed beside their campfire. Inside was a single anonymous encrypted chip, engraved: "To the heir of the Divine Fist."'],
+  '「資助暗曜的,只是『天幕議會』的一個小分部……他們正在全世界抽乾武者的武魂!」': ['「暗曜を支援してたのは『天幕議会』の小さな一支部にすぎない……奴ら、世界中で武人の武魂を抜き取ってるんだ!」', '"The ones backing Anyao were just a small branch of the \'Canopy Council\'… and they\'re draining fighters\' souls all over the world!"'],
+  '「被囚禁的武者們……我不會讓你們等太久。這一次,我要砸碎整片天幕!」': ['「囚われた武人たち……そう長くは待たせない。今度こそ、天幕ごと叩き割ってやる!」', '"To every captive fighter… I won\'t keep you waiting long. This time, I\'ll smash the whole Canopy!"'],
+  '復仇的火焰\n化作守護的光\n下一章・星火燎原的遠征': ['復讐の炎は\n守護の光となる\n次章・星火燎原の遠征', 'The fire of vengeance\nbecomes a guiding light\nNext: The Wildfire Expedition'],
   // 第三章結局漫畫
   '星火燎原的遠征・終章\n拳之所向,即是道路': ['星火燎原の遠征・終章\n拳の向かう先こそ、道となる', 'The Wildfire Expedition — Finale\nWherever the fist goes, a path is made'],
   '武魂剝離塔的頂端,炎鋼揮出最後一記星火燎原拳,正面貫穿了天幕議長。': ['武魂剥離塔の頂で、炎鋼は最後の星火燎原拳を放ち、天幕議長を真正面から貫いた。', 'Atop the Soul Extraction Tower, Yan Gang threw one last Spark Wildfire Fist and drove it straight through the Canopy Chairman.'],

@@ -751,4 +751,4 @@ html:lang(en) .stage-bar .ch-tab b { font-size: 2.6cqw; }
   filter: drop-shadow(0 0 1.5cqw #3ddc8480); }
 .tut-pill:hover { filter: brightness(1.1) drop-shadow(0 0 2cqw #3ddc84); }
 .tut-pill[hidden] { display: none; }
-#pickEnding3[hidden] { display: none; }
+#pickEnding2[hidden], #pickEnding3[hidden] { display: none; }
