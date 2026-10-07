@@ -1,5 +1,5 @@
 // 圖鑑收藏:在商店用金幣購買解鎖,買了才能看圖與資料
-// hero 主角圖鑑:img 立繪,或 crop 從開場漫畫(opening.jpg 1408×768)裁一格;bio 介紹
+// hero 主角圖鑑:img 立繪,或 crop 從開場漫畫(opening_v2.jpg 1408×768)裁一格;bio 介紹
 // minion 小兵、boss BOSS:直接取自 G.ENEMIES,價格依「第一次出現的關卡」越後面越貴
 G.DEX_HERO = [
   { id: 'yangang', name: '炎鋼', img: 'fx/credit_hero.png', price: 110,

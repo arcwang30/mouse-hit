@@ -1,6 +1,6 @@
 // 非戰鬥畫面:故事開場、主選單、成長、技能三選一、結算
 
-// 過場漫畫:開場 assets/images/story/opening.jpg(1408×768)、破關結局 ending.jpg(1380×752)
+// 過場漫畫:開場 assets/images/story/opening_v2.jpg(1408×768;換過圖,所以換檔名避開舊快取)、破關結局 ending.jpg(1380×752)
 // crop:該格在原圖上的位置;pan:寬畫面改成由左往右橫搖(view 為可視寬度)
 // fx:fire 火光 / impact 震動 / shock 紫光+震動 / rage 怒火+震動;tilt:格子傾斜角度;focus:鏡頭推近的中心
 // title:這一句是章節標題(置中、放大)
@@ -52,7 +52,7 @@ const MAP_POS = [
   [[20, 86], [50, 72], [80, 54], [52, 36], [24, 16]], // 往右上斜爬再轉向左上(> 形)
 ];
 const COMICS = {
-  opening: { src: '../assets/images/story/opening.jpg', w: 1408, h: 768, beats: STORY },
+  opening: { src: '../assets/images/story/opening_v2.jpg', w: 1408, h: 768, beats: STORY },
   ending:  { src: '../assets/images/story/ending.jpg',  w: 1380, h: 752, beats: ENDING },
 };
 

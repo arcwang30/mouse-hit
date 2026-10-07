@@ -1,6 +1,6 @@
 // 商店:用金幣(💰)購買九宮格造型與圖鑑收藏。購買要點兩下確認,避免誤觸
 // 圖鑑買了才能看圖與資料,點一下已購買的項目打開詳細資料
-const OPENING = { src: '../assets/images/story/opening.jpg', w: 1408, h: 768 };
+const OPENING = { src: '../assets/images/story/opening_v2.jpg', w: 1408, h: 768 };
 
 // 主角圖鑑的圖:立繪或從開場漫畫裁一格
 const heroPic = h => h.img

@@ -57,7 +57,7 @@ powershell -ExecutionPolicy Bypass -File tools/serve.ps1
 - 20 個數值技能 + 10 個改變規則的「技法」,每擊倒一個 WAVE 三選一(保證至少一個技法)
 - 結算積分 → 成長點數 → 永久升級(存於瀏覽器 localStorage)
 - 音樂音效全部以 Web Audio 即時合成(`src/js/audio/`),不需音檔;配樂分主選單、三個關卡、BOSS 戰五首
-- 開場故事:漫畫 `assets/images/story/opening.jpg` 逐格演出(7 幕,座標與特效設定在 `src/js/scenes/scenes.js` 的 STORY)
+- 開場故事:漫畫 `assets/images/story/opening_v2.jpg` 逐格演出(7 幕,座標與特效設定在 `src/js/scenes/scenes.js` 的 STORY)
 - 主選單功能:操作說明(4 頁)、設定(音量 / 震動 / 重看開場 / 重置存檔)、了解歷史(3 分頁 + 粉絲團)、CREDIT(版面參考 Top_Race 專案,內容在 `src/js/data/pages.js`)
 - 標題畫面:背景 `assets/images/backgrounds/title.jpg`、LOGO `assets/images/ui/logo.webp`(含落雷、雨、火星、LOGO 砸落動畫)
 - 戰鬥背景:`assets/images/backgrounds/stage1~3.jpg`;敵人立繪:`assets/images/enemies/`(全部 13 位,設定在敵人資料的 `img` 欄位;沒有 img 時會退回 emoji)

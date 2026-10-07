@@ -83,7 +83,7 @@ button { font: inherit; color: inherit; cursor: pointer; }
 }
 .panel-img {
   position: absolute; inset: 0;
-  background-image: url('../../assets/images/story/opening.jpg'); background-repeat: no-repeat;
+  background-image: url('../../assets/images/story/opening_v2.jpg'); background-repeat: no-repeat;
   animation: kenburns 7s ease-out forwards; transform-origin: var(--focus, 50% 50%);
 }
 .panel-img.pan { animation: none; transition: background-position 5.5s cubic-bezier(.45, 0, .4, 1); }
