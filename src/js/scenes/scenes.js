@@ -39,6 +39,28 @@ const ENDING = [
     text: '他的眼中不再有仇恨，只有對武道巔峰的追求。烈火淬煉完畢，這顆孤星將在更廣闊的世界，展開全新的修練旅程。' },
 ];
 
+// 第三章結局:打倒天幕議長(3-6 區域最終 BOSS)後播放;ending3.jpg(1380×752,左半邊是斜切的分格,裁切避開相鄰格;右下角的浮水印也裁掉)
+const ENDING_3 = [
+  { crop: { x: 0, y: 0, w: 696, h: 262 }, tilt: -1, focus: '25% 45%', sfx: 'thunder', title: true,
+    text: '星火燎原的遠征・終章\n拳之所向,即是道路' },
+  { crop: { x: 0, y: 0, w: 696, h: 262 }, pan: { view: 380 }, fx: 'impact', tilt: -1.5, sfx: 'boom',
+    text: '武魂剝離塔的頂端,炎鋼揮出最後一記星火燎原拳,正面貫穿了天幕議長。' },
+  { crop: { x: 4, y: 314, w: 356, h: 126 }, fx: 'shock', tilt: 1.5, focus: '60% 45%', sfx: 'tornado',
+    text: '由千萬武魂拼湊而成的身軀寸寸崩解,被囚禁的武魂化作光流,奔湧而出。' },
+  { crop: { x: 712, y: 0, w: 668, h: 515 }, tilt: -1, focus: '45% 40%', sfx: 'fever',
+    text: '剝離塔轟然倒塌,天幕從中裂開。滿天星火飛回世界各地的武者身上——人們抬起頭,第一次看見真正的天空。' },
+  { crop: { x: 0, y: 470, w: 362, h: 282 }, tilt: 2, focus: '45% 30%', sfx: 'zap', speaker: '小隼',
+    text: '「系統全面停擺!議會的網路……我全部拆光啦!」' },
+  { crop: { x: 392, y: 482, w: 304, h: 270 }, fx: 'rage', tilt: -2, focus: '60% 30%', sfx: 'thunder',
+    text: '紅綾扶著甦醒的護法師兄,淚流滿面。雷獅扯下控制頸環,仰天長嘯:「這條命,總算是自己的了!」' },
+  { crop: { x: 712, y: 528, w: 284, h: 224 }, tilt: 1, focus: '50% 40%', sfx: 'ding',
+    text: '三天後,四人站在港口的晨光裡。「下一站去哪?」「去哪都行——路上記得陪我比劃!」' },
+  { crop: { x: 1004, y: 528, w: 336, h: 224 }, tilt: 0, focus: '50% 60%', sfx: 'levelup', speaker: '炎鋼',
+    text: '「走吧。只要還有人需要,我們的拳頭就不會停下。」' },
+  { crop: { x: 1004, y: 528, w: 336, h: 224 }, tilt: 0, focus: '55% 45%', sfx: 'fire', title: true,
+    text: '烈火淬煉的孤星\n不再孤單\n星火燎原,拳道無盡。' },
+];
+
 // 周回切換按鈕的頭像:凡塵 人頭 / 修羅 長角 / 天魔 裂嘴惡魔
 const ROUND_FACES = { 1: '🧑', 2: '😈', 3: '👹' };
 // 大地圖:每區 5 個關卡節點在區域裡的位置(x%, y%),最後一個是 BOSS
@@ -54,6 +76,7 @@ const MAP_POS = [
 const COMICS = {
   opening: { src: '../assets/images/story/opening_v2.jpg', w: 1408, h: 768, beats: STORY },
   ending:  { src: '../assets/images/story/ending.jpg',  w: 1380, h: 752, beats: ENDING },
+  ending3: { src: '../assets/images/story/ending3.jpg', w: 1380, h: 752, beats: ENDING_3 },
 };
 
 // 讓 el 只顯示原圖(comic)上 (x, y, w, h) 這一塊

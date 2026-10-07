@@ -2326,11 +2326,11 @@ G.battle = {
     sv.life.ults += s.ults || 0;
     G.daily.record({ s, win, rate }); // 每日任務進度
     G.save.write();
-    this.endingNext = finalWin && ch === 1; // 第一章打倒最終 BOSS:結算後播放結局漫畫
+    this.endingNext = finalWin && (ch === 1 ? 'ending' : ch === 3 ? 'ending3' : false); // 第一、三章打倒最終 BOSS:結算後播放結局漫畫
     G.scenes.result(win, score, points, s, p);
-    // 區域通關:結算畫面出來後接著播通關對話與新招式解鎖(第一章最終區域由結局漫畫收尾)
+    // 區域通關:結算畫面出來後接著播通關對話與新招式解鎖(第一、三章最終區域由結局漫畫收尾)
     const lastRegion = this.regionCleared === G.REGIONS.length - 1;
-    if (this.regionCleared >= 0 && !(lastRegion && ch === 1)) { const r = this.regionCleared; setTimeout(() => G.dialog.cleared(r), 900); }
+    if (this.regionCleared >= 0 && !(lastRegion && (ch === 1 || ch === 3))) { const r = this.regionCleared; setTimeout(() => G.dialog.cleared(r), 900); }
     if (tiandao) setTimeout(() => G.dialog.awaken(), 900); // 第二章結局:修得新必殺技的對話
     if (spark) setTimeout(() => G.dialog.awaken3(), 900); // 第三章結局:修得星火燎原拳的對話
     G.ach.check(s, win); // 結算畫面上跳出這場達成的成就

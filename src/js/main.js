@@ -44,16 +44,23 @@ document.addEventListener('pointerdown', e => {
 });
 
 G.$('#btnUpgrade').onclick = () => G.scenes.upgrade();
-// 故事:破關後可選擇看開場或結局,否則直接播開場;看完(或跳過)都回到主選單
-G.$('#btnStory').onclick = () => G.save.data.cleared ? G.show('storyPick') : G.scenes.story('opening', () => G.scenes.menu());
+// 故事:破關後可選擇看開場或結局(第三章破關後多一個第三章結局),否則直接播開場;看完(或跳過)都回到主選單
+G.$('#btnStory').onclick = () => {
+  const sv = G.save.data;
+  if (!sv.cleared) return G.scenes.story('opening', () => G.scenes.menu());
+  G.$('#pickEnding3').hidden = !(sv.ch3Clear || sv.spark);
+  G.show('storyPick');
+};
 G.$('#pickOpening').onclick = () => G.scenes.story('opening', () => G.scenes.menu());
 G.$('#pickEnding').onclick = () => G.scenes.story('ending', () => G.scenes.menu());
+G.$('#pickEnding3').onclick = () => G.scenes.story('ending3', () => G.scenes.menu());
 G.$('#pickBack').onclick = () => G.scenes.menu();
 G.$('#upBack').onclick = () => G.scenes.menu();
 G.$('#resultBack').onclick = () => {
   if (!G.battle.endingNext) return G.scenes.stages(); // 結算完回到選擇關卡,方便接著挑戰
+  const name = G.battle.endingNext; // 'ending' 第一章 / 'ending3' 第三章
   G.battle.endingNext = false;
-  G.scenes.story('ending', () => G.scenes.stages());
+  G.scenes.story(name, () => G.scenes.stages());
 };
 G.$('#ultBtn').addEventListener('pointerdown', e => { e.preventDefault(); G.battle.requestUlt(); });
 
