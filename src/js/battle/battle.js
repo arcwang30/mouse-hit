@@ -761,7 +761,7 @@ G.battle = {
       spin();
       d.el.addEventListener('pointerdown', tap);
       G.grid.handler = () => tap(); // 鍵盤:任一格的按鍵都算點擊
-      d.kb.textContent = G.t('⌨ 任一格的按鍵抓住');
+      d.kb.textContent = G.t(document.body.classList.contains('pad') ? '🎮 A 抓住' : '⌨ 任一格的按鍵抓住'); // 用手把時顯示手把按鍵
     });
   },
 
@@ -851,7 +851,7 @@ G.battle = {
       };
       document.addEventListener('keydown', onKey);
       G.grid.handler = () => {}; // 九宮格的按鍵在畫圈時不作用
-      d.kb.textContent = G.t('⌨ ← → 交替連打');
+      d.kb.textContent = G.t(document.body.classList.contains('pad') ? '🎮 LB / RB 交替連打' : '⌨ ← → 交替連打');
       // 粒子強度慢慢退去:手指停下來龍捲風就變弱
       const cool = () => {
         if (done) return;
@@ -1195,7 +1195,7 @@ G.battle = {
     // 出拳命中時從拳頭位置四射的火星:兩波,每次方向、距離、大小都隨機
     G.$('#cutinEmbers').innerHTML = Array.from({ length: 36 }, (_, k) => {
       const a = Math.random() * Math.PI * 2, r = 18 + Math.random() * 38;
-      return `<i style="--x:${Math.cos(a) * r}cqw;--y:${Math.sin(a) * r * 1.3}cqh;--s:${2 + Math.random() * 3}cqw;` +
+      return `<i style="--x:calc(${Math.cos(a) * r} * var(--cw));--y:${Math.sin(a) * r * 1.3}cqh;--s:calc(${2 + Math.random() * 3} * var(--cw));` +
         `--t:${0.7 + Math.random() * 0.5}s;--d:${(k < 22 ? 0.45 : 0.62) + Math.random() * 0.12}s"></i>`;
     }).join('');
     el.classList.remove('show');
@@ -1519,7 +1519,7 @@ G.battle = {
       return '<i class="afx-lines"></i>' +
         Array.from({ length: 6 }, (_, k) => `<i class="afx-slash" style="--a:${(k % 2 ? -1 : 1) * r(18, 40)}deg;--y:${r(35, 80).toFixed(0)}%;--d:${(0.62 + k * 0.08).toFixed(2)}s"></i>`).join('') +
         Array.from({ length: 16 }, (_, k) => { const a = k / 16 * Math.PI * 2 + r(-.2, .2), d = r(30, 55);
-          return `<i class="afx-star" style="--x:${(Math.cos(a) * d).toFixed(1)}cqw;--y:${(Math.sin(a) * d * 1.4).toFixed(1)}cqw;--s:${r(6, 11).toFixed(1)}cqw">✦</i>`; }).join('') +
+          return `<i class="afx-star" style="--x:calc(${(Math.cos(a) * d).toFixed(1)} * var(--cw));--y:calc(${(Math.sin(a) * d * 1.4).toFixed(1)} * var(--cw));--s:calc(${r(6, 11).toFixed(1)} * var(--cw))">✦</i>`; }).join('') +
         '<i class="afx-burst"></i>';
     }
     return '<i class="afx-lines"></i>' + [0, 1, 2].map(k => `<i class="afx-roar" style="--d:${(0.7 + k * 0.17).toFixed(2)}s"></i>`).join('') +
@@ -2334,5 +2334,6 @@ G.battle = {
     if (tiandao) setTimeout(() => G.dialog.awaken(), 900); // 第二章結局:修得新必殺技的對話
     if (spark) setTimeout(() => G.dialog.awaken3(), 900); // 第三章結局:修得星火燎原拳的對話
     G.ach.check(s, win); // 結算畫面上跳出這場達成的成就
+    G.steam.submitRun(score, s.maxCombo || 0); // PC 版:上傳 Steam 排行榜
   },
 };

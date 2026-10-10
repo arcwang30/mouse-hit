@@ -21,6 +21,7 @@ assets/
   audio/
     bgm/ sfx/
 build/                建構輸出(不進版控)
+steam/                PC(Steam)版:Electron 外殼、Steamworks 串接、商店美術(store-art/)
 ```
 
 ## 如何執行
@@ -35,6 +36,13 @@ powershell -ExecutionPolicy Bypass -File tools/serve.ps1
 
 線上版(GitHub Pages):https://arcwang30.github.io/mouse-hit/
 
+## PC(Steam)版
+
+PC 版用 Electron 包裝同一份 `src/` 與 `assets/`,畫面改成 16:9 橫向排版(`src/css/pc.css`,只在 `<html class="pc">` 時生效,手機直式版不受影響),
+另有 Steam 成就、雲端存檔、排行榜、解析度設定。建置、上架步驟見 [`steam/README.md`](steam/README.md)。
+網頁版也會自動選版面:手機 / 平板(觸控)是直式;電腦(滑鼠操作、橫的視窗)用同一套橫版頁面。
+網址加 `?pc` / `?mobile` 可以強制指定版面(例如在電腦上檢查直式版)。排行榜、離開遊戲只在 Steam 版出現。
+
 ## 操作
 
 | 動作 | 滑鼠 / 觸控 | 鍵盤 |
@@ -42,6 +50,23 @@ powershell -ExecutionPolicy Bypass -File tools/serve.ps1
 | 點擊九宮格 | 點擊格子(HOLD 要按住再放開) | 數字鍵盤 7-9 / 4-6 / 1-3,或 Q W E / A S D / Z X C(HOLD 按住按鍵再放開) |
 | 施放必殺技 | 必殺值 MAX 時點「🔥 必殺」 | 空白鍵 |
 | 靜音 | 右上角 🔊 | M |
+
+### 遊戲控制器(手把,PC / Steam 版;網頁版接上手把也能用)
+
+Xbox 標準配置(PlayStation 等手把在 Steam 會自動對應)。邏輯在 `src/js/gamepad.js`:戰鬥中把手把轉成上面的鍵盤操作,選單則用選取框導覽。
+
+| 動作 | 手把 |
+|---|---|
+| 瞄準九宮格 | 左搖桿 / 十字鍵(8 方向,放開 = 中間格;九宮格轉動時依畫面位置對準) |
+| 出拳 | A / B / X / RT(按住再放開 = HOLD 重拳) |
+| 必殺技 | Y / LT |
+| 踢擊腳印 | 右搖桿往腳印的方向撥 |
+| 旋風破綻 | A 抓住缺口,LB / RB 交替連打(或右搖桿左右來回撥) |
+| 暫停 | START |
+| 選單 | 十字鍵 / 左搖桿移動,A 確定,B 返回,LB / RB 切換分頁,右搖桿捲動 |
+| 故事、對話 | A 繼續,B / START 跳過 |
+
+手把有震動馬達時,受傷與重擊會震動(設定頁「手把震動」可關閉)。
 
 ## 原型內容
 

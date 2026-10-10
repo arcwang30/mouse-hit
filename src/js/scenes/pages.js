@@ -230,7 +230,8 @@ G.pages = {
     const side = () => `<div class="st-item"><div class="st-top"><b>${G.t('必殺技位置')}</b><span class="st-val">SPECIAL</span></div><div class="st-lang two">` +
       [['left', '左'], ['right', '右']].map(([code, label]) => `<button class="st-lang-btn${d.ultSide === code ? ' on' : ''}" data-ult="${code}">${G.t(label)}</button>`).join('') + '</div></div>';
     // 手機震動:Android 正常震動;iPhone 只有點擊時的輕觸回饋;都不支援就顯示灰色、不能切換
-    const vibrate = () => !G.haptic.supported
+    // 接過手把(電腦):改成手把震動開關,和手機震動共用同一個設定
+    const vibrate = () => G.pad.seen ? toggle('vibrate', '手把震動', '受傷、重擊時手把震動') : G.steam.on ? '' : !G.haptic.supported
       ? `<div class="st-item st-toggle off"><div><b>${G.t('手機震動')}</b><p>${G.t('此裝置不支援震動')}</p></div><span class="st-sw">${G.t('不支援')}</span></div>`
       : toggle('vibrate', '手機震動', G.haptic.ios ? '點擊時輕觸回饋(iPhone 只有點擊會震)' : '點擊與受傷時震動');
     G.$('#settingsTabs').innerHTML = this.SETTINGS_TABS.map((t, i) =>
@@ -239,12 +240,12 @@ G.pages = {
       : this.settingsTab === 1
       ? G.skin.html() + G.wall.html()
       : lang() + vol('music', '音樂') + vol('sfx', '音效') +
-        vibrate() +
+        (G.steam.on ? G.steam.displayHtml() : '') + vibrate() + // PC 版:解析度 / 全螢幕;震動只在手機或接了手把時顯示
         toggle('shake', '畫面震動', '受傷、重擊時畫面搖晃') +
         toggle('lowPower', '省電模式', '關掉背景的裝飾動畫(下雨、壁紙、光環等),手機比較不耗電') +
         (G.VOICE_ENABLED ? toggle('voice', '角色語音', '必殺技時喊出招式名(裝置內建的 AI 語音)') : '') +
         side() +
-        (G.clock.paused ? '' : G.pwa.html()) + // PAUSE 中開設定時不顯示安裝引導
+        (G.clock.paused || G.steam.on ? '' : G.pwa.html()) + // PAUSE 中開設定時不顯示安裝引導;PC 版不需要
         (G.clock.paused ? '' : '<div class="st-row">' +
         `<button class="btn small danger" id="stReset">${G.t(this.resetArmed ? '再按一次確認' : '🗑️ 重置存檔')}</button>` +
         '</div>');
@@ -289,7 +290,8 @@ G.pages = {
       if (op === 'save') localStorage.setItem(this.slotKey(n), JSON.stringify({ t: Date.now(), data: G.save.data }));
       else if (op === 'del') localStorage.removeItem(this.slotKey(n));
       else if (op === 'load') {
-        localStorage.setItem(G.save.key, JSON.stringify(this.slotGet(n).data));
+        // 寫入時間更新成現在,PC 版重新載入時才不會被 Steam Cloud 上較新的存檔蓋掉
+        localStorage.setItem(G.save.key, JSON.stringify(Object.assign(this.slotGet(n).data, { savedAt: Date.now() })));
         location.reload();
         return;
       }
@@ -318,6 +320,7 @@ G.pages = {
     if (t.dataset.skin) { G.skin.pick(t.dataset.skin) && this.renderSettings(); return; }
     if (t.dataset.wall) { G.wall.pick(t.dataset.wall) && this.renderSettings(); return; }
     if (t.id === 'stInstall') return G.pwa.install();
+    if (t.dataset.res || t.dataset.fs) return G.steam.displayClick(t);
     if (t.dataset.slot) return this.slotClick(t.dataset.slot, +t.dataset.n);
     if (t.dataset.ult) { G.save.data.ultSide = t.dataset.ult; G.save.write(); G.applyUltSide(); G.audio.play('select'); return this.renderSettings(); }
     if (t.dataset.vol) return this.setVol(t.dataset.vol, +t.dataset.v);
@@ -342,7 +345,7 @@ G.pages = {
       this.resetArmed = false;
       const keep = { lang: G.save.data.lang, vol: G.save.data.vol, vibrate: G.save.data.vibrate, shake: G.save.data.shake, lowPower: G.save.data.lowPower, voice: G.save.data.voice, ultSide: G.save.data.ultSide };
       try { localStorage.removeItem(G.save.key); } catch (err) {}
-      G.save.load();
+      G.save.load(true); // true:PC 版不要再從 Steam Cloud 讀回舊進度
       Object.assign(G.save.data, keep); // 重置進度,保留設定
       G.save.write();
       G.audio.play('break');

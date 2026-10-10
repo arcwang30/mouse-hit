@@ -1,0 +1,47 @@
+{
+  "name": "gangquan-steam",
+  "productName": "GangQuan",
+  "version": "1.0.0",
+  "description": "鋼拳風雲錄 Steel Fist: Wind & Cloud — PC (Steam) build",
+  "author": "Arc's Concept",
+  "private": true,
+  "main": "main.js",
+  "scripts": {
+    "start": "electron .",
+    "copy-game": "node scripts/copy-game.js",
+    "dist": "npm run copy-game && electron-builder --win --dir",
+    "dist:zip": "npm run copy-game && electron-builder --win zip"
+  },
+  "dependencies": {
+    "steamworks-ffi-node": "^0.5.3"
+  },
+  "devDependencies": {
+    "electron": "^33.2.0",
+    "electron-builder": "^25.1.8"
+  },
+  "build": {
+    "appId": "com.arcsconcept.gangquan",
+    "productName": "GangQuan",
+    "executableName": "GangQuan",
+    "copyright": "©Arc's Concept Game",
+    "directories": { "output": "dist" },
+    "files": [
+      "main.js",
+      "preload.js",
+      "steam.js",
+      "package.json",
+      "game/**/*",
+      "steamworks_sdk/redistributable_bin/win64/**/*"
+    ],
+    "asarUnpack": [
+      "node_modules/steamworks-ffi-node/**",
+      "node_modules/koffi/**",
+      "node_modules/@koromix/**",
+      "steamworks_sdk/redistributable_bin/**"
+    ],
+    "win": {
+      "target": "dir",
+      "icon": "icons/icon.png"
+    }
+  }
+}

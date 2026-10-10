@@ -10,7 +10,11 @@
   --enemy-hp: #ff3d5a;
   --guard: #3da9ff;
   --ult: #c04dff;
+  /* 排版單位 --cw:直式 = 容器寬的 1%(原本的 cqw);PC 橫版改成 .5625cqh,元件大小和同高度的直式畫面一樣
+     (沒註冊的自訂屬性在使用處才換算,所以會跟著最近的容器走,例如操作說明裡的 9:16 小畫面) */
+  --cw: 1cqw;
 }
+html.pc { --cw: .5625cqh; }
 
 /* 手機:不要長按跳出選取 / 存圖選單,也不要雙擊或雙指縮放(user-select 等屬性 iOS 要加 -webkit- 前綴) */
 * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; -webkit-user-select: none; user-select: none; -webkit-touch-callout: none; }
@@ -38,6 +42,11 @@ button { font: inherit; color: inherit; cursor: pointer; }
   container-type: size;
   /* 基準字級不能寫在容器本身(cqw 會改用瀏覽器視窗寬度計算),改設在子層 */
 }
+/* PC(Steam)版:16:9 橫向框,視窗比例不同時上下或左右留黑邊 */
+html.pc #app {
+  width: min(100vw, calc(100vh * 16 / 9));
+  height: min(100vh, calc(100vw * 9 / 16));
+}
 #app.shake { animation: shake .3s; }
 @keyframes shake {
   20% { transform: translate(-2%, 1%); } 40% { transform: translate(2%, -1%); }
@@ -49,36 +58,37 @@ button { font: inherit; color: inherit; cursor: pointer; }
 
 .btn {
   background: linear-gradient(180deg, var(--fire), #c2300a);
-  border: 0; border-radius: 3cqw; padding: 3cqw 6cqw;
-  font-weight: 700; font-size: 4.5cqw; box-shadow: 0 1cqw 0 #7a1c04;
+  border: 0; border-radius: calc(3 * var(--cw)); padding: calc(3 * var(--cw)) calc(6 * var(--cw));
+  font-weight: 700; font-size: calc(4.5 * var(--cw)); box-shadow: 0 calc(1 * var(--cw)) 0 #7a1c04;
 }
-.btn:active { transform: translateY(1cqw); box-shadow: none; }
+.btn:active { transform: translateY(calc(1 * var(--cw))); box-shadow: none; }
 .btn:disabled { filter: grayscale(1) brightness(.6); cursor: default; }
-.btn.small { font-size: 3.6cqw; padding: 2cqw 3.5cqw; }
+.btn.small { font-size: calc(3.6 * var(--cw)); padding: calc(2 * var(--cw)) calc(3.5 * var(--cw)); }
 
 /* ---- 故事 ---- */
 #story {
-  align-items: center; padding: 12cqw 6cqw 0; gap: 4cqh; cursor: pointer; overflow: hidden;
+  align-items: center; padding: calc(12 * var(--cw)) calc(6 * var(--cw)) 0; gap: 4cqh; cursor: pointer; overflow: hidden;
   background:
     radial-gradient(circle at 50% 40%, transparent 30%, #000 85%),
-    radial-gradient(circle, #ffffff10 1px, transparent 1.5px) 0 0 / 2.4cqw 2.4cqw, /* 漫畫網點 */
+    radial-gradient(circle, #ffffff10 1px, transparent 1.5px) 0 0 / calc(2.4 * var(--cw)) calc(2.4 * var(--cw)), /* 漫畫網點 */
     radial-gradient(circle at 50% 35%, #3a1a10, #0b0608 70%);
 }
 #story.tone-shock { background-color: #1a0826; }
-.story-hint { position: absolute; bottom: 4cqh; left: 0; right: 0; text-align: center; color: var(--muted); font-size: 3.4cqw; animation: blink 1.4s infinite; }
+.story-hint { position: absolute; bottom: 4cqh; left: 0; right: 0; text-align: center; color: var(--muted); font-size: calc(3.4 * var(--cw)); animation: blink 1.4s infinite; }
 .story-hint.hide { visibility: hidden; }
 
 /* 進度點 */
-.story-dots { position: absolute; top: 4.5cqw; left: 6cqw; display: flex; gap: 1.6cqw; }
-.story-dots span { width: 2cqw; height: 2cqw; border-radius: 50%; background: #ffffff30; transition: background .3s, transform .3s; }
+.story-dots { position: absolute; top: calc(4.5 * var(--cw)); left: calc(6 * var(--cw)); display: flex; gap: calc(1.6 * var(--cw)); }
+.story-dots span { width: calc(2 * var(--cw)); height: calc(2 * var(--cw)); border-radius: 50%; background: #ffffff30; transition: background .3s, transform .3s; }
 .story-dots span.on { background: var(--fire-2); }
-.story-dots span.now { background: var(--fire); transform: scale(1.4); box-shadow: 0 0 2cqw var(--fire); }
+.story-dots span.now { background: var(--fire); transform: scale(1.4); box-shadow: 0 0 calc(2 * var(--cw)) var(--fire); }
 
 /* 漫畫格:整張漫畫圖只露出其中一格(位置與尺寸由 JS 設定) */
 .story-stage { width: 100%; height: 56cqh; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
 .story-panel {
   position: relative; overflow: hidden; background: #000;
-  border: 1.2cqw solid #fff; outline: .5cqw solid #000; box-shadow: 0 2cqw 5cqw #000c;
+  width: min(calc(86 * var(--cw)), calc(52cqh * var(--aspect, 1))); /* --aspect:畫格寬高比,由 scenes.js 設定 */
+  border: calc(1.2 * var(--cw)) solid #fff; outline: calc(.5 * var(--cw)) solid #000; box-shadow: 0 calc(2 * var(--cw)) calc(5 * var(--cw)) #000c;
   transform: rotate(var(--tilt, 0deg));
 }
 .panel-img {
@@ -99,11 +109,11 @@ button { font: inherit; color: inherit; cursor: pointer; }
 .panel-fx { position: absolute; inset: 0; pointer-events: none; }
 .sfx-fire  .panel-fx { background: radial-gradient(circle at 30% 90%, #ff5a1f70, transparent 60%); mix-blend-mode: screen; animation: fireFlicker .18s steps(2) infinite; }
 .sfx-shock .panel-fx { background: #b04dff; mix-blend-mode: screen; animation: shockFlash .9s ease-out forwards; }
-.sfx-rage  .panel-fx { box-shadow: inset 0 0 8cqw 2cqw #ff5a1f; animation: ragePulse .5s ease-in-out infinite alternate; }
+.sfx-rage  .panel-fx { box-shadow: inset 0 0 calc(8 * var(--cw)) calc(2 * var(--cw)) #ff5a1f; animation: ragePulse .5s ease-in-out infinite alternate; }
 .sfx-rage.story-panel, .sfx-impact.story-panel, .sfx-shock.story-panel { animation: panelIn .45s cubic-bezier(.2, .9, .3, 1.25), panelShake .35s .4s 2; }
 @keyframes fireFlicker { 50% { opacity: .55; } }
 @keyframes shockFlash  { 0% { opacity: .8; } 15% { opacity: 0; } 25% { opacity: .5; } 100% { opacity: 0; } }
-@keyframes ragePulse   { to { box-shadow: inset 0 0 14cqw 4cqw #ffc23d; } }
+@keyframes ragePulse   { to { box-shadow: inset 0 0 calc(14 * var(--cw)) calc(4 * var(--cw)) #ffc23d; } }
 @keyframes panelShake {
   25% { transform: rotate(var(--tilt, 0deg)) translate(-2.5%, 1.5%); }
   50% { transform: rotate(var(--tilt, 0deg)) translate(2%, -1.5%); }
@@ -112,64 +122,64 @@ button { font: inherit; color: inherit; cursor: pointer; }
 
 /* 旁白框(漫畫風);對白改成圓角對話框 */
 .story-caption {
-  position: relative; width: 100%; min-height: 20cqh; padding: 3.5cqw 4.5cqw;
-  background: #fffdf5; color: #1a1210; border: .7cqw solid #1a1210; box-shadow: 1.2cqw 1.2cqw 0 #000a;
+  position: relative; width: 100%; min-height: 20cqh; padding: calc(3.5 * var(--cw)) calc(4.5 * var(--cw));
+  background: #fffdf5; color: #1a1210; border: calc(.7 * var(--cw)) solid #1a1210; box-shadow: calc(1.2 * var(--cw)) calc(1.2 * var(--cw)) 0 #000a;
   transform: skewX(-3deg);
 }
-.story-caption.say { border-radius: 5cqw; transform: none; }
+.story-caption.say { border-radius: calc(5 * var(--cw)); transform: none; }
 .story-caption.say::after { /* 對話框的尾巴 */
-  content: ""; position: absolute; top: -3.4cqw; left: 18%; border: 3cqw solid transparent;
+  content: ""; position: absolute; top: calc(-3.4 * var(--cw)); left: 18%; border: calc(3 * var(--cw)) solid transparent;
   border-bottom-color: #1a1210; border-top: 0;
 }
-.speaker { display: inline-block; background: #1a1210; color: #ffc23d; font-weight: 900; font-size: 3.4cqw; padding: .4cqw 2.4cqw; margin-bottom: 1.2cqw; transform: skewX(-8deg); }
+.speaker { display: inline-block; background: #1a1210; color: #ffc23d; font-weight: 900; font-size: calc(3.4 * var(--cw)); padding: calc(.4 * var(--cw)) calc(2.4 * var(--cw)); margin-bottom: calc(1.2 * var(--cw)); transform: skewX(-8deg); }
 .speaker:empty { display: none; }
-#storyText { margin: 0; font-size: 4.8cqw; line-height: 1.75; font-weight: 700; letter-spacing: .04em; white-space: pre-line; }
+#storyText { margin: 0; font-size: calc(4.8 * var(--cw)); line-height: 1.75; font-weight: 700; letter-spacing: .04em; white-space: pre-line; }
 .story-caption.pop { animation: captionPop .3s ease-out; }
 @keyframes captionPop { from { transform: translateY(20%) skewX(-3deg); opacity: 0; } }
 /* 章節標題:黑底金字置中 */
 .story-caption.title { display: flex; align-items: center; justify-content: center; text-align: center; background: #1a1210; color: #ffc23d; border-color: #ffc23d; }
-.story-caption.title #storyText { font-size: 6.2cqw; line-height: 1.6; letter-spacing: .08em; text-shadow: 0 0 2cqw #ff5a1f; }
+.story-caption.title #storyText { font-size: calc(6.2 * var(--cw)); line-height: 1.6; letter-spacing: .08em; text-shadow: 0 0 calc(2 * var(--cw)) #ff5a1f; }
 /* 長段落(結局、英文)字縮小,避免旁白框撐太高 */
-.story-caption.long  #storyText { font-size: 4cqw; line-height: 1.6; }
-.story-caption.xlong #storyText { font-size: 3.5cqw; line-height: 1.55; letter-spacing: .01em; }
-.story-caption.xxlong #storyText { font-size: 3.15cqw; line-height: 1.5; letter-spacing: 0; }
-.story-caption.title.long #storyText { font-size: 4.6cqw; letter-spacing: .03em; }
-.skip { position: absolute; top: 3cqw; right: 3cqw; background: #0008; border: 1px solid #fff4; border-radius: 99px; padding: 1.5cqw 4cqw; }
+.story-caption.long  #storyText { font-size: calc(4 * var(--cw)); line-height: 1.6; }
+.story-caption.xlong #storyText { font-size: calc(3.5 * var(--cw)); line-height: 1.55; letter-spacing: .01em; }
+.story-caption.xxlong #storyText { font-size: calc(3.15 * var(--cw)); line-height: 1.5; letter-spacing: 0; }
+.story-caption.title.long #storyText { font-size: calc(4.6 * var(--cw)); letter-spacing: .03em; }
+.skip { position: absolute; top: calc(3 * var(--cw)); right: calc(3 * var(--cw)); background: #0008; border: 1px solid #fff4; border-radius: 99px; padding: calc(1.5 * var(--cw)) calc(4 * var(--cw)); }
 @keyframes blink { 50% { opacity: .3; } }
 
 /* ---- 主選單 ---- */
-#storyPick { align-items: center; justify-content: center; gap: 6cqw; }
-#pickBack { min-width: 32cqw; } /* 和其他頁面底部的「返回」一樣大 */
-#menu, #upgrade, #result { align-items: center; gap: min(3cqw, 2cqh); padding: min(6cqw, 4cqh) 6cqw; overflow-y: auto; }
+#storyPick { align-items: center; justify-content: center; gap: calc(6 * var(--cw)); }
+#pickBack { min-width: calc(32 * var(--cw)); } /* 和其他頁面底部的「返回」一樣大 */
+#menu, #upgrade, #result { align-items: center; gap: min(calc(3 * var(--cw)), 2cqh); padding: min(calc(6 * var(--cw)), 4cqh) calc(6 * var(--cw)); overflow-y: auto; }
 /* 選單類畫面:沿用標題背景圖,壓暗以便閱讀 */
 /* 選單類畫面:背景改由 #artBg 動態顯示,這裡只留四周淡淡的暗角,不再整片壓暗 */
 .screen.art { background: radial-gradient(ellipse 85% 70% at 50% 45%, transparent 55%, #0008 100%); }
 /* LOGO 只取上半部(拳頭 + 中文標題),英文卷軸由背景圖本身提供 */
 /* 和「點擊畫面開始」的 LOGO 同樣大小與位置:寬 = 畫面寬 96%,上緣 = 畫面高 3%(扣掉主選單本身的上方留白) */
-.menu-logo { width: 96cqw; aspect-ratio: 896 / 600; overflow: hidden; flex-shrink: 0; margin-top: calc(3cqh - min(6cqw, 4cqh)); }
-.menu-logo img, .title-logo img { width: 100%; display: block; filter: drop-shadow(0 0 3cqw #ff5a1f80); }
+.menu-logo { width: calc(96 * var(--cw)); aspect-ratio: 896 / 600; overflow: hidden; flex-shrink: 0; margin-top: calc(3cqh - min(calc(6 * var(--cw)), 4cqh)); }
+.menu-logo img, .title-logo img { width: 100%; display: block; filter: drop-shadow(0 0 calc(3 * var(--cw)) #ff5a1f80); }
 /* logo.webp 下半部是「STEEL FIST: WIND & CLOUD」卷軸,背景圖已經有同樣的卷軸:直接把圖片下半部切掉
    (外框的 aspect-ratio 也會裁,但舊版手機瀏覽器不支援 aspect-ratio,會露出卷軸) */
 .menu-logo img, .title-logo img { -webkit-clip-path: inset(0 0 50% 0); clip-path: inset(0 0 50% 0); }
 @keyframes flame { to { transform: scale(1.12) rotate(4deg); } }
 .menu-points { color: var(--fire-2); }
-.stage-list { display: flex; flex-direction: column; gap: 3cqw; width: 100%; }
+.stage-list { display: flex; flex-direction: column; gap: calc(3 * var(--cw)); width: 100%; }
 .stage-card {
-  text-align: left; border: 2px solid #fff3; border-radius: 3cqw; padding: 3.5cqw 4cqw; position: relative; overflow: hidden;
+  text-align: left; border: 2px solid #fff3; border-radius: calc(3 * var(--cw)); padding: calc(3.5 * var(--cw)) calc(4 * var(--cw)); position: relative; overflow: hidden;
 }
 .stage-card:disabled { filter: grayscale(1) brightness(.5); cursor: default; }
 .stage-card:not(:disabled):active { transform: scale(.98); }
-.sc-name { font-weight: 800; font-size: 4.8cqw; text-shadow: 0 2px 4px #000; }
-.sc-desc { font-size: 3.3cqw; opacity: .9; text-shadow: 0 1px 3px #000; }
-.sc-best { font-size: 3cqw; color: var(--fire-2); }
-.menu-row { display: flex; gap: 4cqw; margin-top: auto; flex-shrink: 0; }
+.sc-name { font-weight: 800; font-size: calc(4.8 * var(--cw)); text-shadow: 0 2px 4px #000; }
+.sc-desc { font-size: calc(3.3 * var(--cw)); opacity: .9; text-shadow: 0 1px 3px #000; }
+.sc-best { font-size: calc(3 * var(--cw)); color: var(--fire-2); }
+.menu-row { display: flex; gap: calc(4 * var(--cw)); margin-top: auto; flex-shrink: 0; }
 
 /* ---- 成長 ---- */
-.up-list { display: flex; flex-direction: column; gap: 3cqw; width: 100%; }
-.up-item { display: flex; align-items: center; gap: 3cqw; background: var(--panel); border-radius: 3cqw; padding: 3cqw; }
-.up-icon { font-size: 8cqw; }
+.up-list { display: flex; flex-direction: column; gap: calc(3 * var(--cw)); width: 100%; }
+.up-item { display: flex; align-items: center; gap: calc(3 * var(--cw)); background: var(--panel); border-radius: calc(3 * var(--cw)); padding: calc(3 * var(--cw)); }
+.up-icon { font-size: calc(8 * var(--cw)); }
 .up-body { flex: 1; }
-.up-desc { color: var(--muted); font-size: 3.3cqw; }
+.up-desc { color: var(--muted); font-size: calc(3.3 * var(--cw)); }
 #upgrade .btn:last-child { margin-top: auto; }
 
 /* ---- 場景背景 ---- */
@@ -185,19 +195,19 @@ button { font: inherit; color: inherit; cursor: pointer; }
 .bg-summit  { background: radial-gradient(circle at 50% 30%, #ffd84a66, transparent 45%), linear-gradient(180deg, #0a0414 0%, #2a0a3a 50%, #b0102a 100%); }
 
 /* ---- 戰鬥 ---- */
-.stage { position: relative; flex: 0 0 34%; overflow: hidden; border-bottom: .8cqw solid #000; }
-.deco span { position: absolute; bottom: 4%; font-size: 12cqw; opacity: .55; animation: sway 3s ease-in-out infinite alternate; }
+.stage { position: relative; flex: 0 0 34%; overflow: hidden; border-bottom: calc(.8 * var(--cw)) solid #000; }
+.deco span { position: absolute; bottom: 4%; font-size: calc(12 * var(--cw)); opacity: .55; animation: sway 3s ease-in-out infinite alternate; }
 @keyframes sway { to { transform: translateY(-4%) rotate(4deg); } }
-.wave-tag { position: absolute; top: 2cqw; left: 3cqw; background: #000a; padding: .8cqw 3cqw; border-radius: 99px; font-weight: 800; font-size: 3.4cqw; }
+.wave-tag { position: absolute; top: calc(2 * var(--cw)); left: calc(3 * var(--cw)); background: #000a; padding: calc(.8 * var(--cw)) calc(3 * var(--cw)); border-radius: 99px; font-weight: 800; font-size: calc(3.4 * var(--cw)); }
 
 .enemy { position: absolute; left: 50%; top: 52%; transform: translate(-50%, -50%); text-align: center; }
-.sprite { font-size: 26cqw; line-height: 1; filter: drop-shadow(0 2cqw 1cqw #0008); }
-.enemy.boss .sprite { font-size: 32cqw; }
-.state-tag { font-size: 2.8cqw; background: #000a; border-radius: 99px; padding: .3cqw 2cqw; display: inline-block; }
+.sprite { font-size: calc(26 * var(--cw)); line-height: 1; filter: drop-shadow(0 calc(2 * var(--cw)) calc(1 * var(--cw)) #0008); }
+.enemy.boss .sprite { font-size: calc(32 * var(--cw)); }
+.state-tag { font-size: calc(2.8 * var(--cw)); background: #000a; border-radius: 99px; padding: calc(.3 * var(--cw)) calc(2 * var(--cw)); display: inline-block; }
 .enemy.idle .sprite   { animation: bob 1.6s ease-in-out infinite; }
-.enemy.attack .sprite { animation: lunge .5s ease-in-out infinite alternate; filter: drop-shadow(0 0 3cqw #f00); }
-.enemy.defend .sprite { transform: scale(.85); filter: drop-shadow(0 0 3cqw var(--guard)); }
-.enemy.ult .sprite    { animation: quake .12s infinite; filter: drop-shadow(0 0 5cqw var(--ult)) drop-shadow(0 0 2cqw #fff); }
+.enemy.attack .sprite { animation: lunge .5s ease-in-out infinite alternate; filter: drop-shadow(0 0 calc(3 * var(--cw)) #f00); }
+.enemy.defend .sprite { transform: scale(.85); filter: drop-shadow(0 0 calc(3 * var(--cw)) var(--guard)); }
+.enemy.ult .sprite    { animation: quake .12s infinite; filter: drop-shadow(0 0 calc(5 * var(--cw)) var(--ult)) drop-shadow(0 0 calc(2 * var(--cw)) #fff); }
 .enemy.hit .sprite    { animation: hit .25s; }
 .enemy.dead .sprite   { animation: die .8s forwards; }
 .enemy.attack .state-tag { background: #c0142c; }
@@ -209,55 +219,55 @@ button { font: inherit; color: inherit; cursor: pointer; }
 @keyframes hit   { 30% { transform: translateX(8%) rotate(8deg); filter: brightness(3); } }
 @keyframes die   { to { transform: translateY(40%) rotate(-30deg) scale(.4); opacity: 0; } }
 
-.enemy-info { position: absolute; left: 3cqw; right: 3cqw; bottom: 2cqw; }
-.enemy-name { font-weight: 800; text-shadow: 0 2px 3px #000; font-size: 3.8cqw; }
+.enemy-info { position: absolute; left: calc(3 * var(--cw)); right: calc(3 * var(--cw)); bottom: calc(2 * var(--cw)); }
+.enemy-name { font-weight: 800; text-shadow: 0 2px 3px #000; font-size: calc(3.8 * var(--cw)); }
 
-.bar { position: relative; height: 4.6cqw; background: #000b; border: 2px solid #fff6; border-radius: 99px; overflow: hidden; flex: 1; }
+.bar { position: relative; height: calc(4.6 * var(--cw)); background: #000b; border: 2px solid #fff6; border-radius: 99px; overflow: hidden; flex: 1; }
 .bar .fill { height: 100%; transition: width .25s; }
-.bar span { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; font-size: 3cqw; font-weight: 700; text-shadow: 0 1px 2px #000; }
+.bar span { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; font-size: calc(3 * var(--cw)); font-weight: 700; text-shadow: 0 1px 2px #000; }
 .enemy-bar .fill  { background: linear-gradient(90deg, #a0102a, var(--enemy-hp)); }
 .player-bar .fill { background: linear-gradient(90deg, #178a4c, var(--hp)); }
 .ult-bar .fill    { background: linear-gradient(90deg, var(--fire), var(--fire-2)); }
-.ult-bar.full     { box-shadow: 0 0 3cqw var(--fire); border-color: var(--fire-2); }
+.ult-bar.full     { box-shadow: 0 0 calc(3 * var(--cw)) var(--fire); border-color: var(--fire-2); }
 
-.hud { position: relative; padding: 2cqw 3cqw; display: flex; flex-direction: column; gap: 1.6cqw; background: var(--panel); }
-.hud-row { display: flex; align-items: center; gap: 2cqw; }
-.counter { font-size: 3.4cqw; white-space: nowrap; background: var(--panel-2); border-radius: 2cqw; padding: .6cqw 2.4cqw; }
-.counter b { color: var(--fire-2); font-size: 4.6cqw; }
-.ult-btn { border: 0; border-radius: 2cqw; padding: 1cqw 3cqw; font-weight: 800; background: #443; color: #998; }
+.hud { position: relative; padding: calc(2 * var(--cw)) calc(3 * var(--cw)); display: flex; flex-direction: column; gap: calc(1.6 * var(--cw)); background: var(--panel); }
+.hud-row { display: flex; align-items: center; gap: calc(2 * var(--cw)); }
+.counter { font-size: calc(3.4 * var(--cw)); white-space: nowrap; background: var(--panel-2); border-radius: calc(2 * var(--cw)); padding: calc(.6 * var(--cw)) calc(2.4 * var(--cw)); }
+.counter b { color: var(--fire-2); font-size: calc(4.6 * var(--cw)); }
+.ult-btn { border: 0; border-radius: calc(2 * var(--cw)); padding: calc(1 * var(--cw)) calc(3 * var(--cw)); font-weight: 800; background: #443; color: #998; }
 .ult-btn.ready { background: linear-gradient(180deg, var(--fire-2), var(--fire)); color: #fff; animation: pulse .6s infinite alternate; }
-@keyframes pulse { to { transform: scale(1.1); box-shadow: 0 0 4cqw var(--fire); } }
-.phase { text-align: center; font-weight: 800; font-size: 3.6cqw; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+@keyframes pulse { to { transform: scale(1.1); box-shadow: 0 0 calc(4 * var(--cw)) var(--fire); } }
+.phase { text-align: center; font-weight: 800; font-size: calc(3.6 * var(--cw)); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .phase.atk { color: var(--fire-2); }
 .phase.def { color: var(--guard); }
 .phase.ult { color: #e8a9ff; }
-.timebar { height: 1cqw; background: #0006; border-radius: 99px; overflow: hidden; }
+.timebar { height: calc(1 * var(--cw)); background: #0006; border-radius: 99px; overflow: hidden; }
 .timebar .fill { height: 100%; width: 0; background: #e8a9ff; }
 
-.grid-wrap { flex: 1; min-height: 0; display: flex; align-items: center; justify-content: center; padding: 3cqw; background: #120f1c; }
-.grid { height: 100%; max-width: 100%; aspect-ratio: 1; display: grid; grid-template: repeat(3, 1fr) / repeat(3, 1fr); gap: 2.5cqw; }
+.grid-wrap { flex: 1; min-height: 0; display: flex; align-items: center; justify-content: center; padding: calc(3 * var(--cw)); background: #120f1c; }
+.grid { height: 100%; max-width: 100%; aspect-ratio: 1; display: grid; grid-template: repeat(3, 1fr) / repeat(3, 1fr); gap: calc(2.5 * var(--cw)); }
 /* 格子本身是凹下去的洞,.cap 是從洞裡浮起來的按鈕 */
 .cell {
-  position: relative; border: 0; border-radius: 4cqw; padding: 0;
+  position: relative; border: 0; border-radius: calc(4 * var(--cw)); padding: 0;
   background: radial-gradient(ellipse at 50% 60%, #07050d 35%, #221c33);
-  box-shadow: inset 0 1.8cqw 2.2cqw #000d, 0 .5cqw 0 #ffffff12;
+  box-shadow: inset 0 calc(1.8 * var(--cw)) calc(2.2 * var(--cw)) #000d, 0 calc(.5 * var(--cw)) 0 #ffffff12;
 }
 .cap {
   --edge: #000; position: absolute; left: 7%; right: 7%; top: 5%; bottom: 13%;
-  border-radius: 3.5cqw; display: flex; align-items: center; justify-content: center; overflow: hidden;
+  border-radius: calc(3.5 * var(--cw)); display: flex; align-items: center; justify-content: center; overflow: hidden;
   opacity: 0; transform: translateY(45%) scale(.7);
   transition: transform .07s ease-out, box-shadow .07s ease-out, filter .07s;
 }
-.cell .icon { font-size: 12cqw; line-height: 1; filter: drop-shadow(0 .6cqw 0 #0006); }
+.cell .icon { font-size: calc(12 * var(--cw)); line-height: 1; filter: drop-shadow(0 calc(.6 * var(--cw)) 0 #0006); }
 .cell.on .cap {
   opacity: 1; transform: translateY(-4%);
-  box-shadow: inset 0 .9cqw 0 #ffffff70, inset 0 -.8cqw 0 #0003, 0 2.2cqw 0 var(--edge), 0 4.5cqw 3cqw #000c;
+  box-shadow: inset 0 calc(.9 * var(--cw)) 0 #ffffff70, inset 0 calc(-.8 * var(--cw)) 0 #0003, 0 calc(2.2 * var(--cw)) 0 var(--edge), 0 calc(4.5 * var(--cw)) calc(3 * var(--cw)) #000c;
   animation: rise .2s cubic-bezier(.3, 1.7, .5, 1);
 }
 /* 點中:按鈕被壓下去 */
 .cell.press .cap {
   transform: translateY(14%);
-  box-shadow: inset 0 .9cqw 0 #ffffff70, 0 .4cqw 0 var(--edge), 0 1cqw 1cqw #0008;
+  box-shadow: inset 0 calc(.9 * var(--cw)) 0 #ffffff70, 0 calc(.4 * var(--cw)) 0 var(--edge), 0 calc(1 * var(--cw)) calc(1 * var(--cw)) #0008;
   filter: brightness(1.4);
   animation: none;
 }
@@ -267,7 +277,7 @@ button { font: inherit; color: inherit; cursor: pointer; }
 @keyframes sink { to { opacity: 0; transform: translateY(45%) scale(.7); box-shadow: 0 0 0 var(--edge); } }
 
 .cell.on .cap::after { /* 剩餘時間條 */
-  content: ""; position: absolute; left: 12%; right: 12%; bottom: 7%; height: 1.1cqw; border-radius: 99px;
+  content: ""; position: absolute; left: 12%; right: 12%; bottom: 7%; height: calc(1.1 * var(--cw)); border-radius: 99px;
   background: currentColor; opacity: .85; transform-origin: left; animation: drain var(--life) linear forwards;
 }
 .cell.press .cap::after, .cell.sink .cap::after { display: none; }
@@ -276,22 +286,22 @@ button { font: inherit; color: inherit; cursor: pointer; }
 .cell.guard.fade .icon { animation: fog 1s ease-in-out infinite alternate; }
 .cell.decoy .cap { background: linear-gradient(180deg, #c07ad8, #7a2a96 55%, #4a1060); --edge: #26062f; color: #e59cff; }
 .cell.num   .cap { background: linear-gradient(180deg, #f5d6ff, #c04dff 55%, #6a1c9e); --edge: #3d0d5c; }
-.cell.num .icon { font-size: 14cqw; font-weight: 900; color: #fff; text-shadow: 0 0 3cqw var(--ult), 0 .6cqw 0 #3d0d5c; }
+.cell.num .icon { font-size: calc(14 * var(--cw)); font-weight: 900; color: #fff; text-shadow: 0 0 calc(3 * var(--cw)) var(--ult), 0 calc(.6 * var(--cw)) 0 #3d0d5c; }
 .cell.num .cap::after { display: none; }
-.cell.good { box-shadow: inset 0 1.8cqw 2.2cqw #000d, 0 0 0 .8cqw #fff, 0 0 4cqw var(--fire-2); }
-.cell.bad  { box-shadow: inset 0 1.8cqw 2.2cqw #000d, 0 0 0 .8cqw #ff3d5a; }
-.cell.miss { box-shadow: inset 0 1.8cqw 2.2cqw #000d, 0 0 0 .5cqw #ffffff30; }
+.cell.good { box-shadow: inset 0 calc(1.8 * var(--cw)) calc(2.2 * var(--cw)) #000d, 0 0 0 calc(.8 * var(--cw)) #fff, 0 0 calc(4 * var(--cw)) var(--fire-2); }
+.cell.bad  { box-shadow: inset 0 calc(1.8 * var(--cw)) calc(2.2 * var(--cw)) #000d, 0 0 0 calc(.8 * var(--cw)) #ff3d5a; }
+.cell.miss { box-shadow: inset 0 calc(1.8 * var(--cw)) calc(2.2 * var(--cw)) #000d, 0 0 0 calc(.5 * var(--cw)) #ffffff30; }
 @keyframes pop   { from { transform: scale(.2); } }
 @keyframes drain { to { transform: scaleX(0); } }
 @keyframes fog   { to { opacity: .12; } }
 
 /* 飄字 */
-.float { position: absolute; top: 30%; font-weight: 900; pointer-events: none; animation: floatUp .9s ease-out forwards; text-shadow: 0 2px 0 #000, 0 0 2cqw #000; z-index: 5; }
-.float.dmg  { font-size: 7cqw; color: #fff; }
-.float.crit { font-size: 9cqw; color: var(--fire-2); }
-.float.big  { font-size: 16cqw; color: var(--fire); top: 20%; }
-.float.hurt { font-size: 6cqw; color: var(--enemy-hp); top: 0; }
-.float.heal { font-size: 6cqw; color: var(--hp); top: 0; }
+.float { position: absolute; top: 30%; font-weight: 900; pointer-events: none; animation: floatUp .9s ease-out forwards; text-shadow: 0 2px 0 #000, 0 0 calc(2 * var(--cw)) #000; z-index: 5; }
+.float.dmg  { font-size: calc(7 * var(--cw)); color: #fff; }
+.float.crit { font-size: calc(9 * var(--cw)); color: var(--fire-2); }
+.float.big  { font-size: calc(16 * var(--cw)); color: var(--fire); top: 20%; }
+.float.hurt { font-size: calc(6 * var(--cw)); color: var(--enemy-hp); top: 0; }
+.float.heal { font-size: calc(6 * var(--cw)); color: var(--hp); top: 0; }
 @keyframes floatUp { to { transform: translateY(-120%); opacity: 0; } }
 
 /* ---- 覆蓋層 ---- */
@@ -299,23 +309,23 @@ button { font: inherit; color: inherit; cursor: pointer; }
 .overlay.show { display: flex; }
 
 .banner { flex-direction: column; align-items: center; justify-content: center; background: #000a; pointer-events: none; }
-.banner-main { font-size: 11cqw; font-weight: 900; color: var(--fire-2); text-shadow: 0 .8cqw 0 #7a1c04; animation: slam .35s ease-out; text-align: center; }
-.banner-sub { margin-top: 2cqw; font-size: 4.2cqw; text-align: center; padding: 0 6cqw; }
+.banner-main { font-size: calc(11 * var(--cw)); font-weight: 900; color: var(--fire-2); text-shadow: 0 calc(.8 * var(--cw)) 0 #7a1c04; animation: slam .35s ease-out; text-align: center; }
+.banner-sub { margin-top: calc(2 * var(--cw)); font-size: calc(4.2 * var(--cw)); text-align: center; padding: 0 calc(6 * var(--cw)); }
 @keyframes slam { from { transform: scale(2.5); opacity: 0; } }
 
-#skillPick { flex-direction: column; align-items: center; justify-content: center; gap: 4cqw; background: #000d; padding: 6cqw; }
-.skill-cards { display: flex; flex-direction: column; gap: 3cqw; width: 100%; }
+#skillPick { flex-direction: column; align-items: center; justify-content: center; gap: calc(4 * var(--cw)); background: #000d; padding: calc(6 * var(--cw)); }
+.skill-cards { display: flex; flex-direction: column; gap: calc(3 * var(--cw)); width: 100%; }
 .skill-card {
-  display: grid; grid-template-columns: 14cqw 1fr; grid-template-rows: auto auto; column-gap: 3cqw; text-align: left; align-items: center;
-  background: linear-gradient(135deg, var(--panel-2), var(--panel)); border: 2px solid var(--fire-2); border-radius: 3cqw; padding: 3.5cqw;
+  display: grid; grid-template-columns: calc(14 * var(--cw)) 1fr; grid-template-rows: auto auto; column-gap: calc(3 * var(--cw)); text-align: left; align-items: center;
+  background: linear-gradient(135deg, var(--panel-2), var(--panel)); border: 2px solid var(--fire-2); border-radius: calc(3 * var(--cw)); padding: calc(3.5 * var(--cw));
   animation: pop .25s ease-out backwards;
 }
 .skill-card:nth-child(2) { animation-delay: .08s; }
 .skill-card:nth-child(3) { animation-delay: .16s; }
 .skill-card:active { transform: scale(.97); }
-.sk-icon { grid-row: span 2; font-size: 11cqw; text-align: center; }
-.skill-card b { font-size: 4.6cqw; color: var(--fire-2); }
-.skill-card div:last-child { font-size: 3.5cqw; color: var(--muted); }
+.sk-icon { grid-row: span 2; font-size: calc(11 * var(--cw)); text-align: center; }
+.skill-card b { font-size: calc(4.6 * var(--cw)); color: var(--fire-2); }
+.skill-card div:last-child { font-size: calc(3.5 * var(--cw)); color: var(--muted); }
 
 /* 必殺技演出(約 1.7 秒):
    0      閃白 → 暗紅背景,放射集中線
@@ -335,45 +345,45 @@ button { font: inherit; color: inherit; cursor: pointer; }
 }
 .cutin.show .speed-lines { animation: spin 1.7s linear; }
 .cutin-glow { /* 主角身後的火光,跟著出拳脈動 */
-  position: absolute; left: 50%; top: 58%; width: 130cqw; height: 130cqw; transform: translate(-50%, -50%);
+  position: absolute; left: 50%; top: 58%; width: calc(130 * var(--cw)); height: calc(130 * var(--cw)); transform: translate(-50%, -50%);
   background: radial-gradient(circle, #ffe08a 0%, #ff7a1f99 30%, #c0140040 52%, transparent 68%);
 }
 .cutin.show .cutin-glow { animation: glowPulse .18s .45s 6 alternate; }
 .cutin-art {
   /* 原圖比畫面寬,左右會裁掉一點(右下角的浮水印也落在畫面外) */
   position: absolute; left: 50%; top: 50%; height: 100cqh; width: auto; transform: translate(-50%, -50%);
-  filter: drop-shadow(0 0 3cqw #ff5a1fc0);
+  filter: drop-shadow(0 0 calc(3 * var(--cw)) #ff5a1fc0);
 }
 .cutin.show .cutin-art { animation: artZoom .45s cubic-bezier(.2, .9, .3, 1.1), artShake .07s .45s 8, artPunch .3s 1.38s ease-in forwards; }
 /* 拳頭命中位置爆出的衝擊波 */
 .cutin-ring { z-index: 3;
-  position: absolute; left: 50%; top: 66%; width: 30cqw; height: 30cqw; border-radius: 50%; opacity: 0;
-  border: 2.4cqw solid #fff; box-shadow: 0 0 5cqw #ffb000, inset 0 0 5cqw #ffb000; transform: translate(-50%, -50%) scale(.2);
+  position: absolute; left: 50%; top: 66%; width: calc(30 * var(--cw)); height: calc(30 * var(--cw)); border-radius: 50%; opacity: 0;
+  border: calc(2.4 * var(--cw)) solid #fff; box-shadow: 0 0 calc(5 * var(--cw)) #ffb000, inset 0 0 calc(5 * var(--cw)) #ffb000; transform: translate(-50%, -50%) scale(.2);
 }
 .cutin.show .cutin-ring { animation: ringOut .55s .45s ease-out; }
-.cutin.show .cutin-ring.r2 { animation-delay: .62s; border-width: 1.2cqw; }
+.cutin.show .cutin-ring.r2 { animation-delay: .62s; border-width: calc(1.2 * var(--cw)); }
 /* 火星:由 battle.js 每次演出時隨機產生 */
 .cutin-embers { position: absolute; left: 50%; top: 66%; width: 0; height: 0; z-index: 3; }
 .cutin-embers i {
   position: absolute; width: var(--s); height: var(--s); border-radius: 50%; opacity: 0;
-  background: radial-gradient(circle, #fff 0 35%, #ffe680 55%, #ff7a1f 80%, transparent 82%); box-shadow: 0 0 1.5cqw #ffd04a, 0 0 3cqw #ff5a1f;
+  background: radial-gradient(circle, #fff 0 35%, #ffe680 55%, #ff7a1f 80%, transparent 82%); box-shadow: 0 0 calc(1.5 * var(--cw)) #ffd04a, 0 0 calc(3 * var(--cw)) #ff5a1f;
   animation: emberFly var(--t) var(--d) cubic-bezier(.2, .6, .4, 1); /* 延遲期間保持隱藏(基礎 opacity 0) */
 }
 .cutin-flash { position: absolute; inset: 0; z-index: 4; background: #fff; opacity: 0; pointer-events: none; }
 .cutin.show .cutin-flash { animation: impactFlash 1.7s; }
 .cutin-title {
-  position: relative; z-index: 5; font-size: 11cqw; font-weight: 900; color: #ffcc33; transform: skewX(-12deg);
-  -webkit-text-stroke: .8cqw #2a0000; paint-order: stroke fill; text-shadow: 0 0 4cqw #ff3a00;
+  position: relative; z-index: 5; font-size: calc(11 * var(--cw)); font-weight: 900; color: #ffcc33; transform: skewX(-12deg);
+  -webkit-text-stroke: calc(.8 * var(--cw)) #2a0000; paint-order: stroke fill; text-shadow: 0 0 calc(4 * var(--cw)) #ff3a00;
   animation: slam .4s .45s ease-out backwards;
 }
-.cutin-sub { position: relative; z-index: 5; font-weight: 800; color: #000; background: var(--fire-2); padding: 1cqw 4cqw; transform: skewX(-12deg); margin-top: 2cqw; animation: slam .3s .6s ease-out backwards; }
+.cutin-sub { position: relative; z-index: 5; font-weight: 800; color: #000; background: var(--fire-2); padding: calc(1 * var(--cw)) calc(4 * var(--cw)); transform: skewX(-12deg); margin-top: calc(2 * var(--cw)); animation: slam .3s .6s ease-out backwards; }
 @keyframes artZoom {
-  from { transform: translate(-50%, -50%) scale(.25) rotate(-10deg); opacity: 0; filter: brightness(3) blur(1.5cqw); }
+  from { transform: translate(-50%, -50%) scale(.25) rotate(-10deg); opacity: 0; filter: brightness(3) blur(calc(1.5 * var(--cw))); }
   60%  { opacity: 1; }
-  80%  { transform: translate(-50%, -50%) scale(1.06); filter: brightness(1.6) drop-shadow(0 0 3cqw #ff5a1fc0); }
+  80%  { transform: translate(-50%, -50%) scale(1.06); filter: brightness(1.6) drop-shadow(0 0 calc(3 * var(--cw)) #ff5a1fc0); }
 }
-@keyframes artShake { 50% { transform: translate(calc(-50% + 1.4cqw), calc(-50% - 1cqw)); } }
-@keyframes artPunch { to { transform: translate(-50%, -42%) scale(1.45); filter: brightness(2.6) blur(.6cqw); } }
+@keyframes artShake { 50% { transform: translate(calc(-50% + calc(1.4 * var(--cw))), calc(-50% - calc(1 * var(--cw)))); } }
+@keyframes artPunch { to { transform: translate(-50%, -42%) scale(1.45); filter: brightness(2.6) blur(calc(.6 * var(--cw))); } }
 @keyframes glowPulse { to { transform: translate(-50%, -50%) scale(1.15); opacity: .8; } }
 @keyframes ringOut {
   0%   { transform: translate(-50%, -50%) scale(.2); opacity: 1; }
@@ -389,33 +399,33 @@ button { font: inherit; color: inherit; cursor: pointer; }
 @keyframes cutFlash { 0% { filter: brightness(3); } 10%, 100% { filter: none; } }
 
 /* ---- 結算 ---- */
-.result-box { width: 100%; background: var(--panel); border-radius: 3cqw; padding: 3.5cqw 5cqw; display: flex; flex-direction: column; gap: min(2.2cqw, 1.4cqh); }
-.result-box div { display: flex; justify-content: space-between; gap: 4cqw; }
-.result-box .score { font-size: 4.4cqw; color: var(--fire-2); }
-.result-box .new-round { flex-direction: column; align-items: center; gap: .6cqw; margin-top: 1.5cqw; padding: 2.4cqw; font-size: 5cqw; font-weight: 900; color: #fff; text-align: center;
-  background: linear-gradient(90deg, #5a0f9c, #c0142c); box-shadow: 0 0 3cqw #ff3a3a90; }
-.result-box .new-round small { font-size: 3.4cqw; font-weight: 700; color: #ffd6c8; }
-#resultTitle { font-size: min(7.5cqw, 5cqh); margin: 2cqh 0 0; flex-shrink: 0; }
+.result-box { width: 100%; background: var(--panel); border-radius: calc(3 * var(--cw)); padding: calc(3.5 * var(--cw)) calc(5 * var(--cw)); display: flex; flex-direction: column; gap: min(calc(2.2 * var(--cw)), 1.4cqh); }
+.result-box div { display: flex; justify-content: space-between; gap: calc(4 * var(--cw)); }
+.result-box .score { font-size: calc(4.4 * var(--cw)); color: var(--fire-2); }
+.result-box .new-round { flex-direction: column; align-items: center; gap: calc(.6 * var(--cw)); margin-top: calc(1.5 * var(--cw)); padding: calc(2.4 * var(--cw)); font-size: calc(5 * var(--cw)); font-weight: 900; color: #fff; text-align: center;
+  background: linear-gradient(90deg, #5a0f9c, #c0142c); box-shadow: 0 0 calc(3 * var(--cw)) #ff3a3a90; }
+.result-box .new-round small { font-size: calc(3.4 * var(--cw)); font-weight: 700; color: #ffd6c8; }
+#resultTitle { font-size: min(calc(7.5 * var(--cw)), 5cqh); margin: 2cqh 0 0; flex-shrink: 0; }
 #result .btn { margin-top: auto; }
 h2 { margin: 0; }
 
 /* 精英敵人與難度星等 */
-.enemy.elite .sprite { filter: drop-shadow(0 0 2.5cqw #ffb300) drop-shadow(0 2cqw 1cqw #0008); }
-.sc-stars { color: var(--fire-2); font-size: 3.6cqw; letter-spacing: .1em; }
+.enemy.elite .sprite { filter: drop-shadow(0 0 calc(2.5 * var(--cw)) #ffb300) drop-shadow(0 calc(2 * var(--cw)) calc(1 * var(--cw)) #0008); }
+.sc-stars { color: var(--fire-2); font-size: calc(3.6 * var(--cw)); letter-spacing: .1em; }
 
 /* 出拳特效:拳頭從玩家視角飛向敵人 */
 .fx-fist {
   position: absolute; left: 0; top: 0; z-index: 4; pointer-events: none;
-  font-size: 12cqw; line-height: 1; filter: drop-shadow(0 0 1.5cqw #ff8a00);
+  font-size: calc(12 * var(--cw)); line-height: 1; filter: drop-shadow(0 0 calc(1.5 * var(--cw)) #ff8a00);
 }
-.fx-fist.crit { filter: drop-shadow(0 0 3cqw #ffc23d) drop-shadow(0 0 1cqw #fff); }
+.fx-fist.crit { filter: drop-shadow(0 0 calc(3 * var(--cw)) #ffc23d) drop-shadow(0 0 calc(1 * var(--cw)) #fff); }
 .fx-impact {
-  position: absolute; z-index: 5; pointer-events: none; font-size: 14cqw; line-height: 1;
+  position: absolute; z-index: 5; pointer-events: none; font-size: calc(14 * var(--cw)); line-height: 1;
   transform: translate(-50%, -50%); animation: impact .32s ease-out forwards;
 }
-.fx-impact.small { font-size: 9cqw; }
-.fx-impact.big   { font-size: 20cqw; }
-.fx-impact.final { font-size: 40cqw; animation-duration: .6s; filter: drop-shadow(0 0 5cqw #ff5a1f); }
+.fx-impact.small { font-size: calc(9 * var(--cw)); }
+.fx-impact.big   { font-size: calc(20 * var(--cw)); }
+.fx-impact.final { font-size: calc(40 * var(--cw)); animation-duration: .6s; filter: drop-shadow(0 0 calc(5 * var(--cw)) #ff5a1f); }
 @keyframes impact {
   from { transform: translate(-50%, -50%) scale(.3) rotate(-20deg); opacity: 1; }
   60%  { opacity: 1; }
@@ -434,29 +444,29 @@ h2 { margin: 0; }
 
 /* 空間不足時改為捲動,不擠壓選項 */
 .stage-list, .up-list, .result-box, #menu .btn, #upgrade .btn, #result .btn { flex-shrink: 0; }
-.screen, .overlay { font-size: 4cqw; }
+.screen, .overlay { font-size: calc(4 * var(--cw)); }
 
 /* 敵人攻擊:飛向鏡頭的物件 */
 .fx-shot {
   position: absolute; left: 0; top: 0; z-index: 4; pointer-events: none;
-  font-size: 10cqw; line-height: 1; filter: drop-shadow(0 0 1.5cqw #ff2d4a);
+  font-size: calc(10 * var(--cw)); line-height: 1; filter: drop-shadow(0 0 calc(1.5 * var(--cw)) #ff2d4a);
 }
-.fx-shot.special { filter: drop-shadow(0 0 2.5cqw var(--ult)) drop-shadow(0 0 1cqw #fff); }
+.fx-shot.special { filter: drop-shadow(0 0 calc(2.5 * var(--cw)) var(--ult)) drop-shadow(0 0 calc(1 * var(--cw)) #fff); }
 
 /* 格擋成功:盾牌火花 + BLOCK 字樣 */
 .fx-block {
-  position: absolute; z-index: 5; pointer-events: none; font-size: 16cqw; line-height: 1;
-  transform: translate(-50%, -50%); filter: drop-shadow(0 0 3cqw #3da9ff) drop-shadow(0 0 1cqw #fff);
+  position: absolute; z-index: 5; pointer-events: none; font-size: calc(16 * var(--cw)); line-height: 1;
+  transform: translate(-50%, -50%); filter: drop-shadow(0 0 calc(3 * var(--cw)) #3da9ff) drop-shadow(0 0 calc(1 * var(--cw)) #fff);
   animation: blockBurst .45s ease-out forwards;
 }
 .fx-block::after { /* 擴散的衝擊環 */
   content: ""; position: absolute; left: 50%; top: 50%; width: 100%; height: 100%;
-  border: 1cqw solid #bfe4ff; border-radius: 50%; transform: translate(-50%, -50%);
+  border: calc(1 * var(--cw)) solid #bfe4ff; border-radius: 50%; transform: translate(-50%, -50%);
   animation: ring .45s ease-out forwards;
 }
 .fx-block-text {
-  position: absolute; z-index: 6; pointer-events: none; font-size: 6cqw; font-weight: 900; color: #fff;
-  -webkit-text-stroke: .5cqw #1666b0; paint-order: stroke fill; transform: translate(-50%, -150%) skewX(-10deg);
+  position: absolute; z-index: 6; pointer-events: none; font-size: calc(6 * var(--cw)); font-weight: 900; color: #fff;
+  -webkit-text-stroke: calc(.5 * var(--cw)) #1666b0; paint-order: stroke fill; transform: translate(-50%, -150%) skewX(-10deg);
   animation: blockText .5s ease-out forwards;
 }
 @keyframes blockBurst {
@@ -472,29 +482,29 @@ h2 { margin: 0; }
 }
 
 /* 被格擋:敵人往後仰 */
-.enemy.recoil .sprite { animation: recoil .26s ease-out; filter: drop-shadow(0 0 2.5cqw #3da9ff); }
+.enemy.recoil .sprite { animation: recoil .26s ease-out; filter: drop-shadow(0 0 calc(2.5 * var(--cw)) #3da9ff); }
 .enemy.recoil .state-tag { background: #1666b0; }
 @keyframes recoil { 40% { transform: translateY(-6%) scale(.88) rotate(-6deg); } }
 
 /* 被打中:整個畫面邊緣閃紅 */
 #hurtFlash {
   position: absolute; inset: 0; z-index: 9; pointer-events: none; opacity: 0;
-  box-shadow: inset 0 0 12cqw 4cqw #ff1a3c; background: radial-gradient(circle, transparent 50%, #ff1a3c55);
+  box-shadow: inset 0 0 calc(12 * var(--cw)) calc(4 * var(--cw)) #ff1a3c; background: radial-gradient(circle, transparent 50%, #ff1a3c55);
 }
 #hurtFlash.show { animation: hurtFlash .4s ease-out; }
 @keyframes hurtFlash { from { opacity: 1; } to { opacity: 0; } }
 
 /* ---- 進階符號 ---- */
 .badge {
-  position: absolute; right: 6%; top: 4%; font-size: 4.2cqw; font-weight: 900; color: #fff;
-  -webkit-text-stroke: .4cqw #000; paint-order: stroke fill;
+  position: absolute; right: 6%; top: 4%; font-size: calc(4.2 * var(--cw)); font-weight: 900; color: #fff;
+  -webkit-text-stroke: calc(.4 * var(--cw)) #000; paint-order: stroke fill;
 }
 
 /* 按鈕上方的小標籤(HOLD、連打) */
 .label {
   position: absolute; top: 5%; left: 50%; transform: translateX(-50%); z-index: 2;
-  font-size: 3.2cqw; font-weight: 900; letter-spacing: .08em; color: #fff; white-space: nowrap;
-  background: #000a; border-radius: 99px; padding: .2cqw 1.8cqw;
+  font-size: calc(3.2 * var(--cw)); font-weight: 900; letter-spacing: .08em; color: #fff; white-space: nowrap;
+  background: #000a; border-radius: 99px; padding: calc(.2 * var(--cw)) calc(1.8 * var(--cw));
 }
 .label:empty { display: none; }
 .cell .icon, .badge { position: relative; z-index: 1; }
@@ -514,12 +524,12 @@ h2 { margin: 0; }
 @keyframes guardGold { 0%, 35% { opacity: 1; } 38%, 100% { opacity: 0; } }
 @keyframes guardLate { 0%, 69% { filter: none; } 72%, 100% { filter: saturate(.35) brightness(.72); } }
 
-.fx-block.fast { filter: drop-shadow(0 0 4cqw #ffc23d) drop-shadow(0 0 1cqw #fff); font-size: 20cqw; }
+.fx-block.fast { filter: drop-shadow(0 0 calc(4 * var(--cw)) #ffc23d) drop-shadow(0 0 calc(1 * var(--cw)) #fff); font-size: calc(20 * var(--cw)); }
 .fx-block.fast::after { border-color: #ffe08a; }
-.fx-block-text.fast { -webkit-text-stroke-color: #b36b00; color: #fff6c8; font-size: 7cqw; }
-.fx-block.late { filter: grayscale(.5) drop-shadow(0 0 2cqw #3da9ff); font-size: 12cqw; }
-.fx-block-text.late { -webkit-text-stroke-color: #555; color: #ccc; font-size: 5cqw; }
-.enemy.stagger .sprite { animation: stagger .42s ease-out; filter: drop-shadow(0 0 3cqw #ffc23d) grayscale(.4); }
+.fx-block-text.fast { -webkit-text-stroke-color: #b36b00; color: #fff6c8; font-size: calc(7 * var(--cw)); }
+.fx-block.late { filter: grayscale(.5) drop-shadow(0 0 calc(2 * var(--cw)) #3da9ff); font-size: calc(12 * var(--cw)); }
+.fx-block-text.late { -webkit-text-stroke-color: #555; color: #ccc; font-size: calc(5 * var(--cw)); }
+.enemy.stagger .sprite { animation: stagger .42s ease-out; filter: drop-shadow(0 0 calc(3 * var(--cw)) #ffc23d) grayscale(.4); }
 .enemy.stagger .state-tag { background: #d98a00; }
 @keyframes stagger {
   20% { transform: translate(-6%, -4%) rotate(-10deg) scale(.9); }
@@ -529,41 +539,41 @@ h2 { margin: 0; }
 
 /* 破綻連打:鋼鐵色拳頭 + 「連打」+ 剩餘次數,每點一下彈一下 */
 .cell.mash .cap { background: linear-gradient(180deg, #eef3f8, #9fb2c6 55%, #56687c); --edge: #26313d; color: #fff; }
-.cell.mash .icon { font-size: 11cqw; margin-top: 3cqw; }
-.cell.mash .badge { font-size: 5.5cqw; right: 5%; top: auto; bottom: 14%; color: #ffe08a; }
+.cell.mash .icon { font-size: calc(11 * var(--cw)); margin-top: calc(3 * var(--cw)); }
+.cell.mash .badge { font-size: calc(5.5 * var(--cw)); right: 5%; top: auto; bottom: 14%; color: #ffe08a; }
 .cell.mash.bump .cap { animation: bump .12s ease-out; }
 @keyframes bump { 40% { transform: translateY(8%) scale(.94); filter: brightness(1.5); } }
 
 /* 蓄力重拳:深紅色拳頭 + 「HOLD」,按住時集氣條由左往右填滿,滿了發光抖動 */
 .cell.hold .cap { background: linear-gradient(180deg, #ffb0b8, #e0243a 55%, #8a0a1c); --edge: #4a0010; color: #fff; }
-.cell.hold .icon { font-size: 11cqw; margin-top: 3cqw; }
+.cell.hold .icon { font-size: calc(11 * var(--cw)); margin-top: calc(3 * var(--cw)); }
 .cell.hold .label { background: #ffc23d; color: #4a0010; }
-.cell.holding .cap { transform: translateY(8%); box-shadow: inset 0 .9cqw 0 #ffffff70, 0 1cqw 0 var(--edge), 0 2cqw 2cqw #000a; animation: none; }
+.cell.holding .cap { transform: translateY(8%); box-shadow: inset 0 calc(.9 * var(--cw)) 0 #ffffff70, 0 calc(1 * var(--cw)) 0 var(--edge), 0 calc(2 * var(--cw)) calc(2 * var(--cw)) #000a; animation: none; }
 .cell.holding .cap::after {
-  content: ""; position: absolute; left: 12%; right: 12%; bottom: 7%; height: 2cqw; border-radius: 99px;
+  content: ""; position: absolute; left: 12%; right: 12%; bottom: 7%; height: calc(2 * var(--cw)); border-radius: 99px;
   background: #fff; opacity: 1; transform-origin: left; animation: fillup var(--hold) linear forwards; display: block;
 }
-.cell.charged .cap { animation: chargedShake .08s infinite; filter: brightness(1.3); box-shadow: inset 0 .9cqw 0 #ffffff90, 0 1cqw 0 var(--edge), 0 0 6cqw #ffc23d; }
-.cell.charged .cap::after { background: #ffe08a; box-shadow: 0 0 2cqw #fff; }
+.cell.charged .cap { animation: chargedShake .08s infinite; filter: brightness(1.3); box-shadow: inset 0 calc(.9 * var(--cw)) 0 #ffffff90, 0 calc(1 * var(--cw)) 0 var(--edge), 0 0 calc(6 * var(--cw)) #ffc23d; }
+.cell.charged .cap::after { background: #ffe08a; box-shadow: 0 0 calc(2 * var(--cw)) #fff; }
 @keyframes fillup { from { transform: scaleX(0); } to { transform: scaleX(1); } }
 @keyframes chargedShake { 50% { transform: translate(2%, 6%); } }
 /* 按住系列(HOLD 蓄力拳 / 頂住):按住時水位從底部慢慢上升,按住時間到剛好滿;半透明白色、在圖示後面,不搶畫面 */
 .cell.hold.holding .cap::before, .cell.guard.heavy.holding .cap::before {
   content: ""; display: block; position: absolute; left: 0; right: 0; bottom: 0; top: 100%; border-radius: 0; pointer-events: none;
   background:
-    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 6' preserveAspectRatio='none'%3E%3Cpath d='M0 3 Q5 0 10 3 T20 3 T30 3 T40 3 V6 H0 Z' fill='%23ffffff' fill-opacity='.7'/%3E%3C/svg%3E") 0 0 / 10cqw 1.4cqw repeat-x,
-    linear-gradient(180deg, transparent 1.3cqw, #ffffff5c 1.3cqw, #ffffff38);
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 6' preserveAspectRatio='none'%3E%3Cpath d='M0 3 Q5 0 10 3 T20 3 T30 3 T40 3 V6 H0 Z' fill='%23ffffff' fill-opacity='.7'/%3E%3C/svg%3E") 0 0 / calc(10 * var(--cw)) calc(1.4 * var(--cw)) repeat-x,
+    linear-gradient(180deg, transparent calc(1.3 * var(--cw)), #ffffff5c calc(1.3 * var(--cw)), #ffffff38);
   animation: waterRise var(--hold) linear forwards, waterWave .9s linear infinite;
 }
-.cell.hold.charged .cap::before, .cell.guard.heavy.charged .cap::before { top: -1.4cqw !important; animation: waterWave .9s linear infinite !important; filter: sepia(1) saturate(4) brightness(1.15); opacity: .8; } /* 集滿:水位滿、帶一點金色 */
-@keyframes waterRise { from { top: 100%; } to { top: -1.4cqw; } } /* 滿的時候波浪剛好推出頂端 */
-@keyframes waterWave { to { background-position-x: 10cqw, 0; } }
+.cell.hold.charged .cap::before, .cell.guard.heavy.charged .cap::before { top: calc(-1.4 * var(--cw)) !important; animation: waterWave .9s linear infinite !important; filter: sepia(1) saturate(4) brightness(1.15); opacity: .8; } /* 集滿:水位滿、帶一點金色 */
+@keyframes waterRise { from { top: 100%; } to { top: calc(-1.4 * var(--cw)); } } /* 滿的時候波浪剛好推出頂端 */
+@keyframes waterWave { to { background-position-x: calc(10 * var(--cw)), 0; } }
 
 /* 招式名飄字 */
-.float.tag { top: 14%; transform: translateX(-50%); font-size: 8cqw; -webkit-text-stroke: .6cqw #000; paint-order: stroke fill; animation: tagPop .9s ease-out forwards; }
+.float.tag { top: 14%; transform: translateX(-50%); font-size: calc(8 * var(--cw)); -webkit-text-stroke: calc(.6 * var(--cw)) #000; paint-order: stroke fill; animation: tagPop .9s ease-out forwards; }
 .float.tag.armor  { color: #d9d4cc; }
 .float.tag.charge { color: #ffc23d; }
-.float.tag.miss   { color: #999; font-size: 6cqw; }
+.float.tag.miss   { color: #999; font-size: calc(6 * var(--cw)); }
 @keyframes tagPop {
   from { transform: translateX(-50%) scale(2); opacity: 0; }
   20%  { transform: translateX(-50%) scale(1); opacity: 1; }
@@ -586,18 +596,18 @@ h2 { margin: 0; }
 /* 雨絲 */
 .rain {
   position: absolute; inset: -20%; z-index: 1; pointer-events: none; opacity: .35;
-  background: repeating-linear-gradient(100deg, transparent 0 1.6cqw, #cfe3ff55 1.6cqw 1.75cqw, transparent 1.75cqw 5cqw);
+  background: repeating-linear-gradient(100deg, transparent 0 calc(1.6 * var(--cw)), #cfe3ff55 calc(1.6 * var(--cw)) calc(1.75 * var(--cw)), transparent calc(1.75 * var(--cw)) calc(5 * var(--cw)));
   background-size: 100% 22cqh;
   animation: rain .45s linear infinite;
 }
-@keyframes rain { to { background-position: -4cqw 22cqh; } }
+@keyframes rain { to { background-position: calc(-4 * var(--cw)) 22cqh; } }
 
 /* 火星往上飄 */
 .embers { position: absolute; inset: 0; z-index: 2; pointer-events: none; }
 .embers span {
   position: absolute; bottom: -3%; border-radius: 50%;
   background: radial-gradient(circle, #fff6c8, #ffc23d 40%, #ff5a1f 70%, transparent 72%);
-  box-shadow: 0 0 1.5cqw #ff7a1a;
+  box-shadow: 0 0 calc(1.5 * var(--cw)) #ff7a1a;
   animation: ember linear infinite;
 }
 @keyframes ember {
@@ -620,28 +630,28 @@ h2 { margin: 0; }
 }
 .title-logo.enter { animation: logoSlam .7s cubic-bezier(.2, .8, .3, 1.2) .25s forwards, logoGlow 2.4s ease-in-out 1.2s infinite alternate; }
 @keyframes logoSlam {
-  0%   { opacity: 0; transform: translateX(-50%) scale(2.2); filter: blur(1cqw) brightness(2); }
+  0%   { opacity: 0; transform: translateX(-50%) scale(2.2); filter: blur(calc(1 * var(--cw))) brightness(2); }
   60%  { opacity: 1; transform: translateX(-50%) scale(.94); filter: none; }
   72%  { transform: translateX(-51.5%) scale(1.02) rotate(-1deg); }
   84%  { transform: translateX(-48.8%) scale(1) rotate(.6deg); }
   100% { opacity: 1; transform: translateX(-50%) scale(1); }
 }
 @keyframes logoGlow {
-  from { opacity: 1; transform: translateX(-50%); filter: drop-shadow(0 0 1cqw #ff5a1f80); }
-  to   { opacity: 1; transform: translateX(-50%) scale(1.015); filter: drop-shadow(0 0 5cqw #ffb03cc0); }
+  from { opacity: 1; transform: translateX(-50%); filter: drop-shadow(0 0 calc(1 * var(--cw)) #ff5a1f80); }
+  to   { opacity: 1; transform: translateX(-50%) scale(1.015); filter: drop-shadow(0 0 calc(5 * var(--cw)) #ffb03cc0); }
 }
 
 /* 開始提示放在最底部(主角腳下),加深色底避免壓在角色身上看不清 */
 .title-start {
   position: absolute; z-index: 4; left: 50%; bottom: 2.2%; transform: translateX(-50%);
-  text-align: center; white-space: nowrap; padding: 1.2cqw 7cqw 1.4cqw;
-  font-size: 4.8cqw; font-weight: 900; letter-spacing: .25em; color: #fff;
-  text-shadow: 0 0 2cqw #ff5a1f, 0 .4cqw 0 #000;
+  text-align: center; white-space: nowrap; padding: calc(1.2 * var(--cw)) calc(7 * var(--cw)) calc(1.4 * var(--cw));
+  font-size: calc(4.8 * var(--cw)); font-weight: 900; letter-spacing: .25em; color: #fff;
+  text-shadow: 0 0 calc(2 * var(--cw)) #ff5a1f, 0 calc(.4 * var(--cw)) 0 #000;
   background: linear-gradient(90deg, transparent, #000c 20%, #000c 80%, transparent);
   opacity: 0; /* 開場演出結束(#title.ready)才出現 */
 }
 @keyframes startBlink { 0%, 100% { opacity: 1; } 50% { opacity: .35; } }
-.title-start small { display: block; font-size: 2.8cqw; letter-spacing: .5em; color: var(--fire-2); }
+.title-start small { display: block; font-size: calc(2.8 * var(--cw)); letter-spacing: .5em; color: var(--fire-2); }
 @keyframes fadeIn { to { opacity: 1; } }
 
 /* 點下開始:整個畫面往前衝並閃白 */
@@ -649,15 +659,15 @@ h2 { margin: 0; }
 /* 閃電由上往下劈:用裁切範圍從上往下展開(虛線位移和不縮放線寬會衝突,所以不用) */
 .strike-bolt {
   position: absolute; inset: 0; width: 100%; height: 100%; z-index: 5; pointer-events: none;
-  filter: drop-shadow(0 0 1.5cqw #cfeeff) drop-shadow(0 0 5cqw #6ab8ff);
+  filter: drop-shadow(0 0 calc(1.5 * var(--cw)) #cfeeff) drop-shadow(0 0 calc(5 * var(--cw)) #6ab8ff);
   clip-path: inset(0 0 100% 0);
   animation: boltDraw .14s ease-out forwards, boltFlicker .7s .16s linear forwards;
 }
 .strike-bolt polyline { fill: none; stroke-linejoin: round; stroke-linecap: round; vector-effect: non-scaling-stroke; }
-.strike-bolt .glow { stroke: #8fd0ff; stroke-width: 4.4cqw; opacity: .55; }
-.strike-bolt .core { stroke: #fff; stroke-width: 1.5cqw; }
-.strike-bolt .glow.br { stroke-width: 2.4cqw; }
-.strike-bolt .core.br { stroke-width: .8cqw; }
+.strike-bolt .glow { stroke: #8fd0ff; stroke-width: calc(4.4 * var(--cw)); opacity: .55; }
+.strike-bolt .core { stroke: #fff; stroke-width: calc(1.5 * var(--cw)); }
+.strike-bolt .glow.br { stroke-width: calc(2.4 * var(--cw)); }
+.strike-bolt .core.br { stroke-width: calc(.8 * var(--cw)); }
 @keyframes boltDraw { to { clip-path: inset(0 0 0 0); } }
 @keyframes boltFlicker { 0%, 20% { opacity: 1; } 28% { opacity: .15; } 38% { opacity: 1; } 55% { opacity: .9; } 100% { opacity: 0; } }
 
@@ -666,9 +676,9 @@ h2 { margin: 0; }
 #title.leaving .title-bg { filter: brightness(1.35) contrast(1.1); transition: filter .1s; }
 #title.leaving .title-logo img { animation: logoZap .5s steps(1) .12s; }
 @keyframes logoZap {
-  0%   { filter: brightness(2.2) drop-shadow(0 0 3cqw #bfe8ff); transform: translate(1%, 0); }
+  0%   { filter: brightness(2.2) drop-shadow(0 0 calc(3 * var(--cw)) #bfe8ff); transform: translate(1%, 0); }
   25%  { filter: brightness(1) hue-rotate(160deg); transform: translate(-1%, .5%); }
-  50%  { filter: brightness(2) drop-shadow(0 0 4cqw #fff); transform: none; }
+  50%  { filter: brightness(2) drop-shadow(0 0 calc(4 * var(--cw)) #fff); transform: none; }
   75%  { filter: brightness(1.2); }
 }
 #title.leaving { animation: titleShake .35s .14s; }
@@ -684,7 +694,7 @@ h2 { margin: 0; }
 .stage { isolation: isolate; } /* 讓背景層可用負 z-index 墊在最底 */
 .stage-bg { position: absolute; inset: -6%; z-index: -1; background: center 62% / cover no-repeat; display: none; }
 .stage.has-bg .stage-bg {
-  display: block; filter: brightness(.78) saturate(.9) blur(.25cqw);
+  display: block; filter: brightness(.78) saturate(.9) blur(calc(.25 * var(--cw)));
   animation: bgDrift 26s ease-in-out infinite alternate;
 }
 .stage.has-bg::before { /* 敵人身後微亮、四周與底部壓暗(血條區) */
@@ -704,7 +714,7 @@ h2 { margin: 0; }
 .enemy.has-img { top: 46%; }
 .sprite img {
   display: block; height: 26cqh; width: auto; margin: 0 auto; pointer-events: none; user-select: none;
-  filter: drop-shadow(0 0 .5cqw #ffffffb0) drop-shadow(0 1.5cqw 1cqw #000a); /* 淡色描邊,和背景分開 */
+  filter: drop-shadow(0 0 calc(.5 * var(--cw)) #ffffffb0) drop-shadow(0 calc(1.5 * var(--cw)) calc(1 * var(--cw)) #000a); /* 淡色描邊,和背景分開 */
 }
 /* BOSS:立繪放大、頭頂貼齊畫面上緣,腳延伸到名稱與血條後面,更有壓迫感 */
 .enemy.boss.has-img { top: 0; transform: translateX(-50%); }
@@ -713,14 +723,14 @@ h2 { margin: 0; }
 .enemy.has-img .state-tag { position: relative; top: -3cqh; }
 
 /* 破綻符號:希臘數字字形較寬,縮小一點;骰子用 3×3 白色圓點(全部同色) */
-.cell.num-roman .icon { font-size: 12cqw; font-family: 'Times New Roman', serif; }
+.cell.num-roman .icon { font-size: calc(12 * var(--cw)); font-family: 'Times New Roman', serif; }
 .cell.num-dice .icon { display: block; }
 .die {
-  display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.2cqw; width: 13cqw; height: 13cqw; padding: 1.4cqw;
-  background: #fff2; border-radius: 2.4cqw; box-shadow: inset 0 0 0 .5cqw #fff, 0 0 3cqw var(--ult), 0 .6cqw 0 #3d0d5c;
+  display: grid; grid-template-columns: repeat(3, 1fr); gap: calc(1.2 * var(--cw)); width: calc(13 * var(--cw)); height: calc(13 * var(--cw)); padding: calc(1.4 * var(--cw));
+  background: #fff2; border-radius: calc(2.4 * var(--cw)); box-shadow: inset 0 0 0 calc(.5 * var(--cw)) #fff, 0 0 calc(3 * var(--cw)) var(--ult), 0 calc(.6 * var(--cw)) 0 #3d0d5c;
 }
 .die i { border-radius: 50%; }
-.die i.on { background: #fff; box-shadow: 0 0 1.2cqw var(--ult); }
+.die i.on { background: #fff; box-shadow: 0 0 calc(1.2 * var(--cw)) var(--ult); }
 
 /* 成長點數圖示(和文字同高,跟著字級縮放) */
 .pt-ico {
@@ -728,22 +738,22 @@ h2 { margin: 0; }
   background: url('../../assets/images/icons/growth.svg') center / contain no-repeat;
   filter: drop-shadow(0 0 .25em #ff7a1f99);
 }
-.score.coins .coin-bonus { margin-left: 1.4cqw; font-size: .62em; color: #ffe08a; }
+.score.coins .coin-bonus { margin-left: calc(1.4 * var(--cw)); font-size: .62em; color: #ffe08a; }
 /* 狂打獎勵關:打中時噴出的金幣 */
 .fx-coin {
-  position: absolute; left: 0; top: 0; z-index: 30; width: 7cqw; height: 7cqw; border-radius: 50%; pointer-events: none;
+  position: absolute; left: 0; top: 0; z-index: 30; width: calc(7 * var(--cw)); height: calc(7 * var(--cw)); border-radius: 50%; pointer-events: none;
   background: radial-gradient(circle at 35% 30%, #fffbe0 0 12%, #ffd84a 30%, #e8a800 62%, #9a6400 100%);
-  box-shadow: inset 0 0 0 .6cqw #ffe680, inset 0 0 0 1cqw #c08400, 0 0 2.4cqw #ffd400c0;
+  box-shadow: inset 0 0 0 calc(.6 * var(--cw)) #ffe680, inset 0 0 0 calc(1 * var(--cw)) #c08400, 0 0 calc(2.4 * var(--cw)) #ffd400c0;
 }
-.fx-coin::after { content: "$"; position: absolute; inset: 0; display: grid; place-items: center; font: 900 4cqw/1 var(--tech); color: #8a5600; }
+.fx-coin::after { content: "$"; position: absolute; inset: 0; display: grid; place-items: center; font: 900 calc(4 * var(--cw))/1 var(--tech); color: #8a5600; }
 
 /* ---------- 新機制 ---------- */
 /* 倒數炸彈:黑紅外殼、閃紅光,角標是大大的倒數數字,最後 1 秒閃得更快 */
 .cell.timebomb .cap { background: linear-gradient(180deg, #5a5a5a, #1e1e1e 55%, #000); --edge: #000; color: #ff3a3a; animation: bombPulse .5s ease-in-out infinite alternate; }
-.cell.timebomb .badge { right: auto; left: 50%; top: auto; bottom: 6%; transform: translateX(-50%); font-size: 7cqw; color: #ff3a3a; -webkit-text-stroke: .5cqw #000; }
+.cell.timebomb .badge { right: auto; left: 50%; top: auto; bottom: 6%; transform: translateX(-50%); font-size: calc(7 * var(--cw)); color: #ff3a3a; -webkit-text-stroke: calc(.5 * var(--cw)) #000; }
 .cell.timebomb .cap::after { color: #ff3a3a; }
 /* 倒數炸彈(要點掉拆除):點燃中的炸彈 —— 💣 一縮一放、引信冒火花往上噴、按鈕外圈火光閃爍,最後一秒跳得更急;上方標「拆!」 */
-.cell.timebomb .cap { box-shadow: inset 0 .9cqw 0 #ffffff30, 0 2.2cqw 0 #000, 0 0 4cqw #ff7a1a, 0 0 1.5cqw #ffb03c; animation: bombPulse .5s ease-in-out infinite alternate, bombGlow .18s steps(2) infinite; }
+.cell.timebomb .cap { box-shadow: inset 0 calc(.9 * var(--cw)) 0 #ffffff30, 0 calc(2.2 * var(--cw)) 0 #000, 0 0 calc(4 * var(--cw)) #ff7a1a, 0 0 calc(1.5 * var(--cw)) #ffb03c; animation: bombPulse .5s ease-in-out infinite alternate, bombGlow .18s steps(2) infinite; }
 @keyframes bombGlow { 50% { filter: brightness(1.25) saturate(1.3); } }
 .cell.timebomb .icon { position: relative; display: inline-block; animation: bombBeat .42s ease-in-out infinite alternate; }
 @keyframes bombBeat { from { transform: scale(.88) rotate(-4deg); } to { transform: scale(1.14) rotate(4deg); } }
@@ -752,24 +762,24 @@ h2 { margin: 0; }
 .cell.timebomb .icon::after { /* 引信的火花:在 💣 右上角的引信位置 */
   content: ""; position: absolute; right: -6%; top: -14%; width: 46%; height: 46%; border-radius: 50%; pointer-events: none;
   background: radial-gradient(circle, #fff 0 14%, #ffe14a 30%, #ff7a1a 52%, transparent 70%);
-  filter: drop-shadow(0 0 1cqw #ffb03c); animation: fuseSpark .14s steps(2) infinite;
+  filter: drop-shadow(0 0 calc(1 * var(--cw)) #ffb03c); animation: fuseSpark .14s steps(2) infinite;
 }
 @keyframes fuseSpark { 50% { transform: scale(1.45) rotate(45deg); opacity: .75; } }
 .cell.timebomb .icon::before { /* 往上噴的小火星 */
-  content: ""; position: absolute; right: 8%; top: -6%; width: .9cqw; height: .9cqw; border-radius: 50%; background: #ffe14a; pointer-events: none;
-  box-shadow: -1.5cqw -1.2cqw 0 #ffb03c, 1.2cqw -1.8cqw 0 #ffe14a, -.4cqw -2.6cqw 0 #ff7a1a, 1.8cqw -.6cqw 0 #fff2a0;
+  content: ""; position: absolute; right: 8%; top: -6%; width: calc(.9 * var(--cw)); height: calc(.9 * var(--cw)); border-radius: 50%; background: #ffe14a; pointer-events: none;
+  box-shadow: calc(-1.5 * var(--cw)) calc(-1.2 * var(--cw)) 0 #ffb03c, calc(1.2 * var(--cw)) calc(-1.8 * var(--cw)) 0 #ffe14a, calc(-.4 * var(--cw)) calc(-2.6 * var(--cw)) 0 #ff7a1a, calc(1.8 * var(--cw)) calc(-.6 * var(--cw)) 0 #fff2a0;
   animation: fuseEmbers .5s linear infinite;
 }
 @keyframes fuseEmbers { from { transform: translateY(0) scale(1); opacity: 1; } to { transform: translateY(-120%) scale(.4); opacity: 0; } }
 .cell.timebomb .label { background: #ff3a1a; color: #fff; animation: clashPulse .3s ease-in-out infinite alternate; }
-@keyframes bombPulse { to { box-shadow: inset 0 .9cqw 0 #ffffff30, 0 1cqw 0 var(--edge), 0 0 4cqw #ff2020; } }
+@keyframes bombPulse { to { box-shadow: inset 0 calc(.9 * var(--cw)) 0 #ffffff30, 0 calc(1 * var(--cw)) 0 var(--edge), 0 0 calc(4 * var(--cw)) #ff2020; } }
 /* 滑擊拳:螢光綠外殼,中間一個實心粗箭頭(程式畫的,依方向旋轉),朝滑動方向來回晃;按下瞄準時發亮
    標籤裡的 ↑↓←→ 文字只留著給無障礙讀取,畫面上隱藏 */
 .cell.swipe .cap { background: linear-gradient(180deg, #d8ff9a, #4ad94a 55%, #127a2a); --edge: #063a12; color: #eaffd0; }
 .cell.swipe .label {
-  top: 50%; width: 13cqw; height: 13cqw; padding: 0; font-size: 0; color: transparent; border-radius: 0;
+  top: 50%; width: calc(13 * var(--cw)); height: calc(13 * var(--cw)); padding: 0; font-size: 0; color: transparent; border-radius: 0;
   background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M2.5 8h10.5V2.5L22.5 12 13 21.5V16H2.5z' fill='%23fff' stroke='%23063a12' stroke-width='1.6' stroke-linejoin='round'/%3E%3C/svg%3E") center / contain no-repeat;
-  filter: drop-shadow(0 0 1.4cqw #b4ff4a);
+  filter: drop-shadow(0 0 calc(1.4 * var(--cw)) #b4ff4a);
   transform: translate(-50%, -50%) rotate(var(--rot)); animation: swipeHint .6s ease-in-out infinite alternate;
 }
 .cell.swipe .icon { opacity: .35; }
@@ -777,17 +787,17 @@ h2 { margin: 0; }
    箭頭用大的黃色箭頭直接壓在腳印正中央(深色粗描邊加黃光,不另外墊底);箭頭本身不動,不會滑出格子 */
 .cell.kick .cap { background: linear-gradient(180deg, #7ae05a, #1f8a2a 55%, #0a4a14); --edge: #042a0a; }
 .cell.kick .icon {
-  font-size: 0; width: 15cqw; height: 15cqw; opacity: .95;
+  font-size: 0; width: calc(15 * var(--cw)); height: calc(15 * var(--cw)); opacity: .95;
   background: url('../../assets/images/ui/kick_foot.png') center / contain no-repeat;
-  filter: drop-shadow(0 .4cqw 0 #042a0a);
+  filter: drop-shadow(0 calc(.4 * var(--cw)) 0 #042a0a);
 }
 /* 駭入:還沒現形前和其他符號一樣只顯示 ❓(不露出腳印和方向),現形後才變成腳印 */
-.cell.kick.hidden .icon { background: none; font-size: 12cqw; }
+.cell.kick.hidden .icon { background: none; font-size: calc(12 * var(--cw)); }
 .cell.kick.hidden .label { visibility: hidden; }
 .cell.kick .label { /* 大黃箭頭直接壓在腳印上:深色粗描邊 + 黃光,壓在白色腳印上也清楚 */
-  width: 13cqw; height: 13cqw; z-index: 2; animation: none;
+  width: calc(13 * var(--cw)); height: calc(13 * var(--cw)); z-index: 2; animation: none;
   background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M3 8.5h10V3l9 9-9 9v-5.5H3z' fill='%23ffe14a' stroke='%23241400' stroke-width='2.4' stroke-linejoin='round'/%3E%3C/svg%3E") center / contain no-repeat;
-  filter: drop-shadow(0 0 .8cqw #ffd400) drop-shadow(0 .3cqw 0 #241400);
+  filter: drop-shadow(0 0 calc(.8 * var(--cw)) #ffd400) drop-shadow(0 calc(.3 * var(--cw)) 0 #241400);
 }
 /* 流光:只在箭頭的黃色部分裡,從尾巴掃到尖端(箭頭跟著 --rot 轉,所以光一定順著滑動方向跑) */
 .cell.kick .label::after {
@@ -809,21 +819,21 @@ h2 { margin: 0; }
 .bow-rig, .bow-shot { position: absolute; left: 50%; top: 66%; width: 90%; aspect-ratio: 1; transform: translate(-50%, -50%); pointer-events: none; }
 .bow-rig { z-index: 1; }
 .bow-rig svg, .bow-shot svg, .fx-arrow { display: block; width: 100%; height: 100%; overflow: visible; }
-.bow-rig svg, .bow-shot svg { filter: drop-shadow(0 0 .4cqw #2e0426) drop-shadow(0 .45cqw 0 #2e0426); }
+.bow-rig svg, .bow-shot svg { filter: drop-shadow(0 0 calc(.4 * var(--cw)) #2e0426) drop-shadow(0 calc(.45 * var(--cw)) 0 #2e0426); }
 .bow-rig .limb { fill: none; stroke: #fff; stroke-width: 11; stroke-linecap: round; }
 .bow-rig .string { fill: none; stroke: #fff; stroke-width: 3.6; }
 .shaft, .fx-arrow line { stroke: #fff; stroke-width: 7; stroke-linecap: round; }
 .head, .fletch { fill: #fff; stroke: #fff; stroke-width: 3; stroke-linejoin: round; }
-.cell.bow.drawing .bow-rig { filter: drop-shadow(0 0 1.2cqw #ffb0ec); }
-.bow-rig.full { filter: drop-shadow(0 0 2cqw #ffd400) drop-shadow(0 0 .6cqw #fff) !important; animation: bowShake .08s infinite; }
+.cell.bow.drawing .bow-rig { filter: drop-shadow(0 0 calc(1.2 * var(--cw)) #ffb0ec); }
+.bow-rig.full { filter: drop-shadow(0 0 calc(2 * var(--cw)) #ffd400) drop-shadow(0 0 calc(.6 * var(--cw)) #fff) !important; animation: bowShake .08s infinite; }
 @keyframes bowShake { 50% { translate: 2% 3%; } } /* 拉滿抖動:用 translate 屬性,不會蓋掉置中用的 transform */
 /* 拉弓中:和 HOLD / 頂住一樣從底部升起水位,高度 = 拉弓程度(--pull 0~1);洋紅按鈕上用金色的水,拉滿變亮金 */
 .cell.bow.drawing .cap::before {
   content: ""; display: block; position: absolute; left: 0; right: 0; bottom: 0; top: auto; border-radius: 0; pointer-events: none;
-  height: calc(var(--pull, 0) * (100% + 1.4cqw));
+  height: calc(var(--pull, 0) * (100% + calc(1.4 * var(--cw))));
   background:
-    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 6' preserveAspectRatio='none'%3E%3Cpath d='M0 3 Q5 0 10 3 T20 3 T30 3 T40 3 V6 H0 Z' fill='%23ffe14a' fill-opacity='.9'/%3E%3C/svg%3E") 0 0 / 10cqw 1.4cqw repeat-x,
-    linear-gradient(180deg, transparent 1.3cqw, #ffc23d99 1.3cqw, #d98a00c0);
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 6' preserveAspectRatio='none'%3E%3Cpath d='M0 3 Q5 0 10 3 T20 3 T30 3 T40 3 V6 H0 Z' fill='%23ffe14a' fill-opacity='.9'/%3E%3C/svg%3E") 0 0 / calc(10 * var(--cw)) calc(1.4 * var(--cw)) repeat-x,
+    linear-gradient(180deg, transparent calc(1.3 * var(--cw)), #ffc23d99 calc(1.3 * var(--cw)), #d98a00c0);
   animation: waterWave .9s linear infinite;
   transition: height .05s linear;
 }
@@ -831,26 +841,26 @@ h2 { margin: 0; }
 .bow-rig.shot .arrow { visibility: hidden; }
 .cell.bow.hidden .bow-rig { display: none; } /* 駭入:現形前只顯示 ❓ */
 .bow-shot { z-index: 5; }
-.bow-shot.full, .fx-fist .fx-arrow { filter: drop-shadow(0 0 1.5cqw #ffd400); }
+.bow-shot.full, .fx-fist .fx-arrow { filter: drop-shadow(0 0 calc(1.5 * var(--cw)) #ffd400); }
 .fx-fist:has(.fx-arrow) { width: 1em; height: 1em; }
 @keyframes swipeHint { to { transform: translate(calc(-50% + var(--sx)), calc(-50% + var(--sy))) rotate(var(--rot)); } }
-.cell.aiming .cap { box-shadow: inset 0 .9cqw 0 #ffffff70, 0 1cqw 0 var(--edge), 0 0 5cqw #b4ff4a; transform: scale(1.06); }
+.cell.aiming .cap { box-shadow: inset 0 calc(.9 * var(--cw)) 0 #ffffff70, 0 calc(1 * var(--cw)) 0 var(--edge), 0 0 calc(5 * var(--cw)) #b4ff4a; transform: scale(1.06); }
 /* 記憶拳:閃爍的格子(金色星光) */
-.cell.mem .cap { background: linear-gradient(180deg, #fff4c0, #ffc83a 55%, #b07a00); --edge: #5a3a00; color: #fff; box-shadow: inset 0 .9cqw 0 #ffffffa0, 0 1cqw 0 var(--edge), 0 0 5cqw #ffd84a; }
+.cell.mem .cap { background: linear-gradient(180deg, #fff4c0, #ffc83a 55%, #b07a00); --edge: #5a3a00; color: #fff; box-shadow: inset 0 calc(.9 * var(--cw)) 0 #ffffffa0, 0 calc(1 * var(--cw)) 0 var(--edge), 0 0 calc(5 * var(--cw)) #ffd84a; }
 .cell.mem .cap::after { display: none; }
 /* 炎鋼天道(守護之技):過場圖是綠色氣旋的回復姿態,光暈、火星都換成翠綠;不做出拳的震動與衝出畫面 */
 /* 有專屬過場圖就只換光暈顏色,沒有的話把原本的圖調成綠色 */
-.cutin.tiandao .cutin-art { filter: hue-rotate(80deg) saturate(1.3) brightness(1.1) drop-shadow(0 0 4cqw #5aff9a); }
-.cutin.tiandao.has-art .cutin-art { filter: drop-shadow(0 0 4cqw #5aff9a); }
+.cutin.tiandao .cutin-art { filter: hue-rotate(80deg) saturate(1.3) brightness(1.1) drop-shadow(0 0 calc(4 * var(--cw)) #5aff9a); }
+.cutin.tiandao.has-art .cutin-art { filter: drop-shadow(0 0 calc(4 * var(--cw)) #5aff9a); }
 .cutin.tiandao.show .cutin-art { animation: artZoom .45s cubic-bezier(.2, .9, .3, 1.1), healFloat 1.2s .45s ease-in-out; }
-@keyframes healFloat { 50% { translate: 0 -1.5cqh; filter: drop-shadow(0 0 7cqw #5aff9a) brightness(1.15); } }
+@keyframes healFloat { 50% { translate: 0 -1.5cqh; filter: drop-shadow(0 0 calc(7 * var(--cw)) #5aff9a) brightness(1.15); } }
 .cutin.tiandao .cutin-embers i, .cutin.tiandao .cutin-ring { filter: hue-rotate(95deg) saturate(1.4); }
-.cutin.tiandao .cutin-title { color: #eaffef; text-shadow: 0 0 2cqw #5aff9a, 0 0 6cqw #1ac06a; }
+.cutin.tiandao .cutin-title { color: #eaffef; text-shadow: 0 0 calc(2 * var(--cw)) #5aff9a, 0 0 calc(6 * var(--cw)) #1ac06a; }
 .cutin.tiandao .cutin-glow { filter: hue-rotate(95deg) saturate(1.3); }
 .cutin.tiandao.has-art .cutin-glow { filter: hue-rotate(95deg) saturate(1.4); }
 /* 星火燎原拳:橘紅烈焰配青綠電光(和過場圖的配色一致) */
-.cutin.spark .cutin-title { color: #fff1d6; text-shadow: 0 0 2cqw #ff8a2a, 0 0 6cqw #3dffd0; }
-.cutin.spark.has-art .cutin-art { filter: drop-shadow(0 0 3cqw #ff8a2a) drop-shadow(0 0 5cqw #3dffd080); }
+.cutin.spark .cutin-title { color: #fff1d6; text-shadow: 0 0 calc(2 * var(--cw)) #ff8a2a, 0 0 calc(6 * var(--cw)) #3dffd0; }
+.cutin.spark.has-art .cutin-art { filter: drop-shadow(0 0 calc(3 * var(--cw)) #ff8a2a) drop-shadow(0 0 calc(5 * var(--cw)) #3dffd080); }
 .cutin.spark.has-art .cutin-glow { filter: saturate(1.5) brightness(1.1); }
 
 /* ===== 標題開場演出(每次開遊戲):品牌 LOGO → 鏡頭從炎鋼背影仰望到天上的鐵拳 → 落雷 + LOGO 砸下 → 點擊開始 ===== */
@@ -876,10 +886,10 @@ h2 { margin: 0; }
 
 /* 點擊開始:閃電劈在畫面中央,炸出火焰衝擊波(兩圈:外圈火焰環、內圈白熱光)→ 畫面像玻璃碎裂飛散,露出主選單 */
 .title-wave { position: absolute; left: 50%; top: 48%; z-index: 6; width: 0; height: 0; pointer-events: none; }
-.title-wave i { position: absolute; left: -30cqw; top: -30cqw; width: 60cqw; height: 60cqw; border-radius: 50%; }
+.title-wave i { position: absolute; left: calc(-30 * var(--cw)); top: calc(-30 * var(--cw)); width: calc(60 * var(--cw)); height: calc(60 * var(--cw)); border-radius: 50%; }
 .title-wave i:first-child {
   background: radial-gradient(circle closest-side, transparent 55%, #ffd84a 68%, #ff5a1f 80%, #b52a0500 100%);
-  filter: drop-shadow(0 0 3cqw #ff7a1a); animation: waveRing .5s cubic-bezier(.2, .7, .3, 1) forwards;
+  filter: drop-shadow(0 0 calc(3 * var(--cw)) #ff7a1a); animation: waveRing .5s cubic-bezier(.2, .7, .3, 1) forwards;
 }
 .title-wave i:last-child {
   background: radial-gradient(circle closest-side, #fff 0 20%, #ffe8a0 45%, #ff9a2a00 100%);
@@ -896,13 +906,13 @@ h2 { margin: 0; }
 .title-snap .title-logo { display: none; } /* 標題畫面不放標題字(碎完才在主選單砸下來) */
 .title-snap .brand-splash, .title-snap .title-start, .title-snap .embers, .title-snap .bolt, .title-snap .strike-bolt, .title-snap .title-wave { display: none; }
 .shatter .cracks { position: absolute; inset: 0; width: 100%; height: 100%; z-index: 1; animation: crackFade .5s .1s ease-out forwards; }
-.shatter .cracks polyline { fill: none; stroke: #fff; stroke-width: .5cqw; vector-effect: non-scaling-stroke; filter: drop-shadow(0 0 1cqw #ffd84a); }
+.shatter .cracks polyline { fill: none; stroke: #fff; stroke-width: calc(.5 * var(--cw)); vector-effect: non-scaling-stroke; filter: drop-shadow(0 0 calc(1 * var(--cw)) #ffd84a); }
 @keyframes crackFade { to { opacity: 0; } }
 /* 從標題進入主選單:標題字先藏著,碎片飛完後由大到小砸下來(和舊版標題畫面的 LOGO 同一種演出) */
 #menu.logo-wait .menu-logo img { opacity: 0; }
 .menu-logo.slam img { animation: menuLogoSlam .7s cubic-bezier(.2, .8, .3, 1.2) .25s both; }
 @keyframes menuLogoSlam {
-  0%   { opacity: 0; transform: scale(2.2); filter: blur(1cqw) brightness(2); }
+  0%   { opacity: 0; transform: scale(2.2); filter: blur(calc(1 * var(--cw))) brightness(2); }
   60%  { opacity: 1; transform: scale(.94); }
   72%  { transform: translateX(-1.5%) scale(1.02) rotate(-1deg); }
   84%  { transform: translateX(1.2%) rotate(.6deg); }
@@ -910,7 +920,7 @@ h2 { margin: 0; }
 }
 #menu.slam { animation: titleShake .4s; }
 #menu .strike-bolt { z-index: 5; }
-.fx-fist .fx-foot { display: block; width: 1em; height: 1em; filter: drop-shadow(0 0 1.5cqw #4ad94a) drop-shadow(0 .3cqw 0 #042a0a); } /* 踢擊的腳印飛向敵人(原圖方向) */
+.fx-fist .fx-foot { display: block; width: 1em; height: 1em; filter: drop-shadow(0 0 calc(1.5 * var(--cw)) #4ad94a) drop-shadow(0 calc(.3 * var(--cw)) 0 #042a0a); } /* 踢擊的腳印飛向敵人(原圖方向) */
 
 /* 助陣夥伴援護:全畫面演出(總長 2.1 秒,和 battle.js 的 ALLY_FX_MS / ALLY_FX_HIT 對齊)
    0.2 秒壓黑 → 0.45 秒夥伴頭像與台詞從左滑入 → 0.45~1.8 秒各夥伴專屬特效(高潮在 0.9 秒,畫面震動)→ 1.8 秒起收起 */
@@ -922,11 +932,11 @@ h2 { margin: 0; }
 .afx-dim { inset: 0; background: radial-gradient(circle at 50% 55%, #0008, #000e 75%); animation: afxDim 2.1s linear both; }
 .afx-lines { inset: -30%; background: repeating-conic-gradient(from 0deg at 50% 50%, transparent 0 4deg, color-mix(in srgb, var(--ac) 45%, transparent) 4deg 5deg);
   -webkit-mask: radial-gradient(circle, transparent 18%, #000 60%); mask: radial-gradient(circle, transparent 18%, #000 60%); animation: afxLines 2.1s linear both; }
-.afx-card { left: 0; top: 14%; z-index: 3; width: 92%; display: flex; align-items: center; gap: 3cqw; padding: 2.5cqw 5cqw 2.5cqw 3cqw;
-  background: linear-gradient(90deg, #0b1018f5 65%, #0b101800); border-left: 1.4cqw solid var(--ac); animation: afxCard 2.1s cubic-bezier(.2, 1.3, .4, 1) both; }
-.afx-face { flex: none; width: 30cqw; height: 30cqw; border-radius: 50%; background: #1a2230 center 15% / cover; box-shadow: 0 0 0 1cqw var(--ac), 0 0 6cqw var(--ac); }
-.afx-text b { display: block; font-size: 5cqw; color: var(--ac); letter-spacing: .15em; }
-.afx-text span { display: block; margin-top: 1cqw; font-size: 6.4cqw; font-weight: 900; line-height: 1.25; color: #fff; text-shadow: 0 .5cqw 0 #000, 0 0 3cqw var(--ac); }
+.afx-card { left: 0; top: 14%; z-index: 3; width: 92%; display: flex; align-items: center; gap: calc(3 * var(--cw)); padding: calc(2.5 * var(--cw)) calc(5 * var(--cw)) calc(2.5 * var(--cw)) calc(3 * var(--cw));
+  background: linear-gradient(90deg, #0b1018f5 65%, #0b101800); border-left: calc(1.4 * var(--cw)) solid var(--ac); animation: afxCard 2.1s cubic-bezier(.2, 1.3, .4, 1) both; }
+.afx-face { flex: none; width: calc(30 * var(--cw)); height: calc(30 * var(--cw)); border-radius: 50%; background: #1a2230 center 15% / cover; box-shadow: 0 0 0 calc(1 * var(--cw)) var(--ac), 0 0 calc(6 * var(--cw)) var(--ac); }
+.afx-text b { display: block; font-size: calc(5 * var(--cw)); color: var(--ac); letter-spacing: .15em; }
+.afx-text span { display: block; margin-top: calc(1 * var(--cw)); font-size: calc(6.4 * var(--cw)); font-weight: 900; line-height: 1.25; color: #fff; text-shadow: 0 calc(.5 * var(--cw)) 0 #000, 0 0 calc(3 * var(--cw)) var(--ac); }
 .afx-burst { inset: 0; opacity: 0; background: radial-gradient(circle at 50% 60%, #fff, color-mix(in srgb, var(--ac) 70%, #fff) 30%, transparent 68%); animation: afxBurst 2.1s linear both; }
 @keyframes afxDim   { 0% { opacity: 0; } 9% { opacity: 1; } 86% { opacity: 1; } 100% { opacity: 0; } }
 @keyframes afxLines { 0%, 5% { opacity: 0; transform: rotate(0) scale(1.2); } 20% { opacity: .9; } 86% { opacity: .7; } 100% { opacity: 0; transform: rotate(25deg) scale(1); } }
@@ -935,13 +945,13 @@ h2 { margin: 0; }
 @keyframes afxShake { 0%, 42% { transform: none; } 44% { transform: translate(-1.5%, 1%); } 46% { transform: translate(1.5%, -1%); } 48% { transform: translate(-1%, -.5%); } 50% { transform: translate(.8%, .6%); } 53%, 100% { transform: none; } }
 
 /* 小隼・數位駭入:青色代碼雨往下流、掃描線來回掃過、雜訊閃爍,中央跳出 SYSTEM BREACH */
-.afx-code { top: -60%; white-space: pre; font: 700 3.2cqw/1.15 var(--tech, monospace), monospace; color: var(--ac); text-shadow: 0 0 1.5cqw var(--ac);
+.afx-code { top: -60%; white-space: pre; font: 700 calc(3.2 * var(--cw))/1.15 var(--tech, monospace), monospace; color: var(--ac); text-shadow: 0 0 calc(1.5 * var(--cw)) var(--ac);
   opacity: 0; animation: afxCode var(--t) linear var(--d) both; }
 .afx-scan { left: 0; right: 0; top: 0; height: 10%; background: linear-gradient(180deg, transparent, color-mix(in srgb, var(--ac) 60%, transparent), transparent);
   opacity: 0; animation: afxScan .6s linear .35s 3 both; }
-.afx-glitch { inset: 0; background: repeating-linear-gradient(180deg, #19f0ff14 0 .4cqw, transparent .4cqw 1.2cqw); opacity: 0; animation: afxGlitch 2.1s steps(1) both; }
-.afx-breach { left: 50%; top: 62%; z-index: 2; transform: translate(-50%, -50%); white-space: nowrap; font: 900 8cqw var(--tech, monospace), monospace; letter-spacing: .12em;
-  color: #e8ffff; text-shadow: -.6cqw 0 #ff2a6d, .6cqw 0 var(--ac), 0 0 4cqw var(--ac); opacity: 0; animation: afxBreach 2.1s steps(1) both; }
+.afx-glitch { inset: 0; background: repeating-linear-gradient(180deg, #19f0ff14 0 calc(.4 * var(--cw)), transparent calc(.4 * var(--cw)) calc(1.2 * var(--cw))); opacity: 0; animation: afxGlitch 2.1s steps(1) both; }
+.afx-breach { left: 50%; top: 62%; z-index: 2; transform: translate(-50%, -50%); white-space: nowrap; font: 900 calc(8 * var(--cw)) var(--tech, monospace), monospace; letter-spacing: .12em;
+  color: #e8ffff; text-shadow: calc(-.6 * var(--cw)) 0 #ff2a6d, calc(.6 * var(--cw)) 0 var(--ac), 0 0 calc(4 * var(--cw)) var(--ac); opacity: 0; animation: afxBreach 2.1s steps(1) both; }
 @keyframes afxCode   { 0% { top: -60%; opacity: 0; } 12% { opacity: .55; } 80% { opacity: .55; } 100% { top: 105%; opacity: 0; } }
 @keyframes afxScan   { 0% { top: -10%; opacity: 1; } 100% { top: 100%; opacity: 1; } }
 @keyframes afxGlitch { 0% { opacity: 0; } 20% { opacity: 1; } 42% { opacity: 0; } 44% { opacity: 1; filter: hue-rotate(90deg); } 47% { opacity: .4; filter: none; } 50% { opacity: 1; } 86%, 100% { opacity: 0; } }
@@ -949,35 +959,35 @@ h2 { margin: 0; }
   47% { transform: translate(-50%, -50%); clip-path: none; } 60% { transform: translate(-51%, -50%); } 61% { transform: translate(-50%, -50%); } 86% { opacity: 1; } 87%, 100% { opacity: 0; } }
 
 /* 紅綾・連環光刃:粉色光斬一道接一道劃過全畫面,最後星光四散 */
-.afx-slash { left: 50%; top: var(--y); width: 170%; height: 1.8cqw; border-radius: 99px; opacity: 0;
-  background: linear-gradient(90deg, transparent, #fff 40%, var(--ac) 60%, transparent); box-shadow: 0 0 3cqw var(--ac), 0 0 1cqw #fff;
+.afx-slash { left: 50%; top: var(--y); width: 170%; height: calc(1.8 * var(--cw)); border-radius: 99px; opacity: 0;
+  background: linear-gradient(90deg, transparent, #fff 40%, var(--ac) 60%, transparent); box-shadow: 0 0 calc(3 * var(--cw)) var(--ac), 0 0 calc(1 * var(--cw)) #fff;
   transform: translate(-50%, -50%) rotate(var(--a)) scaleX(0); animation: afxSlash .4s cubic-bezier(.2, .8, .3, 1) var(--d) both; }
-.afx-star { left: 50%; top: 58%; font-size: var(--s); line-height: 1; color: #fff0f5; text-shadow: 0 0 2cqw var(--ac), 0 0 5cqw var(--ac);
+.afx-star { left: 50%; top: 58%; font-size: var(--s); line-height: 1; color: #fff0f5; text-shadow: 0 0 calc(2 * var(--cw)) var(--ac), 0 0 calc(5 * var(--cw)) var(--ac);
   transform: translate(-50%, -50%) scale(.2); opacity: 0; animation: afxStar .9s cubic-bezier(.1, .7, .3, 1) 1s both; }
 @keyframes afxSlash { 0% { opacity: 1; transform: translate(-50%, -50%) rotate(var(--a)) scaleX(0); } 45% { opacity: 1; transform: translate(-50%, -50%) rotate(var(--a)) scaleX(1); }
   100% { opacity: 0; transform: translate(-50%, -50%) rotate(var(--a)) scaleX(1) scaleY(.2); } }
 @keyframes afxStar  { 0% { opacity: 1; transform: translate(-50%, -50%) scale(.2); } 70% { opacity: 1; } 100% { opacity: 0; transform: translate(calc(-50% + var(--x)), calc(-50% + var(--y))) scale(1) rotate(90deg); } }
 
 /* 雷獅・獅吼護盾:金色聲波一圈圈擴散,中央凝聚出發光的六角護盾 */
-.afx-roar { left: 50%; top: 60%; width: 40cqw; height: 40cqw; margin: -20cqw 0 0 -20cqw; border-radius: 50%; border: 1.6cqw solid var(--ac);
-  box-shadow: 0 0 4cqw var(--ac), inset 0 0 4cqw var(--ac); opacity: 0; transform: scale(.2); animation: afxRoar .9s ease-out var(--d) both; }
-.afx-shield { left: 50%; top: 60%; width: 46cqw; aspect-ratio: 1; display: grid; place-items: center; z-index: 2;
+.afx-roar { left: 50%; top: 60%; width: calc(40 * var(--cw)); height: calc(40 * var(--cw)); margin: calc(-20 * var(--cw)) 0 0 calc(-20 * var(--cw)); border-radius: 50%; border: calc(1.6 * var(--cw)) solid var(--ac);
+  box-shadow: 0 0 calc(4 * var(--cw)) var(--ac), inset 0 0 calc(4 * var(--cw)) var(--ac); opacity: 0; transform: scale(.2); animation: afxRoar .9s ease-out var(--d) both; }
+.afx-shield { left: 50%; top: 60%; width: calc(46 * var(--cw)); aspect-ratio: 1; display: grid; place-items: center; z-index: 2;
   clip-path: polygon(50% 0, 93% 25%, 93% 75%, 50% 100%, 7% 75%, 7% 25%);
   background: radial-gradient(circle, #fff6c8 0 18%, #ffd84a 40%, #d98a00 70%, #7a4200);
   transform: translate(-50%, -50%) scale(0); opacity: 0; animation: afxShield 2.1s cubic-bezier(.3, 1.6, .5, 1) both; }
 /* 「獅」:和主畫面「戰」同一套毛筆字體(只含這個字的子集),赤紅漸層 + 金色描邊與火光;護盾成形時從大到小重重砸下 */
 @font-face { font-family: "ShiBrush"; src: url("../../assets/fonts/yuji-boku-shi.ttf") format("truetype"); font-display: block; }
-.afx-shi { left: 50%; top: 60%; z-index: 3; font-family: "ShiBrush", "Noto Serif TC", serif; font-size: 42cqw; line-height: 1;
-  filter: drop-shadow(0 0 2.5cqw #ff7a1a) drop-shadow(0 .6cqw 0 #000c);
+.afx-shi { left: 50%; top: 60%; z-index: 3; font-family: "ShiBrush", "Noto Serif TC", serif; font-size: calc(42 * var(--cw)); line-height: 1;
+  filter: drop-shadow(0 0 calc(2.5 * var(--cw)) #ff7a1a) drop-shadow(0 calc(.6 * var(--cw)) 0 #000c);
   transform: translate(-50%, -50%) scale(3) rotate(-8deg); opacity: 0; animation: afxShi 2.1s cubic-bezier(.6, 0, .4, 1) both; }
 .afx-shi b { display: block; font-weight: 400; }
-.afx-shi b:first-child { color: #5a0000; -webkit-text-stroke: 2.6cqw #5a0000; text-shadow: 0 0 .5cqw #fff2b0, 0 0 .5cqw #fff2b0; } /* 底層:深紅粗描邊把毛筆筆畫撐粗,外緣一圈淡金 */
-.afx-shi b:last-child { position: absolute; inset: 0; -webkit-text-stroke: .25cqw #ffe9a8;
+.afx-shi b:first-child { color: #5a0000; -webkit-text-stroke: calc(2.6 * var(--cw)) #5a0000; text-shadow: 0 0 calc(.5 * var(--cw)) #fff2b0, 0 0 calc(.5 * var(--cw)) #fff2b0; } /* 底層:深紅粗描邊把毛筆筆畫撐粗,外緣一圈淡金 */
+.afx-shi b:last-child { position: absolute; inset: 0; -webkit-text-stroke: calc(.25 * var(--cw)) #ffe9a8;
   background: linear-gradient(180deg, #fff6c8 0%, #ffb02a 28%, #ff3a1a 55%, #a00800 100%); -webkit-background-clip: text; background-clip: text; color: transparent; } /* 上層:赤金漸層 */
-@keyframes afxShi { 0%, 38% { opacity: 0; transform: translate(-50%, -50%) scale(3) rotate(-8deg); filter: blur(1.5cqw) drop-shadow(0 0 2.5cqw #ff7a1a); }
-  45% { opacity: 1; transform: translate(-50%, -50%) scale(.92) rotate(-4deg); filter: blur(0) brightness(1.8) drop-shadow(0 0 5cqw #fff); }
-  50% { transform: translate(-50%, -50%) scale(1.04) rotate(-4deg); filter: drop-shadow(0 0 3.5cqw #ff7a1a) drop-shadow(0 .6cqw 0 #000c); }
-  54%, 86% { opacity: 1; transform: translate(-50%, -50%) scale(1) rotate(-4deg); filter: drop-shadow(0 0 2.5cqw #ff7a1a) drop-shadow(0 .6cqw 0 #000c); }
+@keyframes afxShi { 0%, 38% { opacity: 0; transform: translate(-50%, -50%) scale(3) rotate(-8deg); filter: blur(calc(1.5 * var(--cw))) drop-shadow(0 0 calc(2.5 * var(--cw)) #ff7a1a); }
+  45% { opacity: 1; transform: translate(-50%, -50%) scale(.92) rotate(-4deg); filter: blur(0) brightness(1.8) drop-shadow(0 0 calc(5 * var(--cw)) #fff); }
+  50% { transform: translate(-50%, -50%) scale(1.04) rotate(-4deg); filter: drop-shadow(0 0 calc(3.5 * var(--cw)) #ff7a1a) drop-shadow(0 calc(.6 * var(--cw)) 0 #000c); }
+  54%, 86% { opacity: 1; transform: translate(-50%, -50%) scale(1) rotate(-4deg); filter: drop-shadow(0 0 calc(2.5 * var(--cw)) #ff7a1a) drop-shadow(0 calc(.6 * var(--cw)) 0 #000c); }
   100% { opacity: 0; transform: translate(-50%, -50%) scale(1.15) rotate(-4deg); } }
 @keyframes afxRoar   { 0% { opacity: 1; transform: scale(.2); } 100% { opacity: 0; transform: scale(4.5); } }
 @keyframes afxShield { 0%, 33% { opacity: 0; transform: translate(-50%, -50%) scale(0) rotate(-60deg); } 43% { opacity: 1; transform: translate(-50%, -50%) scale(1.1) rotate(0); }

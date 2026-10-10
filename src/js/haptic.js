@@ -43,6 +43,7 @@ G.haptic = (() => {
     // inClick:呼叫的地方本身就在 click 事件裡(例如設定頁的開關),可以立刻觸發;其他(敵人攻擊等)iPhone 會略過
     buzz(ms, inClick = false) {
       if (!G.save.data.vibrate) return;
+      if (G.pad && G.pad.rumble(ms)) return; // 正在用手把:改成手把震動
       if (canVibrate) { try { navigator.vibrate(ms); } catch (e) {} return; }
       if (!iosSwitch) return;
       if (touching > 0) pending = true;

@@ -1,0 +1,11 @@
+"AppBuild"
+{
+	"AppID" "0000000"	// 換成 Steamworks 分配的 AppID
+	"Desc" "GangQuan PC build"
+	"ContentRoot" "..\dist\win-unpacked\"	// npm run dist 的輸出
+	"BuildOutput" ".\output\"
+	"Depots"
+	{
+		"0000001" "depot_build.vdf"	// 換成 Windows depot ID(通常是 AppID + 1)
+	}
+}

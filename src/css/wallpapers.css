@@ -1,21 +1,21 @@
 /* ---------- 桌布:九宮格底下的底板(資料見 js/data/wallpapers.js) ----------
    .wp-layer 疊在底板上、九宮格與攻守 / 瀕死光效之下;--u 是圖樣的尺寸單位
-   (戰鬥中 1cqw,設定 / 商店的小預覽縮小),讓預覽和實際看起來一樣
+   (戰鬥中 1cqw,PC 版換算成 --cw;設定 / 商店的小預覽縮小),讓預覽和實際看起來一樣
    動態桌布的動畫都放在 ::before / ::after,桌布層本身留給 FEVER 的閃光 */
-.grid-wrap { isolation: isolate; --u: 1cqw; }
+.grid-wrap { isolation: isolate; --u: calc(1 * var(--cw)); }
 .wp-layer { display: none; position: absolute; inset: 0; z-index: -1; pointer-events: none; overflow: hidden; }
 .wp-on .wp-layer { display: block; }
 .wp-layer::before, .wp-layer::after { content: ""; position: absolute; inset: 0; }
-#app.fever #battle.wp-on .wp-layer { box-shadow: inset 0 0 0 .6cqw var(--neon-m), inset 0 0 6cqw #ff2bd680; animation: feverGrid .5s ease-in-out infinite alternate; }
+#app.fever #battle.wp-on .wp-layer { box-shadow: inset 0 0 0 calc(.6 * var(--cw)) var(--neon-m), inset 0 0 calc(6 * var(--cw)) #ff2bd680; animation: feverGrid .5s ease-in-out infinite alternate; }
 
 /* 小預覽 */
 .wp-mini {
   position: relative; display: block; width: 100%; aspect-ratio: 1; overflow: hidden; isolation: isolate;
-  border-radius: .6cqw; --u: .2cqw; background: linear-gradient(180deg, #0c1016, #06080b);
+  border-radius: calc(.6 * var(--cw)); --u: calc(.2 * var(--cw)); background: linear-gradient(180deg, #0c1016, #06080b);
 }
-.wp-mini.wp-auto::after { content: "AUTO"; position: absolute; inset: 0; display: grid; place-items: center; font: 800 2.4cqw var(--tech); color: #19f0ffb0; }
+.wp-mini.wp-auto::after { content: "AUTO"; position: absolute; inset: 0; display: grid; place-items: center; font: 800 calc(2.4 * var(--cw)) var(--tech); color: #19f0ffb0; }
 .skin-pick.locked .wp-mini { filter: grayscale(1) brightness(.4); }
-.shop-wall .wp-mini { --u: .3cqw; border-radius: 1cqw; }
+.shop-wall .wp-mini { --u: calc(.3 * var(--cw)); border-radius: calc(1 * var(--cw)); }
 
 /* ===== 主題桌布(對應九宮格造型) ===== */
 /* 鋼板工坊:防滑花紋鋼板 + 鉚釘 */
@@ -223,11 +223,11 @@
 @media (prefers-reduced-motion: reduce) { .wp-layer::before, .wp-layer::after { animation: none !important; } }
 
 /* ===== 商店的桌布分頁 ===== */
-.shop-walls { display: grid; grid-template-columns: repeat(3, 1fr); gap: 2.4cqw; }
-.shop-wall { display: flex; flex-direction: column; align-items: center; gap: 1cqw; padding: 1.6cqw; background: #0006; clip-path: var(--chamfer); text-align: center; }
-.shop-wall b { font-size: 3.2cqw; }
+.shop-walls { display: grid; grid-template-columns: repeat(3, 1fr); gap: calc(2.4 * var(--cw)); }
+.shop-wall { display: flex; flex-direction: column; align-items: center; gap: calc(1 * var(--cw)); padding: calc(1.6 * var(--cw)); background: #0006; clip-path: var(--chamfer); text-align: center; }
+.shop-wall b { font-size: calc(3.2 * var(--cw)); }
 .shop-wall .wp-thumb { position: relative; width: 100%; line-height: 0; } /* 動態字樣壓在預覽圖左上角,名字與「已擁有」才會和靜態桌布對齊 */
-.shop-wall .wp-tag { position: absolute; left: .5cqw; top: .5cqw; z-index: 1; padding: .3cqw 1cqw; border-radius: .8cqw; background: #000c; font-size: 2.2cqw; line-height: 1.3; color: var(--neon-y); pointer-events: none; }
-.shop-wall .wp-ach { font-size: 2.3cqw; color: #9ff5c6; line-height: 1.3; }
+.shop-wall .wp-tag { position: absolute; left: calc(.5 * var(--cw)); top: calc(.5 * var(--cw)); z-index: 1; padding: calc(.3 * var(--cw)) calc(1 * var(--cw)); border-radius: calc(.8 * var(--cw)); background: #000c; font-size: calc(2.2 * var(--cw)); line-height: 1.3; color: var(--neon-y); pointer-events: none; }
+.shop-wall .wp-ach { font-size: calc(2.3 * var(--cw)); color: #9ff5c6; line-height: 1.3; }
 .shop-wall > :last-child { margin-top: auto; } /* 價格 / 已擁有一律貼齊卡片底部,同一排對齊 */
-.shop-sec { grid-column: 1 / -1; margin: 1.6cqw 0 0; font-size: 3.4cqw; font-weight: 900; color: var(--neon-c); }
+.shop-sec { grid-column: 1 / -1; margin: calc(1.6 * var(--cw)) 0 0; font-size: calc(3.4 * var(--cw)); font-weight: 900; color: var(--neon-c); }

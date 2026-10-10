@@ -1,0 +1,133 @@
+/* ==========================================================
+   PC(Steam)版 16:9 橫向排版:只在 html.pc 時生效,手機直式版不受影響
+   尺寸單位 --u 在橫版 = .5625cqh(同高度直式畫面寬的 1%),所以元件大小和直式一樣,
+   這裡只負責把元件重新排到左右的空間。
+   背景:backgrounds/title_wide.jpg(由 title.jpg 以 tools/make-wide-bg.ps1 延伸,中央構圖和直式一致)
+   ========================================================== */
+
+/* ---------- 標題、選單背景 ---------- */
+html.pc .title-bg,
+html.pc #artBg .art-img { background-image: url('../../assets/images/backgrounds/title_wide.jpg'); background-position: center top; }
+html.pc .title-logo { width: calc(96 * var(--cw)); }
+html.pc #artBg::after { /* 左右兩側加深,讓側邊的按鈕清楚 */
+  background:
+    linear-gradient(90deg, #000b 0%, #0004 24%, transparent 34%, transparent 66%, #0004 76%, #000b 100%),
+    linear-gradient(180deg, #000a 0%, transparent 22%, transparent 62%, #000c 100%);
+}
+
+/* ---------- 主選單:中間 LOGO + 戰字徽章;左側功能按鈕,右側商店 / 成就 / 每日 ---------- */
+html.pc #menu { padding: 0; }
+html.pc .menu-logo { margin-top: 3cqh; }
+html.pc .menu-grid {
+  position: absolute; left: 5cqh; top: 50%; transform: translateY(-50%); margin: 0;
+  width: calc(56 * var(--cw)); grid-template-columns: 1fr; gap: 2.2cqh;
+}
+html.pc .menu-grid .btn { font-size: calc(4 * var(--cw)); padding: 1.9cqh calc(4 * var(--cw)); text-align: left; }
+html.pc .shop-btn, html.pc .ach-btn, html.pc .daily-btn {
+  left: auto; right: 5cqh; width: calc(48 * var(--cw)); text-align: left;
+  font-size: calc(4 * var(--cw)); padding: 1.9cqh calc(4 * var(--cw));
+}
+html.pc .shop-btn  { top: calc(50% - 17.1cqh); transform: translateY(-50%); }
+html.pc .ach-btn   { top: calc(50% - 5.7cqh); transform: translateY(-50%); }
+html.pc .daily-btn { top: calc(50% + 5.7cqh); transform: translateY(-50%); }
+html.pc .shop-btn::after, html.pc .ach-btn::after { /* 橫版空間夠:右邊加上按鈕名稱(title 已經過 i18n) */
+  content: attr(title); float: right; font-family: system-ui, sans-serif; opacity: .85;
+}
+html.pc .daily-btn .dl-dot { top: 50%; right: calc(3 * var(--cw)); margin-top: calc(-1 * var(--cw)); }
+
+/* ---------- 選單類頁面:內容放在中央較寬的面板,兩側露出背景 ---------- */
+html.pc .screen.page { padding-left: calc(50% - 88 * var(--cw)); padding-right: calc(50% - 88 * var(--cw)); }
+html.pc #stages.page { padding-left: calc(50% - 150 * var(--cw)); padding-right: calc(50% - 150 * var(--cw)); } /* 地圖本身是橫圖,放寬 */
+html.pc #upgrade, html.pc #result { padding-left: calc(50% - 60 * var(--cw)); padding-right: calc(50% - 60 * var(--cw)); }
+/* 格狀清單多放幾欄 */
+html.pc .shop-skins { grid-template-columns: repeat(5, 1fr); }
+html.pc .dex-grid { grid-template-columns: repeat(6, 1fr); }
+html.pc #achList { display: grid; grid-template-columns: 1fr 1fr; align-content: start; }
+html.pc #achList > :not(.ach-item) { grid-column: 1 / -1; }
+html.pc .dl-days { grid-template-columns: repeat(7, 1fr); }
+
+/* ---------- 戰鬥:左邊整片是敵人舞台,右邊一欄(直式畫面的寬度)放 HUD + 九宮格 ---------- */
+html.pc #battle.active {
+  display: grid; grid-template-columns: minmax(0, 1fr) calc(100 * var(--cw)); grid-template-rows: auto minmax(0, 1fr);
+}
+html.pc #battle > .stage { grid-column: 1; grid-row: 1 / span 2; }
+html.pc #battle > .hud { grid-column: 2; grid-row: 1; }
+html.pc #battle > .grid-wrap { grid-column: 2; grid-row: 2; }
+/* 敵人區和操作區的分界改成直的:警示斜紋鋼樑放在 HUD 欄左邊 */
+html.pc #battle > .hud::before { right: auto; bottom: -100cqh; width: calc(1.6 * var(--cw)); height: auto; }
+html.pc #battle > .hud, html.pc #battle > .grid-wrap { padding-left: calc(5 * var(--cw)); }
+html.pc #battle > .grid-wrap { box-shadow: inset calc(1.6 * var(--cw)) 0 0 #000; }
+/* 舞台變高(34% → 整個高度),立繪跟著放大 */
+html.pc .sprite { font-size: calc(60 * var(--cw)); }
+html.pc .enemy.boss .sprite { font-size: calc(72 * var(--cw)); }
+html.pc .enemy.has-img { top: 47%; }
+html.pc .sprite img { height: 62cqh; }
+html.pc .enemy.boss .sprite img { height: 88cqh; }
+html.pc .enemy.boss.has-img { top: 2cqh; }
+html.pc .enemy.boss.has-img .state-tag { top: 46cqh; }
+html.pc .enemy-info { left: calc(5 * var(--cw)); right: calc(5 * var(--cw)); bottom: 4cqh; }
+html.pc .wave-tag { top: 3cqh; left: calc(4 * var(--cw)); }
+html.pc .stage .float { font-size: 1.6em; }
+/* 暫停鈕放在舞台右上角(不要蓋住 HUD) */
+html.pc .pause-btn { right: calc(100 * var(--cw) + 2cqh); top: 2cqh; }
+/* 九宮格欄比直式高:改以寬度決定大小,保持正方形 */
+html.pc .grid { width: 100%; height: auto; max-height: 100%; }
+/* 連擊數:放在暫停鈕下面,不要被 HUD 欄擋到 */
+html.pc .combo { right: calc(4 * var(--cw)); top: 14cqh; }
+
+/* ---------- 覆蓋層:內容框不要拉滿整個寬螢幕 ---------- */
+html.pc .tip-box, html.pc .dd-box { width: calc(110 * var(--cw)); }
+html.pc .ach-toast { width: calc(100 * var(--cw)); }
+html.pc .dialog { padding-left: calc(50% - 90 * var(--cw)); padding-right: calc(50% - 90 * var(--cw)); }
+html.pc .dlg-skip { right: calc(4 * var(--cw)); }
+html.pc .banner-sub { max-width: calc(140 * var(--cw)); }
+/* 技能三選一、分歧:三 / 兩張卡橫向並排 */
+html.pc #skillPick { padding-left: calc(50% - 110 * var(--cw)); padding-right: calc(50% - 110 * var(--cw)); }
+html.pc .skill-cards { flex-direction: row; align-items: stretch; }
+html.pc .skill-card { flex: 1; grid-template-columns: 1fr; grid-template-rows: auto auto auto; justify-items: center; text-align: center; row-gap: calc(2 * var(--cw)); padding: calc(5 * var(--cw)) calc(4 * var(--cw)); }
+html.pc .skill-card .sk-icon { grid-row: auto; font-size: calc(16 * var(--cw)); }
+html.pc #branch { padding-left: calc(50% - 90 * var(--cw)); padding-right: calc(50% - 90 * var(--cw)); }
+html.pc .branch-cards.many { grid-template-columns: repeat(4, 1fr); }
+html.pc #branch:has(.branch-cards.many) { padding-left: calc(50% - 130 * var(--cw)); padding-right: calc(50% - 130 * var(--cw)); }
+html.pc .tut-reward { padding-left: calc(50% - 80 * var(--cw)); padding-right: calc(50% - 80 * var(--cw)); }
+html.pc .tr-list { grid-template-columns: repeat(4, 1fr); }
+html.pc .pause-btns { width: calc(70 * var(--cw)); }
+html.pc .pause-skills { width: calc(120 * var(--cw)); margin: 0 auto; }
+
+/* ---------- 故事漫畫:畫格放大,旁白框不拉滿 ---------- */
+html.pc #story { padding: 9cqh calc(50% - 90 * var(--cw)) 0; gap: 3cqh; }
+html.pc .story-stage { height: 62cqh; }
+html.pc .story-panel { width: min(calc(170 * var(--cw)), calc(60cqh * var(--aspect, 1))); }
+html.pc .story-caption { min-height: 16cqh; }
+
+/* ---------- PC 版專用:排行榜按鈕、離開遊戲、排行榜頁 ---------- */
+/* 排行榜、離開遊戲只在 Steam 版(html.steam)顯示;網頁版在電腦上也是橫版,但沒有 Steam */
+html:not(.steam) .steam-only { display: none !important; }
+/* 網頁版右側只有三顆按鈕:重新置中 */
+html.pc:not(.steam) .shop-btn  { top: calc(50% - 11.4cqh); }
+html.pc:not(.steam) .ach-btn   { top: 50%; }
+html.pc:not(.steam) .daily-btn { top: calc(50% + 11.4cqh); }
+html.pc .rank-btn {
+  position: absolute; z-index: 3; right: 5cqh; top: calc(50% + 17.1cqh); transform: translateY(-50%); width: calc(48 * var(--cw));
+  border: 0; padding: 1.9cqh calc(4 * var(--cw)); text-align: left; font-size: calc(4 * var(--cw)); font-weight: 800; color: #ffe08a;
+  background: #000b; clip-path: var(--chamfer); box-shadow: inset 0 0 0 calc(.35 * var(--cw)) #ffb00090;
+}
+html.pc .rank-btn:hover, html.pc .shop-btn:hover, html.pc .ach-btn:hover, html.pc .daily-btn:hover { filter: brightness(1.25); }
+html.pc #btnQuit { --neon: var(--neon-r); --neon2: #ffb0c0; }
+.rk-modes .pg-tab { font-size: calc(3 * var(--cw)); }
+.rk-mine { margin: 0 0 calc(3 * var(--cw)); text-align: center; font-size: calc(3.6 * var(--cw)); color: var(--steel-hi); }
+.rk-mine b { font-family: var(--tech); font-size: calc(5 * var(--cw)); color: var(--neon-y); text-shadow: 0 0 calc(1.4 * var(--cw)) var(--neon-y); margin-left: calc(1 * var(--cw)); }
+.rk-msg { margin: calc(8 * var(--cw)) 0; text-align: center; font-size: calc(3.8 * var(--cw)); color: var(--steel-hi); }
+.rk-list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: calc(1.4 * var(--cw)); }
+.rk-list li {
+  display: flex; align-items: center; gap: calc(3 * var(--cw)); padding: calc(1.8 * var(--cw)) calc(3 * var(--cw));
+  background: #ffffff08; clip-path: var(--chamfer); box-shadow: inset 0 0 0 calc(.3 * var(--cw)) #ffffff20;
+}
+.rk-list li.top1 { background: linear-gradient(90deg, #4a3a00c0, #0006); }
+.rk-list li.top2 { background: linear-gradient(90deg, #3a3f48c0, #0006); }
+.rk-list li.top3 { background: linear-gradient(90deg, #4a2810c0, #0006); }
+.rk-list li.me { box-shadow: inset 0 0 0 calc(.5 * var(--cw)) var(--neon-c), 0 0 calc(3 * var(--cw)) #19f0ff50; }
+.rk-rank { width: calc(14 * var(--cw)); flex-shrink: 0; text-align: center; font-family: var(--tech); font-size: calc(4.2 * var(--cw)); color: var(--neon-c); }
+.rk-name { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: calc(4 * var(--cw)); font-weight: 800; color: #fff; }
+.rk-score { font-family: var(--tech); font-size: calc(4.2 * var(--cw)); color: var(--neon-y); }
+.rk-medal { font-style: normal; font-family: "Segoe UI Emoji", "Apple Color Emoji", "Noto Color Emoji", sans-serif; font-size: calc(5 * var(--cw)); }

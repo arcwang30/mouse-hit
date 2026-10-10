@@ -228,7 +228,7 @@
         box.style.left = pos.toFixed(1) + '%';
         box.innerHTML = Array.from({ length: 7 }, () => {
           const a = Math.random() * Math.PI * 2, r = 5 + Math.random() * 6;
-          return `<i style="--dx:${(Math.cos(a) * r).toFixed(1)}cqw;--dy:${(Math.sin(a) * r).toFixed(1)}cqw"></i>`;
+          return `<i style="--dx:calc(${(Math.cos(a) * r).toFixed(1)} * var(--cw));--dy:calc(${(Math.sin(a) * r).toFixed(1)} * var(--cw))"></i>`;
         }).join('');
         bar.querySelector('.gc-track').appendChild(box);
         setTimeout(() => box.remove(), 450);

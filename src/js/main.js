@@ -10,6 +10,8 @@ G.applyLowPower();
 G.skin.grantLegacy(); // 改成販售的造型:老玩家已達成原條件的直接送
 G.skin.apply(); // 九宮格造型
 G.wall.apply(); // 桌布
+G.steam.init(); // PC(Steam)版:成就同步、排行榜、離開遊戲按鈕
+G.pad.init(); // 遊戲控制器(手把)
 G.grid.init();
 G.$('#hurtFlash').addEventListener('animationend', e => e.target.classList.remove('show'));
 
@@ -30,7 +32,7 @@ document.addEventListener('touchend', e => {
 // 有滑鼠的裝置預設顯示;按過鍵盤就顯示,改用手指觸控就收起來(body.kb)
 const kbMode = on => document.body.classList.toggle('kb', on);
 kbMode(matchMedia('(hover: hover) and (pointer: fine)').matches);
-document.addEventListener('keydown', () => kbMode(true), true);
+document.addEventListener('keydown', e => { if (!e.fromPad) kbMode(true); }, true); // 手把送來的模擬按鍵不算(見 gamepad.js)
 document.addEventListener('pointerdown', e => { if (e.pointerType === 'touch') kbMode(false); }, true);
 
 // ---- 音效 ----

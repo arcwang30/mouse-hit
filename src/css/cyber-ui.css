@@ -14,7 +14,7 @@
   --neon-r: #ff2d55;   /* 敵方 / 危險 */
   --neon-y: #ffd400;   /* 警示 / 必殺 */
   --tech: 'Orbitron', 'Noto Sans TC', 'Microsoft JhengHei', sans-serif;
-  --chamfer: polygon(1.6cqw 0, 100% 0, 100% calc(100% - 1.6cqw), calc(100% - 1.6cqw) 100%, 0 100%, 0 1.6cqw);
+  --chamfer: polygon(calc(1.6 * var(--cw)) 0, 100% 0, 100% calc(100% - calc(1.6 * var(--cw))), calc(100% - calc(1.6 * var(--cw))) 100%, 0 100%, 0 calc(1.6 * var(--cw)));
 }
 
 /* 拉絲鋼板材質(細橫紋 + 上亮下暗) */
@@ -33,39 +33,39 @@
 .stage { border-bottom: 0; }
 
 .wave-tag {
-  font-family: var(--tech); font-weight: 800; font-size: 3cqw; letter-spacing: .12em;
-  color: var(--neon-c); text-shadow: 0 0 1.5cqw var(--neon-c);
+  font-family: var(--tech); font-weight: 800; font-size: calc(3 * var(--cw)); letter-spacing: .12em;
+  color: var(--neon-c); text-shadow: 0 0 calc(1.5 * var(--cw)) var(--neon-c);
   background: var(--brushed), linear-gradient(180deg, #2c333bee, #12161bee);
-  border-radius: 0; clip-path: var(--chamfer); padding: 1cqw 3.4cqw;
-  box-shadow: inset 0 0 0 .35cqw #19f0ff66;
+  border-radius: 0; clip-path: var(--chamfer); padding: calc(1 * var(--cw)) calc(3.4 * var(--cw));
+  box-shadow: inset 0 0 0 calc(.35 * var(--cw)) #19f0ff66;
 }
 
 .enemy-name {
-  display: inline-flex; align-items: center; gap: 1.6cqw; margin-bottom: .8cqw;
-  padding: .5cqw 3cqw .5cqw 1.2cqw; font-size: 3.6cqw; text-shadow: 0 0 1cqw #000;
+  display: inline-flex; align-items: center; gap: calc(1.6 * var(--cw)); margin-bottom: calc(.8 * var(--cw));
+  padding: calc(.5 * var(--cw)) calc(3 * var(--cw)) calc(.5 * var(--cw)) calc(1.2 * var(--cw)); font-size: calc(3.6 * var(--cw)); text-shadow: 0 0 calc(1 * var(--cw)) #000;
   background: var(--brushed), linear-gradient(90deg, #1b2027f0, #1b202790 80%, transparent);
-  clip-path: polygon(0 0, 100% 0, calc(100% - 2cqw) 100%, 0 100%);
-  border-left: .8cqw solid var(--neon-r);
+  clip-path: polygon(0 0, 100% 0, calc(100% - calc(2 * var(--cw))) 100%, 0 100%);
+  border-left: calc(.8 * var(--cw)) solid var(--neon-r);
 }
 .enemy-name::before {
-  content: "TARGET"; font-family: var(--tech); font-size: 2.2cqw; font-weight: 700; letter-spacing: .15em;
-  color: #000; background: var(--neon-r); padding: .2cqw 1.2cqw;
+  content: "TARGET"; font-family: var(--tech); font-size: calc(2.2 * var(--cw)); font-weight: 700; letter-spacing: .15em;
+  color: #000; background: var(--neon-r); padding: calc(.2 * var(--cw)) calc(1.2 * var(--cw));
 }
 #battle:has(.enemy.boss) .enemy-name::before { content: "BOSS"; background: var(--neon-y); }
 
 /* 敵人狀態標籤(待機/攻擊/防禦…) */
 .state-tag {
-  font-family: var(--tech); font-size: 2.4cqw; letter-spacing: .08em; border-radius: 0;
-  clip-path: polygon(8% 0, 100% 0, 92% 100%, 0 100%); padding: .2cqw 2.4cqw;
-  background: #05080bd0; color: var(--neon-c); box-shadow: inset 0 0 0 .25cqw #19f0ff66;
+  font-family: var(--tech); font-size: calc(2.4 * var(--cw)); letter-spacing: .08em; border-radius: 0;
+  clip-path: polygon(8% 0, 100% 0, 92% 100%, 0 100%); padding: calc(.2 * var(--cw)) calc(2.4 * var(--cw));
+  background: #05080bd0; color: var(--neon-c); box-shadow: inset 0 0 0 calc(.25 * var(--cw)) #19f0ff66;
 }
 .enemy.attack .state-tag, .enemy.ult .state-tag { color: #fff; }
 
 /* ---------- 能量槽(血條 / 必殺條) ---------- */
 .bar {
-  height: 4.4cqw; border: 0; border-radius: 0; clip-path: var(--chamfer);
+  height: calc(4.4 * var(--cw)); border: 0; border-radius: 0; clip-path: var(--chamfer);
   background: linear-gradient(180deg, #05080b, #111820);
-  box-shadow: inset 0 0 0 .35cqw #ffffff22;
+  box-shadow: inset 0 0 0 calc(.35 * var(--cw)) #ffffff22;
 }
 .bar::after { /* 分格刻度 */
   content: ""; position: absolute; inset: 0; pointer-events: none;
@@ -75,102 +75,102 @@
 .bar .fill::after { /* 上緣高光 */
   content: ""; position: absolute; left: 0; right: 0; top: 0; height: 40%; background: #ffffff40;
 }
-.bar span { font-family: var(--tech); font-size: 2.7cqw; letter-spacing: .06em; z-index: 1; text-shadow: 0 0 .6cqw #000, 0 0 .6cqw #000; }
-.enemy-bar .fill  { background: linear-gradient(90deg, #7a0020, var(--neon-r)); box-shadow: 0 0 2cqw var(--neon-r); }
-.player-bar .fill { background: linear-gradient(90deg, #006b77, var(--neon-c)); box-shadow: 0 0 2cqw var(--neon-c); }
+.bar span { font-family: var(--tech); font-size: calc(2.7 * var(--cw)); letter-spacing: .06em; z-index: 1; text-shadow: 0 0 calc(.6 * var(--cw)) #000, 0 0 calc(.6 * var(--cw)) #000; }
+.enemy-bar .fill  { background: linear-gradient(90deg, #7a0020, var(--neon-r)); box-shadow: 0 0 calc(2 * var(--cw)) var(--neon-r); }
+.player-bar .fill { background: linear-gradient(90deg, #006b77, var(--neon-c)); box-shadow: 0 0 calc(2 * var(--cw)) var(--neon-c); }
 .ult-bar .fill    { background: linear-gradient(90deg, #8a3a00, #ff8a00 60%, var(--neon-y)); }
-.ult-bar.full     { border: 0; box-shadow: inset 0 0 0 .45cqw var(--neon-y); animation: ultFull .5s steps(2) infinite; }
-@keyframes ultFull { 50% { box-shadow: inset 0 0 0 .45cqw #fff; } }
+.ult-bar.full     { border: 0; box-shadow: inset 0 0 0 calc(.45 * var(--cw)) var(--neon-y); animation: ultFull .5s steps(2) infinite; }
+@keyframes ultFull { 50% { box-shadow: inset 0 0 0 calc(.45 * var(--cw)) #fff; } }
 
 /* ---------- HUD 面板:拉絲鋼板 + 鉚釘 + 警示斜紋鋼樑 ---------- */
 .hud {
-  padding: 3.4cqw 3.4cqw 2.2cqw; gap: 1.8cqw;
+  padding: calc(3.4 * var(--cw)) calc(3.4 * var(--cw)) calc(2.2 * var(--cw)); gap: calc(1.8 * var(--cw));
   background:
-    radial-gradient(circle at 1.8cqw 3.6cqw, var(--steel-hi) 0 .5cqw, #0008 .55cqw, transparent .9cqw),
-    radial-gradient(circle at calc(100% - 1.8cqw) 3.6cqw, var(--steel-hi) 0 .5cqw, #0008 .55cqw, transparent .9cqw),
-    radial-gradient(circle at 1.8cqw calc(100% - 1.6cqw), var(--steel-hi) 0 .5cqw, #0008 .55cqw, transparent .9cqw),
-    radial-gradient(circle at calc(100% - 1.8cqw) calc(100% - 1.6cqw), var(--steel-hi) 0 .5cqw, #0008 .55cqw, transparent .9cqw),
+    radial-gradient(circle at calc(1.8 * var(--cw)) calc(3.6 * var(--cw)), var(--steel-hi) 0 calc(.5 * var(--cw)), #0008 calc(.55 * var(--cw)), transparent calc(.9 * var(--cw))),
+    radial-gradient(circle at calc(100% - calc(1.8 * var(--cw))) calc(3.6 * var(--cw)), var(--steel-hi) 0 calc(.5 * var(--cw)), #0008 calc(.55 * var(--cw)), transparent calc(.9 * var(--cw))),
+    radial-gradient(circle at calc(1.8 * var(--cw)) calc(100% - calc(1.6 * var(--cw))), var(--steel-hi) 0 calc(.5 * var(--cw)), #0008 calc(.55 * var(--cw)), transparent calc(.9 * var(--cw))),
+    radial-gradient(circle at calc(100% - calc(1.8 * var(--cw))) calc(100% - calc(1.6 * var(--cw))), var(--steel-hi) 0 calc(.5 * var(--cw)), #0008 calc(.55 * var(--cw)), transparent calc(.9 * var(--cw))),
     var(--brushed),
     linear-gradient(180deg, var(--steel-2), var(--steel-1) 60%, var(--steel-0));
-  box-shadow: inset 0 -.4cqw 0 #19f0ff55, 0 1cqw 2cqw #000a;
+  box-shadow: inset 0 calc(-.4 * var(--cw)) 0 #19f0ff55, 0 calc(1 * var(--cw)) calc(2 * var(--cw)) #000a;
 }
 .hud::before { /* 敵人區與操作區之間的警示斜紋鋼樑 */
-  content: ""; position: absolute; left: 0; right: 0; top: 0; height: 1.6cqw;
+  content: ""; position: absolute; left: 0; right: 0; top: 0; height: calc(1.6 * var(--cw));
   background:
     linear-gradient(180deg, #ffffff30, transparent 40%, #0006),
-    repeating-linear-gradient(-45deg, var(--neon-y) 0 2cqw, #111 2cqw 4cqw);
-  box-shadow: 0 .3cqw 0 #000, 0 -.3cqw 0 #000;
+    repeating-linear-gradient(-45deg, var(--neon-y) 0 calc(2 * var(--cw)), #111 calc(2 * var(--cw)) calc(4 * var(--cw)));
+  box-shadow: 0 calc(.3 * var(--cw)) 0 #000, 0 calc(-.3 * var(--cw)) 0 #000;
 }
 
 .counter {
-  font-size: 2.8cqw; color: var(--steel-hi); border-radius: 0; clip-path: var(--chamfer);
-  padding: .5cqw 2.6cqw; background: #05080b; box-shadow: inset 0 0 0 .35cqw #19f0ff55;
+  font-size: calc(2.8 * var(--cw)); color: var(--steel-hi); border-radius: 0; clip-path: var(--chamfer);
+  padding: calc(.5 * var(--cw)) calc(2.6 * var(--cw)); background: #05080b; box-shadow: inset 0 0 0 calc(.35 * var(--cw)) #19f0ff55;
 }
-.counter b { font-family: var(--tech); color: var(--neon-c); font-size: 4.8cqw; text-shadow: 0 0 1.5cqw var(--neon-c); margin-left: .6cqw; }
+.counter b { font-family: var(--tech); color: var(--neon-c); font-size: calc(4.8 * var(--cw)); text-shadow: 0 0 calc(1.5 * var(--cw)) var(--neon-c); margin-left: calc(.6 * var(--cw)); }
 
 .ult-btn {
-  font-family: var(--tech); font-size: 3.2cqw; letter-spacing: .06em; border-radius: 0; clip-path: var(--chamfer);
-  padding: 1.1cqw 3cqw; color: #6c7682;
+  font-family: var(--tech); font-size: calc(3.2 * var(--cw)); letter-spacing: .06em; border-radius: 0; clip-path: var(--chamfer);
+  padding: calc(1.1 * var(--cw)) calc(3 * var(--cw)); color: #6c7682;
   background: var(--brushed), linear-gradient(180deg, var(--steel-3), var(--steel-1));
-  box-shadow: inset 0 .35cqw 0 #ffffff30, inset 0 -.35cqw 0 #0008;
+  box-shadow: inset 0 calc(.35 * var(--cw)) 0 #ffffff30, inset 0 calc(-.35 * var(--cw)) 0 #0008;
 }
 .ult-btn.ready {
-  color: #000; text-shadow: 0 0 .6cqw #fff;
+  color: #000; text-shadow: 0 0 calc(.6 * var(--cw)) #fff;
   background:
-    repeating-linear-gradient(-45deg, #0000 0 1.6cqw, #0003 1.6cqw 3.2cqw),
+    repeating-linear-gradient(-45deg, #0000 0 calc(1.6 * var(--cw)), #0003 calc(1.6 * var(--cw)) calc(3.2 * var(--cw))),
     linear-gradient(180deg, #fff27a, var(--neon-y) 50%, #ff9500);
   animation: ultReady .5s ease-in-out infinite alternate;
 }
-@keyframes ultReady { to { filter: brightness(1.35) drop-shadow(0 0 2cqw var(--neon-y)); transform: scale(1.06); } }
+@keyframes ultReady { to { filter: brightness(1.35) drop-shadow(0 0 calc(2 * var(--cw)) var(--neon-y)); transform: scale(1.06); } }
 
 /* 回合提示:終端機輸出 */
 .phase {
-  font-size: 3.4cqw; letter-spacing: .04em; text-align: left; padding: .6cqw 2cqw;
-  background: #05080bcc; border-left: .6cqw solid currentColor;
-  text-shadow: 0 0 1.2cqw currentColor;
+  font-size: calc(3.4 * var(--cw)); letter-spacing: .04em; text-align: left; padding: calc(.6 * var(--cw)) calc(2 * var(--cw));
+  background: #05080bcc; border-left: calc(.6 * var(--cw)) solid currentColor;
+  text-shadow: 0 0 calc(1.2 * var(--cw)) currentColor;
 }
 .phase::before { content: "▶ "; opacity: .8; }
 .phase.atk { color: var(--neon-y); }
 .phase.def { color: var(--neon-c); }
 .phase.ult { color: var(--neon-m); }
-.timebar { height: .8cqw; border-radius: 0; background: #05080b; }
-.timebar .fill { background: var(--neon-m); box-shadow: 0 0 1.5cqw var(--neon-m); }
+.timebar { height: calc(.8 * var(--cw)); border-radius: 0; background: #05080b; }
+.timebar .fill { background: var(--neon-m); box-shadow: 0 0 calc(1.5 * var(--cw)) var(--neon-m); }
 
 /* ---------- 九宮格:金屬地板 + 鋼製插座 ---------- */
 .grid-wrap {
   background: var(--sk-board,
-    repeating-linear-gradient(0deg, #19f0ff0c 0 1px, transparent 1px 5cqw),
-    repeating-linear-gradient(90deg, #19f0ff0c 0 1px, transparent 1px 5cqw),
+    repeating-linear-gradient(0deg, #19f0ff0c 0 1px, transparent 1px calc(5 * var(--cw))),
+    repeating-linear-gradient(90deg, #19f0ff0c 0 1px, transparent 1px calc(5 * var(--cw))),
     radial-gradient(ellipse at 50% 0%, #19f0ff14, transparent 60%),
     linear-gradient(180deg, #0c1016, #06080b));
 }
 .cell {
-  border-radius: var(--sk-radius, 2.4cqw); /* 九宮格造型:各種 --sk-* 變數見檔案最後的「九宮格造型」 */
+  border-radius: var(--sk-radius, calc(2.4 * var(--cw))); /* 九宮格造型:各種 --sk-* 變數見檔案最後的「九宮格造型」 */
   background: var(--sk-frame, linear-gradient(145deg, #6b7784, #2a3038 38%, #1a1f25 62%, #4a535d));
-  box-shadow: inset 0 0 0 .3cqw #00000080, 0 .6cqw 0 #000a, 0 0 0 .25cqw #ffffff10;
+  box-shadow: inset 0 0 0 calc(.3 * var(--cw)) #00000080, 0 calc(.6 * var(--cw)) 0 #000a, 0 0 0 calc(.25 * var(--cw)) #ffffff10;
 }
 .cell::before { /* 插座內圈 */
-  content: ""; position: absolute; inset: 8%; border-radius: var(--sk-radius-in, 1.6cqw);
+  content: ""; position: absolute; inset: 8%; border-radius: var(--sk-radius-in, calc(1.6 * var(--cw)));
   background: var(--sk-socket, radial-gradient(ellipse at 50% 60%, #020304 45%, #0b1016));
-  box-shadow: inset 0 1.6cqw 2cqw #000, inset 0 0 0 .3cqw var(--sk-ring, #19f0ff2a);
+  box-shadow: inset 0 calc(1.6 * var(--cw)) calc(2 * var(--cw)) #000, inset 0 0 0 calc(.3 * var(--cw)) var(--sk-ring, #19f0ff2a);
 }
 .cell::after { /* 四角螺栓 */
   content: ""; position: absolute; inset: 0; pointer-events: none; border-radius: inherit;
   background:
-    radial-gradient(circle at 7% 7%, var(--sk-bolt, #c2ccd6) 0 .45cqw, #000 .55cqw, transparent .75cqw),
-    radial-gradient(circle at 93% 7%, var(--sk-bolt, #c2ccd6) 0 .45cqw, #000 .55cqw, transparent .75cqw),
-    radial-gradient(circle at 7% 93%, var(--sk-bolt, #c2ccd6) 0 .45cqw, #000 .55cqw, transparent .75cqw),
-    radial-gradient(circle at 93% 93%, var(--sk-bolt, #c2ccd6) 0 .45cqw, #000 .55cqw, transparent .75cqw);
+    radial-gradient(circle at 7% 7%, var(--sk-bolt, #c2ccd6) 0 calc(.45 * var(--cw)), #000 calc(.55 * var(--cw)), transparent calc(.75 * var(--cw))),
+    radial-gradient(circle at 93% 7%, var(--sk-bolt, #c2ccd6) 0 calc(.45 * var(--cw)), #000 calc(.55 * var(--cw)), transparent calc(.75 * var(--cw))),
+    radial-gradient(circle at 7% 93%, var(--sk-bolt, #c2ccd6) 0 calc(.45 * var(--cw)), #000 calc(.55 * var(--cw)), transparent calc(.75 * var(--cw))),
+    radial-gradient(circle at 93% 93%, var(--sk-bolt, #c2ccd6) 0 calc(.45 * var(--cw)), #000 calc(.55 * var(--cw)), transparent calc(.75 * var(--cw)));
 }
-.cap { z-index: 1; border-radius: 1.8cqw; }
+.cap { z-index: 1; border-radius: calc(1.8 * var(--cw)); }
 .cell.on .cap::before { /* 按鈕的金屬光澤斜線(一般按鈕;盾牌另有金色層) */
   content: ""; position: absolute; inset: 0; border-radius: inherit; pointer-events: none;
   background: linear-gradient(120deg, transparent 30%, #ffffff30 42%, transparent 55%);
 }
-.cell.good { box-shadow: 0 0 0 .5cqw var(--neon-c), 0 0 4cqw var(--neon-c); }
-.cell.bad  { box-shadow: 0 0 0 .5cqw var(--neon-r), 0 0 4cqw var(--neon-r); }
-.cell.miss { box-shadow: 0 0 0 .4cqw #ffffff40; }
-.label { font-family: var(--tech), sans-serif; border-radius: 0; clip-path: polygon(8% 0, 100% 0, 92% 100%, 0 100%); padding: .2cqw 2.4cqw; }
+.cell.good { box-shadow: 0 0 0 calc(.5 * var(--cw)) var(--neon-c), 0 0 calc(4 * var(--cw)) var(--neon-c); }
+.cell.bad  { box-shadow: 0 0 0 calc(.5 * var(--cw)) var(--neon-r), 0 0 calc(4 * var(--cw)) var(--neon-r); }
+.cell.miss { box-shadow: 0 0 0 calc(.4 * var(--cw)) #ffffff40; }
+.label { font-family: var(--tech), sans-serif; border-radius: 0; clip-path: polygon(8% 0, 100% 0, 92% 100%, 0 100%); padding: calc(.2 * var(--cw)) calc(2.4 * var(--cw)); }
 .badge { font-family: var(--tech); }
 
 /* ---------- 敲打回饋特效 ---------- */
@@ -181,9 +181,9 @@
 }
 #grid.quake { animation: gridQuake .28s ease-out; } /* 重擊時整個九宮格震一下 */
 @keyframes gridQuake {
-  20% { transform: translate(-1.2cqw, .8cqw); }
-  45% { transform: translate(1cqw, -.6cqw); }
-  70% { transform: translate(-.5cqw, .4cqw); }
+  20% { transform: translate(calc(-1.2 * var(--cw)), calc(.8 * var(--cw))); }
+  45% { transform: translate(calc(1 * var(--cw)), calc(-.6 * var(--cw))); }
+  70% { transform: translate(calc(-.5 * var(--cw)), calc(.4 * var(--cw))); }
 }
 
 .tap-fx { position: absolute; inset: 0; z-index: 3; pointer-events: none; --c: #ffc23d; }
@@ -201,24 +201,24 @@
 }
 .tap-ring { /* 衝擊波 */
   width: 60%; height: 60%; border-radius: 50%; transform: translate(-50%, -50%) scale(.3);
-  border: .9cqw solid var(--c); box-shadow: 0 0 2cqw var(--c), inset 0 0 1.5cqw var(--c);
+  border: calc(.9 * var(--cw)) solid var(--c); box-shadow: 0 0 calc(2 * var(--cw)) var(--c), inset 0 0 calc(1.5 * var(--cw)) var(--c);
   animation: tapRing .38s ease-out forwards;
 }
 .tap-star { /* 漫畫打擊星芒 */
   width: 50%; height: 50%; transform: translate(-50%, -50%) scale(.2) rotate(-15deg); background: #fff;
   clip-path: polygon(50% 0, 60% 32%, 95% 18%, 70% 46%, 100% 62%, 64% 64%, 74% 100%, 50% 72%, 24% 98%, 34% 64%, 0 60%, 30% 44%, 6% 16%, 40% 32%);
-  filter: drop-shadow(0 0 1.5cqw var(--c)); animation: tapStar .24s ease-out forwards;
+  filter: drop-shadow(0 0 calc(1.5 * var(--cw)) var(--c)); animation: tapStar .24s ease-out forwards;
 }
 .tap-spark { /* 往外噴的火花 */
-  width: 1.2cqw; height: 3.6cqw; margin: -1.8cqw 0 0 -.6cqw; border-radius: 99px;
-  background: linear-gradient(#fff 30%, var(--c)); box-shadow: 0 0 1cqw var(--c), 0 0 2.4cqw var(--c);
-  transform: rotate(var(--a)) translateY(-1.5cqw);
+  width: calc(1.2 * var(--cw)); height: calc(3.6 * var(--cw)); margin: calc(-1.8 * var(--cw)) 0 0 calc(-.6 * var(--cw)); border-radius: 99px;
+  background: linear-gradient(#fff 30%, var(--c)); box-shadow: 0 0 calc(1 * var(--cw)) var(--c), 0 0 calc(2.4 * var(--cw)) var(--c);
+  transform: rotate(var(--a)) translateY(calc(-1.5 * var(--cw)));
   animation: tapSpark .36s cubic-bezier(.2, .7, .3, 1) forwards;
 }
-.tap-fx.big .tap-ring  { border-width: 1.4cqw; animation-duration: .5s; }
+.tap-fx.big .tap-ring  { border-width: calc(1.4 * var(--cw)); animation-duration: .5s; }
 .tap-fx.big .tap-star  { width: 75%; height: 75%; }
-.tap-fx.big .tap-spark { height: 4.6cqw; }
-.tap-fx.miss .tap-ring { width: 45%; height: 45%; border-width: .5cqw; box-shadow: none; }
+.tap-fx.big .tap-spark { height: calc(4.6 * var(--cw)); }
+.tap-fx.miss .tap-ring { width: 45%; height: 45%; border-width: calc(.5 * var(--cw)); box-shadow: none; }
 
 @keyframes tapFlash { from { opacity: 1; } to { opacity: 0; transform: translate(-50%, -50%) scale(1.3); } }
 @keyframes tapRing  { to { transform: translate(-50%, -50%) scale(1.7); opacity: 0; } }
@@ -233,57 +233,57 @@
 
 /* ---------- 連擊數 & FEVER ---------- */
 .combo {
-  position: absolute; right: 3cqw; top: 13cqh; z-index: 6; text-align: right; pointer-events: none;
+  position: absolute; right: calc(3 * var(--cw)); top: 13cqh; z-index: 6; text-align: right; pointer-events: none;
   opacity: 0; transform: translateX(30%); transition: opacity .2s, transform .2s;
 }
 .combo.show { opacity: 1; transform: none; }
 .combo b {
-  display: block; font-family: var(--tech); font-size: 9cqw; line-height: 1; color: #fff;
-  text-shadow: -.4cqw 0 var(--neon-m), .4cqw 0 var(--neon-c), 0 0 2cqw #000;
+  display: block; font-family: var(--tech); font-size: calc(9 * var(--cw)); line-height: 1; color: #fff;
+  text-shadow: calc(-.4 * var(--cw)) 0 var(--neon-m), calc(.4 * var(--cw)) 0 var(--neon-c), 0 0 calc(2 * var(--cw)) #000;
 }
 .combo b.pop { animation: comboPop .18s ease-out; }
-.combo span { font-family: var(--tech); font-size: 2.6cqw; letter-spacing: .25em; color: var(--neon-c); text-shadow: 0 0 1cqw var(--neon-c); }
-.fever-bar { width: 20cqw; height: 1.1cqw; margin: .6cqw 0 0 auto; background: #000a; box-shadow: inset 0 0 0 .2cqw #ffffff30; }
-.fever-bar i { display: block; height: 100%; width: 0; background: linear-gradient(90deg, var(--neon-c), var(--neon-m)); box-shadow: 0 0 1.2cqw var(--neon-m); transition: width .1s linear; }
+.combo span { font-family: var(--tech); font-size: calc(2.6 * var(--cw)); letter-spacing: .25em; color: var(--neon-c); text-shadow: 0 0 calc(1 * var(--cw)) var(--neon-c); }
+.fever-bar { width: calc(20 * var(--cw)); height: calc(1.1 * var(--cw)); margin: calc(.6 * var(--cw)) 0 0 auto; background: #000a; box-shadow: inset 0 0 0 calc(.2 * var(--cw)) #ffffff30; }
+.fever-bar i { display: block; height: 100%; width: 0; background: linear-gradient(90deg, var(--neon-c), var(--neon-m)); box-shadow: 0 0 calc(1.2 * var(--cw)) var(--neon-m); transition: width .1s linear; }
 .combo.fever b { color: var(--neon-y); animation: feverHue .6s linear infinite; }
 .combo.fever span::after { content: " FEVER"; color: var(--neon-m); }
 .combo.fever .fever-bar i { background: linear-gradient(90deg, var(--neon-y), var(--neon-m)); }
 .combo.broke b { animation: comboBreak .45s ease-out; }
 @keyframes comboPop   { from { transform: scale(1.5); } }
-@keyframes comboBreak { 0% { color: var(--neon-r); transform: translateX(-1.5cqw); } 30% { transform: translateX(1.5cqw); } 100% { color: #fff; } }
+@keyframes comboBreak { 0% { color: var(--neon-r); transform: translateX(calc(-1.5 * var(--cw))); } 30% { transform: translateX(calc(1.5 * var(--cw))); } 100% { color: #fff; } }
 @keyframes feverHue   { 50% { filter: hue-rotate(60deg) brightness(1.3); } }
 
 /* FEVER 期間:九宮格霓虹外框、警示斜紋流動 */
-#app.fever .grid-wrap { box-shadow: inset 0 0 0 .6cqw var(--neon-m), inset 0 0 6cqw #ff2bd680; animation: feverGrid .5s ease-in-out infinite alternate; }
-#app.fever .hud::before { animation: hazardRun .5s linear infinite; background-size: auto, 5.66cqw 5.66cqw; }
-#app.fever .stage-bg { filter: brightness(.9) saturate(1.5) hue-rotate(-20deg) blur(.25cqw); }
-@keyframes feverGrid { to { box-shadow: inset 0 0 0 .6cqw var(--neon-y), inset 0 0 9cqw #ffd40070; } }
-@keyframes hazardRun { to { background-position: 0 0, 5.66cqw 0; } }
+#app.fever .grid-wrap { box-shadow: inset 0 0 0 calc(.6 * var(--cw)) var(--neon-m), inset 0 0 calc(6 * var(--cw)) #ff2bd680; animation: feverGrid .5s ease-in-out infinite alternate; }
+#app.fever .hud::before { animation: hazardRun .5s linear infinite; background-size: auto, calc(5.66 * var(--cw)) calc(5.66 * var(--cw)); }
+#app.fever .stage-bg { filter: brightness(.9) saturate(1.5) hue-rotate(-20deg) blur(calc(.25 * var(--cw))); }
+@keyframes feverGrid { to { box-shadow: inset 0 0 0 calc(.6 * var(--cw)) var(--neon-y), inset 0 0 calc(9 * var(--cw)) #ffd40070; } }
+@keyframes hazardRun { to { background-position: 0 0, calc(5.66 * var(--cw)) 0; } }
 .float.tag.fever {
-  font-family: var(--tech); font-size: 11cqw; color: var(--neon-y); top: 30%;
-  -webkit-text-stroke: .5cqw #000; text-shadow: -.8cqw 0 var(--neon-m), .8cqw 0 var(--neon-c);
+  font-family: var(--tech); font-size: calc(11 * var(--cw)); color: var(--neon-y); top: 30%;
+  -webkit-text-stroke: calc(.5 * var(--cw)) #000; text-shadow: calc(-.8 * var(--cw)) 0 var(--neon-m), calc(.8 * var(--cw)) 0 var(--neon-c);
 }
 
 /* ---------- 第三階段:分歧選擇 ---------- */
 #branch {
-  flex-direction: column; align-items: center; justify-content: center; gap: 3cqw; padding: 6cqw;
+  flex-direction: column; align-items: center; justify-content: center; gap: calc(3 * var(--cw)); padding: calc(6 * var(--cw));
   background: repeating-linear-gradient(0deg, #0000 0 2px, #0003 2px 3px), #05080bf0;
 }
-#branch h2 { font-family: var(--tech), sans-serif; color: var(--neon-c); text-shadow: 0 0 2cqw var(--neon-c); letter-spacing: .1em; }
-.branch-sub { color: var(--steel-hi); font-size: 3.4cqw; margin-top: -2cqw; }
-.branch-cards { display: flex; gap: 3cqw; width: 100%; }
+#branch h2 { font-family: var(--tech), sans-serif; color: var(--neon-c); text-shadow: 0 0 calc(2 * var(--cw)) var(--neon-c); letter-spacing: .1em; }
+.branch-sub { color: var(--steel-hi); font-size: calc(3.4 * var(--cw)); margin-top: calc(-2 * var(--cw)); }
+.branch-cards { display: flex; gap: calc(3 * var(--cw)); width: 100%; }
 .branch-card {
-  flex: 1; display: flex; flex-direction: column; align-items: center; gap: 1.6cqw; padding: 5cqw 3cqw; text-align: center;
+  flex: 1; display: flex; flex-direction: column; align-items: center; gap: calc(1.6 * var(--cw)); padding: calc(5 * var(--cw)) calc(3 * var(--cw)); text-align: center;
   border: 0; clip-path: var(--chamfer); color: #fff;
   background: repeating-linear-gradient(0deg, #ffffff05 0 1px, transparent 1px 3px), linear-gradient(160deg, var(--steel-2), var(--steel-0));
-  box-shadow: inset 0 0 0 .5cqw var(--c, var(--neon-c));
+  box-shadow: inset 0 0 0 calc(.5 * var(--cw)) var(--c, var(--neon-c));
   animation: pop .3s ease-out backwards;
 }
 .branch-card:nth-child(2) { animation-delay: .1s; }
 .branch-card:active { transform: scale(.96); }
-.branch-card .br-icon { font-size: 13cqw; filter: drop-shadow(0 0 2cqw var(--c, var(--neon-c))); }
-.branch-card b { font-size: 5cqw; color: var(--c, var(--neon-c)); }
-.branch-card div:last-child { font-size: 3.3cqw; color: var(--steel-hi); line-height: 1.5; }
+.branch-card .br-icon { font-size: calc(13 * var(--cw)); filter: drop-shadow(0 0 calc(2 * var(--cw)) var(--c, var(--neon-c))); }
+.branch-card b { font-size: calc(5 * var(--cw)); color: var(--c, var(--neon-c)); }
+.branch-card div:last-child { font-size: calc(3.3 * var(--cw)); color: var(--steel-hi); line-height: 1.5; }
 .branch-card.rest  { --c: #3ddc84; }
 .branch-card.bonus { --c: var(--neon-y); }
 .branch-card.elite { --c: var(--neon-r); }
@@ -294,12 +294,12 @@
 .cell.gold .cap { background: linear-gradient(180deg, #fffbe0, #ffd400 45%, #d98a00); --edge: #6b4100; color: #fff; }
 .cell.gold.on .cap { animation: rise .2s cubic-bezier(.3, 1.7, .5, 1), goldShine .5s linear infinite; }
 .cell.gold .label { background: #000; color: var(--neon-y); }
-@keyframes goldShine { 50% { filter: brightness(1.35) drop-shadow(0 0 2cqw var(--neon-y)); } }
+@keyframes goldShine { 50% { filter: brightness(1.35) drop-shadow(0 0 calc(2 * var(--cw)) var(--neon-y)); } }
 
 /* 晶盾:要點兩下,第一下出現裂痕 */
 .cell.crystal .cap { background: linear-gradient(180deg, #f0d9ff, #b04dff 55%, #5a1a8a); --edge: #2d0a47; }
 .cell.crystal .cap::before { display: none; }
-.cell.crystal .icon { filter: drop-shadow(0 0 1.5cqw #fff); }
+.cell.crystal .icon { filter: drop-shadow(0 0 calc(1.5 * var(--cw)) #fff); }
 .cell.cracked .cap {
   background:
     linear-gradient(115deg, transparent 46%, #fff 47% 49%, transparent 50%),
@@ -309,26 +309,26 @@
 /* 還要點幾下:按鈕上方的圓點(●● → 敲裂後 ●○),快節奏時眼角餘光就看得出來(下方是剩餘時間條) */
 .cell.crystal .badge { left: 50%; right: auto; top: 13%; bottom: auto; width: 0; height: 0; z-index: 3; }
 .cell.crystal .badge::before {
-  content: ""; position: absolute; left: -3.2cqw; top: -1.2cqw; width: 2.4cqw; height: 2.4cqw; border-radius: 50%;
-  background: #fff; box-shadow: 0 0 0 .35cqw #2d0a47, 4cqw 0 0 #fff, 4cqw 0 0 .35cqw #2d0a47, 0 0 1.4cqw .3cqw #e6b8ff, 4cqw 0 1.4cqw .3cqw #e6b8ff;
+  content: ""; position: absolute; left: calc(-3.2 * var(--cw)); top: calc(-1.2 * var(--cw)); width: calc(2.4 * var(--cw)); height: calc(2.4 * var(--cw)); border-radius: 50%;
+  background: #fff; box-shadow: 0 0 0 calc(.35 * var(--cw)) #2d0a47, calc(4 * var(--cw)) 0 0 #fff, calc(4 * var(--cw)) 0 0 calc(.35 * var(--cw)) #2d0a47, 0 0 calc(1.4 * var(--cw)) calc(.3 * var(--cw)) #e6b8ff, calc(4 * var(--cw)) 0 calc(1.4 * var(--cw)) calc(.3 * var(--cw)) #e6b8ff;
 }
 .cell.cracked .badge::before {
-  box-shadow: 0 0 0 .35cqw #2d0a47, 4cqw 0 0 #ffffff26, 4cqw 0 0 .35cqw #2d0a47, 0 0 1.4cqw .3cqw #e6b8ff;
+  box-shadow: 0 0 0 calc(.35 * var(--cw)) #2d0a47, calc(4 * var(--cw)) 0 0 #ffffff26, calc(4 * var(--cw)) 0 0 calc(.35 * var(--cw)) #2d0a47, 0 0 calc(1.4 * var(--cw)) calc(.3 * var(--cw)) #e6b8ff;
   animation: pipPop .3s ease-out;
 }
 @keyframes pipPop { 0% { transform: scale(1.6); } }
 /* 敲裂時飛散的碎晶 */
 .shards { position: absolute; left: 50%; top: 50%; z-index: 4; pointer-events: none; }
 .shards i {
-  position: absolute; width: 2.4cqw; height: 1.4cqw; margin: -.7cqw 0 0 -1.2cqw; background: linear-gradient(135deg, #fff, #d7a8ff);
-  clip-path: polygon(0 50%, 40% 0, 100% 30%, 70% 100%); box-shadow: 0 0 1cqw #fff;
+  position: absolute; width: calc(2.4 * var(--cw)); height: calc(1.4 * var(--cw)); margin: calc(-.7 * var(--cw)) 0 0 calc(-1.2 * var(--cw)); background: linear-gradient(135deg, #fff, #d7a8ff);
+  clip-path: polygon(0 50%, 40% 0, 100% 30%, 70% 100%); box-shadow: 0 0 calc(1 * var(--cw)) #fff;
   animation: shardFly .45s ease-out forwards;
 }
 @keyframes shardFly { to { transform: translate(var(--dx), var(--dy)) rotate(var(--rot)); opacity: 0; } }
 
 /* 醉影:半透明、晃動的假符號 */
 .cell.ghost .cap {
-  opacity: .38; filter: blur(.35cqw) saturate(.3) brightness(1.3); outline: .5cqw dashed #ffffffc0; outline-offset: -.8cqw;
+  opacity: .38; filter: blur(calc(.35 * var(--cw))) saturate(.3) brightness(1.3); outline: calc(.5 * var(--cw)) dashed #ffffffc0; outline-offset: calc(-.8 * var(--cw));
   animation: ghostSway .9s ease-in-out infinite alternate;
 }
 .cell.ghost .cap::after, .cell.ghost .cap::before { display: none; }
@@ -339,15 +339,15 @@
   background: repeating-linear-gradient(0deg, #ffffff10 0 2px, transparent 2px 4px), linear-gradient(180deg, #5a6570, #2a3038);
   --edge: #111; color: #fff;
 }
-.cell.hidden .icon { color: var(--neon-c); text-shadow: 0 0 2cqw var(--neon-c); animation: glitchIcon .25s steps(2) infinite; }
+.cell.hidden .icon { color: var(--neon-c); text-shadow: 0 0 calc(2 * var(--cw)) var(--neon-c); animation: glitchIcon .25s steps(2) infinite; }
 .cell.hidden .cap::before { display: none; }
 @keyframes glitchIcon { 50% { transform: translateX(6%); filter: hue-rotate(90deg); } }
 
 /* 鎖定:盾牌出現前先亮紅色準星 */
 .cell.target::before {
   background:
-    linear-gradient(var(--neon-r), var(--neon-r)) center / 70% .4cqw no-repeat,
-    linear-gradient(var(--neon-r), var(--neon-r)) center / .4cqw 70% no-repeat,
+    linear-gradient(var(--neon-r), var(--neon-r)) center / 70% calc(.4 * var(--cw)) no-repeat,
+    linear-gradient(var(--neon-r), var(--neon-r)) center / calc(.4 * var(--cw)) 70% no-repeat,
     radial-gradient(circle, transparent 30%, var(--neon-r) 32% 36%, transparent 38%),
     #120306;
   animation: targetPulse .3s ease-in-out infinite alternate;
@@ -365,22 +365,22 @@
 /* 頂住的盾牌上半部偏白,白色水位看不出來:改成深紅色水位;集滿變亮紅 */
 .cell.guard.heavy.holding .cap::before {
   background:
-    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 6' preserveAspectRatio='none'%3E%3Cpath d='M0 3 Q5 0 10 3 T20 3 T30 3 T40 3 V6 H0 Z' fill='%23ff2a4d' fill-opacity='.9'/%3E%3C/svg%3E") 0 0 / 10cqw 1.4cqw repeat-x,
-    linear-gradient(180deg, transparent 1.3cqw, #c4002ab0 1.3cqw, #6a0018d0);
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 6' preserveAspectRatio='none'%3E%3Cpath d='M0 3 Q5 0 10 3 T20 3 T30 3 T40 3 V6 H0 Z' fill='%23ff2a4d' fill-opacity='.9'/%3E%3C/svg%3E") 0 0 / calc(10 * var(--cw)) calc(1.4 * var(--cw)) repeat-x,
+    linear-gradient(180deg, transparent calc(1.3 * var(--cw)), #c4002ab0 calc(1.3 * var(--cw)), #6a0018d0);
 }
 .cell.guard.heavy.charged .cap::before { filter: brightness(1.35) saturate(1.2); opacity: 1; }
 
 /* ---------- 第二階段:格子狀態 ---------- */
-.blk { position: absolute; inset: 6%; border-radius: 1.8cqw; pointer-events: none; display: none; }
+.blk { position: absolute; inset: 6%; border-radius: calc(1.8 * var(--cw)); pointer-events: none; display: none; }
 .blk.lava, .blk.ice, .blk.tentacle { display: block; }
 #grid.numbering .blk { display: none; } /* 輸入破綻數字時暫時藏起冰 / 觸手 / 熔岩 */
 #grid.numbering .cell:has(.blk.lava) { box-shadow: none; }
 /* 熔岩:在按鈕下方發紅光 */
-.cell:has(.blk.lava) { box-shadow: 0 0 0 .5cqw #ff5a1f, 0 0 5cqw #ff5a1fc0; } /* 熔岩格:插座外圈燒紅 */
+.cell:has(.blk.lava) { box-shadow: 0 0 0 calc(.5 * var(--cw)) #ff5a1f, 0 0 calc(5 * var(--cw)) #ff5a1fc0; } /* 熔岩格:插座外圈燒紅 */
 .blk.lava {
   z-index: 0; inset: 0;
   background: radial-gradient(circle at 50% 60%, #ffd400 0 10%, #ff5a1f 35%, #7a1000 70%);
-  box-shadow: 0 0 4cqw #ff5a1f, inset 0 0 3cqw #000a;
+  box-shadow: 0 0 calc(4 * var(--cw)) #ff5a1f, inset 0 0 calc(3 * var(--cw)) #000a;
   animation: lavaGlow 1s ease-in-out infinite alternate;
 }
 @keyframes lavaGlow { to { filter: brightness(1.3) saturate(1.2); } }
@@ -391,18 +391,18 @@
     linear-gradient(125deg, transparent 40%, #ffffffa0 41% 42.5%, transparent 43%),
     linear-gradient(35deg, transparent 62%, #ffffff80 63% 64%, transparent 65%),
     linear-gradient(180deg, #d8f6ffd0, #6fd3ffb0);
-  box-shadow: inset 0 0 0 .5cqw #ffffffc0, 0 0 3cqw #6fd3ff;
+  box-shadow: inset 0 0 0 calc(.5 * var(--cw)) #ffffffc0, 0 0 calc(3 * var(--cw)) #6fd3ff;
 }
 /* 觸手:完全蓋住格子,顯示剩餘敲擊次數 */
 .blk.tentacle {
-  z-index: 2; display: flex; align-items: center; justify-content: center; font-size: 13cqw;
+  z-index: 2; display: flex; align-items: center; justify-content: center; font-size: calc(13 * var(--cw));
   background: radial-gradient(circle, #5a2a8a, #1c0830 75%);
-  box-shadow: inset 0 0 0 .5cqw #b04dff, 0 0 3cqw #6a1c9e;
+  box-shadow: inset 0 0 0 calc(.5 * var(--cw)) #b04dff, 0 0 calc(3 * var(--cw)) #6a1c9e;
   animation: tentacleWiggle 1.2s ease-in-out infinite alternate;
 }
 .blk.tentacle::after {
   content: attr(data-hp); position: absolute; right: 6%; bottom: 4%;
-  font-family: var(--tech); font-size: 4.4cqw; font-weight: 900; color: var(--neon-y); -webkit-text-stroke: .3cqw #000;
+  font-family: var(--tech); font-size: calc(4.4 * var(--cw)); font-weight: 900; color: var(--neon-y); -webkit-text-stroke: calc(.3 * var(--cw)) #000;
 }
 @keyframes tentacleWiggle { to { transform: rotate(4deg) scale(1.03); } }
 
@@ -422,68 +422,68 @@
 }
 .banner-main {
   font-family: var(--tech); color: #fff; letter-spacing: .04em;
-  font-size: 8.5cqw; max-width: 94%; line-height: 1.25; overflow-wrap: anywhere; /* Orbitron 字很寬,縮小避免超出畫面 */
-  text-shadow: -.7cqw 0 var(--neon-m), .7cqw 0 var(--neon-c), 0 0 3cqw #fff8;
+  font-size: calc(8.5 * var(--cw)); max-width: 94%; line-height: 1.25; overflow-wrap: anywhere; /* Orbitron 字很寬,縮小避免超出畫面 */
+  text-shadow: calc(-.7 * var(--cw)) 0 var(--neon-m), calc(.7 * var(--cw)) 0 var(--neon-c), 0 0 calc(3 * var(--cw)) #fff8;
   animation: slam .35s ease-out, glitch 1.2s steps(1) .35s infinite;
 }
-.banner-sub { color: var(--neon-c); text-shadow: 0 0 1.2cqw var(--neon-c); letter-spacing: .08em; }
+.banner-sub { color: var(--neon-c); text-shadow: 0 0 calc(1.2 * var(--cw)) var(--neon-c); letter-spacing: .08em; }
 @keyframes glitch {
   0%, 86%, 100% { transform: none; clip-path: none; }
-  88% { transform: translateX(-1.2cqw); clip-path: inset(10% 0 55% 0); }
-  91% { transform: translateX(1cqw);   clip-path: inset(55% 0 12% 0); }
-  94% { transform: translateX(-.5cqw); clip-path: none; }
+  88% { transform: translateX(calc(-1.2 * var(--cw))); clip-path: inset(10% 0 55% 0); }
+  91% { transform: translateX(calc(1 * var(--cw)));   clip-path: inset(55% 0 12% 0); }
+  94% { transform: translateX(calc(-.5 * var(--cw))); clip-path: none; }
 }
 
 /* ---------- 技能三選一:鋼板卡片 ---------- */
 #skillPick { background: repeating-linear-gradient(0deg, #0000 0 2px, #0003 2px 3px), #05080bf0; }
-#skillPick h2 { font-family: var(--tech); color: var(--neon-c); text-shadow: 0 0 2cqw var(--neon-c); letter-spacing: .1em; }
+#skillPick h2 { font-family: var(--tech); color: var(--neon-c); text-shadow: 0 0 calc(2 * var(--cw)) var(--neon-c); letter-spacing: .1em; }
 .skill-card {
   border: 0; border-radius: 0; clip-path: var(--chamfer);
   background: var(--brushed), linear-gradient(135deg, var(--steel-2), var(--steel-0));
-  box-shadow: inset 0 0 0 .4cqw #19f0ff66, inset .8cqw 0 0 var(--neon-c);
+  box-shadow: inset 0 0 0 calc(.4 * var(--cw)) #19f0ff66, inset calc(.8 * var(--cw)) 0 0 var(--neon-c);
 }
-.skill-card:hover, .skill-card:active { box-shadow: inset 0 0 0 .5cqw var(--neon-c), inset .8cqw 0 0 var(--neon-m); }
+.skill-card:hover, .skill-card:active { box-shadow: inset 0 0 0 calc(.5 * var(--cw)) var(--neon-c), inset calc(.8 * var(--cw)) 0 0 var(--neon-m); }
 .skill-card b { color: var(--neon-y); }
 /* 技法卡:洋紅外框 + 流光,和一般數值技能區分 */
 .skill-card.rule {
   background:
     linear-gradient(110deg, transparent 30%, #ff2bd630 45%, transparent 60%) 0 0 / 250% 100%,
     var(--brushed), linear-gradient(135deg, #3a1a45, var(--steel-0));
-  box-shadow: inset 0 0 0 .5cqw var(--neon-m), inset .8cqw 0 0 var(--neon-m);
+  box-shadow: inset 0 0 0 calc(.5 * var(--cw)) var(--neon-m), inset calc(.8 * var(--cw)) 0 0 var(--neon-m);
   animation: pop .25s ease-out backwards, ruleShine 2.4s linear infinite;
 }
 .skill-card.rule b { color: #fff; }
 .rule-tag {
-  display: inline-block; margin-right: 1.6cqw; padding: 0 1.6cqw; font-size: 2.8cqw; vertical-align: middle;
+  display: inline-block; margin-right: calc(1.6 * var(--cw)); padding: 0 calc(1.6 * var(--cw)); font-size: calc(2.8 * var(--cw)); vertical-align: middle;
   background: var(--neon-m); color: #000; clip-path: polygon(8% 0, 100% 0, 92% 100%, 0 100%);
 }
 @keyframes ruleShine { to { background-position: -250% 0, 0 0, 0 0; } }
 
 /* ---- PAUSE ---- */
-.pause-btn { display: none; position: absolute; top: 2cqw; right: 2cqw; z-index: 20; width: 9cqw; height: 9cqw; border: 0;
-  font-size: 3.2cqw; font-weight: 900; letter-spacing: -.1em; color: var(--neon-c);
+.pause-btn { display: none; position: absolute; top: calc(2 * var(--cw)); right: calc(2 * var(--cw)); z-index: 20; width: calc(9 * var(--cw)); height: calc(9 * var(--cw)); border: 0;
+  font-size: calc(3.2 * var(--cw)); font-weight: 900; letter-spacing: -.1em; color: var(--neon-c);
   clip-path: polygon(25% 0, 75% 0, 100% 50%, 75% 100%, 25% 100%, 0 50%);
   background: linear-gradient(180deg, var(--steel-3), var(--steel-1)); }
 #app:has(#battle.active) .pause-btn { display: block; }
 #app:has(#pauseMenu.show) .pause-btn { display: none; }
-#pauseMenu { z-index: 30; flex-direction: column; align-items: center; justify-content: center; gap: 5cqw;
+#pauseMenu { z-index: 30; flex-direction: column; align-items: center; justify-content: center; gap: calc(5 * var(--cw));
   background: repeating-linear-gradient(0deg, #0000 0 2px, #0003 2px 3px), #05080be8; }
-#pauseMenu h2 { margin: 0; font-family: var(--tech), sans-serif; font-size: 11cqw; letter-spacing: .2em;
-  color: var(--neon-c); text-shadow: 0 0 3cqw var(--neon-c); animation: blink 1.6s ease-in-out infinite; }
-.pause-btns { display: flex; flex-direction: column; gap: 3.5cqw; width: 70%; }
-.pause-note { font-size: 3cqw; color: var(--muted); }
+#pauseMenu h2 { margin: 0; font-family: var(--tech), sans-serif; font-size: calc(11 * var(--cw)); letter-spacing: .2em;
+  color: var(--neon-c); text-shadow: 0 0 calc(3 * var(--cw)) var(--neon-c); animation: blink 1.6s ease-in-out infinite; }
+.pause-btns { display: flex; flex-direction: column; gap: calc(3.5 * var(--cw)); width: 70%; }
+.pause-note { font-size: calc(3 * var(--cw)); color: var(--muted); }
 /* PAUSE 中開啟的設定:疊在戰鬥畫面上,戰鬥畫面保持原狀 */
 #settings.over { z-index: 40; background: #05080bf5; }
 
 /* ---------- 必殺技按鈕:放大,集滿時閃爍 ---------- */
 html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; } /* 手機瀏覽器換語言時不要自動放大文字 */
 .ult-wrap { position: relative; flex-shrink: 0; transition: filter .2s; }
-.ult-wrap .ult-btn { position: relative; z-index: 1; font-size: 4.2cqw; padding: 2cqw 5cqw; min-width: 24cqw; }
+.ult-wrap .ult-btn { position: relative; z-index: 1; font-size: calc(4.2 * var(--cw)); padding: calc(2 * var(--cw)) calc(5 * var(--cw)); min-width: calc(24 * var(--cw)); }
 .ult-wrap.ready { z-index: 6; }
 .ult-wrap.ready .ult-btn {
-  color: #3a0800; font-weight: 900; letter-spacing: .08em; text-shadow: 0 0 .8cqw #fff8;
+  color: #3a0800; font-weight: 900; letter-spacing: .08em; text-shadow: 0 0 calc(.8 * var(--cw)) #fff8;
   background:
-    repeating-linear-gradient(-45deg, #0000 0 1.6cqw, #ff3a0033 1.6cqw 3.2cqw),
+    repeating-linear-gradient(-45deg, #0000 0 calc(1.6 * var(--cw)), #ff3a0033 calc(1.6 * var(--cw)) calc(3.2 * var(--cw))),
     linear-gradient(180deg, #fff6a0, #ffd400 35%, #ff7a00 80%, #e03000);
   animation: ultBlink .5s linear infinite;
 }
@@ -492,8 +492,8 @@ html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; } /* 手機瀏覽
 /* 集滿時整顆按鈕明暗閃爍 + 光圈跳動,提醒玩家現在可以按 */
 .ult-wrap.ready { animation: ultGlow .5s steps(2, jump-none) infinite; }
 @keyframes ultGlow {
-  0%   { filter: drop-shadow(0 0 1cqw #ff6a00); }
-  100% { filter: drop-shadow(0 0 3.5cqw #ffd400) drop-shadow(0 0 1.5cqw #fff); }
+  0%   { filter: drop-shadow(0 0 calc(1 * var(--cw)) #ff6a00); }
+  100% { filter: drop-shadow(0 0 calc(3.5 * var(--cw)) #ffd400) drop-shadow(0 0 calc(1.5 * var(--cw)) #fff); }
 }
 @keyframes ultBlink {
   0%, 49% { filter: brightness(1); transform: scale(1); }
@@ -506,24 +506,24 @@ html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; } /* 手機瀏覽
 #grid { position: relative; touch-action: none; } /* 九宮格快速連點時不要被當成雙擊縮放 */
 .mega-btn {
   position: absolute; inset: 0; z-index: 8; border: 0; overflow: hidden;
-  display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 1cqw;
+  display: flex; flex-direction: column; align-items: center; justify-content: center; gap: calc(1 * var(--cw));
   clip-path: var(--chamfer); color: #fff; touch-action: none;
   background:
-    repeating-linear-gradient(-45deg, #0000 0 3cqw, #ffffff14 3cqw 6cqw),
+    repeating-linear-gradient(-45deg, #0000 0 calc(3 * var(--cw)), #ffffff14 calc(3 * var(--cw)) calc(6 * var(--cw))),
     radial-gradient(circle at 50% 45%, #fff6a0 0, #ffb000 30%, #ff5a1f 62%, #a3001b 100%);
-  box-shadow: inset 0 0 0 1cqw #ffffff60, inset 0 0 10cqw #7a0010;
+  box-shadow: inset 0 0 0 calc(1 * var(--cw)) #ffffff60, inset 0 0 calc(10 * var(--cw)) #7a0010;
   animation: megaIn .22s cubic-bezier(.2, .9, .3, 1.3), megaPulse .35s ease-in-out .22s infinite alternate;
 }
-.mega-label { font-family: var(--tech); font-size: 6.5cqw; font-weight: 800; letter-spacing: .3em; text-shadow: 0 .5cqw 0 #6a0010, 0 0 2cqw #ff3a00; }
-.mega-icon  { font-size: 30cqw; line-height: 1; filter: drop-shadow(0 1.5cqw 0 #6a0010) drop-shadow(0 0 3cqw #fff8); }
-.mega-count { font-family: var(--tech); font-size: 10cqw; font-weight: 800; line-height: 1; text-shadow: 0 .6cqw 0 #6a0010, 0 0 3cqw #fff; }
+.mega-label { font-family: var(--tech); font-size: calc(6.5 * var(--cw)); font-weight: 800; letter-spacing: .3em; text-shadow: 0 calc(.5 * var(--cw)) 0 #6a0010, 0 0 calc(2 * var(--cw)) #ff3a00; }
+.mega-icon  { font-size: calc(30 * var(--cw)); line-height: 1; filter: drop-shadow(0 calc(1.5 * var(--cw)) 0 #6a0010) drop-shadow(0 0 calc(3 * var(--cw)) #fff8); }
+.mega-count { font-family: var(--tech); font-size: calc(10 * var(--cw)); font-weight: 800; line-height: 1; text-shadow: 0 calc(.6 * var(--cw)) 0 #6a0010, 0 0 calc(3 * var(--cw)) #fff; }
 .mega-btn.hit .mega-icon { animation: megaIcon .1s ease-out; }
 .mega-btn.hit { animation: megaHit .1s ease-out; }
 .mega-burst {
-  position: absolute; font-size: 16cqw; line-height: 1; pointer-events: none;
+  position: absolute; font-size: calc(16 * var(--cw)); line-height: 1; pointer-events: none;
   transform: translate(-50%, -50%) rotate(var(--r, 0deg)); animation: megaBurst .42s ease-out forwards;
 }
-.mega-burst.big { font-size: 40cqw; }
+.mega-burst.big { font-size: calc(40 * var(--cw)); }
 .mega-btn.broken { animation: megaBreak .38s ease-out forwards; }
 .mega-btn.fail   { animation: megaFail .38s ease-in forwards; }
 @keyframes megaIn    { from { transform: scale(.3); opacity: 0; } }
@@ -542,7 +542,7 @@ html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; } /* 手機瀏覽
 .grid-wrap::after {
   content: ""; position: absolute; inset: 0; z-index: 0; pointer-events: none; opacity: 0;
   background: radial-gradient(ellipse at 50% 50%, #ff1a3a80 0%, #ff1a3a40 50%, #ff1a3a18 80%);
-  box-shadow: inset 0 0 0 .6cqw #ff2a3a, inset 0 0 10cqw #ff1a3ab0;
+  box-shadow: inset 0 0 0 calc(.6 * var(--cw)) #ff2a3a, inset 0 0 calc(10 * var(--cw)) #ff1a3ab0;
   transition: opacity .4s;
 }
 .grid-wrap > .grid { position: relative; z-index: 1; }
@@ -550,7 +550,7 @@ html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; } /* 手機瀏覽
 #battle.critical .grid-wrap::after {
   animation: dangerPulse 1.1s ease-in-out infinite;
   background: radial-gradient(ellipse at 50% 50%, #ff1a3acc 0%, #ff1a3a70 50%, #ff1a3a30 85%);
-  box-shadow: inset 0 0 0 1cqw #ff3a4a, inset 0 0 16cqw #ff1a3ad0;
+  box-shadow: inset 0 0 0 calc(1 * var(--cw)) #ff3a4a, inset 0 0 calc(16 * var(--cw)) #ff1a3ad0;
 }
 @keyframes dangerPulse { 0%, 100% { opacity: .15; } 50% { opacity: .9; } }
 
@@ -565,120 +565,120 @@ html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; } /* 手機瀏覽
   animation: bwPulse .55s ease-in-out infinite;
 }
 .bw-shadow { /* BOSS 的黑影慢慢逼近 */
-  position: absolute; left: 50%; top: 50%; height: 62cqh; width: 96cqw; object-fit: contain; opacity: .55; /* 寬的立繪也縮在畫面內,不會偏出框 */
+  position: absolute; left: 50%; top: 50%; height: 62cqh; width: calc(96 * var(--cw)); object-fit: contain; opacity: .55; /* 寬的立繪也縮在畫面內,不會偏出框 */
   transform: translate(-50%, -50%) scale(1.1);
-  filter: brightness(0) drop-shadow(0 0 2cqw #ff0022) drop-shadow(0 0 6cqw #ff002299);
+  filter: brightness(0) drop-shadow(0 0 calc(2 * var(--cw)) #ff0022) drop-shadow(0 0 calc(6 * var(--cw)) #ff002299);
   animation: bwLoom 2.6s ease-out forwards;
 }
 .bw-tape { /* 上下兩條捲動的警示膠帶 */
   position: absolute; left: -20%; right: -20%; height: 7cqh;
-  background: repeating-linear-gradient(-45deg, #ffd400 0 4cqw, #111 4cqw 8cqw);
-  box-shadow: 0 0 3cqw #000;
+  background: repeating-linear-gradient(-45deg, #ffd400 0 calc(4 * var(--cw)), #111 calc(4 * var(--cw)) calc(8 * var(--cw)));
+  box-shadow: 0 0 calc(3 * var(--cw)) #000;
   animation: bwTape .6s linear infinite;
 }
 .bw-tape.top    { top: 10cqh; transform: rotate(-4deg); }
 .bw-tape.bottom { bottom: 10cqh; transform: rotate(-4deg); animation-direction: reverse; }
 .bw-main {
-  position: relative; font-family: var(--tech); font-weight: 800; font-size: 15cqw; letter-spacing: .12em; line-height: 1;
-  color: #fff; text-shadow: 0 0 2cqw #ff0022, 0 0 6cqw #ff0022, 0 .6cqw 0 #6a0010;
+  position: relative; font-family: var(--tech); font-weight: 800; font-size: calc(15 * var(--cw)); letter-spacing: .12em; line-height: 1;
+  color: #fff; text-shadow: 0 0 calc(2 * var(--cw)) #ff0022, 0 0 calc(6 * var(--cw)) #ff0022, 0 calc(.6 * var(--cw)) 0 #6a0010;
   animation: bwBlink .55s steps(1) infinite;
 }
 .bw-sub {
-  position: relative; font-size: 8cqw; font-weight: 900; color: #ffd400; transform: skewX(-10deg);
-  -webkit-text-stroke: .5cqw #2a0000; paint-order: stroke fill; text-shadow: 0 0 3cqw #ff3a00;
+  position: relative; font-size: calc(8 * var(--cw)); font-weight: 900; color: #ffd400; transform: skewX(-10deg);
+  -webkit-text-stroke: calc(.5 * var(--cw)) #2a0000; paint-order: stroke fill; text-shadow: 0 0 calc(3 * var(--cw)) #ff3a00;
   animation: slam .35s .35s ease-out backwards;
 }
 .bw-name {
-  position: relative; font-size: 5cqw; font-weight: 800; color: #fff; letter-spacing: .2em; padding: .8cqw 5cqw;
+  position: relative; font-size: calc(5 * var(--cw)); font-weight: 800; color: #fff; letter-spacing: .2em; padding: calc(.8 * var(--cw)) calc(5 * var(--cw));
   background: linear-gradient(90deg, transparent, #000c 20%, #000c 80%, transparent);
   animation: bwName .4s .7s ease-out backwards;
 }
 @keyframes bwIn    { from { opacity: 0; } }
 @keyframes bwOut   { to { opacity: 0; transform: scale(1.08); } }
 @keyframes bwPulse { 50% { opacity: .22; } }
-@keyframes bwTape  { to { background-position: 11.3cqw 0; } }
+@keyframes bwTape  { to { background-position: calc(11.3 * var(--cw)) 0; } }
 @keyframes bwBlink { 50% { opacity: .35; } }
 @keyframes bwLoom  { from { transform: translate(-50%, -46%) scale(.85); opacity: 0; } 30% { opacity: .55; } }
 @keyframes bwName  { from { opacity: 0; letter-spacing: 1em; } }
 
 /* ---------- PAUSE:已獲得技能 ---------- */
-.pause-skills { display: none; flex-direction: column; gap: 2.4cqw; width: 88%; max-height: 72cqh; }
+.pause-skills { display: none; flex-direction: column; gap: calc(2.4 * var(--cw)); width: 88%; max-height: 72cqh; }
 #pauseMenu.skills .pause-btns, #pauseMenu.skills .pause-note { display: none; }
 #pauseMenu.skills .pause-skills { display: flex; }
-#pauseMenu.skills h2 { font-size: 8cqw; }
-.ps-head { display: flex; justify-content: space-between; align-items: baseline; color: var(--neon-c); font-size: 4.6cqw; }
-.ps-head span { font-family: var(--tech); font-size: 5cqw; color: var(--neon-y); text-shadow: 0 0 1.2cqw var(--neon-y); }
+#pauseMenu.skills h2 { font-size: calc(8 * var(--cw)); }
+.ps-head { display: flex; justify-content: space-between; align-items: baseline; color: var(--neon-c); font-size: calc(4.6 * var(--cw)); }
+.ps-head span { font-family: var(--tech); font-size: calc(5 * var(--cw)); color: var(--neon-y); text-shadow: 0 0 calc(1.2 * var(--cw)) var(--neon-y); }
 .ps-list {
-  flex: 1; min-height: 0; overflow-y: auto; display: flex; flex-direction: column; gap: 2cqw; padding: 2.4cqw;
-  background: #0006; clip-path: var(--chamfer); box-shadow: inset 0 0 0 .3cqw #19f0ff50;
+  flex: 1; min-height: 0; overflow-y: auto; display: flex; flex-direction: column; gap: calc(2 * var(--cw)); padding: calc(2.4 * var(--cw));
+  background: #0006; clip-path: var(--chamfer); box-shadow: inset 0 0 0 calc(.3 * var(--cw)) #19f0ff50;
 }
-.ps-item { display: flex; align-items: center; gap: 3cqw; padding: 2cqw 2.4cqw; background: #ffffff0a; border-left: .8cqw solid var(--neon-c); text-align: left; }
+.ps-item { display: flex; align-items: center; gap: calc(3 * var(--cw)); padding: calc(2 * var(--cw)) calc(2.4 * var(--cw)); background: #ffffff0a; border-left: calc(.8 * var(--cw)) solid var(--neon-c); text-align: left; }
 .ps-item.rule { border-left-color: var(--neon-m); background: #ff2bd612; }
-.ps-icon { font-size: 8cqw; width: 11cqw; text-align: center; flex-shrink: 0; }
-.ps-item b { font-size: 4.2cqw; color: var(--fire-2); }
-.ps-item p { margin: .6cqw 0 0; font-size: 3.2cqw; line-height: 1.5; color: #e6ecff; }
-.ps-n { font-family: var(--tech); font-size: 3.4cqw; color: var(--neon-y); }
-.ps-tag { font-size: 2.6cqw; padding: .2cqw 1.6cqw; color: #fff; background: var(--neon-m); vertical-align: middle; clip-path: polygon(8% 0, 100% 0, 92% 100%, 0 100%); }
-.ps-empty { padding: 6cqw 0; text-align: center; color: var(--steel-hi); font-size: 3.6cqw; }
+.ps-icon { font-size: calc(8 * var(--cw)); width: calc(11 * var(--cw)); text-align: center; flex-shrink: 0; }
+.ps-item b { font-size: calc(4.2 * var(--cw)); color: var(--fire-2); }
+.ps-item p { margin: calc(.6 * var(--cw)) 0 0; font-size: calc(3.2 * var(--cw)); line-height: 1.5; color: #e6ecff; }
+.ps-n { font-family: var(--tech); font-size: calc(3.4 * var(--cw)); color: var(--neon-y); }
+.ps-tag { font-size: calc(2.6 * var(--cw)); padding: calc(.2 * var(--cw)) calc(1.6 * var(--cw)); color: #fff; background: var(--neon-m); vertical-align: middle; clip-path: polygon(8% 0, 100% 0, 92% 100%, 0 100%); }
+.ps-empty { padding: calc(6 * var(--cw)) 0; text-align: center; color: var(--steel-hi); font-size: calc(3.6 * var(--cw)); }
 #psBack { align-self: center; min-width: 40%; }
 
 /* ---------- 新手教學 ---------- */
 .coach {
-  display: none; position: absolute; left: 3cqw; right: 3cqw; top: 12cqw; z-index: 6; pointer-events: none;
-  padding: 2.4cqw 3.4cqw; background: #05080bdd; clip-path: var(--chamfer); box-shadow: inset 0 0 0 .35cqw var(--neon-y);
+  display: none; position: absolute; left: calc(3 * var(--cw)); right: calc(3 * var(--cw)); top: calc(12 * var(--cw)); z-index: 6; pointer-events: none;
+  padding: calc(2.4 * var(--cw)) calc(3.4 * var(--cw)); background: #05080bdd; clip-path: var(--chamfer); box-shadow: inset 0 0 0 calc(.35 * var(--cw)) var(--neon-y);
 }
 .coach.show { display: block; }
-.coach-step { font-family: var(--tech); font-size: 3cqw; letter-spacing: .15em; color: var(--neon-y); text-shadow: 0 0 1.2cqw var(--neon-y); }
+.coach-step { font-family: var(--tech); font-size: calc(3 * var(--cw)); letter-spacing: .15em; color: var(--neon-y); text-shadow: 0 0 calc(1.2 * var(--cw)) var(--neon-y); }
 .coach-step:empty { display: none; }
-.coach-text { margin-top: .8cqw; font-size: 4cqw; font-weight: 800; line-height: 1.5; color: #fff; }
+.coach-text { margin-top: calc(.8 * var(--cw)); font-size: calc(4 * var(--cw)); font-weight: 800; line-height: 1.5; color: #fff; }
 .coach-text.pop { animation: coachPop .3s ease-out; }
 @keyframes coachPop { from { transform: translateY(-15%); opacity: 0; } }
 .coach-skip {
-  display: none; position: absolute; right: 3cqw; bottom: 13cqw; z-index: 7;
-  font-size: 3cqw; font-weight: 800; padding: 1.2cqw 3cqw; color: #fff; border: 0;
-  background: #000a; clip-path: var(--chamfer); box-shadow: inset 0 0 0 .3cqw #ffffff50;
+  display: none; position: absolute; right: calc(3 * var(--cw)); bottom: calc(13 * var(--cw)); z-index: 7;
+  font-size: calc(3 * var(--cw)); font-weight: 800; padding: calc(1.2 * var(--cw)) calc(3 * var(--cw)); color: #fff; border: 0;
+  background: #000a; clip-path: var(--chamfer); box-shadow: inset 0 0 0 calc(.3 * var(--cw)) #ffffff50;
 }
 .coach-skip.armed { background: #c0142c; }
 #battle.tutorial .coach-skip { display: block; }
 /* 指向目標的手指 */
 .coach-hand {
-  position: absolute; z-index: 9; right: -8%; bottom: -14%; font-size: 9cqw; line-height: 1; pointer-events: none;
-  filter: drop-shadow(0 0 1.5cqw #ffd400); animation: handTap .8s ease-in-out infinite;
+  position: absolute; z-index: 9; right: -8%; bottom: -14%; font-size: calc(9 * var(--cw)); line-height: 1; pointer-events: none;
+  filter: drop-shadow(0 0 calc(1.5 * var(--cw)) #ffd400); animation: handTap .8s ease-in-out infinite;
 }
-.ult-wrap .coach-hand { right: auto; left: 50%; bottom: auto; top: 100%; margin-left: -4cqw; }
+.ult-wrap .coach-hand { right: auto; left: 50%; bottom: auto; top: 100%; margin-left: calc(-4 * var(--cw)); }
 @keyframes handTap { 50% { transform: translate(-12%, -18%) scale(.9); } }
 /* 選擇關卡的教學卡片 */
-#stages .tut-card { background: linear-gradient(90deg, #13304a, #0a1a28); box-shadow: inset 0 0 0 .45cqw var(--neon-y), inset 0 0 5cqw #ffd40030; }
+#stages .tut-card { background: linear-gradient(90deg, #13304a, #0a1a28); box-shadow: inset 0 0 0 calc(.45 * var(--cw)) var(--neon-y), inset 0 0 calc(5 * var(--cw)) #ffd40030; }
 /* 第一次完成的獎勵 */
 .tut-reward {
-  z-index: 25; flex-direction: column; align-items: center; justify-content: center; gap: 3cqw; padding: 0 6cqw; text-align: center;
+  z-index: 25; flex-direction: column; align-items: center; justify-content: center; gap: calc(3 * var(--cw)); padding: 0 calc(6 * var(--cw)); text-align: center;
   background: repeating-linear-gradient(0deg, #0000 0 2px, #0003 2px 3px), #05080bf2;
 }
-.tut-reward h2 { margin: 0; font-size: 9cqw; color: var(--neon-y); text-shadow: 0 0 3cqw var(--neon-y); }
-.tr-pts { font-size: 5.4cqw; font-weight: 900; color: #fff; padding: 1cqw 5cqw; background: linear-gradient(90deg, #5a0f9c, #c0142c); clip-path: var(--chamfer); }
-.tr-desc { margin: 0; font-size: 3.8cqw; line-height: 1.6; color: #e6ecff; }
-.tr-note { margin: 0; font-size: 3cqw; line-height: 1.5; color: var(--steel-hi); }
-.tr-list { display: grid; grid-template-columns: 1fr 1fr; gap: 2.4cqw; width: 100%; }
+.tut-reward h2 { margin: 0; font-size: calc(9 * var(--cw)); color: var(--neon-y); text-shadow: 0 0 calc(3 * var(--cw)) var(--neon-y); }
+.tr-pts { font-size: calc(5.4 * var(--cw)); font-weight: 900; color: #fff; padding: calc(1 * var(--cw)) calc(5 * var(--cw)); background: linear-gradient(90deg, #5a0f9c, #c0142c); clip-path: var(--chamfer); }
+.tr-desc { margin: 0; font-size: calc(3.8 * var(--cw)); line-height: 1.6; color: #e6ecff; }
+.tr-note { margin: 0; font-size: calc(3 * var(--cw)); line-height: 1.5; color: var(--steel-hi); }
+.tr-list { display: grid; grid-template-columns: 1fr 1fr; gap: calc(2.4 * var(--cw)); width: 100%; }
 .tr-item {
-  display: flex; flex-direction: column; align-items: center; gap: .6cqw; padding: 3cqw 2cqw; border: 0; color: #fff;
-  background: #0a1418; clip-path: var(--chamfer); box-shadow: inset 0 0 0 .35cqw #19f0ff60; animation: trGlow 1s ease-in-out infinite alternate;
+  display: flex; flex-direction: column; align-items: center; gap: calc(.6 * var(--cw)); padding: calc(3 * var(--cw)) calc(2 * var(--cw)); border: 0; color: #fff;
+  background: #0a1418; clip-path: var(--chamfer); box-shadow: inset 0 0 0 calc(.35 * var(--cw)) #19f0ff60; animation: trGlow 1s ease-in-out infinite alternate;
 }
 .tr-item:active { transform: scale(.96); }
-.tr-icon { font-size: 9cqw; line-height: 1; }
-.tr-item b { font-size: 4.4cqw; color: var(--fire-2); }
-.tr-item small { font-size: 3cqw; color: #cfe; }
-@keyframes trGlow { to { box-shadow: inset 0 0 0 .5cqw var(--neon-c), 0 0 3cqw #19f0ff60; } }
+.tr-icon { font-size: calc(9 * var(--cw)); line-height: 1; }
+.tr-item b { font-size: calc(4.4 * var(--cw)); color: var(--fire-2); }
+.tr-item small { font-size: calc(3 * var(--cw)); color: #cfe; }
+@keyframes trGlow { to { box-shadow: inset 0 0 0 calc(.5 * var(--cw)) var(--neon-c), 0 0 calc(3 * var(--cw)) #19f0ff60; } }
 /* 第一次遇到 FEVER / 技能 / 分歧的說明卡 */
 .tip-card { z-index: 26; align-items: center; justify-content: center; background: #000a; }
 .tip-box {
-  width: 84%; display: flex; flex-direction: column; align-items: center; gap: 2.4cqw; padding: 5cqw 5cqw 4cqw; text-align: center;
-  background: linear-gradient(180deg, #13202c, #070b10); clip-path: var(--chamfer); box-shadow: inset 0 0 0 .4cqw var(--neon-c);
+  width: 84%; display: flex; flex-direction: column; align-items: center; gap: calc(2.4 * var(--cw)); padding: calc(5 * var(--cw)) calc(5 * var(--cw)) calc(4 * var(--cw)); text-align: center;
+  background: linear-gradient(180deg, #13202c, #070b10); clip-path: var(--chamfer); box-shadow: inset 0 0 0 calc(.4 * var(--cw)) var(--neon-c);
   animation: coachPop .3s ease-out;
 }
-.tip-icon { font-size: 13cqw; line-height: 1; }
-.tip-box b { font-size: 6cqw; color: var(--neon-y); text-shadow: 0 0 2cqw var(--neon-y); }
-.tip-box p { margin: 0; font-size: 3.8cqw; line-height: 1.65; color: #e6ecff; }
-#tipOk { min-width: 45%; margin-top: 1cqw; }
+.tip-icon { font-size: calc(13 * var(--cw)); line-height: 1; }
+.tip-box b { font-size: calc(6 * var(--cw)); color: var(--neon-y); text-shadow: 0 0 calc(2 * var(--cw)) var(--neon-y); }
+.tip-box p { margin: 0; font-size: calc(3.8 * var(--cw)); line-height: 1.65; color: #e6ecff; }
+#tipOk { min-width: 45%; margin-top: calc(1 * var(--cw)); }
 
 /* ---------- 周回演出:第二輪偏紅、第三輪偏紫,敵人帶著光環 ---------- */
 #battle.round-2 .stage-bg::after, #battle.round-3 .stage-bg::after {
@@ -689,12 +689,12 @@ html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; } /* 手機瀏覽
 #battle.round-2 .sprite img { animation: auraRed 1.4s ease-in-out infinite alternate; }
 #battle.round-3 .sprite img { animation: auraPurple 1.1s ease-in-out infinite alternate; }
 @keyframes auraRed {
-  from { filter: drop-shadow(0 0 .5cqw #ffffffb0) drop-shadow(0 0 2.5cqw #ff2a2a) drop-shadow(0 0 1cqw #ff2a2a) drop-shadow(0 1.5cqw 1cqw #000a); }
-  to   { filter: drop-shadow(0 0 .5cqw #ffffffb0) drop-shadow(0 0 5cqw #ff2a2a) drop-shadow(0 0 1.5cqw #ff4a4a) drop-shadow(0 1.5cqw 1cqw #000a); }
+  from { filter: drop-shadow(0 0 calc(.5 * var(--cw)) #ffffffb0) drop-shadow(0 0 calc(2.5 * var(--cw)) #ff2a2a) drop-shadow(0 0 calc(1 * var(--cw)) #ff2a2a) drop-shadow(0 calc(1.5 * var(--cw)) calc(1 * var(--cw)) #000a); }
+  to   { filter: drop-shadow(0 0 calc(.5 * var(--cw)) #ffffffb0) drop-shadow(0 0 calc(5 * var(--cw)) #ff2a2a) drop-shadow(0 0 calc(1.5 * var(--cw)) #ff4a4a) drop-shadow(0 calc(1.5 * var(--cw)) calc(1 * var(--cw)) #000a); }
 }
 @keyframes auraPurple {
-  from { filter: drop-shadow(0 0 .5cqw #ffffffb0) drop-shadow(0 0 2.5cqw #b04dff) drop-shadow(0 0 1cqw #c84dff) drop-shadow(0 1.5cqw 1cqw #000a); }
-  to   { filter: drop-shadow(0 0 .5cqw #ffffffb0) drop-shadow(0 0 6cqw #c84dff) drop-shadow(0 0 2cqw #ff2bd6) drop-shadow(0 1.5cqw 1cqw #000a); }
+  from { filter: drop-shadow(0 0 calc(.5 * var(--cw)) #ffffffb0) drop-shadow(0 0 calc(2.5 * var(--cw)) #b04dff) drop-shadow(0 0 calc(1 * var(--cw)) #c84dff) drop-shadow(0 calc(1.5 * var(--cw)) calc(1 * var(--cw)) #000a); }
+  to   { filter: drop-shadow(0 0 calc(.5 * var(--cw)) #ffffffb0) drop-shadow(0 0 calc(6 * var(--cw)) #c84dff) drop-shadow(0 0 calc(2 * var(--cw)) #ff2bd6) drop-shadow(0 calc(1.5 * var(--cw)) calc(1 * var(--cw)) #000a); }
 }
 
 /* ---------- 攻守回合:九宮格換色 + 斜劃大字 ---------- */
@@ -703,25 +703,25 @@ html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; } /* 手機瀏覽
   content: ""; position: absolute; inset: 0; z-index: 0; pointer-events: none;
   box-shadow: inset 0 0 0 0 transparent, inset 0 0 0 transparent; transition: box-shadow .35s ease-out;
 }
-#battle.turn-atk .grid-wrap::before { box-shadow: inset 0 0 0 .7cqw #ff7a1fcc, inset 0 0 12cqw #ff5a1f55; }
-#battle.turn-def .grid-wrap::before { box-shadow: inset 0 0 0 .7cqw #19c8f0cc, inset 0 0 12cqw #19a8ff50; }
+#battle.turn-atk .grid-wrap::before { box-shadow: inset 0 0 0 calc(.7 * var(--cw)) #ff7a1fcc, inset 0 0 calc(12 * var(--cw)) #ff5a1f55; }
+#battle.turn-def .grid-wrap::before { box-shadow: inset 0 0 0 calc(.7 * var(--cw)) #19c8f0cc, inset 0 0 calc(12 * var(--cw)) #19a8ff50; }
 /* D:空格子的插座內圈跟著亮橘 / 青藍 */
 .cell::before { transition: box-shadow .35s; }
-#battle.turn-atk .cell::before { box-shadow: inset 0 1.6cqw 2cqw #000, inset 0 0 0 .35cqw #ff7a1fa0, inset 0 0 3cqw #ff7a1f45; }
-#battle.turn-def .cell::before { box-shadow: inset 0 1.6cqw 2cqw #000, inset 0 0 0 .35cqw #19c8f0a0, inset 0 0 3cqw #19c8f045; }
+#battle.turn-atk .cell::before { box-shadow: inset 0 calc(1.6 * var(--cw)) calc(2 * var(--cw)) #000, inset 0 0 0 calc(.35 * var(--cw)) #ff7a1fa0, inset 0 0 calc(3 * var(--cw)) #ff7a1f45; }
+#battle.turn-def .cell::before { box-shadow: inset 0 calc(1.6 * var(--cw)) calc(2 * var(--cw)) #000, inset 0 0 0 calc(.35 * var(--cw)) #19c8f0a0, inset 0 0 calc(3 * var(--cw)) #19c8f045; }
 /* B:回合開始時一道斜劃過九宮格的大字 */
 .turn-slash {
   position: absolute; left: -10%; right: -10%; top: 50%; z-index: 9; pointer-events: none;
-  display: flex; flex-direction: column; align-items: center; padding: 2.4cqw 0;
+  display: flex; flex-direction: column; align-items: center; padding: calc(2.4 * var(--cw)) 0;
   transform: translateY(-50%) rotate(-8deg); animation: slashIn .85s cubic-bezier(.2, .8, .3, 1) forwards;
 }
 .turn-slash.atk { background: linear-gradient(90deg, transparent, #ff5a1fdd 15%, #ffb000ee 50%, #ff5a1fdd 85%, transparent); }
 .turn-slash.def { background: linear-gradient(90deg, transparent, #0a6aa8dd 15%, #19c8f0ee 50%, #0a6aa8dd 85%, transparent); }
 .turn-slash b {
-  font-family: var(--tech); font-size: 10cqw; font-weight: 800; letter-spacing: .12em; line-height: 1; color: #fff;
-  text-shadow: 0 .5cqw 0 #0008, 0 0 3cqw #fff8;
+  font-family: var(--tech); font-size: calc(10 * var(--cw)); font-weight: 800; letter-spacing: .12em; line-height: 1; color: #fff;
+  text-shadow: 0 calc(.5 * var(--cw)) 0 #0008, 0 0 calc(3 * var(--cw)) #fff8;
 }
-.turn-slash small { font-size: 3.4cqw; font-weight: 900; color: #fff; letter-spacing: .3em; text-shadow: 0 .3cqw 0 #0008; }
+.turn-slash small { font-size: calc(3.4 * var(--cw)); font-weight: 900; color: #fff; letter-spacing: .3em; text-shadow: 0 calc(.3 * var(--cw)) 0 #0008; }
 @keyframes slashIn {
   0%   { clip-path: inset(0 100% 0 0); opacity: 1; }
   30%  { clip-path: inset(0 0 0 0); }
@@ -732,15 +732,15 @@ html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; } /* 手機瀏覽
 /* ---------- 鍵盤操作:選擇卡片的按鍵提示與選取框 ---------- */
 .skill-card, .branch-card, .tr-item { position: relative; }
 .kb-key {
-  position: absolute; top: 1.4cqw; left: 1.4cqw; z-index: 2; min-width: 4.6cqw; padding: .3cqw 1cqw;
-  font-family: var(--tech); font-size: 2.8cqw; font-weight: 800; line-height: 1.3; text-align: center;
-  color: #001; background: var(--neon-c); clip-path: var(--chamfer); box-shadow: 0 0 1.5cqw #19f0ff80;
+  position: absolute; top: calc(1.4 * var(--cw)); left: calc(1.4 * var(--cw)); z-index: 2; min-width: calc(4.6 * var(--cw)); padding: calc(.3 * var(--cw)) calc(1 * var(--cw));
+  font-family: var(--tech); font-size: calc(2.8 * var(--cw)); font-weight: 800; line-height: 1.3; text-align: center;
+  color: #001; background: var(--neon-c); clip-path: var(--chamfer); box-shadow: 0 0 calc(1.5 * var(--cw)) #19f0ff80;
 }
 @media (hover: none) { .kb-key { display: none; } } /* 手機、平板不需要按鍵提示 */
-.kb-focus { outline: .6cqw solid var(--neon-y); outline-offset: -.6cqw; filter: brightness(1.2); }
+.kb-focus { outline: calc(.6 * var(--cw)) solid var(--neon-y); outline-offset: calc(-.6 * var(--cw)); filter: brightness(1.2); }
 
 /* ---------- 打擊頓幀:畫面凍住的那一瞬間敵人閃白 ---------- */
-#stageView.hitstop .sprite img { filter: brightness(2.2) contrast(1.3) drop-shadow(0 0 2cqw #fff) !important; }
+#stageView.hitstop .sprite img { filter: brightness(2.2) contrast(1.3) drop-shadow(0 0 calc(2 * var(--cw)) #fff) !important; }
 
 /* ---------- 九宮格造型(10 種) ----------
    --sk-frame 格子外框  --sk-socket 插座內部  --sk-ring 插座內圈線  --sk-bolt 四角螺栓
@@ -750,13 +750,13 @@ html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; } /* 手機瀏覽
   --sk-frame: linear-gradient(145deg, #2a0a40, #12041e 45%, #0a0214 62%, #3a0a52);
   --sk-socket: radial-gradient(ellipse at 50% 60%, #05010a 40%, #1a0630);
   --sk-ring: #ff2bd6b0; --sk-bolt: #19f0ff;
-  --sk-board: repeating-linear-gradient(0deg, #ff2bd618 0 1px, transparent 1px 5cqw), repeating-linear-gradient(90deg, #19f0ff18 0 1px, transparent 1px 5cqw), linear-gradient(180deg, #12041e, #05010a);
+  --sk-board: repeating-linear-gradient(0deg, #ff2bd618 0 1px, transparent 1px calc(5 * var(--cw))), repeating-linear-gradient(90deg, #19f0ff18 0 1px, transparent 1px calc(5 * var(--cw))), linear-gradient(180deg, #12041e, #05010a);
 }
 .skin-bamboo {
-  --sk-frame: repeating-linear-gradient(90deg, #00000018 0 .4cqw, transparent .4cqw 3cqw), linear-gradient(145deg, #9aba5a, #4a6a28 40%, #2e4818 62%, #7a9a40);
+  --sk-frame: repeating-linear-gradient(90deg, #00000018 0 calc(.4 * var(--cw)), transparent calc(.4 * var(--cw)) calc(3 * var(--cw))), linear-gradient(145deg, #9aba5a, #4a6a28 40%, #2e4818 62%, #7a9a40);
   --sk-socket: radial-gradient(ellipse at 50% 60%, #0a1406 40%, #1a2a10);
-  --sk-ring: #d8ff9a60; --sk-bolt: #f0d890; --sk-radius: 1.4cqw; --sk-radius-in: 1cqw;
-  --sk-board: repeating-linear-gradient(90deg, #3a5a2028 0 2.2cqw, #1a2a1028 2.2cqw 2.6cqw), linear-gradient(180deg, #14200c, #080e04);
+  --sk-ring: #d8ff9a60; --sk-bolt: #f0d890; --sk-radius: calc(1.4 * var(--cw)); --sk-radius-in: calc(1 * var(--cw));
+  --sk-board: repeating-linear-gradient(90deg, #3a5a2028 0 calc(2.2 * var(--cw)), #1a2a1028 calc(2.2 * var(--cw)) calc(2.6 * var(--cw))), linear-gradient(180deg, #14200c, #080e04);
 }
 .skin-lava {
   --sk-frame: linear-gradient(145deg, #4a2e26, #1e1210 45%, #140a08 62%, #3a2018);
@@ -768,13 +768,13 @@ html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; } /* 手機瀏覽
   --sk-frame: linear-gradient(145deg, #e8f8ff, #9ad4f0 38%, #5a9ac0 62%, #c8ecff);
   --sk-socket: radial-gradient(ellipse at 50% 60%, #0a2030 40%, #1a4060);
   --sk-ring: #ffffffa0; --sk-bolt: #ffffff;
-  --sk-board: linear-gradient(135deg, #ffffff10 25%, transparent 25% 50%, #ffffff10 50% 75%, transparent 75%) 0 0 / 6cqw 6cqw, linear-gradient(180deg, #0e2638, #06121c);
+  --sk-board: linear-gradient(135deg, #ffffff10 25%, transparent 25% 50%, #ffffff10 50% 75%, transparent 75%) 0 0 / calc(6 * var(--cw)) calc(6 * var(--cw)), linear-gradient(180deg, #0e2638, #06121c);
 }
 .skin-mecha {
-  --sk-frame: repeating-linear-gradient(-45deg, #e0b800 0 1.1cqw, #1a1a1a 1.1cqw 2.2cqw);
+  --sk-frame: repeating-linear-gradient(-45deg, #e0b800 0 calc(1.1 * var(--cw)), #1a1a1a calc(1.1 * var(--cw)) calc(2.2 * var(--cw)));
   --sk-socket: radial-gradient(ellipse at 50% 60%, #050505 45%, #141414);
-  --sk-ring: #ffd40090; --sk-bolt: #9a9a9a; --sk-radius: .6cqw; --sk-radius-in: .4cqw;
-  --sk-board: linear-gradient(90deg, #ffffff08 1px, transparent 1px) 0 0 / 10cqw 10cqw, linear-gradient(0deg, #ffffff08 1px, transparent 1px) 0 0 / 10cqw 10cqw, linear-gradient(180deg, #1c1e20, #0c0d0e);
+  --sk-ring: #ffd40090; --sk-bolt: #9a9a9a; --sk-radius: calc(.6 * var(--cw)); --sk-radius-in: calc(.4 * var(--cw));
+  --sk-board: linear-gradient(90deg, #ffffff08 1px, transparent 1px) 0 0 / calc(10 * var(--cw)) calc(10 * var(--cw)), linear-gradient(0deg, #ffffff08 1px, transparent 1px) 0 0 / calc(10 * var(--cw)) calc(10 * var(--cw)), linear-gradient(180deg, #1c1e20, #0c0d0e);
 }
 .skin-gold {
   --sk-frame: linear-gradient(145deg, #fff4b0, #d8a820 38%, #8a6000 62%, #f4d060);
@@ -786,9 +786,9 @@ html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; } /* 手機瀏覽
   --sk-frame: linear-gradient(#5a7aff 0 0) 0 0 / 100% 100%, #2a3aa0;
   --sk-socket: linear-gradient(#0a0a24 0 0);
   --sk-ring: #ffffffd0; --sk-bolt: #ffffff; --sk-radius: 0; --sk-radius-in: 0;
-  --sk-board: conic-gradient(#1a1a3a 25%, #12122a 0 50%, #1a1a3a 0 75%, #12122a 0) 0 0 / 6cqw 6cqw;
+  --sk-board: conic-gradient(#1a1a3a 25%, #12122a 0 50%, #1a1a3a 0 75%, #12122a 0) 0 0 / calc(6 * var(--cw)) calc(6 * var(--cw));
 }
-.skin-pixel .cell:not(.good):not(.bad):not(.miss) { box-shadow: inset -.8cqw -.8cqw 0 #1a2a80, inset .8cqw .8cqw 0 #9ab0ff, 0 .8cqw 0 #000; }
+.skin-pixel .cell:not(.good):not(.bad):not(.miss) { box-shadow: inset calc(-.8 * var(--cw)) calc(-.8 * var(--cw)) 0 #1a2a80, inset calc(.8 * var(--cw)) calc(.8 * var(--cw)) 0 #9ab0ff, 0 calc(.8 * var(--cw)) 0 #000; }
 .skin-asura {
   --sk-frame: linear-gradient(145deg, #7a1420, #3a0610 45%, #1e0206 62%, #5a0c18);
   --sk-socket: radial-gradient(ellipse at 50% 60%, #0a0002 40%, #2a0408);
@@ -804,45 +804,45 @@ html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; } /* 手機瀏覽
 }
 
 /* 設定頁:造型選擇(小九宮格預覽,沒解鎖的變暗) */
-.skin-list { display: grid; grid-template-columns: repeat(5, 1fr); gap: 2cqw; margin-top: 2cqw; }
-.skin-pick { display: flex; flex-direction: column; align-items: center; gap: .8cqw; padding: 1.2cqw .6cqw; border: 0; color: #cfe; background: #0a1418; clip-path: var(--chamfer); }
-.skin-pick.on { background: #19f0ff30; box-shadow: inset 0 0 0 .4cqw var(--neon-c); color: #fff; }
+.skin-list { display: grid; grid-template-columns: repeat(5, 1fr); gap: calc(2 * var(--cw)); margin-top: calc(2 * var(--cw)); }
+.skin-pick { display: flex; flex-direction: column; align-items: center; gap: calc(.8 * var(--cw)); padding: calc(1.2 * var(--cw)) calc(.6 * var(--cw)); border: 0; color: #cfe; background: #0a1418; clip-path: var(--chamfer); }
+.skin-pick.on { background: #19f0ff30; box-shadow: inset 0 0 0 calc(.4 * var(--cw)) var(--neon-c); color: #fff; }
 .skin-pick.locked .skin-mini { filter: grayscale(1) brightness(.4); }
-.skin-pick small { font-size: 2.6cqw; font-weight: 800; }
+.skin-pick small { font-size: calc(2.6 * var(--cw)); font-weight: 800; }
 .skin-mini {
-  display: grid; grid-template-columns: repeat(3, 1fr); gap: .5cqw; width: 100%; aspect-ratio: 1; padding: .7cqw;
-  background: var(--sk-board, linear-gradient(180deg, #0c1016, #06080b)); border-radius: .6cqw;
+  display: grid; grid-template-columns: repeat(3, 1fr); gap: calc(.5 * var(--cw)); width: 100%; aspect-ratio: 1; padding: calc(.7 * var(--cw));
+  background: var(--sk-board, linear-gradient(180deg, #0c1016, #06080b)); border-radius: calc(.6 * var(--cw));
 }
 .skin-mini i {
-  border-radius: var(--sk-radius-in, .6cqw);
+  border-radius: var(--sk-radius-in, calc(.6 * var(--cw)));
   background: var(--sk-frame, linear-gradient(145deg, #6b7784, #2a3038 38%, #1a1f25 62%, #4a535d));
-  box-shadow: inset 0 0 0 .5cqw #000a, inset 0 0 0 .7cqw var(--sk-ring, #19f0ff2a);
+  box-shadow: inset 0 0 0 calc(.5 * var(--cw)) #000a, inset 0 0 0 calc(.7 * var(--cw)) var(--sk-ring, #19f0ff2a);
 }
-.skin-cond { margin: 1.6cqw 0 0; font-size: 3cqw; color: var(--steel-hi); text-align: center; }
+.skin-cond { margin: calc(1.6 * var(--cw)) 0 0; font-size: calc(3 * var(--cw)); color: var(--steel-hi); text-align: center; }
 /* 商店造型 */
 .skin-sakura {
   --sk-frame: linear-gradient(145deg, #ffd6e6, #f08ab0 38%, #c05080 62%, #ffc0d8);
   --sk-socket: radial-gradient(ellipse at 50% 60%, #2a0a18 40%, #4a1430);
   --sk-ring: #ffe0ecc0; --sk-bolt: #ffffff;
-  --sk-board: radial-gradient(circle at 20% 30%, #ff9ac040 0 .8cqw, transparent 1cqw), radial-gradient(circle at 75% 70%, #ffb6d040 0 1cqw, transparent 1.2cqw), radial-gradient(circle at 60% 20%, #ffc6dc30 0 .6cqw, transparent .8cqw), linear-gradient(180deg, #2a0e1e, #12040c);
+  --sk-board: radial-gradient(circle at 20% 30%, #ff9ac040 0 calc(.8 * var(--cw)), transparent calc(1 * var(--cw))), radial-gradient(circle at 75% 70%, #ffb6d040 0 calc(1 * var(--cw)), transparent calc(1.2 * var(--cw))), radial-gradient(circle at 60% 20%, #ffc6dc30 0 calc(.6 * var(--cw)), transparent calc(.8 * var(--cw))), linear-gradient(180deg, #2a0e1e, #12040c);
 }
 .skin-ocean {
   --sk-frame: linear-gradient(145deg, #2a8ab0, #0e4a6a 40%, #062a40 62%, #1a6a8a);
   --sk-socket: radial-gradient(ellipse at 50% 70%, #00c8ff30 0%, #021420 50%, #000a12);
   --sk-ring: #5af0ffb0; --sk-bolt: #b0f4ff;
-  --sk-board: repeating-radial-gradient(ellipse at 50% 120%, #0a3a5a40 0 2cqw, transparent 2cqw 4cqw), linear-gradient(180deg, #04202e, #000a10);
+  --sk-board: repeating-radial-gradient(ellipse at 50% 120%, #0a3a5a40 0 calc(2 * var(--cw)), transparent calc(2 * var(--cw)) calc(4 * var(--cw))), linear-gradient(180deg, #04202e, #000a10);
 }
 .skin-candy {
-  --sk-frame: repeating-linear-gradient(-45deg, #ff6aa8 0 1.2cqw, #fff4fa 1.2cqw 2.4cqw);
+  --sk-frame: repeating-linear-gradient(-45deg, #ff6aa8 0 calc(1.2 * var(--cw)), #fff4fa calc(1.2 * var(--cw)) calc(2.4 * var(--cw)));
   --sk-socket: radial-gradient(ellipse at 50% 60%, #3a1030 40%, #5a1a48);
-  --sk-ring: #ffffffd0; --sk-bolt: #7ae8ff; --sk-radius: 3.4cqw; --sk-radius-in: 2.6cqw;
-  --sk-board: radial-gradient(circle at 25% 25%, #ff9ad040 0 1.2cqw, transparent 1.4cqw) 0 0 / 8cqw 8cqw, linear-gradient(180deg, #2a0a26, #120414);
+  --sk-ring: #ffffffd0; --sk-bolt: #7ae8ff; --sk-radius: calc(3.4 * var(--cw)); --sk-radius-in: calc(2.6 * var(--cw));
+  --sk-board: radial-gradient(circle at 25% 25%, #ff9ad040 0 calc(1.2 * var(--cw)), transparent calc(1.4 * var(--cw))) 0 0 / calc(8 * var(--cw)) calc(8 * var(--cw)), linear-gradient(180deg, #2a0a26, #120414);
 }
 .skin-carbon {
-  --sk-frame: repeating-linear-gradient(45deg, #2a2c30 0 .6cqw, #16181a .6cqw 1.2cqw), repeating-linear-gradient(-45deg, #ffffff0a 0 .6cqw, transparent .6cqw 1.2cqw);
+  --sk-frame: repeating-linear-gradient(45deg, #2a2c30 0 calc(.6 * var(--cw)), #16181a calc(.6 * var(--cw)) calc(1.2 * var(--cw))), repeating-linear-gradient(-45deg, #ffffff0a 0 calc(.6 * var(--cw)), transparent calc(.6 * var(--cw)) calc(1.2 * var(--cw)));
   --sk-socket: radial-gradient(ellipse at 50% 60%, #020202 45%, #0e0f10);
-  --sk-ring: #ff3a3ab0; --sk-bolt: #e8e8e8; --sk-radius: 1cqw; --sk-radius-in: .6cqw;
-  --sk-board: repeating-linear-gradient(45deg, #1a1c1e 0 1cqw, #121314 1cqw 2cqw);
+  --sk-ring: #ff3a3ab0; --sk-bolt: #e8e8e8; --sk-radius: calc(1 * var(--cw)); --sk-radius-in: calc(.6 * var(--cw));
+  --sk-board: repeating-linear-gradient(45deg, #1a1c1e 0 calc(1 * var(--cw)), #121314 calc(1 * var(--cw)) calc(2 * var(--cw)));
 }
 .skin-rainbow {
   --sk-frame: linear-gradient(120deg, #ff5a5a, #ffd400, #3ddc84, #19c8f0, #b04dff, #ff5a5a, #ffd400, #3ddc84) 0 0 / 300% 300%;
@@ -860,9 +860,9 @@ html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; } /* 手機瀏覽
 .branch-card.chest    { --c: #b06aff; }
 .branch-card.devil    { --c: #ff4a5a; }
 .branch-cards.many { display: grid; grid-template-columns: 1fr 1fr; }
-.branch-cards.many .branch-card { padding-top: 2.4cqw; padding-bottom: 2.4cqw; }
-.branch-cards.many .br-icon { font-size: 10cqw; }
-.branch-card .br-price { font-style: normal; font-size: 3.6cqw; font-weight: 900; color: #ffe08a; }
+.branch-cards.many .branch-card { padding-top: calc(2.4 * var(--cw)); padding-bottom: calc(2.4 * var(--cw)); }
+.branch-cards.many .br-icon { font-size: calc(10 * var(--cw)); }
+.branch-card .br-price { font-style: normal; font-size: calc(3.6 * var(--cw)); font-weight: 900; color: #ffe08a; }
 .branch-card:disabled { filter: grayscale(1) brightness(.55); }
 .branch-card.heal  { --c: #3ddc84; }
 .branch-card.rage  { --c: #ff7a1f; }
@@ -879,39 +879,39 @@ html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; } /* 手機瀏覽
 @keyframes evShake { 20% { transform: translate(-2%, 1%) rotate(-1deg); } 45% { transform: translate(2%, -1%) rotate(1deg); } 70% { transform: translate(-1%, .5%); } }
 @keyframes evBite { 0%, 30% { filter: brightness(1.4) sepia(1) hue-rotate(-50deg) saturate(5); } }
 /* 分歧卡上的事件縮圖:裁成 4:3 */
-.branch-card .br-img { width: 100%; height: auto; max-width: none; aspect-ratio: 4 / 3; object-fit: cover; border-radius: 1.2cqw; box-shadow: 0 0 0 .3cqw var(--c); }
+.branch-card .br-img { width: 100%; height: auto; max-width: none; aspect-ratio: 4 / 3; object-fit: cover; border-radius: calc(1.2 * var(--cw)); box-shadow: 0 0 0 calc(.3 * var(--cw)) var(--c); }
 
 /* ---------- 故事對話:畫面下方的對話框,左邊炎鋼 / 右邊敵人的頭像 ---------- */
-.dialog { position: absolute; inset: 0; z-index: 60; display: none; flex-direction: column; justify-content: flex-end; padding: 0 4cqw 10cqw;
+.dialog { position: absolute; inset: 0; z-index: 60; display: none; flex-direction: column; justify-content: flex-end; padding: 0 calc(4 * var(--cw)) calc(10 * var(--cw));
   background: linear-gradient(180deg, #0004 30%, #000c); }
 .dialog.show { display: flex; animation: dlgIn .25s ease-out; }
 @keyframes dlgIn { from { opacity: 0; } }
-.dlg-skip { position: absolute; top: 4cqw; right: 4cqw; border: 0; padding: 1.6cqw 3.6cqw; font-size: 3.4cqw; font-weight: 800; color: #fff; background: #0009; border-radius: 99px; box-shadow: inset 0 0 0 .3cqw #ffffff40; }
-.dlg-box { position: relative; display: flex; align-items: flex-end; gap: 3cqw; min-height: 32cqw; padding: 3.6cqw 4cqw;
-  background: linear-gradient(180deg, #14101ef0, #07050cf0); clip-path: var(--chamfer); box-shadow: inset 0 0 0 .4cqw var(--neon-c); animation: dlgPop .3s cubic-bezier(.2, .9, .3, 1.2); }
+.dlg-skip { position: absolute; top: calc(4 * var(--cw)); right: calc(4 * var(--cw)); border: 0; padding: calc(1.6 * var(--cw)) calc(3.6 * var(--cw)); font-size: calc(3.4 * var(--cw)); font-weight: 800; color: #fff; background: #0009; border-radius: 99px; box-shadow: inset 0 0 0 calc(.3 * var(--cw)) #ffffff40; }
+.dlg-box { position: relative; display: flex; align-items: flex-end; gap: calc(3 * var(--cw)); min-height: calc(32 * var(--cw)); padding: calc(3.6 * var(--cw)) calc(4 * var(--cw));
+  background: linear-gradient(180deg, #14101ef0, #07050cf0); clip-path: var(--chamfer); box-shadow: inset 0 0 0 calc(.4 * var(--cw)) var(--neon-c); animation: dlgPop .3s cubic-bezier(.2, .9, .3, 1.2); }
 @keyframes dlgPop { from { transform: translateY(6%); opacity: 0; } }
-.dlg-face { flex-shrink: 0; width: 26cqw; height: 26cqw; background: center 15% / cover no-repeat; border-radius: 2cqw; box-shadow: 0 0 0 .4cqw var(--neon-c), 0 0 3cqw #19f0ff60; background-color: #0008; }
+.dlg-face { flex-shrink: 0; width: calc(26 * var(--cw)); height: calc(26 * var(--cw)); background: center 15% / cover no-repeat; border-radius: calc(2 * var(--cw)); box-shadow: 0 0 0 calc(.4 * var(--cw)) var(--neon-c), 0 0 calc(3 * var(--cw)) #19f0ff60; background-color: #0008; }
 .dlg-body { flex: 1; min-width: 0; }
-.dlg-name { display: block; margin-bottom: 1.4cqw; font-size: 4.4cqw; color: var(--neon-c); text-shadow: 0 0 1.4cqw var(--neon-c); }
-.dlg-text { margin: 0; font-size: 4.2cqw; line-height: 1.6; color: #fff; white-space: pre-line; }
-.dlg-hint { margin-top: 2.4cqw; text-align: center; font-size: 3cqw; color: #ffffff90; animation: dlBlink 1s ease-in-out infinite alternate; }
-.dialog.dlg-enemy .dlg-box { flex-direction: row-reverse; box-shadow: inset 0 0 0 .4cqw var(--neon-r); }
-.dialog.dlg-enemy .dlg-face { box-shadow: 0 0 0 .4cqw var(--neon-r), 0 0 3cqw #ff3a5a60; background-size: 160% auto; background-position: center 25%; }
-.dialog.dlg-enemy .dlg-name { color: #ff6a7a; text-shadow: 0 0 1.4cqw #ff3a5a; text-align: right; }
-.dialog.dlg-hero .dlg-name { color: var(--fire-2); text-shadow: 0 0 1.4cqw #ff7a1f; }
-.dialog.dlg-hero .dlg-face { box-shadow: 0 0 0 .4cqw var(--fire-2), 0 0 3cqw #ff7a1f80; }
+.dlg-name { display: block; margin-bottom: calc(1.4 * var(--cw)); font-size: calc(4.4 * var(--cw)); color: var(--neon-c); text-shadow: 0 0 calc(1.4 * var(--cw)) var(--neon-c); }
+.dlg-text { margin: 0; font-size: calc(4.2 * var(--cw)); line-height: 1.6; color: #fff; white-space: pre-line; }
+.dlg-hint { margin-top: calc(2.4 * var(--cw)); text-align: center; font-size: calc(3 * var(--cw)); color: #ffffff90; animation: dlBlink 1s ease-in-out infinite alternate; }
+.dialog.dlg-enemy .dlg-box { flex-direction: row-reverse; box-shadow: inset 0 0 0 calc(.4 * var(--cw)) var(--neon-r); }
+.dialog.dlg-enemy .dlg-face { box-shadow: 0 0 0 calc(.4 * var(--cw)) var(--neon-r), 0 0 calc(3 * var(--cw)) #ff3a5a60; background-size: 160% auto; background-position: center 25%; }
+.dialog.dlg-enemy .dlg-name { color: #ff6a7a; text-shadow: 0 0 calc(1.4 * var(--cw)) #ff3a5a; text-align: right; }
+.dialog.dlg-hero .dlg-name { color: var(--fire-2); text-shadow: 0 0 calc(1.4 * var(--cw)) #ff7a1f; }
+.dialog.dlg-hero .dlg-face { box-shadow: 0 0 0 calc(.4 * var(--cw)) var(--fire-2), 0 0 calc(3 * var(--cw)) #ff7a1f80; }
 /* 同伴(第三章):和敵人一樣在右邊,但用友善的青綠色 */
-.dialog.dlg-ally .dlg-box { box-shadow: inset 0 0 0 .4cqw #3ddc84; }
-.dialog.dlg-ally .dlg-face { box-shadow: 0 0 0 .4cqw #3ddc84, 0 0 3cqw #3ddc8460; }
-.dialog.dlg-ally .dlg-name { color: #7dffb4; text-shadow: 0 0 1.4cqw #3ddc84; }
+.dialog.dlg-ally .dlg-box { box-shadow: inset 0 0 0 calc(.4 * var(--cw)) #3ddc84; }
+.dialog.dlg-ally .dlg-face { box-shadow: 0 0 0 calc(.4 * var(--cw)) #3ddc84, 0 0 calc(3 * var(--cw)) #3ddc8460; }
+.dialog.dlg-ally .dlg-name { color: #7dffb4; text-shadow: 0 0 calc(1.4 * var(--cw)) #3ddc84; }
 .dialog.dlg-narrator .dlg-face, .dialog.dlg-system .dlg-face { display: none; }
 .dialog.dlg-narrator .dlg-text { font-style: italic; color: #e8e0ff; }
-.dialog.dlg-system .dlg-box { box-shadow: inset 0 0 0 .5cqw var(--neon-y), 0 0 4cqw #ffd40060; }
-.dialog.dlg-system .dlg-name { color: var(--neon-y); text-shadow: 0 0 1.4cqw var(--neon-y); font-size: 5cqw; }
-.dialog.dlg-system .dlg-text { font-size: 3.8cqw; }
-.dlg-face { display: grid; place-items: center; font-size: 14cqw; line-height: 1; }
+.dialog.dlg-system .dlg-box { box-shadow: inset 0 0 0 calc(.5 * var(--cw)) var(--neon-y), 0 0 calc(4 * var(--cw)) #ffd40060; }
+.dialog.dlg-system .dlg-name { color: var(--neon-y); text-shadow: 0 0 calc(1.4 * var(--cw)) var(--neon-y); font-size: calc(5 * var(--cw)); }
+.dialog.dlg-system .dlg-text { font-size: calc(3.8 * var(--cw)); }
+.dlg-face { display: grid; place-items: center; font-size: calc(14 * var(--cw)); line-height: 1; }
 /* 炎鋼・天道覺醒:立繪是整張場景圖,頭像框放大對準臉部 */
-.dialog.dlg-awake .dlg-face { background-size: 210% auto; background-position: 50% 44%; box-shadow: 0 0 0 .4cqw #ffd84a, 0 0 4cqw #ff7a1fc0; }
+.dialog.dlg-awake .dlg-face { background-size: 210% auto; background-position: 50% 44%; box-shadow: 0 0 0 calc(.4 * var(--cw)) #ffd84a, 0 0 calc(4 * var(--cw)) #ff7a1fc0; }
 
 /* ---------- 商店新造型 ---------- */
 /* 翡翠:溫潤的綠玉外框、金色螺栓 */
@@ -937,10 +937,10 @@ html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; } /* 手機瀏覽
 }
 /* 電路:綠色電路板與銅色走線 */
 .skin-circuit {
-  --sk-frame: repeating-linear-gradient(90deg, #d8a04a 0 .3cqw, transparent .3cqw 2.4cqw), linear-gradient(145deg, #2a6a3a, #0e3a1c 45%, #062a12 62%, #1e5a2e);
+  --sk-frame: repeating-linear-gradient(90deg, #d8a04a 0 calc(.3 * var(--cw)), transparent calc(.3 * var(--cw)) calc(2.4 * var(--cw))), linear-gradient(145deg, #2a6a3a, #0e3a1c 45%, #062a12 62%, #1e5a2e);
   --sk-socket: radial-gradient(ellipse at 50% 60%, #020a04 45%, #0a2010);
-  --sk-ring: #4aff8aa0; --sk-bolt: #d8a04a; --sk-radius: .8cqw; --sk-radius-in: .5cqw;
-  --sk-board: linear-gradient(90deg, #d8a04a18 1px, transparent 1px) 0 0 / 6cqw 6cqw, linear-gradient(0deg, #d8a04a18 1px, transparent 1px) 0 0 / 6cqw 6cqw, linear-gradient(180deg, #0a2410, #030c05);
+  --sk-ring: #4aff8aa0; --sk-bolt: #d8a04a; --sk-radius: calc(.8 * var(--cw)); --sk-radius-in: calc(.5 * var(--cw));
+  --sk-board: linear-gradient(90deg, #d8a04a18 1px, transparent 1px) 0 0 / calc(6 * var(--cw)) calc(6 * var(--cw)), linear-gradient(0deg, #d8a04a18 1px, transparent 1px) 0 0 / calc(6 * var(--cw)) calc(6 * var(--cw)), linear-gradient(180deg, #0a2410, #030c05);
 }
 
 /* ===== 旋風破綻:蓋住九宮格的雷達圓盤 ===== */
@@ -953,9 +953,9 @@ html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; } /* 手機瀏覽
 @keyframes dialIn { from { transform: scale(.4) rotate(-90deg); opacity: 0; } }
 @keyframes dialOut { to { transform: scale(1.15); opacity: 0; } }
 .dial-disc {
-  position: relative; border-radius: 50%; overflow: hidden; width: 80cqw; height: 80cqw; flex: none;
+  position: relative; border-radius: 50%; overflow: hidden; width: calc(80 * var(--cw)); height: calc(80 * var(--cw)); flex: none;
   background: radial-gradient(circle, #10283a 0 55%, #081521 70%, #04090f 100%);
-  border: 1.4cqw solid #2ee6ff; box-shadow: 0 0 4cqw #2ee6ff88, inset 0 0 6cqw #000c;
+  border: calc(1.4 * var(--cw)) solid #2ee6ff; box-shadow: 0 0 calc(4 * var(--cw)) #2ee6ff88, inset 0 0 calc(6 * var(--cw)) #000c;
 }
 /* 缺口:披薩切片般的發亮扇形(從 --w0 開始、寬 --ww) */
 .dial-gap {
@@ -963,7 +963,7 @@ html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; } /* 手機瀏覽
   background: conic-gradient(from var(--w0), #ffcf3add 0 var(--ww), transparent var(--ww));
   animation: dialGap .5s ease-in-out infinite alternate;
 }
-@keyframes dialGap { to { filter: brightness(1.45) drop-shadow(0 0 2cqw #ffcf3a); } }
+@keyframes dialGap { to { filter: brightness(1.45) drop-shadow(0 0 calc(2 * var(--cw)) #ffcf3a); } }
 .dial-ticks {
   position: absolute; inset: 0; border-radius: 50%;
   background: radial-gradient(circle, transparent 0 30%, #2ee6ff33 30.5% 31%, transparent 31.5% 62%, #2ee6ff33 62.5% 63%, transparent 63.5%);
@@ -977,18 +977,18 @@ html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; } /* 手機瀏覽
 }
 /* 雷達指針:從圓心指向外圈 */
 .dial-needle {
-  position: absolute; left: 50%; top: 4%; width: 1.6cqw; height: 46%; margin-left: -.8cqw;
-  transform-origin: 50% 100%; border-radius: 1cqw;
-  background: linear-gradient(#fff, #5ff4ff); box-shadow: 0 0 2cqw #5ff4ff, 0 0 5cqw #2ee6ff;
+  position: absolute; left: 50%; top: 4%; width: calc(1.6 * var(--cw)); height: 46%; margin-left: calc(-.8 * var(--cw));
+  transform-origin: 50% 100%; border-radius: calc(1 * var(--cw));
+  background: linear-gradient(#fff, #5ff4ff); box-shadow: 0 0 calc(2 * var(--cw)) #5ff4ff, 0 0 calc(5 * var(--cw)) #2ee6ff;
 }
 .dial-hub {
   position: absolute; left: 50%; top: 50%; width: 20%; height: 20%; transform: translate(-50%, -50%);
-  border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 8cqw;
-  background: radial-gradient(circle, #1d4d66, #0a1d2a); border: .8cqw solid #2ee6ff; z-index: 2;
+  border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: calc(8 * var(--cw));
+  background: radial-gradient(circle, #1d4d66, #0a1d2a); border: calc(.8 * var(--cw)) solid #2ee6ff; z-index: 2;
 }
-.dial-disc.hit { border-color: #ffcf3a; box-shadow: 0 0 6cqw #ffcf3a, inset 0 0 6cqw #000c; }
-.dial-disc.bad { border-color: #ff3b5c; box-shadow: 0 0 6cqw #ff3b5c; }
-.dial-disc.bad .dial-needle { background: #ff3b5c; box-shadow: 0 0 3cqw #ff3b5c; }
+.dial-disc.hit { border-color: #ffcf3a; box-shadow: 0 0 calc(6 * var(--cw)) #ffcf3a, inset 0 0 calc(6 * var(--cw)) #000c; }
+.dial-disc.bad { border-color: #ff3b5c; box-shadow: 0 0 calc(6 * var(--cw)) #ff3b5c; }
+.dial-disc.bad .dial-needle { background: #ff3b5c; box-shadow: 0 0 calc(3 * var(--cw)) #ff3b5c; }
 /* 畫圈階段:指針與缺口退場,中央出現跟著手指轉的漩渦,強度 --heat 隨轉速變化 */
 .dial.spin .dial-needle, .dial.spin .dial-gap { display: none; }
 .dial-storm {
@@ -998,37 +998,37 @@ html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; } /* 手機瀏覽
     radial-gradient(circle, #ffffff 0 10%, #9ff1ffaa 32%, #2ee6ff33 60%, transparent 75%);
   -webkit-mask: radial-gradient(circle, #000 0 40%, #000a 65%, transparent 80%);
   mask: radial-gradient(circle, #000 0 40%, #000a 65%, transparent 80%);
-  filter: blur(calc(var(--heat) * .4cqw)); display: none;
+  filter: blur(calc(var(--heat) * calc(.4 * var(--cw)))); display: none;
 }
 .dial.spin .dial-storm { display: block; }
-.dial.spin .dial-disc { border-color: #7fe9ff; box-shadow: 0 0 calc(4cqw + var(--heat) * 8cqw) #7fe9ff, inset 0 0 6cqw #000c; }
+.dial.spin .dial-disc { border-color: #7fe9ff; box-shadow: 0 0 calc(calc(4 * var(--cw)) + var(--heat) * calc(8 * var(--cw))) #7fe9ff, inset 0 0 calc(6 * var(--cw)) #000c; }
 .dial.spin .dial-hub { animation: dialHub .6s linear infinite; }
 @keyframes dialHub { to { transform: translate(-50%, -50%) rotate(-360deg); } }
 .dial-pt {
-  position: absolute; left: 50%; top: 50%; width: 5cqw; height: 1.3cqw; margin: -.65cqw 0 0 -2.5cqw;
-  border-radius: 1cqw; background: #dffbff; box-shadow: 0 0 1.5cqw #7fe9ff; pointer-events: none; z-index: 1;
+  position: absolute; left: 50%; top: 50%; width: calc(5 * var(--cw)); height: calc(1.3 * var(--cw)); margin: calc(-.65 * var(--cw)) 0 0 calc(-2.5 * var(--cw));
+  border-radius: calc(1 * var(--cw)); background: #dffbff; box-shadow: 0 0 calc(1.5 * var(--cw)) #7fe9ff; pointer-events: none; z-index: 1;
 }
 .dial-count {
   position: absolute; left: 50%; bottom: 9%; transform: translateX(-50%); z-index: 3;
-  font-size: 6cqw; color: #fff; text-shadow: 0 0 2cqw #2ee6ff, 0 .4cqw 0 #000; letter-spacing: .05em;
+  font-size: calc(6 * var(--cw)); color: #fff; text-shadow: 0 0 calc(2 * var(--cw)) #2ee6ff, 0 calc(.4 * var(--cw)) 0 #000; letter-spacing: .05em;
 }
 .dial-disc.lap .dial-count { animation: dialLap .3s ease-out; }
 @keyframes dialLap { from { transform: translateX(-50%) scale(1.6); color: #ffcf3a; } }
 /* 龍捲風飛向敵人 */
 .fx-tornado {
-  position: absolute; left: 0; top: 0; z-index: 4; pointer-events: none; font-size: 12cqw; line-height: 1;
-  filter: drop-shadow(0 0 2cqw #7fe9ff);
+  position: absolute; left: 0; top: 0; z-index: 4; pointer-events: none; font-size: calc(12 * var(--cw)); line-height: 1;
+  filter: drop-shadow(0 0 calc(2 * var(--cw)) #7fe9ff);
 }
-.fx-tornado.big { filter: drop-shadow(0 0 3cqw #fff) drop-shadow(0 0 5cqw #2ee6ff); }
+.fx-tornado.big { filter: drop-shadow(0 0 calc(3 * var(--cw)) #fff) drop-shadow(0 0 calc(5 * var(--cw)) #2ee6ff); }
 
 /* ===== 旋風破綻:風級(轉滿最低圈數後越轉越強)===== */
 .dial.tier-0 .dial-disc { border-color: #7fe9ff; }
-.dial.tier-1 .dial-disc { border-color: #ffb03c; box-shadow: 0 0 calc(5cqw + var(--heat) * 9cqw) #ff9a2a, inset 0 0 6cqw #000c; }
-.dial.tier-1 .dial-pt { background: #ffe2b0; box-shadow: 0 0 1.5cqw #ff9a2a; }
-.dial.tier-1 .dial-count { text-shadow: 0 0 2cqw #ff9a2a, 0 .4cqw 0 #000; color: #ffe2b0; }
-.dial.tier-2 .dial-disc { border-color: #ff4ad8; box-shadow: 0 0 calc(6cqw + var(--heat) * 10cqw) #c84dff, inset 0 0 6cqw #000c; animation: tierPulse .5s ease-in-out infinite alternate; }
-.dial.tier-2 .dial-pt { background: #ffd0f6; box-shadow: 0 0 1.8cqw #ff4ad8; }
-.dial.tier-2 .dial-count { text-shadow: 0 0 2.4cqw #ff4ad8, 0 .4cqw 0 #000; color: #ffd0f6; }
+.dial.tier-1 .dial-disc { border-color: #ffb03c; box-shadow: 0 0 calc(calc(5 * var(--cw)) + var(--heat) * calc(9 * var(--cw))) #ff9a2a, inset 0 0 calc(6 * var(--cw)) #000c; }
+.dial.tier-1 .dial-pt { background: #ffe2b0; box-shadow: 0 0 calc(1.5 * var(--cw)) #ff9a2a; }
+.dial.tier-1 .dial-count { text-shadow: 0 0 calc(2 * var(--cw)) #ff9a2a, 0 calc(.4 * var(--cw)) 0 #000; color: #ffe2b0; }
+.dial.tier-2 .dial-disc { border-color: #ff4ad8; box-shadow: 0 0 calc(calc(6 * var(--cw)) + var(--heat) * calc(10 * var(--cw))) #c84dff, inset 0 0 calc(6 * var(--cw)) #000c; animation: tierPulse .5s ease-in-out infinite alternate; }
+.dial.tier-2 .dial-pt { background: #ffd0f6; box-shadow: 0 0 calc(1.8 * var(--cw)) #ff4ad8; }
+.dial.tier-2 .dial-count { text-shadow: 0 0 calc(2.4 * var(--cw)) #ff4ad8, 0 calc(.4 * var(--cw)) 0 #000; color: #ffd0f6; }
 @keyframes tierPulse { to { transform: scale(1.03); } }
 
 /* ===== 旋風破綻:繞著敵人越聚越大的風暴 ===== */
@@ -1038,14 +1038,14 @@ html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; } /* 手機瀏覽
 .storm-orbit { animation: orbitSpin var(--spd) linear infinite; scale: var(--grow); transition: scale .35s ease-out; }
 @keyframes orbitSpin { to { rotate: 360deg; } }
 .storm-orbit > i {
-  font-style: normal; font-size: 9cqw; line-height: 1; filter: drop-shadow(0 0 1.6cqw #7fe9ff);
+  font-style: normal; font-size: calc(9 * var(--cw)); line-height: 1; filter: drop-shadow(0 0 calc(1.6 * var(--cw)) #7fe9ff);
   transform: rotate(var(--a)) translateX(var(--r)) rotate(calc(var(--a) * -1)) translate(-50%, -50%);
   animation: orbIn .3s ease-out both;
 }
 @keyframes orbIn { from { opacity: 0; } }
 /* 中間的旋風氣流:淡淡的漩渦,跟著圈數變大 */
 .storm-orbit .so-ring {
-  width: 56cqw; height: 56cqw; margin: -28cqw 0 0 -28cqw; border-radius: 50%; opacity: .55;
+  width: calc(56 * var(--cw)); height: calc(56 * var(--cw)); margin: calc(-28 * var(--cw)) 0 0 calc(-28 * var(--cw)); border-radius: 50%; opacity: .55;
   background: repeating-conic-gradient(#dffbff00 0deg, #dffbff66 10deg, #dffbff00 22deg);
   -webkit-mask: radial-gradient(circle closest-side, transparent 0 30%, #000 50%, transparent 100%);
   mask: radial-gradient(circle closest-side, transparent 0 30%, #000 50%, transparent 100%);
@@ -1061,49 +1061,49 @@ html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; } /* 手機瀏覽
 @keyframes soBig { from { scale: .6; } to { scale: 1.5; } }
 
 /* 代價技能:暗紅外框,標籤「代價」(效果強但有缺點) */
-.skill-card.risk { background: var(--brushed), linear-gradient(135deg, #3a0a12, var(--steel-0)); box-shadow: inset 0 0 0 .5cqw #ff3a4a, inset .8cqw 0 0 #ff3a4a; }
+.skill-card.risk { background: var(--brushed), linear-gradient(135deg, #3a0a12, var(--steel-0)); box-shadow: inset 0 0 0 calc(.5 * var(--cw)) #ff3a4a, inset calc(.8 * var(--cw)) 0 0 #ff3a4a; }
 .skill-card.risk b { color: #ffd0d0; }
 .rule-tag.risk { background: #ff3a4a; color: #fff; }
 /* 選擇關卡:天魔還沒開放的提示 / 結算畫面的天魔星數 */
 .round-desc.lock { color: #d8b0ff; }
-.result-box .new-round.lock { background: linear-gradient(90deg, transparent, #3a0866c0, transparent); font-size: 4.2cqw; }
+.result-box .new-round.lock { background: linear-gradient(90deg, transparent, #3a0866c0, transparent); font-size: calc(4.2 * var(--cw)); }
 
 /* ===== BOSS 專屬小遊戲(gimmicks.js)===== */
 /* 對拳拼勁:九宮格上方的拔河力量條(--pos 0~100%,炎鋼在左、BOSS 在右),中排左右兩顆大拳頭 */
 .gm-clash {
-  position: absolute; left: 4%; right: 4%; top: 6%; z-index: 6; display: flex; align-items: center; gap: 2cqw;
-  font-size: 3.2cqw; font-weight: 900; color: #fff; text-shadow: 0 .3cqw 0 #000; --pos: 50%; pointer-events: none;
+  position: absolute; left: 4%; right: 4%; top: 6%; z-index: 6; display: flex; align-items: center; gap: calc(2 * var(--cw));
+  font-size: calc(3.2 * var(--cw)); font-weight: 900; color: #fff; text-shadow: 0 calc(.3 * var(--cw)) 0 #000; --pos: 50%; pointer-events: none;
 }
-.gm-clash .gc-track { position: relative; flex: 1; height: 5cqw; border-radius: 99px; overflow: visible;
-  background: linear-gradient(90deg, #ff3a4a, #6a0a14); box-shadow: inset 0 0 0 .4cqw #000a, 0 0 2cqw #000; }
+.gm-clash .gc-track { position: relative; flex: 1; height: calc(5 * var(--cw)); border-radius: 99px; overflow: visible;
+  background: linear-gradient(90deg, #ff3a4a, #6a0a14); box-shadow: inset 0 0 0 calc(.4 * var(--cw)) #000a, 0 0 calc(2 * var(--cw)) #000; }
 .gm-clash .gc-fill { position: absolute; left: 0; top: 0; bottom: 0; width: var(--pos); border-radius: 99px;
-  background: linear-gradient(90deg, #ffd84a, #ff7a1a); box-shadow: 0 0 2cqw #ff9a2a; }
-.gm-clash .gc-mark { position: absolute; left: var(--pos); top: 50%; transform: translate(-50%, -50%); font-size: 8cqw; filter: drop-shadow(0 0 1.4cqw #fff); }
-.gm-clash .gc-track::after { content: ''; position: absolute; left: 50%; top: -1cqw; bottom: -1cqw; width: .5cqw; background: #fff8; } /* 中線 */
+  background: linear-gradient(90deg, #ffd84a, #ff7a1a); box-shadow: 0 0 calc(2 * var(--cw)) #ff9a2a; }
+.gm-clash .gc-mark { position: absolute; left: var(--pos); top: 50%; transform: translate(-50%, -50%); font-size: calc(8 * var(--cw)); filter: drop-shadow(0 0 calc(1.4 * var(--cw)) #fff); }
+.gm-clash .gc-track::after { content: ''; position: absolute; left: 50%; top: calc(-1 * var(--cw)); bottom: calc(-1 * var(--cw)); width: calc(.5 * var(--cw)); background: #fff8; } /* 中線 */
 .gm-clash .gc-me { color: #ffd84a; } .gm-clash .gc-foe { color: #ff8a8a; }
 .gm-clash.win .gc-track { animation: clashWin .5s ease-out; } .gm-clash.lose { animation: clashLose .5s ease-out forwards; }
 @keyframes clashWin { 50% { transform: scale(1.08); filter: brightness(1.8); } }
 @keyframes clashLose { to { opacity: 0; transform: translateX(-8%); } }
 .cell.clash-btn .cap { background: linear-gradient(180deg, #ffb36b, #ff5a1f 55%, #c2300a); --edge: #7a1c04; animation: clashPulse .5s ease-in-out infinite alternate; }
-.cell.clash-btn .label { font-size: 4.4cqw; }
-@keyframes clashPulse { to { filter: brightness(1.25) drop-shadow(0 0 2cqw #ff9a2a); } }
+.cell.clash-btn .label { font-size: calc(4.4 * var(--cw)); }
+@keyframes clashPulse { to { filter: brightness(1.25) drop-shadow(0 0 calc(2 * var(--cw)) #ff9a2a); } }
 /* 按下 L / R:按鈕往下壓再彈起(原本的脈動照樣進行) */
 .cell.clash-btn.bump .cap { animation: clashPress .16s ease-out, clashPulse .5s ease-in-out infinite alternate; }
 @keyframes clashPress { 35% { transform: translateY(10%) scale(.9); filter: brightness(1.6); } 75% { transform: translateY(-4%) scale(1.04); } }
 /* 熱鬥:交鋒點噴火花、💥 每推一下就跳一下;點得越快熱度越高 */
 .gm-clash .gc-mark.hit { animation: gcMarkHit .18s ease-out; }
-@keyframes gcMarkHit { 40% { transform: translate(-50%, -50%) scale(1.6) rotate(-12deg); filter: drop-shadow(0 0 3cqw #fff) brightness(1.4); } }
+@keyframes gcMarkHit { 40% { transform: translate(-50%, -50%) scale(1.6) rotate(-12deg); filter: drop-shadow(0 0 calc(3 * var(--cw)) #fff) brightness(1.4); } }
 .gc-sparks { position: absolute; top: 50%; width: 0; height: 0; z-index: 2; pointer-events: none; }
-.gc-sparks i { position: absolute; width: 1.2cqw; height: 1.2cqw; margin: -.6cqw; border-radius: 50%; background: #fff2a8; box-shadow: 0 0 1.5cqw #ffb02a; animation: gcSpark .42s ease-out forwards; }
+.gc-sparks i { position: absolute; width: calc(1.2 * var(--cw)); height: calc(1.2 * var(--cw)); margin: calc(-.6 * var(--cw)); border-radius: 50%; background: #fff2a8; box-shadow: 0 0 calc(1.5 * var(--cw)) #ffb02a; animation: gcSpark .42s ease-out forwards; }
 @keyframes gcSpark { to { transform: translate(var(--dx), var(--dy)) scale(.3); opacity: 0; } }
 /* 熱度高:力量條著火、「熱鬥!」字樣浮出、整條微微震動 */
-.gm-clash .gc-fill { box-shadow: 0 0 calc(var(--heat, 0) * 4cqw) #ff7a1a; }
-.gm-clash .gc-hot { position: absolute; left: 50%; bottom: 120%; transform: translateX(-50%); font-style: normal; font-weight: 900; font-size: 4.6cqw; color: #ffe14a;
-  text-shadow: 0 0 1.5cqw #ff5a1f, 0 .3cqw 0 #7a1c04; white-space: nowrap; opacity: 0; transition: opacity .2s; pointer-events: none; }
+.gm-clash .gc-fill { box-shadow: 0 0 calc(var(--heat, 0) * calc(4 * var(--cw))) #ff7a1a; }
+.gm-clash .gc-hot { position: absolute; left: 50%; bottom: 120%; transform: translateX(-50%); font-style: normal; font-weight: 900; font-size: calc(4.6 * var(--cw)); color: #ffe14a;
+  text-shadow: 0 0 calc(1.5 * var(--cw)) #ff5a1f, 0 calc(.3 * var(--cw)) 0 #7a1c04; white-space: nowrap; opacity: 0; transition: opacity .2s; pointer-events: none; }
 .gm-clash.hot .gc-hot { opacity: 1; animation: gcHot .3s ease-in-out infinite alternate; }
 @keyframes gcHot { to { transform: translateX(-50%) scale(1.15); } }
 .gm-clash.hot .gc-track { animation: gcJolt .09s linear infinite; }
-@keyframes gcJolt { 50% { transform: translate(.3cqw, -.2cqw); } }
+@keyframes gcJolt { 50% { transform: translate(calc(.3 * var(--cw)), calc(-.2 * var(--cw))); } }
 /* 九宮格四周的火光,強度跟著熱度 */
 .gc-heat { position: absolute; inset: 0; z-index: 4; pointer-events: none; opacity: var(--heat, 0); transition: opacity .15s;
   background: radial-gradient(ellipse at 50% 50%, transparent 45%, #ff6a1a55 75%, #ff2a0aaa 100%); animation: gcFlicker .18s ease-in-out infinite alternate; }
@@ -1114,49 +1114,49 @@ html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; } /* 手機瀏覽
 /* 三仙歸洞:浮在九宮格上的傀儡;真身 👺 發紅光,點錯的傀儡化成煙 */
 .gm-shell { position: absolute; inset: 0; z-index: 6; pointer-events: none; }
 .gs-doll { position: absolute; left: 0; top: 0; display: grid; place-items: center; border-radius: 50%; line-height: 1;
-  background: radial-gradient(circle at 50% 40%, #3a2a4a, #150a20 70%); box-shadow: 0 0 0 .5cqw #c84dff80, 0 1cqw 2cqw #000c; }
-.gs-doll.real { box-shadow: 0 0 0 .6cqw #ff3a4a, 0 0 5cqw #ff3a4a; animation: dollReal .4s ease-in-out infinite alternate; }
+  background: radial-gradient(circle at 50% 40%, #3a2a4a, #150a20 70%); box-shadow: 0 0 0 calc(.5 * var(--cw)) #c84dff80, 0 calc(1 * var(--cw)) calc(2 * var(--cw)) #000c; }
+.gs-doll.real { box-shadow: 0 0 0 calc(.6 * var(--cw)) #ff3a4a, 0 0 calc(5 * var(--cw)) #ff3a4a; animation: dollReal .4s ease-in-out infinite alternate; }
 .gs-doll.wrong { opacity: .5; box-shadow: none; }
 @keyframes dollReal { to { filter: brightness(1.4); } }
-.cell.shell-pick::before { box-shadow: inset 0 0 0 .5cqw #ffd84a, inset 0 0 4cqw #ffd84a80 !important; }
+.cell.shell-pick::before { box-shadow: inset 0 0 0 calc(.5 * var(--cw)) #ffd84a, inset 0 0 calc(4 * var(--cw)) #ffd84a80 !important; }
 
 /* 一筆畫:冰晶格發藍光,走過的變亮;裂冰格(不能踩)灰白龜裂;凡塵 / 修羅的起點有提示光圈 */
 .cell.path-cell .cap { background: linear-gradient(180deg, #e8fbff, #7fd8ff 55%, #2a8ac0); --edge: #0b3a66; }
-.cell.path-cell.path-done .cap { background: linear-gradient(180deg, #ffffff, #b8f4ff 55%, #4ad0ff); filter: brightness(1.2) drop-shadow(0 0 2.4cqw #7fe9ff); transform: translateY(6%); }
+.cell.path-cell.path-done .cap { background: linear-gradient(180deg, #ffffff, #b8f4ff 55%, #4ad0ff); filter: brightness(1.2) drop-shadow(0 0 calc(2.4 * var(--cw)) #7fe9ff); transform: translateY(6%); }
 .cell.path-start .cap { animation: pathStart .6s ease-in-out infinite alternate; }
-@keyframes pathStart { to { box-shadow: 0 0 0 .7cqw #ffd84a, 0 0 4cqw #ffd84a; } }
+@keyframes pathStart { to { box-shadow: 0 0 0 calc(.7 * var(--cw)) #ffd84a, 0 0 calc(4 * var(--cw)) #ffd84a; } }
 .cell.path-crack::before { /* 裂冰:灰藍冰面加上白色裂痕,一看就知道不能踩 */
   background:
     linear-gradient(35deg, transparent 44%, #ffffffb0 45% 47%, transparent 48%),
     linear-gradient(-58deg, transparent 38%, #ffffff90 39% 41%, transparent 42%),
     linear-gradient(100deg, transparent 60%, #ffffff70 61% 62.5%, transparent 63.5%),
     radial-gradient(ellipse at 50% 55%, #4a6a84 0%, #22384a 60%, #142430);
-  box-shadow: inset 0 0 0 .3cqw #9fd8ff50, inset 0 0 3cqw #000a;
+  box-shadow: inset 0 0 0 calc(.3 * var(--cw)) #9fd8ff50, inset 0 0 calc(3 * var(--cw)) #000a;
 }
 /* 一筆畫:筆畫連接線(走過的格子中心連成發光的線,拖曳中連到手指) */
 .gm-trail { position: absolute; inset: 0; width: 100%; height: 100%; z-index: 5; pointer-events: none; overflow: visible; }
 .gm-trail polyline { fill: none; stroke-linecap: round; stroke-linejoin: round; }
-.gm-trail .gt-glow { stroke: #7fe9ff; stroke-width: 5cqw; opacity: .35; filter: blur(.8cqw); }
-.gm-trail .gt-core { stroke: #ffffff; stroke-width: 1.6cqw; filter: drop-shadow(0 0 1.2cqw #7fe9ff); }
+.gm-trail .gt-glow { stroke: #7fe9ff; stroke-width: calc(5 * var(--cw)); opacity: .35; filter: blur(calc(.8 * var(--cw))); }
+.gm-trail .gt-core { stroke: #ffffff; stroke-width: calc(1.6 * var(--cw)); filter: drop-shadow(0 0 calc(1.2 * var(--cw)) #7fe9ff); }
 
 /* 拆彈剪線:電線顏色(格子按鈕上色 + 小字標色名,色弱也分得出來)與上方的剪線順序 */
 .cell.wire .cap { --edge: #000a; color: #000; }
-.cell.wire .label { font-size: 3.6cqw; font-weight: 900; color: #000; background: #fffc; }
+.cell.wire .label { font-size: calc(3.6 * var(--cw)); font-weight: 900; color: #000; background: #fffc; }
 .w-red    { --wc: #ff3a4a; } .w-yellow { --wc: #ffd84a; } .w-blue  { --wc: #3aa0ff; }
 .w-green  { --wc: #3ddc84; } .w-purple { --wc: #c84dff; } .w-white { --wc: #e8eef6; }
 .cell.wire .cap { background: linear-gradient(180deg, #fff8, transparent 40%), var(--wc); }
-.gm-strip { display: inline-flex; align-items: center; gap: .8cqw; margin-left: 1cqw; vertical-align: middle; font-size: 3.4cqw; font-weight: 900; }
-.gm-strip i { font-style: normal; padding: .3cqw 1.6cqw; border-radius: 1cqw; background: var(--wc); color: #000; }
+.gm-strip { display: inline-flex; align-items: center; gap: calc(.8 * var(--cw)); margin-left: calc(1 * var(--cw)); vertical-align: middle; font-size: calc(3.4 * var(--cw)); font-weight: 900; }
+.gm-strip i { font-style: normal; padding: calc(.3 * var(--cw)) calc(1.6 * var(--cw)); border-radius: calc(1 * var(--cw)); background: var(--wc); color: #000; }
 .gm-strip i.cut { opacity: .3; text-decoration: line-through; }
 .gm-strip b { color: #fff8; }
-.gm-strip.win i { opacity: .3; } .gm-strip.lose i { box-shadow: 0 0 0 .4cqw #ff3a4a; }
+.gm-strip.win i { opacity: .3; } .gm-strip.lose i { box-shadow: 0 0 0 calc(.4 * var(--cw)) #ff3a4a; }
 
 /* 打鐵節奏:鐵鎚格 + 縮過來的光圈 */
 .cell.rhythm .cap { background: linear-gradient(180deg, #ffd0a0, #ff7a1a 55%, #8a3000); --edge: #4a1800; }
-.gm-ring { position: absolute; z-index: 6; border-radius: 50%; pointer-events: none; box-shadow: 0 0 0 .7cqw #ffd84a, 0 0 3cqw #ffb03c; }
+.gm-ring { position: absolute; z-index: 6; border-radius: 50%; pointer-events: none; box-shadow: 0 0 0 calc(.7 * var(--cw)) #ffd84a, 0 0 calc(3 * var(--cw)) #ffb03c; }
 
 /* 熄燈解鎖:亮著的電路格 / 已關掉的格子 */
-.cell.light-on .cap { background: linear-gradient(180deg, #fffbe0, #ffd84a 55%, #c08a00); --edge: #5a3a00; box-shadow: 0 0 4cqw #ffd84a; }
+.cell.light-on .cap { background: linear-gradient(180deg, #fffbe0, #ffd84a 55%, #c08a00); --edge: #5a3a00; box-shadow: 0 0 calc(4 * var(--cw)) #ffd84a; }
 .cell.light-off .cap { background: linear-gradient(180deg, #2a3440, #141a22); --edge: #000; }
 
 /* 雙指齊按:弱點 */
@@ -1164,11 +1164,11 @@ html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; } /* 手機瀏覽
 
 /* 翻牌配對:牌面 / 牌背 */
 .cell.card.up .cap { background: linear-gradient(180deg, #fff, #e8e0ff); --edge: #6a4a9a; }
-.cell.card.down .cap { background: repeating-linear-gradient(45deg, #3a2a6a 0 2cqw, #2a1a4a 2cqw 4cqw); --edge: #150a30; color: #c8b8ff; }
+.cell.card.down .cap { background: repeating-linear-gradient(45deg, #3a2a6a 0 calc(2 * var(--cw)), #2a1a4a calc(2 * var(--cw)) calc(4 * var(--cw))); --edge: #150a30; color: #c8b8ff; }
 
 /* 流沙拼圖:沙板,放對位置的變金色 */
 .cell.tile .cap { background: linear-gradient(180deg, #f0d8a0, #c8964a 55%, #7a5420); --edge: #3a2408; color: #3a2408; }
-.cell.tile .icon { font-family: var(--tech); font-weight: 900; font-size: 11cqw; filter: none; }
+.cell.tile .icon { font-family: var(--tech); font-weight: 900; font-size: calc(11 * var(--cw)); filter: none; }
 .cell.tile.ok .cap { background: linear-gradient(180deg, #fffbe0, #ffd84a 55%, #c08a00); }
 
 /* 井字智鬥:炎鋼 👊 / 敵人 🌟 */
@@ -1177,10 +1177,10 @@ html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; } /* 手機瀏覽
 /* 雙指齊按:兩顆弱點之間的連結線(虛線流動)+ 中間的 ✌️,按鈕上方標「同時」 */
 .gm-link { position: absolute; inset: 0; z-index: 5; pointer-events: none; }
 .gm-link svg { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; }
-.gm-link line { stroke: #7fe9ff; stroke-width: 1.2cqw; stroke-linecap: round; stroke-dasharray: 2.4cqw 2cqw; filter: drop-shadow(0 0 1.4cqw #4ad0ff); animation: linkFlow .5s linear infinite; }
-@keyframes linkFlow { to { stroke-dashoffset: -4.4cqw; } }
-.gm-link b { position: absolute; transform: translate(-50%, -50%); display: grid; place-items: center; width: 11cqw; height: 11cqw; border-radius: 50%;
-  font-size: 6.5cqw; background: radial-gradient(circle, #0a3a5a, #041a2a); box-shadow: 0 0 0 .5cqw #7fe9ff, 0 0 3cqw #4ad0ff; animation: linkPulse .4s ease-in-out infinite alternate; }
+.gm-link line { stroke: #7fe9ff; stroke-width: calc(1.2 * var(--cw)); stroke-linecap: round; stroke-dasharray: calc(2.4 * var(--cw)) calc(2 * var(--cw)); filter: drop-shadow(0 0 calc(1.4 * var(--cw)) #4ad0ff); animation: linkFlow .5s linear infinite; }
+@keyframes linkFlow { to { stroke-dashoffset: calc(-4.4 * var(--cw)); } }
+.gm-link b { position: absolute; transform: translate(-50%, -50%); display: grid; place-items: center; width: calc(11 * var(--cw)); height: calc(11 * var(--cw)); border-radius: 50%;
+  font-size: calc(6.5 * var(--cw)); background: radial-gradient(circle, #0a3a5a, #041a2a); box-shadow: 0 0 0 calc(.5 * var(--cw)) #7fe9ff, 0 0 calc(3 * var(--cw)) #4ad0ff; animation: linkPulse .4s ease-in-out infinite alternate; }
 @keyframes linkPulse { to { transform: translate(-50%, -50%) scale(1.15); } }
 .cell.twin .label { background: #7fe9ff; color: #002a3a; }
 /* 寶箱怪:假盾牌(和真的盾牌幾乎一樣,只是偏紫、會神經質地抖動)/ 拳頭變成的假錢袋 */
@@ -1194,114 +1194,114 @@ html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; } /* 手機瀏覽
 .cell.mem-bad .cap { background: linear-gradient(180deg, #ffd0d0, #ff3a4a 55%, #8a0a14); --edge: #40040a; color: #fff; }
 /* 蜃樓:點中鏡像格時,點的那一格也浮出一顆按鈕再壓下 */
 .pop-hit { position: absolute; left: 7%; right: 7%; top: 5%; bottom: 13%; z-index: 2; display: grid; place-items: center; pointer-events: none;
-  border-radius: 3.5cqw; background: linear-gradient(180deg, #d8ffe8, #3ddc84 55%, #0f7a40);
-  box-shadow: inset 0 .9cqw 0 #ffffff70, 0 2.2cqw 0 #04381c, 0 0 4cqw #3ddc84; animation: popHit .42s ease-out forwards; }
-.pop-hit i { font-style: normal; font-size: 12cqw; line-height: 1; }
+  border-radius: calc(3.5 * var(--cw)); background: linear-gradient(180deg, #d8ffe8, #3ddc84 55%, #0f7a40);
+  box-shadow: inset 0 calc(.9 * var(--cw)) 0 #ffffff70, 0 calc(2.2 * var(--cw)) 0 #04381c, 0 0 calc(4 * var(--cw)) #3ddc84; animation: popHit .42s ease-out forwards; }
+.pop-hit i { font-style: normal; font-size: calc(12 * var(--cw)); line-height: 1; }
 @keyframes popHit { 0% { transform: translateY(45%) scale(.7); opacity: 0; } 35% { transform: translateY(-4%) scale(1.05); opacity: 1; } 60% { transform: translateY(14%); filter: brightness(1.4); } 100% { transform: translateY(14%); opacity: 0; } }
 /* 三仙歸洞:點中真身 → 傀儡浮起、綠框、右上角 ✔、爆出光環;點錯的傀儡 → 紅框 ✖ */
-.gs-doll.caught { box-shadow: 0 0 0 .7cqw #3ddc84, 0 0 6cqw #3ddc84; animation: dollCaught .5s ease-out forwards; }
+.gs-doll.caught { box-shadow: 0 0 0 calc(.7 * var(--cw)) #3ddc84, 0 0 calc(6 * var(--cw)) #3ddc84; animation: dollCaught .5s ease-out forwards; }
 .gs-doll.caught::after, .gs-doll.wrong::after { position: absolute; right: -6%; top: -6%; display: grid; place-items: center; width: 40%; height: 40%; border-radius: 50%;
-  font-size: 60%; color: #fff; box-shadow: 0 .4cqw 0 #0008; }
+  font-size: 60%; color: #fff; box-shadow: 0 calc(.4 * var(--cw)) 0 #0008; }
 .gs-doll.caught::after { content: '✔'; background: #3ddc84; }
 .gs-doll.wrong::after { content: '✖'; background: #ff3a4a; }
-.gs-doll.wrong { box-shadow: 0 0 0 .6cqw #ff3a4a, 0 0 4cqw #ff3a4a; }
+.gs-doll.wrong { box-shadow: 0 0 0 calc(.6 * var(--cw)) #ff3a4a, 0 0 calc(4 * var(--cw)) #ff3a4a; }
 /* 不縮放傀儡本身(會連定位一起放大而跑位):改成發亮 + 光環擴散 */
-@keyframes dollCaught { 40% { filter: brightness(1.8); box-shadow: 0 0 0 1.2cqw #3ddc84, 0 0 10cqw #3ddc84; } 100% { filter: brightness(1.2); } }
-.gs-doll.caught::before { content: ""; position: absolute; inset: 0; border-radius: 50%; box-shadow: 0 0 0 .8cqw #3ddc84; animation: dollRing .6s ease-out forwards; }
+@keyframes dollCaught { 40% { filter: brightness(1.8); box-shadow: 0 0 0 calc(1.2 * var(--cw)) #3ddc84, 0 0 calc(10 * var(--cw)) #3ddc84; } 100% { filter: brightness(1.2); } }
+.gs-doll.caught::before { content: ""; position: absolute; inset: 0; border-radius: 50%; box-shadow: 0 0 0 calc(.8 * var(--cw)) #3ddc84; animation: dollRing .6s ease-out forwards; }
 @keyframes dollRing { from { transform: scale(1); opacity: 1; } to { transform: scale(2.2); opacity: 0; } }
 
 /* ===== 鍵盤操作提示(body.kb:有滑鼠的裝置或按過鍵盤時才顯示)===== */
 .kb-hint, .dial-kb { display: none; pointer-events: none; white-space: nowrap; }
 .kb-hint {
-  position: absolute; left: 50%; bottom: .6cqw; z-index: 5; transform: translateX(-50%);
-  padding: .5cqw 2.4cqw; border-radius: 3cqw; font-size: 3.4cqw; color: #fff4b8;
-  background: #000c; border: .3cqw solid #ffe14a99; box-shadow: 0 0 2cqw #ffd40055;
+  position: absolute; left: 50%; bottom: calc(.6 * var(--cw)); z-index: 5; transform: translateX(-50%);
+  padding: calc(.5 * var(--cw)) calc(2.4 * var(--cw)); border-radius: calc(3 * var(--cw)); font-size: calc(3.4 * var(--cw)); color: #fff4b8;
+  background: #000c; border: calc(.3 * var(--cw)) solid #ffe14a99; box-shadow: 0 0 calc(2 * var(--cw)) #ffd40055;
 }
 /* 踢擊:場上有現形的腳印時才出現 */
 body.kb .grid-wrap:has(.cell.kick.on:not(.hidden)) .kb-kick { display: block; animation: kbHintIn .2s ease-out; }
-@keyframes kbHintIn { from { opacity: 0; transform: translateX(-50%) translateY(1cqw); } }
+@keyframes kbHintIn { from { opacity: 0; transform: translateX(-50%) translateY(calc(1 * var(--cw))); } }
 .dial-kb {
   position: absolute; left: 50%; top: 11%; transform: translateX(-50%); z-index: 3;
-  padding: .4cqw 2cqw; border-radius: 3cqw; font-size: 3.6cqw; color: #fff4b8; background: #000a;
+  padding: calc(.4 * var(--cw)) calc(2 * var(--cw)); border-radius: calc(3 * var(--cw)); font-size: calc(3.6 * var(--cw)); color: #fff4b8; background: #000a;
 }
 body.kb .dial-kb { display: block; }
 
 /* ===== 浴火重生 ===== */
 /* HP 旁的 🌅:還能復活時發光,用掉後變灰 */
-.revive-icon { flex: none; font-size: 4.6cqw; line-height: 1; filter: drop-shadow(0 0 1.2cqw #ff9a2a); animation: reviveGlow 1.4s ease-in-out infinite alternate; }
+.revive-icon { flex: none; font-size: calc(4.6 * var(--cw)); line-height: 1; filter: drop-shadow(0 0 calc(1.2 * var(--cw)) #ff9a2a); animation: reviveGlow 1.4s ease-in-out infinite alternate; }
 .revive-icon[hidden] { display: none; }
 .revive-icon.used { filter: grayscale(1) brightness(.5); opacity: .5; animation: none; }
-@keyframes reviveGlow { to { filter: drop-shadow(0 0 2.4cqw #ffcf3a); } }
+@keyframes reviveGlow { to { filter: drop-shadow(0 0 calc(2.4 * var(--cw)) #ffcf3a); } }
 /* 復活瞬間:全畫面火光從中間爆開,🔥 升起 */
 .revive-fx {
   position: absolute; inset: 0; z-index: 40; pointer-events: none; display: grid; place-items: center;
   background: radial-gradient(circle at 50% 60%, #fff6c8 0, #ffb02a 22%, #ff4a0a 45%, #7a0a0088 70%, transparent 85%);
   animation: reviveBurst 1.8s ease-out forwards;
 }
-.revive-fx i { font-style: normal; font-size: 30cqw; filter: drop-shadow(0 0 4cqw #ffcf3a); animation: reviveRise 1.8s cubic-bezier(.2, 1.4, .4, 1) forwards; }
+.revive-fx i { font-style: normal; font-size: calc(30 * var(--cw)); filter: drop-shadow(0 0 calc(4 * var(--cw)) #ffcf3a); animation: reviveRise 1.8s cubic-bezier(.2, 1.4, .4, 1) forwards; }
 @keyframes reviveBurst { 0% { opacity: 0; transform: scale(.3); } 15% { opacity: 1; transform: scale(1.1); } 70% { opacity: .85; } 100% { opacity: 0; transform: scale(1.4); } }
-@keyframes reviveRise { 0% { transform: translateY(30cqw) scale(.4); opacity: 0; } 35% { transform: translateY(0) scale(1.15); opacity: 1; } 80% { opacity: 1; } 100% { transform: translateY(-8cqw) scale(1); opacity: 0; } }
+@keyframes reviveRise { 0% { transform: translateY(calc(30 * var(--cw))) scale(.4); opacity: 0; } 35% { transform: translateY(0) scale(1.15); opacity: 1; } 80% { opacity: 1; } 100% { transform: translateY(calc(-8 * var(--cw))) scale(1); opacity: 0; } }
 
 /* ===== 破綻量表(HP 旁的 💢 圓環)===== */
 /* 每次格擋累積,滿了發光:這時全部擋下就會露出破綻 */
 .break-gauge {
-  position: relative; flex: none; width: 7.4cqw; height: 7.4cqw; border-radius: 50%; display: grid; place-items: center;
-  background: conic-gradient(#ff5a3a var(--g, 0%), #ffffff1a 0); box-shadow: 0 0 0 .3cqw #000a;
+  position: relative; flex: none; width: calc(7.4 * var(--cw)); height: calc(7.4 * var(--cw)); border-radius: 50%; display: grid; place-items: center;
+  background: conic-gradient(#ff5a3a var(--g, 0%), #ffffff1a 0); box-shadow: 0 0 0 calc(.3 * var(--cw)) #000a;
 }
-.break-gauge b { display: grid; place-items: center; width: 5.4cqw; height: 5.4cqw; border-radius: 50%; background: #120c14; font-size: 3.4cqw; filter: grayscale(.6) brightness(.8); }
+.break-gauge b { display: grid; place-items: center; width: calc(5.4 * var(--cw)); height: calc(5.4 * var(--cw)); border-radius: 50%; background: #120c14; font-size: calc(3.4 * var(--cw)); filter: grayscale(.6) brightness(.8); }
 .break-gauge.full { background: conic-gradient(#ffd84a 100%, transparent 0); animation: gaugeFull .5s ease-in-out infinite alternate; }
 .break-gauge.full b { filter: none; }
-@keyframes gaugeFull { to { box-shadow: 0 0 0 .3cqw #000a, 0 0 3cqw #ffb02a; transform: scale(1.08); } }
+@keyframes gaugeFull { to { box-shadow: 0 0 0 calc(.3 * var(--cw)) #000a, 0 0 calc(3 * var(--cw)) #ffb02a; transform: scale(1.08); } }
 /* 小遊戲提示模式:倒數條變青綠色;該按的格子框起來閃爍 */
-.timebar.hint .fill { background: #5affc8; box-shadow: 0 0 1.5cqw #5affc8; }
-.cell.gm-hint .cap { box-shadow: 0 0 0 1cqw #5affc8, 0 0 6cqw 1cqw #5affc8 !important; animation: gmHint .5s ease-in-out infinite alternate !important; }
-.cell.gm-hint .badge { font-size: 6cqw; animation: gmPoint .5s ease-in-out infinite alternate; }
+.timebar.hint .fill { background: #5affc8; box-shadow: 0 0 calc(1.5 * var(--cw)) #5affc8; }
+.cell.gm-hint .cap { box-shadow: 0 0 0 calc(1 * var(--cw)) #5affc8, 0 0 calc(6 * var(--cw)) calc(1 * var(--cw)) #5affc8 !important; animation: gmHint .5s ease-in-out infinite alternate !important; }
+.cell.gm-hint .badge { font-size: calc(6 * var(--cw)); animation: gmPoint .5s ease-in-out infinite alternate; }
 @keyframes gmHint { from { filter: brightness(1); } to { filter: brightness(1.35); } }
-@keyframes gmPoint { from { translate: 0 0; } to { translate: 0 1.2cqw; } }
+@keyframes gmPoint { from { translate: 0 0; } to { translate: 0 calc(1.2 * var(--cw)); } }
 /* 井字智鬥:輪到你時空格浮出半透明 👊(呼吸閃爍);敵人思考時棋盤變暗、敵人頭上 🌟 轉圈 */
 .cell.ttt-ghost .cap { background: linear-gradient(180deg, #ffb36b, #ff5a1f 55%, #c2300a); --edge: #7a1c04; animation: tttGhost .9s ease-in-out infinite alternate !important; }
 @keyframes tttGhost { from { opacity: .18; } to { opacity: .5; } }
 #grid.gimmick { transition: rotate .5s cubic-bezier(.3, 1.3, .5, 1), filter .2s; }
 #grid.ttt-wait { filter: brightness(.45) saturate(.5); }
-.ttt-think { position: absolute; left: 70%; top: 3%; z-index: 6; font-size: 8cqw; pointer-events: none;
-  filter: drop-shadow(0 0 2cqw #b88aff); animation: tttThink 1s linear infinite; }
+.ttt-think { position: absolute; left: 70%; top: 3%; z-index: 6; font-size: calc(8 * var(--cw)); pointer-events: none;
+  filter: drop-shadow(0 0 calc(2 * var(--cw)) #b88aff); animation: tttThink 1s linear infinite; }
 @keyframes tttThink { to { rotate: 360deg; } }
 /* 炎鋼天道的護體:效果期間 HP 條外圍亮金光 */
-#battle.ult-guard :has(> #playerHpFill) { box-shadow: 0 0 0 .4cqw #ffd84a, 0 0 3cqw #ffd84a90; }
+#battle.ult-guard :has(> #playerHpFill) { box-shadow: 0 0 0 calc(.4 * var(--cw)) #ffd84a, 0 0 calc(3 * var(--cw)) #ffd84a90; }
 /* 燎原連拳:手指劃過的拳頭之間拉出一道火焰軌跡,最後一格標出連段數 */
 .chain-trail { position: absolute; inset: 0; z-index: 5; pointer-events: none; transition: opacity .3s; }
 .chain-trail.fade { opacity: 0; }
 .chain-trail svg { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; }
-.chain-trail polyline { fill: none; stroke: #ffe08a; stroke-width: 1.6cqw; stroke-linecap: round; stroke-linejoin: round; }
-.chain-trail polyline.glow { stroke: #ff6a1f; stroke-width: 4.5cqw; opacity: .55; filter: blur(.8cqw); animation: chainFlicker .18s ease-in-out infinite alternate; }
+.chain-trail polyline { fill: none; stroke: #ffe08a; stroke-width: calc(1.6 * var(--cw)); stroke-linecap: round; stroke-linejoin: round; }
+.chain-trail polyline.glow { stroke: #ff6a1f; stroke-width: calc(4.5 * var(--cw)); opacity: .55; filter: blur(calc(.8 * var(--cw))); animation: chainFlicker .18s ease-in-out infinite alternate; }
 @keyframes chainFlicker { from { opacity: .4; } to { opacity: .75; } }
-.chain-trail b { position: absolute; transform: translate(-50%, -150%); font: 900 5.5cqw/1 var(--tech, sans-serif); color: #fff3c0;
-  text-shadow: 0 0 1.5cqw #ff6a1f, 0 .3cqw 0 #8a2a00; animation: chainPop .2s cubic-bezier(.3, 1.8, .5, 1); }
+.chain-trail b { position: absolute; transform: translate(-50%, -150%); font: 900 calc(5.5 * var(--cw))/1 var(--tech, sans-serif); color: #fff3c0;
+  text-shadow: 0 0 calc(1.5 * var(--cw)) #ff6a1f, 0 calc(.3 * var(--cw)) 0 #8a2a00; animation: chainPop .2s cubic-bezier(.3, 1.8, .5, 1); }
 @keyframes chainPop { from { scale: 1.6; } }
 /* 錨鏈:兩顆符號之間拉一條鐵鏈,中間掛著錨;點了一顆後它「鬆動」搖晃,等另一顆也打中 */
 .anchor-link { position: absolute; inset: 0; z-index: 4; pointer-events: none; }
 .anchor-link svg { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; }
-.anchor-link line { stroke: #c9d4dc; stroke-width: 1.5cqw; stroke-linecap: round; stroke-dasharray: 1.6cqw 1.1cqw;
-  filter: drop-shadow(0 0 .5cqw #000) drop-shadow(0 0 1.2cqw #8fb0c8); }
-.anchor-link b { position: absolute; transform: translate(-50%, -50%); display: grid; place-items: center; width: 8cqw; height: 8cqw; border-radius: 50%;
-  font-size: 5cqw; background: radial-gradient(circle, #3a4652, #141a20); box-shadow: 0 0 0 .4cqw #c9d4dc, 0 0 2cqw #000; rotate: calc(var(--grot, 0deg) * -1); }
+.anchor-link line { stroke: #c9d4dc; stroke-width: calc(1.5 * var(--cw)); stroke-linecap: round; stroke-dasharray: calc(1.6 * var(--cw)) calc(1.1 * var(--cw));
+  filter: drop-shadow(0 0 calc(.5 * var(--cw)) #000) drop-shadow(0 0 calc(1.2 * var(--cw)) #8fb0c8); }
+.anchor-link b { position: absolute; transform: translate(-50%, -50%); display: grid; place-items: center; width: calc(8 * var(--cw)); height: calc(8 * var(--cw)); border-radius: 50%;
+  font-size: calc(5 * var(--cw)); background: radial-gradient(circle, #3a4652, #141a20); box-shadow: 0 0 0 calc(.4 * var(--cw)) #c9d4dc, 0 0 calc(2 * var(--cw)) #000; rotate: calc(var(--grot, 0deg) * -1); }
 .cell.loose .cap { animation: looseShake .09s linear infinite alternate !important; filter: brightness(1.25) saturate(.7); }
 @keyframes looseShake { from { rotate: calc(var(--grot, 0deg) * -1 - 6deg); } to { rotate: calc(var(--grot, 0deg) * -1 + 6deg); } }
 /* 追蹤標靶:紫色外框的符號一格一格滑動;它下一步要去的格子先亮紫框預告 */
-.cell.tracking .cap { box-shadow: 0 0 0 .7cqw #ff4ad8, 0 0 3cqw #ff4ad8a0 !important; }
+.cell.tracking .cap { box-shadow: 0 0 0 calc(.7 * var(--cw)) #ff4ad8, 0 0 calc(3 * var(--cw)) #ff4ad8a0 !important; }
 .cell.tracking.slid .cap { animation: trackIn .12s ease-out !important; }
 @keyframes trackIn { from { scale: .8; opacity: .6; } }
-.cell.track-next { outline: .8cqw dashed #ff4ad8; outline-offset: -2cqw; animation: trackNext .4s ease-in-out infinite alternate; }
+.cell.track-next { outline: calc(.8 * var(--cw)) dashed #ff4ad8; outline-offset: calc(-2 * var(--cw)); animation: trackNext .4s ease-in-out infinite alternate; }
 @keyframes trackNext { from { outline-color: #ff4ad850; } }
 /* 甲板閃避:🥋 是自己;⚠ 標出要被砲擊的一排 / 一列 */
-.cell.dodge-me .cap { background: linear-gradient(180deg, #ffe0a8, #ff9a3c 55%, #c25a0a); --edge: #6a2a04; box-shadow: 0 0 3cqw #ffb36b; }
+.cell.dodge-me .cap { background: linear-gradient(180deg, #ffe0a8, #ff9a3c 55%, #c25a0a); --edge: #6a2a04; box-shadow: 0 0 calc(3 * var(--cw)) #ffb36b; }
 .cell.dodge-warn .cap { background: linear-gradient(180deg, #ff8a8a, #e02a2a 55%, #7a0a0a); --edge: #3a0404; animation: rise .2s cubic-bezier(.3, 1.7, .5, 1), dodgeWarn .25s ease-in-out infinite alternate; }
-.cell.dodge-me.dodge-warn .cap { background: linear-gradient(180deg, #ffd0a8, #ff5a2a 55%, #a01a0a); box-shadow: 0 0 0 1cqw #ff2a2a, 0 0 5cqw #ff2a2a; } /* 站在危險區:紅框警告 */
+.cell.dodge-me.dodge-warn .cap { background: linear-gradient(180deg, #ffd0a8, #ff5a2a 55%, #a01a0a); box-shadow: 0 0 0 calc(1 * var(--cw)) #ff2a2a, 0 0 calc(5 * var(--cw)) #ff2a2a; } /* 站在危險區:紅框警告 */
 @keyframes dodgeWarn { to { filter: brightness(1.35); } }
 /* 洗腦干擾:中間是白底的顏色字(字色由程式指定),四周是色塊(修羅起色塊上寫著誤導的字) */
 .cell.stroop-word .cap { background: linear-gradient(180deg, #ffffff, #dcdce6); --edge: #6a6a7a; }
-.cell.stroop-word .icon { font-size: 13cqw; font-weight: 900; filter: none; text-shadow: 0 .3cqw 0 #0004; }
-.cell.stroop-swatch .icon { font-size: 7cqw; font-weight: 900; color: #fff; filter: none; text-shadow: 0 0 1cqw #000, 0 .3cqw 0 #000; }
+.cell.stroop-word .icon { font-size: calc(13 * var(--cw)); font-weight: 900; filter: none; text-shadow: 0 calc(.3 * var(--cw)) 0 #0004; }
+.cell.stroop-swatch .icon { font-size: calc(7 * var(--cw)); font-weight: 900; color: #fff; filter: none; text-shadow: 0 0 calc(1 * var(--cw)) #000, 0 calc(.3 * var(--cw)) 0 #000; }
 .cell.sw-red .cap { background: linear-gradient(180deg, #ff8080, #e02a2a); --edge: #6a0808; }
 .cell.sw-blue .cap { background: linear-gradient(180deg, #8ab4ff, #2a62e0); --edge: #08206a; }
 .cell.sw-yellow .cap { background: linear-gradient(180deg, #fffcc8, #ffe81a); --edge: #7a6a00; } /* 戰鬥畫面偏紅,黃色要夠亮才不會看成橘色 */
@@ -1310,7 +1310,7 @@ body.kb .dial-kb { display: block; }
 .cell.shoot-target .cap { background: radial-gradient(circle, #fff 0 22%, #e02a2a 23% 42%, #fff 43% 62%, #e02a2a 63%); --edge: #5a0808; }
 .cell.shoot-hostage .cap { background: linear-gradient(180deg, #c8d8e8, #6a8aa8); --edge: #1a2a3a; }
 /* 鐵籠對拳:拳頭要換過去的位置先閃一下;🛑 假動作是灰紅色、不會脈動 */
-.cell.clash-next::before { box-shadow: inset 0 0 0 .7cqw #ffb36b, inset 0 0 4cqw #ff7a1f !important; animation: clashNext .12s steps(2) infinite; }
+.cell.clash-next::before { box-shadow: inset 0 0 0 calc(.7 * var(--cw)) #ffb36b, inset 0 0 calc(4 * var(--cw)) #ff7a1f !important; animation: clashNext .12s steps(2) infinite; }
 @keyframes clashNext { 50% { opacity: .4; } }
 .cell.clash-btn.clash-feint .cap { background: linear-gradient(180deg, #c8b0b0, #7a3a3a 55%, #3a1414); --edge: #200808; animation: rise .15s ease-out; filter: saturate(.7); }
 /* 炎鋼天道的回復演出:翠綠光芒從畫面下方(炎鋼這一側)湧起,光點往上飄;補血時 HP 條亮綠光 */
@@ -1318,13 +1318,13 @@ body.kb .dial-kb { display: block; }
 .fx-heal.out { opacity: 0; transition: opacity .4s; }
 .fx-heal b { position: absolute; left: 50%; bottom: -30%; width: 160%; height: 90%; translate: -50% 0; border-radius: 50%;
   background: radial-gradient(ellipse at 50% 60%, #b8ffd0c0 0%, #5aff9a80 30%, #1ac06a30 55%, transparent 72%); animation: healSwell 1.35s ease-in-out; }
-.fx-heal i { position: absolute; bottom: 4%; width: calc(5.5cqw * var(--s)); height: calc(5.5cqw * var(--s)); border-radius: 50%; filter: drop-shadow(0 0 1.5cqw #5aff9a);
+.fx-heal i { position: absolute; bottom: 4%; width: calc(calc(5.5 * var(--cw)) * var(--s)); height: calc(calc(5.5 * var(--cw)) * var(--s)); border-radius: 50%; filter: drop-shadow(0 0 calc(1.5 * var(--cw)) #5aff9a);
   background: radial-gradient(circle, #f0fff4 0 25%, #5aff9a 45%, transparent 70%); opacity: 0;
   animation: healMote 1.25s var(--d) ease-out forwards; }
 @keyframes healIn { from { opacity: 0; } }
 @keyframes healSwell { 0% { scale: .6; opacity: .3; } 40% { scale: 1; opacity: 1; } 100% { scale: 1.05; opacity: .7; } }
-@keyframes healMote { 0% { opacity: 0; translate: 0 0; } 20% { opacity: 1; } 100% { opacity: 0; translate: calc((var(--s) - 1) * 12cqw) -75cqh; } }
-#battle.heal-flash #playerHpFill { background: linear-gradient(90deg, #2ee68a, #b8ffd0) !important; box-shadow: 0 0 3cqw #5aff9a !important; } /* 補血瞬間 HP 條轉成翠綠 */
+@keyframes healMote { 0% { opacity: 0; translate: 0 0; } 20% { opacity: 1; } 100% { opacity: 0; translate: calc((var(--s) - 1) * calc(12 * var(--cw))) -75cqh; } }
+#battle.heal-flash #playerHpFill { background: linear-gradient(90deg, #2ee68a, #b8ffd0) !important; box-shadow: 0 0 calc(3 * var(--cw)) #5aff9a !important; } /* 補血瞬間 HP 條轉成翠綠 */
 /* ---- 省電模式(設定 → 省電模式):停掉純裝飾、每一幀都要重畫的循環動畫與模糊;遊戲判斷需要的提示動畫(金拳、準星、電網、追蹤…)保留 ---- */
 #app.low-power .rain, #app.low-power #artBg .art-img, #app.low-power .title-bg, #app.low-power .stage-bg,
 #app.low-power .btn::after, #app.low-power .ss-flame, #app.low-power .ss-ring, #app.low-power .ss-core::after, #app.low-power .ss-kanji,
@@ -1336,6 +1336,25 @@ body.kb .dial-kb { display: block; }
 #app.low-power.fever .stage-bg { filter: brightness(.9) saturate(1.5) hue-rotate(-20deg); }
 #app.low-power .btn::after, #app.low-power .embers { display: none; } /* 標題畫面飄的火星(26 顆)直接不顯示 */
 /* 洗腦干擾:規則一直掛在九宮格上緣(整場固定看「字的顏色」) */
-.stroop-rule { position: absolute; left: 50%; top: 0; z-index: 4; transform: translate(-50%, -55%); padding: 1cqw 4cqw; white-space: nowrap; pointer-events: none;
-  font-size: 4.4cqw; font-weight: 900; color: #fff; background: linear-gradient(90deg, #ff4545, #ffd84a, #3fdc78, #4a8cff); border-radius: 99px;
-  text-shadow: 0 .3cqw 0 #000, 0 0 1cqw #000; box-shadow: 0 0 0 .4cqw #000a, 0 0 3cqw #ffffff40; }
+.stroop-rule { position: absolute; left: 50%; top: 0; z-index: 4; transform: translate(-50%, -55%); padding: calc(1 * var(--cw)) calc(4 * var(--cw)); white-space: nowrap; pointer-events: none;
+  font-size: calc(4.4 * var(--cw)); font-weight: 900; color: #fff; background: linear-gradient(90deg, #ff4545, #ffd84a, #3fdc78, #4a8cff); border-radius: 99px;
+  text-shadow: 0 calc(.3 * var(--cw)) 0 #000, 0 0 calc(1 * var(--cw)) #000; box-shadow: 0 0 0 calc(.4 * var(--cw)) #000a, 0 0 calc(3 * var(--cw)) #ffffff40; }
+
+/* ===== 遊戲控制器(body.pad:正在用手把,見 gamepad.js)===== */
+/* 選取框:疊在 #app 最上層,不會被按鈕的斜切角裁掉 */
+#padRing { position: absolute; z-index: 90; display: none; pointer-events: none; box-sizing: border-box; }
+#padRing.show { display: block; }
+#padRing.focus {
+  margin: calc(-.8 * var(--cw)); padding: calc(.8 * var(--cw)); box-sizing: content-box;
+  border: calc(.6 * var(--cw)) solid var(--neon-y); box-shadow: 0 0 calc(2.4 * var(--cw)) #ffd400a0, inset 0 0 calc(1.6 * var(--cw)) #ffd40060;
+  animation: padPulse .9s ease-in-out infinite alternate; transition: left .08s, top .08s, width .08s, height .08s;
+}
+#padRing.aim {
+  border-radius: calc(4 * var(--cw)); border: calc(.8 * var(--cw)) solid #fff;
+  box-shadow: 0 0 calc(3 * var(--cw)) var(--neon-c), inset 0 0 calc(3 * var(--cw)) #19f0ff80; transition: left .05s, top .05s;
+}
+@keyframes padPulse { to { box-shadow: 0 0 calc(4 * var(--cw)) #ffd400, inset 0 0 calc(2.4 * var(--cw)) #ffd40090; } }
+body.pad .kb-key, body.pad .kb-hint:not(.pad-hint) { display: none !important; }
+body.pad .dial-kb { display: block; }
+/* 戰鬥中的手把操作提示:橫版九宮格下方有空間才顯示 */
+html.pc body.pad #battle .pad-hint { display: block; white-space: normal; text-align: center; width: 90%; bottom: 2cqh; }

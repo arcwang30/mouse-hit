@@ -1,0 +1,7 @@
+node_modules/
+dist/
+game/
+# Steamworks SDK 檔案受 Valve SDK 授權條款限制,不放進版控(從 partner.steamgames.com 下載後放這裡)
+steamworks_sdk/
+steam_appid.txt
+steampipe/output/

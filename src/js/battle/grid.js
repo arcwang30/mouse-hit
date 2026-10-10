@@ -150,7 +150,7 @@ G.grid = {
       for (let k = 0; k < n; k++) {
         const a = k * 360 / n + (Math.random() * 20 - 10);
         const d = (big ? 14 : 10) + Math.random() * 4; // 飛到星芒外面才看得到
-        html += `<i class="tap-spark" style="--a:${a}deg;--d:${d}cqw"></i>`;
+        html += `<i class="tap-spark" style="--a:${a}deg;--d:calc(${d} * var(--cw))"></i>`;
       }
     }
     fx.innerHTML = html;
@@ -228,7 +228,7 @@ G.grid = {
     box.className = 'shards';
     box.innerHTML = Array.from({ length: 6 }, (_, k) => {
       const a = (k / 6 + Math.random() * 0.1) * Math.PI * 2, r = 9 + Math.random() * 5;
-      return `<i style="--dx:${(Math.cos(a) * r).toFixed(1)}cqw;--dy:${(Math.sin(a) * r).toFixed(1)}cqw;--rot:${Math.round(Math.random() * 360)}deg"></i>`;
+      return `<i style="--dx:calc(${(Math.cos(a) * r).toFixed(1)} * var(--cw));--dy:calc(${(Math.sin(a) * r).toFixed(1)} * var(--cw));--rot:${Math.round(Math.random() * 360)}deg"></i>`;
     }).join('');
     this.cells[i].appendChild(box);
     setTimeout(() => box.remove(), 500);

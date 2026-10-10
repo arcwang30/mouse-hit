@@ -178,7 +178,7 @@ G.scenes = {
       const view = b.pan ? { w: b.pan.view, h: b.crop.h } : b.crop;
       const aspect = view.w / view.h;
       panel.style.aspectRatio = `${view.w} / ${view.h}`;
-      panel.style.width = `min(86cqw, ${52 * aspect}cqh)`;
+      panel.style.setProperty('--aspect', aspect); // 寬度由 CSS 算(.story-panel),PC 橫版的舞台比較大
       panel.style.setProperty('--tilt', (b.tilt || 0) + 'deg');
       img.style.setProperty('--focus', b.focus || '50% 50%');
       panel.className = 'story-panel' + (b.fx ? ' sfx-' + b.fx : ''); // 注意:別用 fx- 開頭,會撞到戰鬥的 .fx-impact 樣式
@@ -249,8 +249,8 @@ G.scenes = {
       el.dataset.ready = '1';
       G.$('#embers').innerHTML = Array.from({ length: 26 }, () => {
         const size = 0.6 + Math.random() * 1.4;
-        return `<span style="left:${Math.random() * 100}%;width:${size}cqw;height:${size}cqw;` +
-          `--sway:${(Math.random() - 0.5) * 16}cqw;animation-duration:${5 + Math.random() * 6}s;` +
+        return `<span style="left:${Math.random() * 100}%;width:calc(${size} * var(--cw));height:calc(${size} * var(--cw));` +
+          `--sway:calc(${(Math.random() - 0.5) * 16} * var(--cw));animation-duration:${5 + Math.random() * 6}s;` +
           `animation-delay:-${Math.random() * 10}s"></span>`;
       }).join('');
     }

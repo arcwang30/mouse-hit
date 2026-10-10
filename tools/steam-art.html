@@ -1,0 +1,210 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<title>Steam 上架美術產生器</title>
+<!-- 用遊戲現有的美術(title.jpg / title_wide.jpg / logo.png / 圖示)合成 Steam 商店、收藏庫需要的圖,
+     以及 20 個成就圖示(已解鎖 / 未解鎖)。用 tools/art-server.ps1 開啟,按「全部匯出」存到 steam/store-art/。 -->
+<style>
+  body { margin: 0; padding: 16px; background: #111; color: #eee; font-family: system-ui, "Microsoft JhengHei", sans-serif; }
+  h2 { margin: 24px 0 8px; font-size: 16px; color: #ffc23d; }
+  .row { display: flex; flex-wrap: wrap; gap: 12px; align-items: flex-start; }
+  figure { margin: 0; } figcaption { font-size: 12px; color: #aaa; }
+  canvas { display: block; max-width: 100%; height: auto; background: repeating-conic-gradient(#333 0 25%, #222 0 50%) 0 0 / 16px 16px; }
+  .ach canvas { width: 96px; }
+  button { padding: 8px 16px; font-size: 14px; cursor: pointer; }
+  #log { font: 12px monospace; color: #8f8; white-space: pre; }
+</style>
+</head>
+<body>
+<button id="export">全部匯出到 steam/store-art/</button> <span id="log"></span>
+<h2>商店 / 收藏庫</h2><div class="row" id="store"></div>
+<h2>成就圖示(256 / 64,已解鎖 + 未解鎖)</h2><div class="row ach" id="ach"></div>
+<script>window.G = {};</script>
+<script src="../src/js/i18n.js"></script>
+<script src="../src/js/data/achievements.js"></script>
+<script>
+const A = '../assets/images/';
+const load = src => new Promise((ok, no) => { const i = new Image(); i.onload = () => ok(i); i.onerror = no; i.src = src; });
+const outputs = []; // { name, canvas, type }
+const canvas = (w, h) => { const c = document.createElement('canvas'); c.width = w; c.height = h; return c; };
+const add = (where, name, c, type = 'image/jpeg', label = '') => {
+  outputs.push({ name, canvas: c, type });
+  const f = document.createElement('figure');
+  f.appendChild(c);
+  f.insertAdjacentHTML('beforeend', `<figcaption>${name} ${c.width}×${c.height}${label}</figcaption>`);
+  document.getElementById(where).appendChild(f);
+};
+// 圖片以 cover 方式填滿 (x,y,w,h);fx/fy 為裁切的對齊點 0~1
+const cover = (ctx, img, x, y, w, h, fx = .5, fy = .5, zoom = 1) => {
+  const k = Math.max(w / img.width, h / img.height) * zoom, iw = img.width * k, ih = img.height * k;
+  ctx.drawImage(img, x + (w - iw) * fx, y + (h - ih) * fy, iw, ih);
+};
+const vignette = (ctx, w, h, a = .55) => {
+  const g = ctx.createRadialGradient(w / 2, h / 2, Math.min(w, h) * .3, w / 2, h / 2, Math.max(w, h) * .75);
+  g.addColorStop(0, 'rgba(0,0,0,0)'); g.addColorStop(1, `rgba(0,0,0,${a})`);
+  ctx.fillStyle = g; ctx.fillRect(0, 0, w, h);
+};
+const shade = (ctx, w, h, stops) => { // 由上到下的漸層壓暗:stops = [[位置, 透明度], …]
+  const g = ctx.createLinearGradient(0, 0, 0, h);
+  stops.forEach(([p, a]) => g.addColorStop(p, `rgba(5,3,10,${a})`));
+  ctx.fillStyle = g; ctx.fillRect(0, 0, w, h);
+};
+
+(async () => {
+  const [wide, tall, logoSrc, icon] = await Promise.all([
+    load(A + 'backgrounds/title_wide.jpg'), load(A + 'backgrounds/title.jpg'), load(A + 'ui/logo.png'), load(A + 'icons/icon-512.png')]);
+
+  // 直式原圖右下角有浮水印:左右各裁掉 90px 再用(和 title_wide.jpg 相同的裁切)
+  const tallC = canvas(tall.width - 180, tall.height);
+  tallC.getContext('2d').drawImage(tall, -90, 0);
+
+  // 標題字 LOGO:logo.png 中間那一條(y 367~597),裁掉透明邊
+  const LOGO = { x: 30, y: 362, w: 835, h: 240 };
+  const logo = (ctx, cx, cy, width, glow = true) => {
+    const h = width * LOGO.h / LOGO.w;
+    ctx.save();
+    if (glow) { ctx.shadowColor = 'rgba(255,90,31,.85)'; ctx.shadowBlur = width * .05; }
+    ctx.drawImage(logoSrc, LOGO.x, LOGO.y, LOGO.w, LOGO.h, cx - width / 2, cy - h / 2, width, h);
+    ctx.restore();
+    return h;
+  };
+  const sub = (ctx, text, cx, cy, size) => { // 英文副標
+    ctx.save();
+    ctx.font = `800 ${size}px "Segoe UI", Arial, sans-serif`; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+    ctx.letterSpacing = size * .18 + 'px';
+    ctx.lineWidth = size * .22; ctx.strokeStyle = 'rgba(20,4,0,.9)'; ctx.strokeText(text, cx, cy);
+    ctx.fillStyle = '#ffd77a'; ctx.shadowColor = '#ff5a1f'; ctx.shadowBlur = size * .6; ctx.fillText(text, cx, cy);
+    ctx.restore();
+  };
+  const EN = 'STEEL FIST: WIND & CLOUD';
+
+  // ---- 商店:Header Capsule 920×430 ----
+  { const c = canvas(920, 430), x = c.getContext('2d');
+    cover(x, wide, 0, 0, 920, 430, .5, .18);
+    shade(x, 920, 430, [[0, .15], [.55, .35], [1, .75]]); vignette(x, 920, 430, .5);
+    logo(x, 460, 200, 820); sub(x, EN, 460, 330, 26);
+    add('store', 'header_capsule.jpg', c); }
+  // ---- Small Capsule 462×174:只放 LOGO,要小也看得清楚 ----
+  { const c = canvas(462, 174), x = c.getContext('2d');
+    cover(x, wide, 0, 0, 462, 174, .5, .22);
+    shade(x, 462, 174, [[0, .45], [1, .7]]);
+    logo(x, 231, 87, 440);
+    add('store', 'small_capsule.jpg', c); }
+  // ---- Main Capsule 1232×706 ----
+  { const c = canvas(1232, 706), x = c.getContext('2d');
+    cover(x, wide, 0, 0, 1232, 706, .5, .5);
+    shade(x, 1232, 706, [[0, .55], [.38, .1], [.7, 0], [1, .45]]); vignette(x, 1232, 706, .45);
+    logo(x, 616, 150, 1000); // 英文副標由畫面中的卷軸提供
+    add('store', 'main_capsule.jpg', c); }
+  // ---- Vertical Capsule 748×896(直式原圖) ----
+  { const c = canvas(748, 896), x = c.getContext('2d');
+    cover(x, tallC, 0, 0, 748, 896, .5, .55);
+    shade(x, 748, 896, [[0, .65], [.3, .1], [.75, 0], [1, .35]]);
+    logo(x, 374, 120, 700);
+    add('store', 'vertical_capsule.jpg', c); }
+  // ---- Library Capsule 600×900 ----
+  { const c = canvas(600, 900), x = c.getContext('2d');
+    cover(x, tallC, 0, 0, 600, 900, .5, .6);
+    shade(x, 600, 900, [[0, .7], [.28, .1], [.8, 0], [1, .4]]);
+    logo(x, 300, 115, 570);
+    add('store', 'library_capsule.jpg', c); }
+  // ---- Library Header 920×430(同 Header Capsule 構圖) ----
+  { const c = canvas(920, 430), x = c.getContext('2d');
+    x.drawImage(outputs.find(o => o.name === 'header_capsule.jpg').canvas, 0, 0);
+    add('store', 'library_header.jpg', c); }
+  // ---- Library Hero 3840×1240:不能有 LOGO / 文字(Steam 會把 Library Logo 疊在上面) ----
+  { const c = canvas(3840, 1240), x = c.getContext('2d');
+    x.imageSmoothingQuality = 'high';
+    cover(x, wide, 0, 0, 3840, 1240, .5, .3);
+    shade(x, 3840, 1240, [[0, .1], [.7, .05], [1, .45]]);
+    add('store', 'library_hero.png', c, 'image/png'); }
+  // ---- Library Logo 1280 寬,透明 PNG ----
+  { const h = Math.round(1240 * LOGO.h / LOGO.w), c = canvas(1280, h + 40), x = c.getContext('2d');
+    logo(x, 640, (h + 40) / 2, 1240);
+    add('store', 'library_logo.png', c, 'image/png'); }
+  // ---- Page Background 1438×810(選用):壓暗、柔焦 ----
+  { const c = canvas(1438, 810), x = c.getContext('2d');
+    x.filter = 'blur(6px) brightness(.45) saturate(.8)'; cover(x, wide, -20, -20, 1478, 850, .5, .4); x.filter = 'none';
+    add('store', 'page_background.jpg', c); }
+  // ---- 圖示:App Icon 184×184 jpg、Shortcut Icon 256×256 png、程式圖示 512 png ----
+  for (const [name, s, type] of [['app_icon_184.jpg', 184, 'image/jpeg'], ['shortcut_icon_256.png', 256, 'image/png'], ['exe_icon_512.png', 512, 'image/png']]) {
+    const c = canvas(s, s), x = c.getContext('2d');
+    if (type === 'image/jpeg') { x.fillStyle = '#000'; x.fillRect(0, 0, s, s); }
+    x.imageSmoothingQuality = 'high'; x.drawImage(icon, 0, 0, s, s);
+    add('store', name, c, type);
+  }
+
+  // ---- 成就圖示 ----
+  const COLOR = { // 依成就種類配色
+    tutorial: '#ff7a1f', first: '#ff7a1f', stage5: '#ff7a1f', r1: '#ffd400', r2: '#ff2d55', ch2: '#ff7a1f', ch3: '#ffd400', r3: '#b04dff',
+    nodmg: '#19f0ff', combo50: '#19f0ff', combo100: '#19f0ff', perfect: '#19f0ff', fever: '#ff2bd6', bonus: '#19f0ff',
+    breaks: '#ff2bd6', ults: '#ff2bd6', star3: '#ffd400', starR1: '#ffd400', dex: '#3ddc84', maxup: '#3ddc84',
+  };
+  const badge = (a, s) => {
+    const c = canvas(s, s), x = c.getContext('2d'), col = COLOR[a.id] || '#19f0ff', k = s / 256;
+    // 底:深色鋼板 + 中央光暈
+    const g = x.createRadialGradient(s / 2, s * .42, s * .05, s / 2, s / 2, s * .72);
+    g.addColorStop(0, col + '66'); g.addColorStop(.45, '#1d2129'); g.addColorStop(1, '#07080b');
+    x.fillStyle = g; x.fillRect(0, 0, s, s);
+    for (let y = 0; y < s; y += 3 * k) { x.fillStyle = 'rgba(255,255,255,.035)'; x.fillRect(0, y, s, k); } // 拉絲紋
+    // 斜切角霓虹框
+    const m = 14 * k, cut = 34 * k;
+    x.beginPath();
+    x.moveTo(m + cut, m); x.lineTo(s - m, m); x.lineTo(s - m, s - m - cut); x.lineTo(s - m - cut, s - m); x.lineTo(m, s - m); x.lineTo(m, m + cut); x.closePath();
+    x.lineWidth = 7 * k; x.strokeStyle = col; x.shadowColor = col; x.shadowBlur = 18 * k; x.stroke();
+    x.shadowBlur = 0; x.lineWidth = 2 * k; x.strokeStyle = 'rgba(255,255,255,.55)'; x.stroke();
+    // 角落亮塊
+    x.fillStyle = col; x.beginPath(); x.moveTo(m, m); x.lineTo(m + cut * .8, m); x.lineTo(m, m + cut * .8); x.closePath(); x.fill();
+    // 圖案(emoji)
+    x.font = `${150 * k}px "Segoe UI Emoji", "Apple Color Emoji", "Noto Color Emoji", sans-serif`;
+    x.textAlign = 'center'; x.textBaseline = 'middle';
+    x.shadowColor = 'rgba(0,0,0,.8)'; x.shadowBlur = 12 * k; x.shadowOffsetY = 6 * k;
+    x.fillText(a.icon, s / 2, s / 2 + 8 * k);
+    return c;
+  };
+  const locked = src => {
+    const c = canvas(src.width, src.height), x = c.getContext('2d');
+    x.filter = 'grayscale(1) brightness(.42) contrast(1.1)'; x.drawImage(src, 0, 0); x.filter = 'none';
+    // 鎖頭
+    const s = src.width, k = s / 256;
+    x.font = `${54 * k}px "Segoe UI Emoji", sans-serif`; x.textAlign = 'right'; x.textBaseline = 'bottom';
+    x.fillText('🔒', s - 22 * k, s - 18 * k);
+    return c;
+  };
+  for (const a of G.ACHIEVEMENTS) {
+    const api = 'ACH_' + a.id.toUpperCase();
+    for (const s of [256, 64]) {
+      const on = badge(a, s);
+      add('ach', `achievements/${api}_${s}.jpg`, on);
+      add('ach', `achievements/${api}_${s}_locked.jpg`, locked(on));
+    }
+  }
+
+  // ---- 成就清單(給 Steamworks 後台照著填) ----
+  const tr = (zh, l) => { const r = G.I18N[zh]; return r ? r[l === 'ja' ? 0 : 1] : ''; };
+  let md = '# Steam 成就清單(自動產生:tools/steam-art.html)\n\n' +
+    'Steamworks 後台「統計與成就 → 成就」逐一新增,**API 名稱必須完全一樣**(遊戲會用這個名稱解鎖)。\n' +
+    '圖示在 `store-art/achievements/`:`<API>_256.jpg` = 已解鎖,`<API>_256_locked.jpg` = 未解鎖(另有 64×64 版本)。\n\n' +
+    '| # | API 名稱 | 名稱(繁中 / 日 / 英) | 說明(繁中 / 日 / 英) | 遊戲內點數 |\n|---|---|---|---|---|\n';
+  G.ACHIEVEMENTS.forEach((a, i) => {
+    md += `| ${i + 1} | \`ACH_${a.id.toUpperCase()}\` | ${a.name} / ${tr(a.name, 'ja')} / ${tr(a.name, 'en')} | ${a.desc} / ${tr(a.desc, 'ja')} / ${tr(a.desc, 'en')} | ${a.pts} |\n`;
+  });
+  outputs.push({ name: 'achievements.md', text: md });
+
+  document.getElementById('export').onclick = async () => {
+    const log = document.getElementById('log');
+    let n = 0;
+    for (const o of outputs) {
+      const body = o.text != null ? new Blob([o.text], { type: 'text/markdown' })
+        : await new Promise(r => o.canvas.toBlob(r, o.type, .92));
+      await fetch('/save/' + o.name, { method: 'PUT', body });
+      log.textContent = `${++n}/${outputs.length} ${o.name}`;
+    }
+    log.textContent += '  ✔ done';
+  };
+  window.artReady = true;
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,11 @@
+"DepotBuild"
+{
+	"DepotID" "0000001"	// 和 app_build.vdf 的 depot ID 相同
+	"FileMapping"
+	{
+		"LocalPath" "*"
+		"DepotPath" "."
+		"Recursive" "1"
+	}
+	"FileExclusion" "*.pdb"
+}

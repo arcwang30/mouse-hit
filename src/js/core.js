@@ -71,8 +71,8 @@ G.show = id => {
   if (art && !embers.childElementCount) { // 火星比標題畫面少,避免畫面太花
     embers.innerHTML = Array.from({ length: 14 }, () => {
       const size = 0.5 + Math.random() * 1.1;
-      return `<span style="left:${Math.random() * 100}%;width:${size}cqw;height:${size}cqw;` +
-        `--sway:${(Math.random() - 0.5) * 14}cqw;animation-duration:${7 + Math.random() * 7}s;` +
+      return `<span style="left:${Math.random() * 100}%;width:calc(${size} * var(--cw));height:calc(${size} * var(--cw));` +
+        `--sway:calc(${(Math.random() - 0.5) * 14} * var(--cw));animation-duration:${7 + Math.random() * 7}s;` +
         `animation-delay:-${Math.random() * 12}s"></span>`;
     }).join('');
   }
@@ -92,9 +92,17 @@ G.banner = async (main, sub = '', ms = 1000) => {
 G.save = {
   key: 'gangquan_save_v1',
   data: null,
-  load() {
+  // fresh:重置存檔時用,不要再從 Steam Cloud 讀回舊進度
+  load(fresh = false) {
     let d = null;
     try { d = JSON.parse(localStorage.getItem(this.key)); } catch (e) {}
+    // PC(Steam)版:Steam Cloud(或本機備份)的存檔比較新就用它(savedAt 是最後寫入的時間)
+    if (window.steam && !fresh) {
+      try {
+        const c = JSON.parse(window.steam.loadSave() || 'null');
+        if (c && (!d || (c.savedAt || 0) > (d.savedAt || 0))) d = c;
+      } catch (e) {}
+    }
     // vol:音樂 / 音效音量 0~5;vibrate:手機震動;shake:畫面震動;lowPower:省電模式
     this.data = Object.assign({ points: 0, vibrate: true, shake: true, voice: true, ultSide: 'right' }, d || {});
     this.data.vol = Object.assign({ music: 3, sfx: 4 }, this.data.vol);
@@ -102,9 +110,9 @@ G.save = {
     this.data.ach = this.data.ach || {};                                        // 已達成的成就 { id: 時間 }
     this.data.life = Object.assign({ breaks: 0, ults: 0 }, this.data.life); // 累計紀錄(成就用)
     this.data.owned = Object.assign({ skins: {}, walls: {}, dex: {} }, this.data.owned);  // 商店買過的東西
-    if (!this.data.lang) { // 第一次開啟:依瀏覽器語言決定
+    if (!this.data.lang) { // 第一次開啟:依瀏覽器語言決定(PC 版優先用 Steam 用戶端的語言)
       const l = (navigator.language || "zh").toLowerCase();
-      this.data.lang = l.startsWith("ja") ? "ja" : l.startsWith("zh") ? "zh" : "en";
+      this.data.lang = (G.steam && G.steam.lang()) || (l.startsWith("ja") ? "ja" : l.startsWith("zh") ? "zh" : "en");
     }
     // 周回挑戰:rounds[輪] = { unlocked 解鎖到第幾關, best 各關最高分, clear 已通關的關卡 };roundMax 已開啟到第幾輪
     // 舊存檔只有第一輪的 unlocked / best,這裡搬進 rounds[1]
@@ -160,6 +168,9 @@ G.save = {
     }
   },
   write() {
-    try { localStorage.setItem(this.key, JSON.stringify(this.data)); } catch (e) {}
+    this.data.savedAt = Date.now();
+    const json = JSON.stringify(this.data);
+    try { localStorage.setItem(this.key, json); } catch (e) {}
+    if (window.steam) window.steam.writeSave(json); // PC 版:同時存到 Steam Cloud
   },
 };
