@@ -1,0 +1,3 @@
+node_modules/
+# 由 npm run copy-game 產生
+www/

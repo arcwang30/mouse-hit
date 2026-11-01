@@ -580,6 +580,7 @@ G.scenes = {
   setChapter(ch, page) { // page:切過去後要停在哪一區(地圖跨章節翻頁用;沒給就是目前關卡所在的區域)
     const sv = G.save.data;
     if (ch === G.chapter()) return;
+    if (!G.iap.owned(ch)) return G.iap.open(); // iOS 版:還沒購買的章節打開購買畫面
     if (!G.chapterOpen(ch)) {
       G.audio.play('fail');
       G.ach.toast({ icon: '🔒', head: G.t('尚未開放'), name: G.t(G.CHAPTERS[ch - 1].name), sub: G.t('打倒{0}第一輪的最終 BOSS 後開放', G.t(G.CHAPTERS[ch - 2].name)) });
@@ -734,7 +735,9 @@ G.scenes = {
       <div class="score">${G.t('積分')}<b>${score}</b></div>
       <div class="score">${G.t('獲得成長點數')}<b>${G.PT} +${points}${ptNote()}</b></div>` +
       `<div class="score coins">${G.t('獲得金幣')}<b>💰 +${G.battle.coins || 0}${s.bonusCoins ? `<small class="coin-bonus">${G.t('(狂打 +{0})', s.bonusCoins)}</small>` : ''}${s.eventCoins ? `<small class="coin-bonus">${G.t('(事件 +{0})', s.eventCoins)}</small>` : ''}${s.chapterCoins ? `<small class="coin-bonus">${G.t('(章節通關 +{0})', s.chapterCoins)}</small>` : ''}</b></div>` +
-      (G.battle.newChapter ? `<div class="new-round">${G.t('{0} 開放!', G.t(G.CHAPTERS[G.battle.newChapter - 1].name))}<small>${G.t('在選擇關卡的上方切換章節')}</small></div>` : '') +
+      (G.battle.newChapter ? (G.iap.owned(G.battle.newChapter)
+        ? `<div class="new-round">${G.t('{0} 開放!', G.t(G.CHAPTERS[G.battle.newChapter - 1].name))}<small>${G.t('在選擇關卡的上方切換章節')}</small></div>`
+        : `<div class="new-round">${G.t('{0} 可以解鎖了!', G.t(G.CHAPTERS[G.battle.newChapter - 1].name))}<small>${G.t('在選擇關卡上方點 🔒 章節即可購買')}</small></div>`) : '') +
       (G.battle.newRound ? `<div class="new-round">${G.t('{0} 開啟!', G.t(G.ROUNDS[G.battle.newRound].name))}<small>${G.t('成長上限提升至 Lv{0}', G.ROUNDS[G.battle.newRound].upMax)}</small></div>` : '') +
       (G.battle.tianmoNeed ? `<div class="new-round lock">${G.t('天魔:修羅 ★{0} / {1}', ...G.battle.tianmoNeed)}<small>${G.t('修羅拿到足夠的星星才能挑戰天魔')}</small></div>` : '');
     G.show('result');

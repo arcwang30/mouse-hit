@@ -1,0 +1,10 @@
+{
+  "appId": "com.arcsconcept.gangquan",
+  "appName": "鋼拳風雲錄",
+  "webDir": "www",
+  "ios": {
+    "contentInset": "never",
+    "backgroundColor": "#000000",
+    "scrollEnabled": false
+  }
+}

@@ -8,19 +8,19 @@
   <!-- PWA:可以「加入主畫面」以 App 方式全螢幕遊玩(不安裝也照常用瀏覽器玩) -->
   <link rel="manifest" href="manifest.webmanifest">
   <meta name="theme-color" content="#000000">
-  <link rel="icon" type="image/png" href="../assets/images/icons/favicon-64.png?v=202611012155">
-  <link rel="apple-touch-icon" href="../assets/images/icons/apple-touch-icon.png?v=202611012155">
+  <link rel="icon" type="image/png" href="../assets/images/icons/favicon-64.png?v=202611012210">
+  <link rel="apple-touch-icon" href="../assets/images/icons/apple-touch-icon.png?v=202611012210">
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black">
   <meta name="apple-mobile-web-app-title" content="鋼拳風雲錄">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Orbitron:wght@600;800&display=swap">
-  <link rel="stylesheet" href="css/style.css?v=202611012155">
-  <link rel="stylesheet" href="css/cyber-ui.css?v=202611012155">
-  <link rel="stylesheet" href="css/menu-pages.css?v=202611012155">
-  <link rel="stylesheet" href="css/wallpapers.css?v=202611012155">
-  <link rel="stylesheet" href="css/pc.css?v=202611012155">
+  <link rel="stylesheet" href="css/style.css?v=202611012210">
+  <link rel="stylesheet" href="css/cyber-ui.css?v=202611012210">
+  <link rel="stylesheet" href="css/menu-pages.css?v=202611012210">
+  <link rel="stylesheet" href="css/wallpapers.css?v=202611012210">
+  <link rel="stylesheet" href="css/pc.css?v=202611012210">
   <!-- 版面:手機 / 平板 = 9:16 直式;電腦(滑鼠操作、橫的視窗)與 Steam 版 = 16:9 橫版(html.pc,見 css/pc.css)
        Steam 版由 Electron 的 preload 先放好 window.steam(html.steam);網址加 ?pc / ?mobile 可強制指定版面 -->
   <script>(function () {
@@ -256,6 +256,20 @@
     <div class="bw-sub" data-i18n>BOSS 襲來!</div>
     <div class="bw-name" id="bwName"></div>
   </div>
+  <!-- iOS 版:章節購買(Apple 內購,見 js/iap.js) -->
+  <div id="iapShop" class="overlay">
+    <div class="iap-box">
+      <h2 data-i18n>解鎖完整冒險</h2>
+      <p class="iap-sub" data-i18n>第一章免費遊玩。第二章、第三章可以單獨購買,也可以用優惠價一次解鎖。</p>
+      <div id="iapList" class="iap-list"></div>
+      <p class="iap-hint" data-i18n>購買後,打倒前一章第一輪的最終 BOSS 即可進入。</p>
+      <p class="iap-note" id="iapNote"></p>
+      <div class="iap-foot">
+        <button class="btn small" id="iapRestore">恢復購買</button>
+        <button class="btn small" id="iapClose" data-i18n>關閉</button>
+      </div>
+    </div>
+  </div>
   <div id="pauseMenu" class="overlay">
     <h2>PAUSE</h2>
     <div class="pause-btns">
@@ -309,34 +323,35 @@
   <button class="pause-btn" id="pauseBtn" title="PAUSE (Esc)">❚❚</button>
 </div>
 
-<script src="js/core.js?v=202611012155"></script>
-<script src="js/haptic.js?v=202611012155"></script>
-<script src="js/i18n.js?v=202611012155"></script>
-<script src="js/audio/engine.js?v=202611012155"></script>
-<script src="js/audio/voice.js?v=202611012155"></script>
-<script src="js/audio/bgm.js?v=202611012155"></script>
-<script src="js/data/skills.js?v=202611012155"></script>
-<script src="js/data/enemies.js?v=202611012155"></script>
-<script src="js/data/stages.js?v=202611012155"></script>
-<script src="js/data/upgrades.js?v=202611012155"></script>
-<script src="js/data/achievements.js?v=202611012155"></script>
-<script src="js/data/daily.js?v=202611012155"></script>
-<script src="js/data/dialog.js?v=202611012155"></script>
-<script src="js/data/skins.js?v=202611012155"></script>
-<script src="js/data/wallpapers.js?v=202611012155"></script>
-<script src="js/data/collection.js?v=202611012155"></script>
-<script src="js/battle/grid.js?v=202611012155"></script>
-<script src="js/battle/battle.js?v=202611012155"></script>
-<script src="js/battle/gimmicks.js?v=202611012155"></script>
-<script src="js/battle/tutorial.js?v=202611012155"></script>
-<script src="js/data/pages.js?v=202611012155"></script>
-<script src="js/data/history-i18n.js?v=202611012155"></script>
-<script src="js/scenes/scenes.js?v=202611012155"></script>
-<script src="js/scenes/pages.js?v=202611012155"></script>
-<script src="js/scenes/shop.js?v=202611012155"></script>
-<script src="js/pwa.js?v=202611012155"></script>
-<script src="js/steam.js?v=202611012155"></script>
-<script src="js/gamepad.js?v=202611012155"></script>
-<script src="js/main.js?v=202611012155"></script>
+<script src="js/core.js?v=202611012210"></script>
+<script src="js/haptic.js?v=202611012210"></script>
+<script src="js/i18n.js?v=202611012210"></script>
+<script src="js/audio/engine.js?v=202611012210"></script>
+<script src="js/audio/voice.js?v=202611012210"></script>
+<script src="js/audio/bgm.js?v=202611012210"></script>
+<script src="js/data/skills.js?v=202611012210"></script>
+<script src="js/data/enemies.js?v=202611012210"></script>
+<script src="js/data/stages.js?v=202611012210"></script>
+<script src="js/data/upgrades.js?v=202611012210"></script>
+<script src="js/data/achievements.js?v=202611012210"></script>
+<script src="js/data/daily.js?v=202611012210"></script>
+<script src="js/data/dialog.js?v=202611012210"></script>
+<script src="js/data/skins.js?v=202611012210"></script>
+<script src="js/data/wallpapers.js?v=202611012210"></script>
+<script src="js/data/collection.js?v=202611012210"></script>
+<script src="js/battle/grid.js?v=202611012210"></script>
+<script src="js/battle/battle.js?v=202611012210"></script>
+<script src="js/battle/gimmicks.js?v=202611012210"></script>
+<script src="js/battle/tutorial.js?v=202611012210"></script>
+<script src="js/data/pages.js?v=202611012210"></script>
+<script src="js/data/history-i18n.js?v=202611012210"></script>
+<script src="js/scenes/scenes.js?v=202611012210"></script>
+<script src="js/scenes/pages.js?v=202611012210"></script>
+<script src="js/scenes/shop.js?v=202611012210"></script>
+<script src="js/pwa.js?v=202611012210"></script>
+<script src="js/steam.js?v=202611012210"></script>
+<script src="js/iap.js?v=202611012210"></script>
+<script src="js/gamepad.js?v=202611012210"></script>
+<script src="js/main.js?v=202611012210"></script>
 </body>
 </html>

@@ -1,0 +1,20 @@
+{
+  "name": "gangquan-ios",
+  "version": "1.0.0",
+  "description": "鋼拳風雲錄 Steel Fist: Wind & Cloud — iOS build (Capacitor + Apple In-App Purchase)",
+  "author": "Arc's Concept",
+  "private": true,
+  "scripts": {
+    "copy-game": "node scripts/copy-game.js",
+    "sync": "npm run copy-game && npx cap sync ios",
+    "open": "npx cap open ios"
+  },
+  "dependencies": {
+    "@capacitor/core": "^6.1.2",
+    "@capacitor/ios": "^6.1.2",
+    "cordova-plugin-purchase": "^13.11.0"
+  },
+  "devDependencies": {
+    "@capacitor/cli": "^6.1.2"
+  }
+}

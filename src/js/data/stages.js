@@ -92,6 +92,7 @@ G.chapterOpen = ch => {
   const sv = G.save.data;
   if (ch === 1) return true;
   if (!sv) return false;
+  if (!G.iap.owned(ch)) return false; // iOS 版:第二、三章要先購買(網頁版、Steam 版一律算已購買)
   const started = (((sv.ch || {})[ch] || {}).rounds || {})[1]; // 已經在這一章過過關
   return !!((sv.chaptersSeen || {})[ch] || (started && (started.clear || []).length) || G.chapterBeaten(ch - 1));
 };

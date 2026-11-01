@@ -752,3 +752,32 @@ html:lang(en) .stage-bar .ch-tab b { font-size: calc(2.6 * var(--cw)); }
 .tut-pill:hover { filter: brightness(1.1) drop-shadow(0 0 calc(2 * var(--cw)) #3ddc84); }
 .tut-pill[hidden] { display: none; }
 #pickEnding2[hidden], #pickEnding3[hidden] { display: none; }
+
+/* ---- iOS 版:章節購買(js/iap.js) ---- */
+#iapShop { z-index: 45; align-items: center; justify-content: center; padding: calc(5 * var(--cw));
+  background: repeating-linear-gradient(0deg, #0000 0 2px, #0003 2px 3px), #05080be8; }
+.iap-box { width: 100%; max-width: calc(92 * var(--cw)); display: flex; flex-direction: column; gap: calc(3 * var(--cw));
+  padding: calc(5 * var(--cw)); clip-path: var(--chamfer);
+  background: linear-gradient(160deg, #22282ff2, #0c1016f8); box-shadow: inset 0 0 0 calc(.4 * var(--cw)) #19f0ff80; }
+.iap-box h2 { margin: 0; text-align: center; font-size: calc(6.4 * var(--cw)); color: var(--neon-c); text-shadow: 0 0 calc(2 * var(--cw)) var(--neon-c); letter-spacing: .08em; }
+.iap-sub, .iap-hint { margin: 0; font-size: calc(3.3 * var(--cw)); line-height: 1.6; color: #cfe; text-align: center; }
+.iap-hint { color: var(--muted); font-size: calc(3 * var(--cw)); }
+.iap-list { display: flex; flex-direction: column; gap: calc(2.6 * var(--cw)); }
+.iap-card { position: relative; display: grid; grid-template-columns: 1fr auto; grid-template-rows: auto auto; align-items: center;
+  column-gap: calc(3 * var(--cw)); text-align: left; border: 0; padding: calc(3.4 * var(--cw)) calc(4 * var(--cw));
+  clip-path: var(--chamfer); background: #0a1418; box-shadow: inset 0 0 0 calc(.35 * var(--cw)) #19f0ff60; }
+.iap-card b { font-size: calc(4.6 * var(--cw)); }
+.iap-card small { grid-row: 2; font-size: calc(3 * var(--cw)); color: var(--muted); }
+.iap-price { grid-row: 1 / 3; grid-column: 2; min-width: calc(22 * var(--cw)); text-align: center; font-weight: 900; font-size: calc(4 * var(--cw));
+  padding: calc(2 * var(--cw)) calc(3 * var(--cw)); color: #001; background: linear-gradient(180deg, #7ff8ff, #19c8e0);
+  clip-path: polygon(8% 0, 100% 0, 92% 100%, 0 100%); }
+.iap-card.bundle { background: linear-gradient(120deg, #2a1a05, #0a1418 60%); box-shadow: inset 0 0 0 calc(.45 * var(--cw)) #ffc94a, 0 0 calc(3 * var(--cw)) #ffc94a55; }
+.iap-card.bundle .iap-price { background: linear-gradient(180deg, #ffe58a, #ffb31a); }
+.iap-tag { position: absolute; top: 0; right: calc(5 * var(--cw)); font-size: calc(2.6 * var(--cw)); font-weight: 900; color: #210;
+  background: #ffc94a; padding: calc(.4 * var(--cw)) calc(2 * var(--cw)); }
+.iap-card.own { opacity: .75; }
+.iap-card.own .iap-price { background: #2c4a3a; color: #9fffc8; }
+.iap-card:disabled { cursor: default; }
+.iap-card:not(:disabled):active { transform: scale(.98); }
+.iap-note { margin: 0; min-height: 1.4em; text-align: center; font-size: calc(3.2 * var(--cw)); color: var(--neon-y); }
+.iap-foot { display: flex; justify-content: center; gap: calc(3 * var(--cw)); }

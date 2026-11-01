@@ -1,6 +1,7 @@
 // 進入點與輸入對應
 G.save.load();
 G.applyI18n();
+G.iap.init(); // iOS 版:連上 App Store,讀取價格與已購買的章節
 // 必殺技按鈕位置(左 / 右手)
 G.applyUltSide = () => G.$('#battle').classList.toggle('ult-left', G.save.data.ultSide === 'left');
 G.applyUltSide();
