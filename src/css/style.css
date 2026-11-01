@@ -992,3 +992,11 @@ h2 { margin: 0; }
 @keyframes afxRoar   { 0% { opacity: 1; transform: scale(.2); } 100% { opacity: 0; transform: scale(4.5); } }
 @keyframes afxShield { 0%, 33% { opacity: 0; transform: translate(-50%, -50%) scale(0) rotate(-60deg); } 43% { opacity: 1; transform: translate(-50%, -50%) scale(1.1) rotate(0); }
   50% { transform: translate(-50%, -50%) scale(1); filter: brightness(1.6); } 70% { filter: brightness(1); } 86% { opacity: 1; transform: translate(-50%, -50%) scale(1); } 100% { opacity: 0; transform: translate(-50%, -50%) scale(1.3); } }
+
+/* 可以上下捲動的畫面只允許上下:overflow-y:auto 會連帶讓左右也能捲,
+   裝飾或動畫稍微超出邊界時,手機上整個畫面就能被左右拖動 */
+#menu, #upgrade, #result, .pg-panel, .ps-list { overflow-x: hidden; touch-action: pan-y; }
+/* 手機:LOGO(96)比選單內容區(88)寬,Chrome 會把右側內距再加在它後面,撐出 15px 左右捲動。
+   改成兩側內距 2、按鈕格固定 88 寬:畫面看起來一樣,但內容不再超出 */
+html:not(.pc) #menu { padding-left: calc(2 * var(--cw)); padding-right: calc(2 * var(--cw)); }
+html:not(.pc) #menu .menu-grid { width: calc(88 * var(--cw)); }
