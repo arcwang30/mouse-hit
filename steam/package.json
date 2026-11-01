@@ -3,7 +3,7 @@
   "productName": "GangQuan",
   "version": "1.0.0",
   "description": "鋼拳風雲錄 Steel Fist: Wind & Cloud — PC (Steam) build",
-  "author": "Arc's Concept",
+  "author": "Arc Concept Games",
   "private": true,
   "main": "main.js",
   "scripts": {

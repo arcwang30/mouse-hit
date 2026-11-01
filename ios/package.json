@@ -2,7 +2,7 @@
   "name": "gangquan-ios",
   "version": "1.0.0",
   "description": "鋼拳風雲錄 Steel Fist: Wind & Cloud — iOS build (Capacitor + Apple In-App Purchase)",
-  "author": "Arc's Concept",
+  "author": "Arc Concept Games",
   "private": true,
   "scripts": {
     "copy-game": "node scripts/copy-game.js",
