@@ -40,9 +40,13 @@
    npm install
    npm run copy-game
    npx cap add ios
+   npm run setup
    npx cap sync ios
    ```
-   `npx cap add ios` 會產生 Xcode 專案(`ios/ios/App/`),只需要做一次。
+   - `npx cap add ios` 會產生 Xcode 專案(`ios/ios/App/`),只需要做一次。
+   - `npm run setup`(`scripts/ios-setup.js`)會設定 Info.plist:iPhone 只能直式、iPad 四個方向都支援
+     (Apple 規定,否則上傳會被拒)、隱藏狀態列、加密合規,並產生各語言的主畫面名稱(`*.lproj`)和隱私清單(`PrivacyInfo.xcprivacy`)。
+     重複執行沒關係。
 2. 打開 Xcode 專案:
    ```
    npm run open
@@ -50,9 +54,18 @@
 3. 在 Xcode 左邊點 **App** → **Signing & Capabilities**:
    - **Team** 選你的開發者帳號,**Bundle Identifier** 用 `com.arcconceptgames.gangquan`(和 App Store Connect 一致)。
    - 按 **+ Capability** 加上 **In-App Purchase**。
-4. App 圖示:在 Xcode 的 `Assets.xcassets → AppIcon` 放一張 1024×1024 的圖示
-   (可以用 `assets/images/icons/` 裡的圖放大重做,不能有透明背景)。
-5. 方向:在 **General → Deployment Info** 只勾 **Portrait**(直式)。
+4. 把 `npm run setup` 產生的檔案加進 App target(只要做一次):左側 **App** 資料夾按右鍵 → **Add Files to "App"…**,
+   選 `PrivacyInfo.xcprivacy` 與 `zh-Hant.lproj`、`ja.lproj`、`en.lproj`(可以一次多選),勾選 Target **App**。
+5. App 圖示:`Assets.xcassets → AppIcon`,把 `ios/icons/AppIcon-1024.png` 拖進 1024×1024 的格子
+   (已經是不透明、沒有 alpha 的版本;用 Windows 的 `tools/make-ios-icon.ps1` 產生,目前來源只有 512,之後有 1024 以上的原稿再換)。
+6. **General → Supported Destinations** 確認有 iPhone、iPad。
+7. 確認隱私清單:Product → Archive → Organizer 對封存按右鍵 → **Generate Privacy Report**。
+   上傳後若收到 Apple 的 ITMS-91053「Missing API declaration」信,照信裡的類別加進 `ios/PrivacyInfo.xcprivacy`,再執行 `npm run setup`。
+
+## iPad
+
+遊戲固定是 9:16 直式。iPad 橫放時,直式畫面置中,兩側用標題的延伸背景補滿(`src/css/style.css` 的 `html:not(.pc) body`)。
+字型(Orbitron)已內附在 `assets/fonts/`,不連網路。
 
 ## App Store Connect 設定
 

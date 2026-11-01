@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<!--
+  App 的隱私清單(Privacy Manifest):npm run setup 會複製到 ios/App/App/PrivacyInfo.xcprivacy
+  - 不追蹤、不收集任何資料(和 App Store Connect 的「未收集資料」、隱私權政策一致)
+  - 需要申報理由的 API(Required Reason API):
+      UserDefaults / CA92.1:Capacitor 的 Cordova 相容層(內購外掛靠它運作)讀寫 App 自己的 UserDefaults。
+        這一項是依經驗預先申報,多申報不會被拒;實際用到哪些,以 Xcode 的 Generate Privacy Report 為準
+  - 內購外掛 cordova-plugin-purchase 13.19.1 的 iOS 原始碼(2026-11 檢查):沒有用到需申報的 API,也沒有自帶隱私清單
+  上傳後如果收到 Apple 的 ITMS-91053「Missing API declaration」信,照信裡列的類別加進 NSPrivacyAccessedAPITypes,再執行 npm run setup
+-->
+<plist version="1.0">
+<dict>
+	<key>NSPrivacyTracking</key>
+	<false/>
+	<key>NSPrivacyTrackingDomains</key>
+	<array/>
+	<key>NSPrivacyCollectedDataTypes</key>
+	<array/>
+	<key>NSPrivacyAccessedAPITypes</key>
+	<array>
+		<dict>
+			<key>NSPrivacyAccessedAPIType</key>
+			<string>NSPrivacyAccessedAPICategoryUserDefaults</string>
+			<key>NSPrivacyAccessedAPITypeReasons</key>
+			<array>
+				<string>CA92.1</string>
+			</array>
+		</dict>
+	</array>
+</dict>
+</plist>

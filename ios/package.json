@@ -7,6 +7,7 @@
   "scripts": {
     "copy-game": "node scripts/copy-game.js",
     "sync": "npm run copy-game && npx cap sync ios",
+    "setup": "node scripts/ios-setup.js",
     "open": "npx cap open ios"
   },
   "dependencies": {
