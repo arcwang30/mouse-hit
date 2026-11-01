@@ -709,11 +709,6 @@ html:lang(en) .stage-bar .ch-tab b { font-size: calc(2.6 * var(--cw)); }
 .float.perfect { font-size: calc(4.6 * var(--cw)); font-weight: 900; color: #fff6a0; text-shadow: 0 0 calc(1.6 * var(--cw)) #ffb800, 0 calc(.3 * var(--cw)) 0 #000; }
 
 /* ===== 設定:存檔槽(測試用)===== */
-.st-note { margin: 0 0 calc(2 * var(--cw)); font-size: calc(3.2 * var(--cw)); line-height: 1.5; color: #e8eef6; }
-.st-slot p { margin: calc(1 * var(--cw)) 0 0; font-size: calc(3 * var(--cw)); line-height: 1.5; color: #c8d2e0; }
-.st-slot-btns { display: grid; grid-template-columns: repeat(3, 1fr); gap: calc(2 * var(--cw)); margin-top: calc(2 * var(--cw)); }
-.st-slot-btns .btn { min-width: 0; padding-left: calc(1 * var(--cw)); padding-right: calc(1 * var(--cw)); font-size: calc(3.4 * var(--cw)); }
-.st-slot-btns .btn:disabled { opacity: .35; }
 
 /* ===== 操作說明「遊戲畫面」:實際戰鬥畫面的縮小版(①~⑫ 對應下面的說明)===== */
 .ui-shot { margin: calc(1 * var(--cw)) 0 calc(4 * var(--cw)); }
