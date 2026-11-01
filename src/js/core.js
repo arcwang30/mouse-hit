@@ -175,5 +175,6 @@ G.save = {
     const json = JSON.stringify(this.data);
     try { localStorage.setItem(this.key, json); } catch (e) {}
     if (window.steam) window.steam.writeSave(json); // PC 版:同時存到 Steam Cloud
+    if (G.native) G.native.mirrorSave(json); // iOS 版:另外備份到 Library 資料夾(跟著 iCloud 備份)
   },
 };

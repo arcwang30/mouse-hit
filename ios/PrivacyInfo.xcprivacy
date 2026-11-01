@@ -6,6 +6,7 @@
   - 需要申報理由的 API(Required Reason API):
       UserDefaults / CA92.1:Capacitor 的 Cordova 相容層(內購外掛靠它運作)讀寫 App 自己的 UserDefaults。
         這一項是依經驗預先申報,多申報不會被拒;實際用到哪些,以 Xcode 的 Generate Privacy Report 為準
+  File timestamp / C617.1:@capacitor/filesystem(存檔備份 Library/save.json)底層讀檔案建立/修改時間;檔案都在 App 自己的資料夾內
   - 內購外掛 cordova-plugin-purchase 13.19.1 的 iOS 原始碼(2026-11 檢查):沒有用到需申報的 API,也沒有自帶隱私清單
   上傳後如果收到 Apple 的 ITMS-91053「Missing API declaration」信,照信裡列的類別加進 NSPrivacyAccessedAPITypes,再執行 npm run setup
 -->
@@ -25,6 +26,14 @@
 			<key>NSPrivacyAccessedAPITypeReasons</key>
 			<array>
 				<string>CA92.1</string>
+			</array>
+		</dict>
+		<dict>
+			<key>NSPrivacyAccessedAPIType</key>
+			<string>NSPrivacyAccessedAPICategoryFileTimestamp</string>
+			<key>NSPrivacyAccessedAPITypeReasons</key>
+			<array>
+				<string>C617.1</string>
 			</array>
 		</dict>
 	</array>

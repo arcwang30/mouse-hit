@@ -98,3 +98,21 @@ npm run sync
 - 年齡分級問卷:有 App 內購買;沒有賭博、抽獎(金幣包是固定內容,不是隨機抽取)。
 - 審查備註可以寫:「遊戲免費,所有章節開放。商店(主選單的 🛒)標題旁的 ＋ 可以購買金幣包;金幣用來購買造型、桌布、圖鑑與浴火重生道具。」
 - 審查員可能要求操作錄影(yaki_mochi 的 Guideline 2.1 經驗):備好一段從開啟 App 到購買金幣、買道具、出戰的實機錄影。
+
+## 存檔備份(iCloud)
+
+金幣是內購買來的消耗品,記在存檔裡。`src/js/native.js` 每次存檔另外寫一份到 App 的 `Library/save.json`(`@capacitor/filesystem`),
+它會跟著 iCloud / 電腦的裝置備份。重裝或換手機還原後,如果 localStorage 是空的但備份檔還在,啟動時自動還原。
+網頁版、Steam 版不會用到(`G.native.on` 為 false)。
+
+## 公開網站(隱私權政策、支援)
+
+App Store Connect 必填「隱私權政策網址」和「支援網址」。網頁在 `site/gangquan/`,和 yaki_mochi 共用網站 repo `arcconceptgames/arcconceptgames.github.io`:
+
+| 頁面 | 網址 | 填在 App Store Connect |
+|---|---|---|
+| 隱私權政策 | https://arcconceptgames.github.io/gangquan/privacy/ | App 資訊 → 隱私權政策網址 |
+| 支援 | https://arcconceptgames.github.io/gangquan/support/ | 版本資訊 → 支援網址 |
+
+各語系可加 `?lang=zh|ja|en`(沒指定時依瀏覽器語言)。發佈:`bash tools/deploy-site.sh "說明"`(只更新 `gangquan/`,不動其他作品)。
+上架後記得在網站首頁(`index.html`)加鋼拳風雲錄的作品卡片與 App Store 連結。

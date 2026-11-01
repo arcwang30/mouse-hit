@@ -1,5 +1,7 @@
 // 進入點與輸入對應
+let hadSave = false; try { hadSave = !!localStorage.getItem(G.save.key); } catch (e) {}
 G.save.load();
+G.native.restoreSave(hadSave); // iOS 版:localStorage 被清掉但 Library 有備份檔 → 還原後重新載入
 G.applyI18n();
 G.iap.init(); // iOS 版:連上 App Store,讀取金幣包的價格
 // 必殺技按鈕位置(左 / 右手)
