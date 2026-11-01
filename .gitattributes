@@ -4,3 +4,6 @@
 *.mp3 binary
 *.ogg binary
 *.wav binary
+
+# shell scripts must keep LF (run on Mac / Git Bash)
+*.sh text eol=lf
