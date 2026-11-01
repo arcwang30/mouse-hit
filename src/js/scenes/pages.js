@@ -337,6 +337,7 @@ G.pages = {
       C.roles.map(([r, name]) => line(`<span class="cr-role">${G.t(r)}</span><span class="cr-name">${name}</span>`)).join('') +
       line(`<h3 class="cr-thanks">${G.t('特別感謝')}</h3>`) +
       C.thanks.map(t => line(`<div class="cr-thank">${t}</div>`)).join('') +
+      line(`<div class="cr-note">${G.t(C.note)}</div>`) +
       line(`<div class="cr-foot">${C.footer}</div>`) +
       line('<img class="cr-hero" src="../assets/images/fx/credit_dev.jpg" alt="">'); // 製作者的插圖(和遊戲裡的炎鋼圖分開)
     this.open('credits');

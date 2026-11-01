@@ -129,6 +129,7 @@
 .cr-line + .cr-line { margin-top: calc(1.6 * var(--cw)); }
 .cr-thanks { margin: calc(4 * var(--cw)) 0 calc(1 * var(--cw)); font-size: calc(5 * var(--cw)); color: var(--fire-2); }
 .cr-thank { font-size: calc(4.6 * var(--cw)); font-weight: 800; color: #fff; }
+.cr-note { margin-top: calc(4 * var(--cw)); padding: 0 calc(6 * var(--cw)); font-size: calc(2.9 * var(--cw)); line-height: 1.5; color: #aab6c6; text-align: center; text-shadow: 0 calc(.3 * var(--cw)) 0 #000; } /* AI 工具使用說明 */
 .cr-foot { margin-top: calc(5 * var(--cw)); font-size: calc(3.8 * var(--cw)); font-weight: 700; color: #e8eef6; letter-spacing: .06em; text-shadow: 0 calc(.3 * var(--cw)) 0 #000; } /* 版權字樣 */
 .cr-hero { width: 60%; margin: calc(3 * var(--cw)) auto 0; display: block; border-radius: calc(4 * var(--cw)); box-shadow: 0 0 0 calc(.6 * var(--cw)) #ffffff30, 0 calc(2 * var(--cw)) calc(5 * var(--cw)) #000c; } /* 方形插圖:圓角 + 淡框,不晃動 */
 @keyframes heroFloat { to { transform: translateY(-3%) rotate(-2deg); } }

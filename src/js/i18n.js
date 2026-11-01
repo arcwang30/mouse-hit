@@ -1266,6 +1266,7 @@ G.I18N = {
   '關於Arc遊戲庫': ['概遊庫について', 'About'],
   '企劃': ['企画', 'Design'],
   '特別感謝': ['スペシャルサンクス', 'Special Thanks'],
+  '美術與音樂使用 AI 工具輔助製作': ['アートと音楽は AI ツールを活用して制作されています', 'Artwork and music were created with the assistance of AI tools.'],
 
   // ---- iOS 版:金幣儲值 / 浴火重生道具 ----
   '關閉': ['閉じる', 'Close'],

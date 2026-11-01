@@ -142,5 +142,6 @@ G.HISTORY = {
 G.CREDITS = {
   roles: [['企劃', 'Arc Wang']],
   thanks: ['Kelvin Lo', 'Bubu Lin', '大王KUNI', 'KT Lee', '國見比呂'],
+  note: '美術與音樂使用 AI 工具輔助製作', // 和 App Store 審核備註一致(docs/App Store 上架文字.md)
   footer: '©Arc Concept Games',
 };

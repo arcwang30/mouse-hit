@@ -260,7 +260,7 @@ Thank you for reviewing Steel Fist: Wind & Cloud.
 - How to buy coins: from the main menu open the shop (the shop button on the main screen), then tap "＋ Buy Coins" next to the coin count. Tapping the price button of an item you cannot afford also opens the coin store.
 - Phoenix: shop > Items tab (120 coins). Tap any stage in Stage Select; the sortie screen lets you bring Phoenix; it is consumed only when it actually revives you.
 - The game works offline and has no ads. The game does not connect to any server of ours.
-- Music, art, and character voices: see the answers in the App Information form (AI-generated content disclosure, if asked).
+- The game's artwork and music were created with the assistance of AI tools. The game contains no voice acting or synthesized speech.
 
 Contact: arcconceptgames@gmail.com
 ```
@@ -268,7 +268,7 @@ Contact: arcconceptgames@gmail.com
 **審核人員附註**
 - 不需要登入帳號，審核帳號欄位留空。
 - 如果審核員要求操作錄影（yaki_mochi 曾遇到 Guideline 2.1 的資訊要求），備好一段實機錄影：開啟 App → 商店 → 儲值 → 購買金幣包 → 買浴火重生 → 選關卡 → 出戰帶入 → 戰鬥。
-- **AI 生成內容**：遊戲的美術、音樂、語音是否使用 AI 工具產生，請依實際情況回答 Apple 的問卷／審核問題，並讓回答與遊戲內「了解歷史／CREDIT」頁面一致。（遊戲的角色語音是用裝置內建的 AI 語音讀出招式名。）
+- **AI 生成內容**：遊戲的**美術與音樂有使用 AI 工具**，**沒有語音**（程式裡的角色語音功能 `G.VOICE_ENABLED` 是關閉的，設定頁也不會出現語音開關）。Apple 的問卷／審核問題請照這個回答，審核備註（上面）已寫明；遊戲內「了解歷史／CREDIT」頁面也建議加一行說明，讓兩邊一致（yaki_mochi 上架時就是這樣處理的）。
 
 ## 改名清單
 
