@@ -539,6 +539,11 @@ G.scenes = {
         `<b>${G.t(a.name)}</b><small>${G.t(a.role)}</small></button>`; }).join('') +
       '</div>' +
       `<p class="ss-ally-desc">${allyDesc(ally)}</p></div>` : '';
+    // 浴火重生:有庫存或連敗保底才出現;點一下切換帶不帶(教學、狂打獎勵關不能帶)
+    const P = G.PHOENIX, pity = G.phoenixPity(i), have = sv.items.phoenix || 0;
+    const phoenixRow = s.type !== 'bonus' && (have || pity) ? `<div class="ss-ult ss-phoenix"><button class="ss-ult-opt ss-ph${sv.phoenixOn ? ' on' : ''}" id="ssPhoenix">` +
+      `<span class="ph-icon">${P.icon}</span><b>${G.t(P.name)}</b><small>${G.t(P.desc)}</small>` +
+      `<em>${pity ? G.t('連敗補助:免費帶入一次') : G.t('持有 {0} 個', have)}</em></button></div>` : '';
     G.$('#stageSheet').innerHTML =
       `<div class="ss-box t-${s.type}"${s.img ? ` style="--ssbg:url('${new URL('../assets/images/' + s.img, location.href).href}')"` : ''}><div class="ss-head"><span class="ss-type">${type.icon} ${G.t(type.name)}</span>` +
       `<span class="ss-diff" title="${G.t('難度')}">${G.t('難度')}<i class="diff-bars">${[1, 2, 3, 4, 5].map(n => `<i class="${n <= s.stars ? 'on' : ''}"></i>`).join('')}</i></span></div>` +
@@ -547,13 +552,15 @@ G.scenes = {
         : `<p class="ss-desc">${G.t('{0} 波敵人', s.waves.length)}</p><div class="ss-foes">${foes}</div>`) +
       `<div class="ss-rate">${[1, 2, 3].map(n => `<span class="${n <= st ? 'on' : ''}">★</span>`).join('')}` +
       `${pr.best[i] ? `<small>${G.t('最高分 {0}', pr.best[i])}</small>` : ''}</div>` +
-      ults + allyPick +
+      ults + allyPick + phoenixRow +
       `<div class="ss-btns"><button class="btn small" id="ssCancel">${G.t('返回')}</button><button class="btn ss-go" id="ssGo">${G.t('出戰')}</button></div></div>`;
     const el = G.$('#stageSheet');
     el.classList.add('show');
     G.audio.play('select');
     G.$('#ssGo').onclick = () => { el.classList.remove('show'); G.pages.current = null; G.battle.start(i); };
     G.$('#ssCancel').onclick = () => { el.classList.remove('show'); G.audio.play('click'); };
+    const ph = G.$('#ssPhoenix');
+    if (ph) ph.onclick = () => { sv.phoenixOn = !sv.phoenixOn; G.save.write(); G.audio.play('click'); ph.classList.toggle('on', sv.phoenixOn); };
     el.querySelectorAll('.ss-ult-opt[data-u]').forEach(b => {
       b.onclick = () => {
         sv.ultPick = b.dataset.u;
@@ -580,7 +587,6 @@ G.scenes = {
   setChapter(ch, page) { // page:切過去後要停在哪一區(地圖跨章節翻頁用;沒給就是目前關卡所在的區域)
     const sv = G.save.data;
     if (ch === G.chapter()) return;
-    if (!G.iap.owned(ch)) return G.iap.open(); // iOS 版:還沒購買的章節打開購買畫面
     if (!G.chapterOpen(ch)) {
       G.audio.play('fail');
       G.ach.toast({ icon: '🔒', head: G.t('尚未開放'), name: G.t(G.CHAPTERS[ch - 1].name), sub: G.t('打倒{0}第一輪的最終 BOSS 後開放', G.t(G.CHAPTERS[ch - 2].name)) });
@@ -678,12 +684,6 @@ G.scenes = {
         const withRule = rules.length && Math.random() < G.RULE_CHANCE;
         choices = G.shuffle(pool.filter(s => !s.rule)).slice(0, withRule ? 2 : 3);
         if (withRule || choices.length < 3) choices.splice(Math.floor(Math.random() * (choices.length + 1)), 0, ...rules.slice(0, 3 - choices.length));
-        // 同一關死太多次:有額外機率把其中一張一般技能換成「浴火重生」
-        const phoenix = pool.find(s => s.id === 'phoenix');
-        if (phoenix && !choices.includes(phoenix) && Math.random() < G.battle.phoenixBoost()) {
-          const k = choices.findIndex(s => !s.rule);
-          if (k >= 0) choices[k] = phoenix;
-        }
       }
       G.$('#skillPick h2').textContent = G.t(rulesOnly ? '修得一項技法' : '選擇一項技能');
       const box = G.$('#skillCards');
@@ -697,7 +697,6 @@ G.scenes = {
           const s = choices[+b.dataset.i];
           s.apply(p);
           p.skills.push(s.id);
-          if (s.id === 'phoenix') G.battle.phoenixSeen(); // 選了浴火重生:這一關的死亡次數歸零重算
           G.audio.play('select');
           el.classList.remove('show');
           resolve();
@@ -735,9 +734,7 @@ G.scenes = {
       <div class="score">${G.t('積分')}<b>${score}</b></div>
       <div class="score">${G.t('獲得成長點數')}<b>${G.PT} +${points}${ptNote()}</b></div>` +
       `<div class="score coins">${G.t('獲得金幣')}<b>💰 +${G.battle.coins || 0}${s.bonusCoins ? `<small class="coin-bonus">${G.t('(狂打 +{0})', s.bonusCoins)}</small>` : ''}${s.eventCoins ? `<small class="coin-bonus">${G.t('(事件 +{0})', s.eventCoins)}</small>` : ''}${s.chapterCoins ? `<small class="coin-bonus">${G.t('(章節通關 +{0})', s.chapterCoins)}</small>` : ''}</b></div>` +
-      (G.battle.newChapter ? (G.iap.owned(G.battle.newChapter)
-        ? `<div class="new-round">${G.t('{0} 開放!', G.t(G.CHAPTERS[G.battle.newChapter - 1].name))}<small>${G.t('在選擇關卡的上方切換章節')}</small></div>`
-        : `<div class="new-round">${G.t('{0} 可以解鎖了!', G.t(G.CHAPTERS[G.battle.newChapter - 1].name))}<small>${G.t('在選擇關卡上方點 🔒 章節即可購買')}</small></div>`) : '') +
+      (G.battle.newChapter ? `<div class="new-round">${G.t('{0} 開放!', G.t(G.CHAPTERS[G.battle.newChapter - 1].name))}<small>${G.t('在選擇關卡的上方切換章節')}</small></div>` : '') +
       (G.battle.newRound ? `<div class="new-round">${G.t('{0} 開啟!', G.t(G.ROUNDS[G.battle.newRound].name))}<small>${G.t('成長上限提升至 Lv{0}', G.ROUNDS[G.battle.newRound].upMax)}</small></div>` : '') +
       (G.battle.tianmoNeed ? `<div class="new-round lock">${G.t('天魔:修羅 ★{0} / {1}', ...G.battle.tianmoNeed)}<small>${G.t('修羅拿到足夠的星星才能挑戰天魔')}</small></div>` : '');
     G.show('result');

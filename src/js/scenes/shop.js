@@ -12,11 +12,13 @@ const enemyPic = e => e.dummy ? '<img src="../assets/images/enemies/training_dum
 const dexName = e => G.t(e.kind === 'hero' ? e.name : e.dummy ? '訓練木樁' : e.enemy.name);
 
 G.shop = {
-  tab: 0, armed: null,
-  TABS: [['skins', '🎨 造型'], ['walls', '🖼️ 桌布'], ['hero', '主角圖鑑'], ['minion', '小兵圖鑑'], ['boss', 'BOSS 圖鑑']],
+  tab: 0, armed: null, view: null, // view:'coins' = 金幣儲值畫面(iOS 版,從標題旁的 ＋ 進入),不在分頁列裡
+  TABS: [['skins', '🎨 造型'], ['walls', '🖼️ 桌布'], ['items', '🎒 道具'], ['hero', '主角圖鑑'], ['minion', '小兵圖鑑'], ['boss', 'BOSS 圖鑑']],
+  kind() { return this.view || this.TABS[this.tab][0]; },
 
   open() {
     this.tab = 0;
+    this.view = null;
     this.armed = null;
     this.render();
     G.pages.open('shop');
@@ -25,18 +27,28 @@ G.shop = {
   setTab(i) {
     const n = this.TABS.length;
     this.tab = (i + n) % n;
+    this.view = null;
     this.armed = null;
     G.audio.play('click');
     this.render();
   },
 
   render() {
-    const sv = G.save.data, kind = this.TABS[this.tab][0];
+    const sv = G.save.data, kind = this.kind();
     G.$('#shopCoins').textContent = sv.coins;
+    G.$('#shopPlus').hidden = !G.iap.on;
     G.$('#shopTabs').innerHTML = this.TABS.map(([, t], i) =>
-      `<button class="pg-tab${i === this.tab ? ' on' : ''}" data-tab="${i}">${G.t(t)}</button>`).join('');
+      `<button class="pg-tab${i === this.tab && !this.view ? ' on' : ''}" data-tab="${i}">${G.t(t)}</button>`).join('');
     const body = G.$('#shopBody');
-    if (kind === 'skins') {
+    if (kind === 'coins') {
+      body.innerHTML = G.iap.html();
+    } else if (kind === 'items') {
+      const P = G.PHOENIX, n = sv.items.phoenix || 0;
+      body.innerHTML = `<p class="shop-tip">${G.t('道具在選擇關卡的「出戰」畫面選擇要不要帶入。')}</p>` +
+        `<div class="shop-item"><span class="si-icon">${P.icon}</span><div class="si-info"><b>${G.t(P.name)}</b><small>${G.t(P.desc)}</small>` +
+        `<small>${G.t('持有 {0} 個・復活時才會消耗', n)}</small></div>${this.buyBtn('item:phoenix', P.price, false)}</div>` +
+        `<p class="shop-tip">${G.t('每日登入第 7 天會送 1 個;同一關連敗 {0} 次,下一次出戰會有一次免費的浴火重生。', P.pityDeaths)}</p>`;
+    } else if (kind === 'skins') {
       body.innerHTML = `<p class="shop-tip">${G.t('買下的造型可在「設定」中更換。另外 3 款破關紀念造型,打倒各輪的最終 BOSS 就能獲得。')}</p><div class="shop-skins">` +
         G.SKINS.filter(s => s.price).map(s => {
           const owned = !!sv.owned.skins[s.id];
@@ -88,7 +100,8 @@ G.shop = {
     this.armed = null;
     sv.coins -= price;
     const [type, ...rest] = key.split(':'), id = rest.join(':');
-    if (type === 'skin') sv.owned.skins[id] = true;
+    if (type === 'item') sv.items[id] = (sv.items[id] || 0) + 1;
+    else if (type === 'skin') sv.owned.skins[id] = true;
     else if (type === 'wall') sv.owned.walls[id] = true;
     else sv.owned.dex[id] = true;
     G.save.write();
@@ -136,5 +149,7 @@ G.shop = {
 };
 
 G.$('#btnShop').onclick = () => { G.audio.play('select'); G.shop.open(); };
+G.$('#shopPlus').onclick = () => { G.shop.view = 'coins'; G.shop.armed = null; G.audio.play('select'); G.shop.render(); };
+G.$('#shopBody').addEventListener('click', e => { const b = e.target.closest('[data-pack]'); if (b && !b.disabled) G.iap.buy(b.dataset.pack); });
 G.$('#shopTabs').addEventListener('click', e => { const t = e.target.closest('[data-tab]'); if (t) G.shop.setTab(+t.dataset.tab); });
 G.$('#dexDetail').addEventListener('click', () => G.shop.closeDetail());

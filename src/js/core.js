@@ -110,6 +110,9 @@ G.save = {
     this.data.ach = this.data.ach || {};                                        // 已達成的成就 { id: 時間 }
     this.data.life = Object.assign({ breaks: 0, ults: 0 }, this.data.life); // 累計紀錄(成就用)
     this.data.owned = Object.assign({ skins: {}, walls: {}, dex: {} }, this.data.owned);  // 商店買過的東西
+    // 道具庫存(商店用金幣買的消耗品)。新存檔與沒有這筆的舊存檔送 PHOENIX.gift 個浴火重生;phoenixOn:出戰時要不要帶入
+    if (!this.data.items) this.data.items = { phoenix: G.PHOENIX.gift };
+    if (this.data.phoenixOn === undefined) this.data.phoenixOn = true;
     if (!this.data.lang) { // 第一次開啟:依瀏覽器語言決定(PC 版優先用 Steam 用戶端的語言)
       const l = (navigator.language || "zh").toLowerCase();
       this.data.lang = (G.steam && G.steam.lang()) || (l.startsWith("ja") ? "ja" : l.startsWith("zh") ? "zh" : "en");

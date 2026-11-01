@@ -72,10 +72,17 @@ G.daily = {
     G.audio.play('coin', true);
     G.audio.play('levelup');
   },
+  // 連續登入第 7 天:另外送 1 個浴火重生(免費玩家的保底之一)
+  giveWeekly(sv) {
+    if (sv.login.day !== 7) return;
+    sv.items.phoenix = (sv.items.phoenix || 0) + 1;
+    G.ach.toast({ icon: G.PHOENIX.icon, head: G.t('連續登入 7 天!'), name: G.t('獲得 {0} ×1', G.t(G.PHOENIX.name)), sub: G.t('出戰前可以選擇帶入') });
+  },
   claimLogin() {
     const sv = this.ensure();
     if (sv.login.claimed) return;
     sv.login.claimed = true;
+    this.giveWeekly(sv);
     this.give(G.LOGIN_REWARDS[sv.login.day - 1]);
     this.render();
   },
@@ -108,6 +115,7 @@ G.daily = {
   claimEverything() {
     const sv = this.ensure(), { sum } = this.pending();
     if (!sum) return;
+    if (!sv.login.claimed) this.giveWeekly(sv);
     sv.login.claimed = true;
     this.tasks().forEach(t => { if (this.done(t)) sv.daily.got[t.id] = true; });
     if (this.tasks().every(t => sv.daily.got[t.id])) sv.daily.all = true;
@@ -134,7 +142,7 @@ G.daily = {
     const days = G.LOGIN_REWARDS.map((c, i) => {
       const n = i + 1, past = n < lg.day || (n === lg.day && lg.claimed), today = n === lg.day && !lg.claimed;
       return `<div class="dl-day${past ? ' got' : ''}${today ? ' today' : ''}${n === 7 ? ' big' : ''}"><small>${G.t('第 {0} 天', n)}</small>` +
-        `<b>💰${c}</b>${past ? '<i>✔</i>' : ''}</div>`;
+        `<b>💰${c}</b>${n === 7 ? `<span class="dl-ph">${G.PHOENIX.icon}×1</span>` : ''}${past ? '<i>✔</i>' : ''}</div>`;
     }).join('');
     const tasks = this.tasks().map(t => {
       const p = Math.min(sv.daily.prog[t.id] || 0, t.goal), got = sv.daily.got[t.id], ok = p >= t.goal;

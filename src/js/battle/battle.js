@@ -30,9 +30,6 @@ const CHEST_ODDS = { coins: 0.4, skill: 0.3 }; // 剩下 30% 是寶箱怪(要打
 const MIMIC_STEAL = 10; // 寶箱怪的假錢袋 / 假盾牌每次搶走的金幣(再乘周回倍率)
 const SKILL_RULE_CHANCE = 0.25; // 寶箱開出的隨機技能:有這個機率是技法(還有沒拿過的才會出現)
 const HEAL_SKILLS = ['steel', 'pill', 'leech', 'regen', 'bell']; // HP 偏低時比較容易開到的保命技能
-// 同一關死太多次:從第 2 次死亡起,每次選技能有額外機率一定混入「浴火重生」(每多死一次 +PHOENIX_STEP,最多 PHOENIX_MAX)
-// 拿到浴火重生(自己選的或寶箱開到)後,這一關的死亡次數就歸零重算;只出現在選項裡沒選不算
-const PHOENIX_STEP = 0.15, PHOENIX_MAX = 0.6;
 const REVIVE_FX_MS = 1800, REVIVE_BREATH_MS = 400; // 浴火重生:火光演出時間、演出結束後再停一下的喘息時間(這段期間戰鬥都停住)
 const DEVIL_GOLD = 100;
 // 新機制:疾風(滑擊拳傷害倍率)、倒數炸彈(秒數再乘周回的停留倍率、爆炸傷害倍率)、幻術(記憶長度依周回、每格閃爍毫秒、每格作答時間、失敗傷害倍率)
@@ -202,6 +199,8 @@ G.battle = {
     this.stageIdx = stageIdx;
     this.stage = G.STAGES[stageIdx];
     this.p = makePlayer();
+    this.phoenix = G.phoenixPlan(stageIdx); // 出戰前選擇帶入浴火重生(見 skills.js):'pity' | 'item' | null
+    this.p.revive = this.phoenix ? 1 : 0;
     this.stats = { dmg: 0, hits: 0, blocks: 0, perfects: 0, breaks: 0, waves: 0, ults: 0, maxCombo: 0, fevers: 0 };
     this.comboN = 0;
     this.burstCount = 0;
@@ -1626,19 +1625,6 @@ G.battle = {
     restore();
   },
 
-  // 浴火重生的額外出現機率:這一關死了 n 次 → (n - 1) × PHOENIX_STEP,最多 PHOENIX_MAX
-  phoenixBoost() {
-    const n = (G.prog().deaths || {})[this.stageIdx] || 0;
-    return Math.min(PHOENIX_MAX, Math.max(0, n - 1) * PHOENIX_STEP);
-  },
-  // 拿到浴火重生了:這一關的死亡次數歸零,之後再慢慢累積
-  phoenixSeen() {
-    const pr = G.prog();
-    if (!pr.deaths || !pr.deaths[this.stageIdx]) return;
-    pr.deaths[this.stageIdx] = 0;
-    G.save.write();
-  },
-
   // 寶箱開出的隨機技能:直接獲得(不用選),有 SKILL_RULE_CHANCE 的機率是技法;
   // HP 低於一半時保命技能機率 ×3,HP 快滿時「回氣丹」幾乎不會出現(開到也浪費)
   async treasureSkill() {
@@ -1647,13 +1633,12 @@ G.battle = {
     let s;
     if (rules.length && Math.random() < SKILL_RULE_CHANCE) s = G.pick(rules);
     else {
-      const hpRate = p.hp / p.maxHp, boost = this.phoenixBoost();
+      const hpRate = p.hp / p.maxHp;
       const pool = G.SKILLS.filter(x => !x.rule && !x.risk && !owned(x)).map(x => ({ x,
-        w: x.id === 'pill' && hpRate > 0.8 ? 0.15 : HEAL_SKILLS.includes(x.id) && hpRate < 0.5 ? 3 : x.id === 'phoenix' ? 1 + boost * 10 : 1 }));
+        w: x.id === 'pill' && hpRate > 0.8 ? 0.15 : HEAL_SKILLS.includes(x.id) && hpRate < 0.5 ? 3 : 1 }));
       let r = Math.random() * pool.reduce((n, o) => n + o.w, 0);
       s = (pool.find(o => (r -= o.w) < 0) || pool[0]).x;
     }
-    if (s.id === 'phoenix') this.phoenixSeen();
     s.apply(p);
     p.skills.push(s.id);
     G.audio.play(s.rule ? 'perfect' : 'levelup');
@@ -2080,6 +2065,10 @@ G.battle = {
     if (p.hp <= 0 && p.revive > 0) {
       p.revive = 0;
       p.hp = p.maxHp;
+      // 真的復活了才消耗:保底的免費那次把這一關的連敗次數歸零,庫存的扣一個
+      if (this.phoenix === 'pity') G.prog().deaths[this.stageIdx] = 0;
+      else if (this.phoenix === 'item') G.save.data.items.phoenix = Math.max(0, G.save.data.items.phoenix - 1);
+      G.save.write();
       this.reviveFx();
     }
     this.render();
@@ -2133,9 +2122,9 @@ G.battle = {
     if (!p || !e) return;
     G.$('#playerHpFill').style.width = (p.hp / p.maxHp * 100) + '%';
     G.$('#playerHpText').textContent = G.t('炎鋼 HP {0}/{1}', p.hp, p.maxHp);
-    // 浴火重生:學到後在 HP 旁邊顯示 🌅,用掉後變灰
+    // 浴火重生:出戰帶入後在 HP 旁邊顯示 🌅,用掉後變灰
     const rv = G.$('#reviveIcon');
-    rv.hidden = !p.skills.includes('phoenix');
+    rv.hidden = !this.phoenix;
     rv.classList.toggle('used', !p.revive);
     // 破綻量表:圓環跟著累積,滿了發光(下一次全擋就會露出破綻)
     const bg = G.$('#breakGauge'), g = this.breakGauge || 0;
@@ -2262,7 +2251,7 @@ G.battle = {
       pr.unlocked = Math.max(pr.unlocked, Math.min(G.STAGES.length, i + 2));
       if (!pr.clear.includes(i)) pr.clear.push(i);
     } else {
-      pr.deaths = pr.deaths || {}; // 這一關死了幾次(浴火重生的出現機率會跟著提高)
+      pr.deaths = pr.deaths || {}; // 這一關死了幾次(連敗達標時下一次出戰有免費的浴火重生)
       pr.deaths[i] = (pr.deaths[i] || 0) + 1;
     }
     pr.best[i] = Math.max(pr.best[i] || 0, score);
