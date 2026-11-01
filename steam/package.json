@@ -20,7 +20,7 @@
     "electron-builder": "^25.1.8"
   },
   "build": {
-    "appId": "com.arcsconcept.gangquan",
+    "appId": "com.arcconceptgames.gangquan",
     "productName": "GangQuan",
     "executableName": "GangQuan",
     "copyright": "©Arc Concept Games",
