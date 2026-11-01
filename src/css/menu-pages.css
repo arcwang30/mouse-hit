@@ -785,3 +785,5 @@ html:lang(en) .stage-bar .ch-tab b { font-size: calc(2.6 * var(--cw)); }
 .si-info b { font-size: calc(4 * var(--cw)); color: #fff; }
 .si-info small { font-size: calc(2.8 * var(--cw)); color: var(--steel-hi); }
 .dl-ph { display: block; font-size: calc(2.6 * var(--cw)); color: #fff; }
+.shop-buy.poor { filter: grayscale(.8) brightness(.6); } /* 金幣不夠(iOS 版仍可點,點了打開儲值畫面) */
+.ss-phoenix #ssPhoenixBuy { opacity: .85; }

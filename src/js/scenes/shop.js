@@ -16,8 +16,8 @@ G.shop = {
   TABS: [['skins', '🎨 造型'], ['walls', '🖼️ 桌布'], ['items', '🎒 道具'], ['hero', '主角圖鑑'], ['minion', '小兵圖鑑'], ['boss', 'BOSS 圖鑑']],
   kind() { return this.view || this.TABS[this.tab][0]; },
 
-  open() {
-    this.tab = 0;
+  open(tab = 0) { // tab:要開在哪一個分頁(出戰畫面的「購買浴火重生」開在道具分頁)
+    this.tab = tab;
     this.view = null;
     this.armed = null;
     this.render();
@@ -37,6 +37,7 @@ G.shop = {
     const sv = G.save.data, kind = this.kind();
     G.$('#shopCoins').textContent = sv.coins;
     G.$('#shopPlus').hidden = !G.iap.on;
+    G.$('#shopPlus').textContent = G.t('＋ 儲值');
     G.$('#shopTabs').innerHTML = this.TABS.map(([, t], i) =>
       `<button class="pg-tab${i === this.tab && !this.view ? ' on' : ''}" data-tab="${i}">${G.t(t)}</button>`).join('');
     const body = G.$('#shopBody');
@@ -85,17 +86,27 @@ G.shop = {
     });
   },
 
-  // 價格按鈕:錢不夠就不能按;第一次點變成「確定購買?」
+  // 價格按鈕:錢不夠就變暗(不能買);iOS 版仍然可以點,點了打開儲值畫面。第一次點變成「確定購買?」
   buyBtn(key, price, owned) {
     if (owned) return `<span class="shop-owned">${G.t('已擁有')}</span>`;
     const armed = this.armed === key, poor = G.save.data.coins < price;
-    return `<button class="shop-buy${armed ? ' armed' : ''}" data-buy="${key}" data-price="${price}" ${poor ? 'disabled' : ''}>` +
+    return `<button class="shop-buy${armed ? ' armed' : ''}${poor ? ' poor' : ''}" data-buy="${key}" data-price="${price}" ${poor && !G.iap.on ? 'disabled' : ''}>` +
       (armed ? G.t('確定購買?') : `💰 ${price}`) + '</button>';
+  },
+
+  // 金幣不夠:iOS 版打開儲值畫面(多一行說明),其他版本什麼都不做
+  topUp(note) {
+    if (!G.iap.on) return;
+    this.view = 'coins';
+    this.armed = null;
+    G.iap.note = note ? G.t('金幣不夠了,選一個金幣包吧') : '';
+    G.audio.play('select');
+    this.render();
   },
 
   buy(key, price) {
     const sv = G.save.data;
-    if (sv.coins < price) return;
+    if (sv.coins < price) return this.topUp(true);
     if (this.armed !== key) { this.armed = key; G.audio.play('tap'); return this.render(); }
     this.armed = null;
     sv.coins -= price;
@@ -149,7 +160,7 @@ G.shop = {
 };
 
 G.$('#btnShop').onclick = () => { G.audio.play('select'); G.shop.open(); };
-G.$('#shopPlus').onclick = () => { G.shop.view = 'coins'; G.shop.armed = null; G.audio.play('select'); G.shop.render(); };
+G.$('#shopPlus').onclick = () => G.shop.topUp(false);
 G.$('#shopBody').addEventListener('click', e => { const b = e.target.closest('[data-pack]'); if (b && !b.disabled) G.iap.buy(b.dataset.pack); });
 G.$('#shopTabs').addEventListener('click', e => { const t = e.target.closest('[data-tab]'); if (t) G.shop.setTab(+t.dataset.tab); });
 G.$('#dexDetail').addEventListener('click', () => G.shop.closeDetail());

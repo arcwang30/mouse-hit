@@ -543,7 +543,10 @@ G.scenes = {
     const P = G.PHOENIX, pity = G.phoenixPity(i), have = sv.items.phoenix || 0;
     const phoenixRow = s.type !== 'bonus' && (have || pity) ? `<div class="ss-ult ss-phoenix"><button class="ss-ult-opt ss-ph${sv.phoenixOn ? ' on' : ''}" id="ssPhoenix">` +
       `<span class="ph-icon">${P.icon}</span><b>${G.t(P.name)}</b><small>${G.t(P.desc)}</small>` +
-      `<em>${pity ? G.t('連敗補助:免費帶入一次') : G.t('持有 {0} 個', have)}</em></button></div>` : '';
+      `<em>${pity ? G.t('連敗補助:免費帶入一次') : G.t('持有 {0} 個', have)}</em></button></div>`
+      // 庫存用完(也沒有連敗補助):給一個去商店買的入口(狂打獎勵關、教學不能帶,不顯示)
+      : s.type !== 'bonus' && !(G.tutorial && G.tutorial.active) ? `<div class="ss-ult ss-phoenix"><button class="ss-ult-opt ss-ph" id="ssPhoenixBuy">` +
+      `<span class="ph-icon">${P.icon}</span><b>${G.t(P.name)}</b><small>${G.t(P.desc)}</small><em>${G.t('到商店購買(💰 {0})', P.price)}</em></button></div>` : '';
     G.$('#stageSheet').innerHTML =
       `<div class="ss-box t-${s.type}"${s.img ? ` style="--ssbg:url('${new URL('../assets/images/' + s.img, location.href).href}')"` : ''}><div class="ss-head"><span class="ss-type">${type.icon} ${G.t(type.name)}</span>` +
       `<span class="ss-diff" title="${G.t('難度')}">${G.t('難度')}<i class="diff-bars">${[1, 2, 3, 4, 5].map(n => `<i class="${n <= s.stars ? 'on' : ''}"></i>`).join('')}</i></span></div>` +
@@ -559,6 +562,8 @@ G.scenes = {
     G.audio.play('select');
     G.$('#ssGo').onclick = () => { el.classList.remove('show'); G.pages.current = null; G.battle.start(i); };
     G.$('#ssCancel').onclick = () => { el.classList.remove('show'); G.audio.play('click'); };
+    const phBuy = G.$('#ssPhoenixBuy');
+    if (phBuy) phBuy.onclick = () => { el.classList.remove('show'); G.shop.open(2); };
     const ph = G.$('#ssPhoenix');
     if (ph) ph.onclick = () => { sv.phoenixOn = !sv.phoenixOn; G.save.write(); G.audio.play('click'); ph.classList.toggle('on', sv.phoenixOn); };
     el.querySelectorAll('.ss-ult-opt[data-u]').forEach(b => {
