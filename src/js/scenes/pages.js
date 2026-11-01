@@ -244,7 +244,8 @@ G.pages = {
         (G.VOICE_ENABLED ? toggle('voice', '角色語音', '必殺技時喊出招式名(裝置內建的 AI 語音)') : '') +
         side() +
         (G.clock.paused || G.steam.on || G.iap.native ? '' : G.pwa.html()) + // PAUSE 中開設定時不顯示安裝引導;PC 版、iOS App 版不需要
-        (G.clock.paused ? '' : '<div class="st-row">' +
+        // iOS App 版不提供重置存檔:金幣是內購買來的,誤按會連付費的金幣、道具一起清掉(想重來就刪掉 App 重裝)
+        (G.clock.paused || G.iap.native ? '' : '<div class="st-row">' +
         `<button class="btn small danger" id="stReset">${G.t(this.resetArmed ? '再按一次確認' : '🗑️ 重置存檔')}</button>` +
         '</div>');
   },
