@@ -9,6 +9,7 @@
 html.pc .title-bg,
 html.pc #artBg .art-img { background-image: url('../../assets/images/backgrounds/title_wide.jpg'); background-position: center top; }
 html.pc .title-logo { width: calc(96 * var(--cw)); }
+html.pc .brand-splash img { width: auto; height: 51.9cqh; } /* 品牌 LOGO:橫式最長邊 = 畫面高的 560/1080(和 yaki_mochi 一致) */
 html.pc #artBg::after { /* 左右兩側加深,讓側邊的按鈕清楚 */
   background:
     linear-gradient(90deg, #000b 0%, #0004 24%, transparent 34%, transparent 66%, #0004 76%, #000b 100%),

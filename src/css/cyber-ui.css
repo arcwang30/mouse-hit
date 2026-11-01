@@ -3,6 +3,9 @@
    拉絲鋼板、鉚釘、斜切角、警示斜紋 + 霓虹青/洋紅光
    (載入順序在 style.css 之後,覆蓋戰鬥畫面的預設樣式)
    ========================================================== */
+/* Orbitron(SIL OFL 1.1)內附在 App 裡,不連 Google Fonts;iOS 版離線也能顯示 */
+@font-face { font-family: "Orbitron"; font-style: normal; font-weight: 600; font-display: swap; src: url("../../assets/fonts/orbitron-600.ttf") format("truetype"); }
+@font-face { font-family: "Orbitron"; font-style: normal; font-weight: 800; font-display: swap; src: url("../../assets/fonts/orbitron-800.ttf") format("truetype"); }
 :root {
   --steel-0: #14181d;
   --steel-1: #22282f;
