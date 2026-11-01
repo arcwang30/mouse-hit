@@ -23,7 +23,7 @@
     "appId": "com.arcsconcept.gangquan",
     "productName": "GangQuan",
     "executableName": "GangQuan",
-    "copyright": "©Arc's Concept Game",
+    "copyright": "©Arc Concept Games",
     "directories": { "output": "dist" },
     "files": [
       "main.js",

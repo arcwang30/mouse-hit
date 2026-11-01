@@ -142,5 +142,5 @@ G.HISTORY = {
 G.CREDITS = {
   roles: [['企劃', 'Arc Wang']],
   thanks: ['Kelvin Lo', 'Bubu Lin', '大王KUNI', 'KT Lee', '國見比呂'],
-  footer: '©Arc\'s Concept Game',
+  footer: '©Arc Concept Games',
 };

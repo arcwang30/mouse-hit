@@ -257,11 +257,6 @@ html:lang(en) .menu-grid .btn { padding-left: calc(1 * var(--cw)); padding-right
 #stages .stage-list { flex: 1; min-height: 0; overflow: hidden; padding: calc(1 * var(--cw)) 0; gap: calc(2 * var(--cw)); } /* 不再上下捲動:地圖改成左右翻頁 */
 #stages .stage-card { padding: calc(4 * var(--cw)) calc(4 * var(--cw)); flex-shrink: 0; }
 
-/* 版權標示(同 Top_Race,主選單右下角) */
-.copyright {
-  position: absolute; right: calc(3 * var(--cw)); bottom: calc(1.6 * var(--cw)); font-size: calc(2.8 * var(--cw)); font-weight: 700; color: #fff;
-  text-shadow: 0 0 calc(.6 * var(--cw)) #000, 0 calc(.2 * var(--cw)) 0 #000; opacity: .85; pointer-events: none;
-}
 #menu { padding-bottom: calc(6 * var(--cw)); }
 
 /* 設定:語言切換 */
