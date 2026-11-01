@@ -243,7 +243,6 @@ G.pages = {
         toggle('lowPower', '省電模式', '關掉背景的裝飾動畫(下雨、壁紙、光環等),手機比較不耗電') +
         (G.VOICE_ENABLED ? toggle('voice', '角色語音', '必殺技時喊出招式名(裝置內建的 AI 語音)') : '') +
         side() +
-        (G.clock.paused || G.steam.on || G.iap.native ? '' : G.pwa.html()) + // PAUSE 中開設定時不顯示安裝引導;PC 版、iOS App 版不需要
         // iOS App 版不提供重置存檔:金幣是內購買來的,誤按會連付費的金幣、道具一起清掉(想重來就刪掉 App 重裝)
         (G.clock.paused || G.iap.native ? '' : '<div class="st-row">' +
         `<button class="btn small danger" id="stReset">${G.t(this.resetArmed ? '再按一次確認' : '🗑️ 重置存檔')}</button>` +
@@ -266,7 +265,6 @@ G.pages = {
     if (t.dataset.lang) { G.setLang(t.dataset.lang); G.audio.play('select'); return this.renderSettings(); }
     if (t.dataset.skin) { G.skin.pick(t.dataset.skin) && this.renderSettings(); return; }
     if (t.dataset.wall) { G.wall.pick(t.dataset.wall) && this.renderSettings(); return; }
-    if (t.id === 'stInstall') return G.pwa.install();
     if (t.dataset.res || t.dataset.fs) return G.steam.displayClick(t);
     if (t.dataset.ult) { G.save.data.ultSide = t.dataset.ult; G.save.write(); G.applyUltSide(); G.audio.play('select'); return this.renderSettings(); }
     if (t.dataset.vol) return this.setVol(t.dataset.vol, +t.dataset.v);
