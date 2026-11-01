@@ -12,9 +12,9 @@
 
 | 產品 ID | 類型 | 內容 | 建議售價(參考) |
 |---|---|---|---|
-| `com.arcsconcept.gangquan.coins600` | **消耗型項目** | 金幣 600 | NT$30 |
-| `com.arcsconcept.gangquan.coins1800` | **消耗型項目** | 金幣 1800(標示「超值」) | NT$90 |
-| `com.arcsconcept.gangquan.coins4200` | **消耗型項目** | 金幣 4200(標示「最划算」) | NT$190 |
+| `com.arcconceptgames.gangquan.coins600` | **消耗型項目** | 金幣 600 | NT$30 |
+| `com.arcconceptgames.gangquan.coins1800` | **消耗型項目** | 金幣 1800(標示「超值」) | NT$90 |
+| `com.arcconceptgames.gangquan.coins4200` | **消耗型項目** | 金幣 4200(標示「最划算」) | NT$190 |
 
 - 售價在 App Store Connect 設定,遊戲會自動顯示玩家所在地區的當地價格,不用改程式。金幣數量寫在 `iap.js` 的 `PACKS`。
 - 消耗型項目**沒有「恢復購買」**(Apple 只要求非消耗型與訂閱要有)。金幣記在存檔裡,換手機要靠 iCloud 備份還原存檔。
@@ -48,7 +48,7 @@
    npm run open
    ```
 3. 在 Xcode 左邊點 **App** → **Signing & Capabilities**:
-   - **Team** 選你的開發者帳號,**Bundle Identifier** 用 `com.arcsconcept.gangquan`(和 App Store Connect 一致)。
+   - **Team** 選你的開發者帳號,**Bundle Identifier** 用 `com.arcconceptgames.gangquan`(和 App Store Connect 一致)。
    - 按 **+ Capability** 加上 **In-App Purchase**。
 4. App 圖示:在 Xcode 的 `Assets.xcassets → AppIcon` 放一張 1024×1024 的圖示
    (可以用 `assets/images/icons/` 裡的圖放大重做,不能有透明背景)。
@@ -56,7 +56,7 @@
 
 ## App Store Connect 設定
 
-1. 「我的 App」→ ＋ 新增 App,套件 ID 選 `com.arcsconcept.gangquan`。價格選「免費」。
+1. 「我的 App」→ ＋ 新增 App,套件 ID 選 `com.arcconceptgames.gangquan`。價格選「免費」。
 2. App 頁面 → **營利 → App 內購買項目** → 依上表建立 3 個 **消耗型項目**:
    - 產品 ID 要完全一致。
    - 填價格、各語言的顯示名稱與描述(中文 / 日文 / 英文)。
