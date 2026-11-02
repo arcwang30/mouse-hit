@@ -58,7 +58,7 @@
 4. 把 `npm run setup` 產生的檔案加進 App target(只要做一次):左側 **App** 資料夾按右鍵 → **Add Files to "App"…**,
    選 `PrivacyInfo.xcprivacy` 與 `zh-Hant.lproj`、`ja.lproj`、`en.lproj`(可以一次多選),勾選 Target **App**。
 5. App 圖示:`Assets.xcassets → AppIcon`,把 `ios/icons/AppIcon-1024.png` 拖進 1024×1024 的格子
-   (已經是不透明、沒有 alpha 的版本;用 Windows 的 `tools/make-ios-icon.ps1` 產生,目前來源只有 512,之後有 1024 以上的原稿再換)。
+   (已經是不透明、沒有 alpha 的版本;由 1024 原稿 `assets/images/icons/source/app-icon-1024.jpg` 用 Windows 的 `tools/make-app-icons.ps1` 產生,網頁 / PWA 的圖示也一起更新)。
 6. **General → Supported Destinations** 確認有 iPhone、iPad。
 7. 確認隱私清單:Product → Archive → Organizer 對封存按右鍵 → **Generate Privacy Report**。
    上傳後若收到 Apple 的 ITMS-91053「Missing API declaration」信,照信裡的類別加進 `ios/PrivacyInfo.xcprivacy`,再執行 `npm run setup`。
