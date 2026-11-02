@@ -29,8 +29,10 @@ G.iap = {
 
   // 金幣入帳並存檔;存檔還沒讀好(App 一啟動就收到上次沒完成的交易)就等一下再試。回傳 true = 已入帳,可以通知 Apple 完成
   async deliver(key, txId) {
-    for (let i = 0; i < 40 && !(G.save && G.save.data); i++) await G.sleep(250);
-    if (!(G.save && G.save.data)) return false;
+    // 重裝 App 時正在從備份檔還原存檔(G.native.restoring):還原完會重新載入頁面,現在加的金幣會被備份蓋掉 → 等還原結束。
+    // 等不到就回傳 false,不通知 Apple 完成,下次開啟時交易會再送來一次
+    for (let i = 0; i < 40 && !(G.save && G.save.data && !(G.native && G.native.restoring)); i++) await G.sleep(250);
+    if (!(G.save && G.save.data) || (G.native && G.native.restoring)) return false;
     if (txId && this._tx().includes(txId)) return true; // 這筆已經加過了
     G.save.data.coins += this.PACKS[key].coins;
     G.save.write();
