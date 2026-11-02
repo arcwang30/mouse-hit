@@ -43,7 +43,7 @@ button { font: inherit; color: inherit; cursor: pointer; }
   /* 基準字級不能寫在容器本身(cqw 會改用瀏覽器視窗寬度計算),改設在子層 */
 }
 /* 直式框和螢幕比例不同時的補邊(iPad 橫放是左右、長型手機是上下;不是 PC 版):霓虹網格——深紫底 + 青色直線、洋紅橫線的格子 + 細掃描線,
-   框的邊緣一圈亮青色霓虹、外圍洋紅光暈(和介面的青色霓虹框一致);螢幕剛好 9:16 時整個被框蓋住,看不到 */
+   框的邊緣只有一圈深色陰影(不加亮色線條);螢幕剛好 9:16 時整個被框蓋住,看不到 */
 html:not(.pc) body {
   background:
     repeating-linear-gradient(0deg, rgba(0, 0, 0, .28) 0 2px, transparent 2px 4px),
@@ -51,7 +51,7 @@ html:not(.pc) body {
     linear-gradient(90deg, rgba(25, 240, 255, .22) 1px, transparent 1px) center / 44px 44px,
     radial-gradient(ellipse at 50% 50%, #2a1060 0%, #12082e 45%, #05040c 100%);
 }
-html:not(.pc) #app { box-shadow: 0 0 0 2px #19f0ff, 0 0 24px #19f0ffcc, 0 0 70px #ff2bd677; }
+html:not(.pc) #app { box-shadow: 0 0 32px 4px rgba(0, 0, 0, .65); } /* 框邊不加霓虹線,只用一圈深色陰影把畫面和網格分開 */
 /* PC(Steam)版:16:9 橫向框,視窗比例不同時上下或左右留黑邊 */
 html.pc #app {
   width: min(100vw, calc(100vh * 16 / 9));
