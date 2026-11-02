@@ -53,9 +53,16 @@ G.iap = {
     }
     if (!this.native) return;
     const C = window.CdvPurchase;
-    if (!C) { // 內購外掛的程式在 App 啟動後才載入完成:等 deviceready 再試一次
-      if (!this._waited) { this._waited = true; document.addEventListener('deviceready', () => this.init(), { once: true }); }
-      else this.note = G.t('無法連線到 App Store'); // 外掛沒裝好
+    if (!C || !C.store) {
+      // 內購外掛的網頁端(ios/scripts/copy-game.js 放到 js/vendor/cdv-purchase.js)只在 iOS App 才載入:載入後再試一次
+      if (!this._loading) {
+        this._loading = true;
+        const s = document.createElement('script');
+        s.src = 'js/vendor/cdv-purchase.js';
+        s.onload = () => setTimeout(() => this.init(), 100); // 外掛在 Capacitor 裡會延遲一下才建立 CdvPurchase.store
+        s.onerror = () => { this.note = G.t('無法連線到 App Store'); };
+        document.head.appendChild(s);
+      } else this.note = G.t('無法連線到 App Store'); // 載入了但沒有建立好
       return;
     }
     const { store, ProductType, Platform } = C;

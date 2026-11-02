@@ -4,7 +4,7 @@
 
 - **遊戲完全免費,所有章節都開放**(章節照原本規則:打倒前一章第一輪的最終 BOSS 後進入)。
 - 變現方式是 **金幣包**(Apple 內購,**消耗型項目**,共 4 個,見下表)。金幣在商店買造型、桌布、圖鑑與「浴火重生」道具。
-  內購用 [cordova-plugin-purchase](https://github.com/j3k0/cordova-plugin-purchase)(免費、不需要自己的伺服器)。
+  內購用 [capacitor-plugin-cdv-purchase](https://github.com/j3k0/cordova-plugin-purchase)(Capacitor 版,StoreKit 2,要 iOS 15 以上;免費、不需要自己的伺服器)。
 - 只有 iOS App 有「儲值」(商店標題旁的 ＋)。網頁版、Steam 版沒有儲值,金幣只能靠玩遊戲賺。
 - 遊戲內的購買程式在 `src/js/iap.js`;商店畫面在 `src/js/scenes/shop.js`。
 
@@ -35,6 +35,8 @@
    沒簽的話,內購商品抓不到價格,也無法上架。
 
 ## 第一次設定(在 Mac 上)
+
+> 完整的逐步清單(含預期結果、出錯怎麼辦、測試清單)見 `docs/iOS 在 Mac 上的步驟.md`;本機測試內購用 `ios/Products.storekit`。
 
 1. 把整個專案 clone 到 Mac,進到 `ios/` 資料夾:
    ```

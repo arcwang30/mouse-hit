@@ -54,6 +54,19 @@ const firstTime = !fs.existsSync(manifestDst);
 fs.copyFileSync(path.join(iosRoot, 'PrivacyInfo.xcprivacy'), manifestDst);
 console.log('Updated: PrivacyInfo.xcprivacy');
 
+// 最低支援 iOS 15:內購外掛(StoreKit 2)要求;Capacitor 6 預設是 13,不改的話 pod install 會失敗
+// 改 Podfile 的 platform 和 Xcode 專案的 IPHONEOS_DEPLOYMENT_TARGET(重複執行沒關係)
+const MIN_IOS = '15.0';
+const podfile = path.join(iosRoot, 'ios', 'App', 'Podfile');
+if (fs.existsSync(podfile)) {
+  const p = fs.readFileSync(podfile, 'utf8').replace(/platform :ios, '[\d.]+'/, `platform :ios, '${MIN_IOS}'`);
+  fs.writeFileSync(podfile, p);
+  console.log('Updated: Podfile(iOS ' + MIN_IOS + ')');
+}
+const pbxPath = path.join(iosRoot, 'ios', 'App', 'App.xcodeproj', 'project.pbxproj');
+fs.writeFileSync(pbxPath, fs.readFileSync(pbxPath, 'utf8').replace(/IPHONEOS_DEPLOYMENT_TARGET = [\d.]+;/g, `IPHONEOS_DEPLOYMENT_TARGET = ${MIN_IOS};`));
+console.log('Updated: project.pbxproj(IPHONEOS_DEPLOYMENT_TARGET = ' + MIN_IOS + ')');
+
 const pbx = fs.readFileSync(path.join(iosRoot, 'ios', 'App', 'App.xcodeproj', 'project.pbxproj'), 'utf8');
 if (firstTime || !pbx.includes('PrivacyInfo.xcprivacy')) {
   console.log('→ 請在 Xcode 把 PrivacyInfo.xcprivacy 加進 App target:左側 App 資料夾按右鍵 → Add Files to "App"… → 選 PrivacyInfo.xcprivacy、勾選 Target「App」');

@@ -1,0 +1,66 @@
+{
+  "identifier" : "0A1B2C3D",
+  "nonRenewingSubscriptions" : [
+
+  ],
+  "products" : [
+    {
+      "displayPrice" : "0.99",
+      "familyShareable" : false,
+      "internalID" : "6F1A7C10-0001-4C5D-8E10-3A5B9C000001",
+      "localizations" : [
+        { "description" : "400 coins", "displayName" : "400 Coins", "locale" : "en_US" },
+        { "description" : "獲得 400 金幣", "displayName" : "金幣 400", "locale" : "zh_Hant" }
+      ],
+      "productID" : "com.arcconceptgames.gangquan.coins400",
+      "referenceName" : "Coins 400",
+      "type" : "Consumable"
+    },
+    {
+      "displayPrice" : "2.99",
+      "familyShareable" : false,
+      "internalID" : "6F1A7C10-0002-4C5D-8E10-3A5B9C000002",
+      "localizations" : [
+        { "description" : "1,350 coins", "displayName" : "1,350 Coins", "locale" : "en_US" },
+        { "description" : "獲得 1,350 金幣", "displayName" : "金幣 1,350", "locale" : "zh_Hant" }
+      ],
+      "productID" : "com.arcconceptgames.gangquan.coins1350",
+      "referenceName" : "Coins 1350",
+      "type" : "Consumable"
+    },
+    {
+      "displayPrice" : "4.99",
+      "familyShareable" : false,
+      "internalID" : "6F1A7C10-0003-4C5D-8E10-3A5B9C000003",
+      "localizations" : [
+        { "description" : "2,400 coins", "displayName" : "2,400 Coins", "locale" : "en_US" },
+        { "description" : "獲得 2,400 金幣", "displayName" : "金幣 2,400", "locale" : "zh_Hant" }
+      ],
+      "productID" : "com.arcconceptgames.gangquan.coins2400",
+      "referenceName" : "Coins 2400",
+      "type" : "Consumable"
+    },
+    {
+      "displayPrice" : "9.99",
+      "familyShareable" : false,
+      "internalID" : "6F1A7C10-0004-4C5D-8E10-3A5B9C000004",
+      "localizations" : [
+        { "description" : "5,200 coins", "displayName" : "5,200 Coins", "locale" : "en_US" },
+        { "description" : "獲得 5,200 金幣", "displayName" : "金幣 5,200", "locale" : "zh_Hant" }
+      ],
+      "productID" : "com.arcconceptgames.gangquan.coins5200",
+      "referenceName" : "Coins 5200",
+      "type" : "Consumable"
+    }
+  ],
+  "settings" : {
+
+  },
+  "subscriptionGroups" : [
+
+  ],
+  "version" : {
+    "major" : 3,
+    "minor" : 0
+  }
+}
