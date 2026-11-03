@@ -57,6 +57,9 @@ G.iap = {
       // 內購外掛的網頁端(ios/scripts/copy-game.js 放到 js/vendor/cdv-purchase.js)只在 iOS App 才載入:載入後再試一次
       if (!this._loading) {
         this._loading = true;
+        // 外掛的 ES 模組版(dist/index.js)載入時會設這個標記,告訴 store.js 用 Capacitor 的原生橋接(Capacitor.Plugins.PurchasePlugin)。
+        // 我們直接載入 store.js(沒有打包工具),所以要自己先設,而且要在 store.js 之前:沒設的話它會退回 Cordova 的 cordova.exec 橋接,永遠不會 ready
+        window.CdvPurchaseCapacitor = { installed: true };
         const s = document.createElement('script');
         s.src = 'js/vendor/cdv-purchase.js';
         s.onload = () => setTimeout(() => this.init(), 100); // 外掛在 Capacitor 裡會延遲一下才建立 CdvPurchase.store
