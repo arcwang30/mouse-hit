@@ -15,7 +15,7 @@
 | `com.arcconceptgames.gangquan.coins400a` | **消耗型項目** | 金幣 400 | NT$30 |
 | `com.arcconceptgames.gangquan.coins1350` | **消耗型項目** | 金幣 1350(標示「超值」) | NT$90 |
 | `com.arcconceptgames.gangquan.coins2400` | **消耗型項目** | 金幣 2400(標示「熱門」) | NT$150 |
-| `com.arcconceptgames.gangquan.coins5200` | **消耗型項目** | 金幣 5200(標示「最划算」) | NT$300 |
+| `com.arcconceptgames.gangquan.coins5200` | **消耗型項目** | 金幣 5200(標示「最划算」) | NT$290 |
 
 - 售價在 App Store Connect 設定,遊戲會自動顯示玩家所在地區的當地價格,不用改程式。金幣數量寫在 `iap.js` 的 `PACKS`。
 - 消耗型項目**沒有「恢復購買」**(Apple 只要求非消耗型與訂閱要有)。金幣記在存檔裡,換手機要靠 iCloud 備份還原存檔。
