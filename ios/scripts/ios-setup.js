@@ -36,8 +36,22 @@ for (const [key, value] of Object.entries(KEYS)) {
   else xml = xml.replace(/\n<\/dict>\s*<\/plist>\s*$/, `\n\t<key>${key}</key>\n\t${value}\n</dict>\n</plist>\n`);
   if (!xml.includes(`<key>${key}</key>`)) throw new Error(`Info.plist 寫入失敗:${key}`);
 }
+// UIScene 生命週期:新版 Xcode / iOS SDK 要求(Capacitor 6 樣板還是舊的 AppDelegate 寫法,不改的話一啟動就當掉)
+// Info.plist 加 scene 設定(沿用 Main.storyboard),並在 AppDelegate.swift 補上 SceneDelegate 類別
+if (!xml.includes('<key>UIApplicationSceneManifest</key>')) {
+  const scene = `\t<key>UIApplicationSceneManifest</key>\n\t<dict>\n\t\t<key>UIApplicationSupportsMultipleScenes</key>\n\t\t<false/>\n\t\t<key>UISceneConfigurations</key>\n\t\t<dict>\n\t\t\t<key>UIWindowSceneSessionRoleApplication</key>\n\t\t\t<array>\n\t\t\t\t<dict>\n\t\t\t\t\t<key>UISceneConfigurationName</key>\n\t\t\t\t\t<string>Default Configuration</string>\n\t\t\t\t\t<key>UISceneDelegateClassName</key>\n\t\t\t\t\t<string>$(PRODUCT_MODULE_NAME).SceneDelegate</string>\n\t\t\t\t\t<key>UISceneStoryboardFile</key>\n\t\t\t\t\t<string>Main</string>\n\t\t\t\t</dict>\n\t\t\t</array>\n\t\t</dict>\n\t</dict>\n`;
+  xml = xml.replace(/<\/dict>\s*<\/plist>\s*$/, scene + '</dict>\n</plist>\n');
+}
 fs.writeFileSync(plistPath, xml);
 console.log('Updated: Info.plist');
+const delegatePath = path.join(appDir, 'AppDelegate.swift');
+if (fs.existsSync(delegatePath)) {
+  const sw = fs.readFileSync(delegatePath, 'utf8');
+  if (!sw.includes('class SceneDelegate')) {
+    fs.writeFileSync(delegatePath, sw.replace(/\s*$/, '\n') + '\n// UIScene 生命週期(ios/scripts/ios-setup.js 加入):視窗與畫面由 Info.plist 的 scene 設定(Main.storyboard)建立\nclass SceneDelegate: UIResponder, UIWindowSceneDelegate {\n    var window: UIWindow?\n}\n');
+  }
+  console.log('Updated: AppDelegate.swift(SceneDelegate)');
+}
 
 // 各語言的主畫面名稱:{語言}.lproj/InfoPlist.strings
 const lprojNew = [];
