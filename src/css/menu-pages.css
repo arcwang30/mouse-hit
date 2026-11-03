@@ -776,7 +776,10 @@ html:lang(en) .stage-bar .ch-tab b { font-size: calc(2.6 * var(--cw)); }
 .ss-phoenix .ph-icon { font-size: calc(6 * var(--cw)); line-height: 1; }
 .ss-phoenix small { flex-basis: 100%; }
 .ss-phoenix em { flex-basis: 100%; font-style: normal; font-size: calc(2.6 * var(--cw)); font-weight: 800; color: #ffe08a; text-align: center; }
-.shop-plus { margin-left: calc(2 * var(--cw)); padding: 0 calc(2 * var(--cw)); font: inherit; font-weight: 900; color: #2a0800; background: linear-gradient(180deg, var(--fire-2), var(--fire)); border: 0; clip-path: var(--chamfer); cursor: pointer; letter-spacing: 0; text-shadow: none; }
+/* 儲值鈕:背景是壓暗的招牌圖,橘色鈕容易被吃掉 → 加一圈亮邊(border-box 疊色,clip-path 切角後仍看得到)+ 緩慢的亮度呼吸 */
+.shop-plus { margin-left: calc(2 * var(--cw)); padding: calc(.3 * var(--cw)) calc(2 * var(--cw)); font: inherit; font-weight: 900; color: #2a0800; border: calc(.5 * var(--cw)) solid transparent; background: linear-gradient(180deg, var(--fire-2), var(--fire)) padding-box, linear-gradient(180deg, #fff6d6, #ffd36a) border-box; clip-path: var(--chamfer); cursor: pointer; letter-spacing: 0; text-shadow: 0 calc(.2 * var(--cw)) 0 #fff6; animation: shopPlusGlow 1.8s ease-in-out infinite alternate; }
+@keyframes shopPlusGlow { from { filter: brightness(1); } to { filter: brightness(1.18) saturate(1.1); } }
+@media (prefers-reduced-motion: reduce) { .shop-plus { animation: none; } }
 .shop-item { display: flex; align-items: center; gap: calc(3 * var(--cw)); padding: calc(3 * var(--cw)); margin-bottom: calc(2.4 * var(--cw)); background: #0a1418; clip-path: var(--chamfer); box-shadow: inset 0 0 0 calc(.3 * var(--cw)) #19f0ff40; }
 .si-icon { font-size: calc(9 * var(--cw)); line-height: 1; }
 .si-info { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: calc(.6 * var(--cw)); }
