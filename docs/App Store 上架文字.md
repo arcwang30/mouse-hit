@@ -94,7 +94,7 @@ App Store Connect 各欄位要填的文字，三個語系：**繁體中文（zh-
 
 | 商品 ID | 顯示名稱（上限 30） | 描述（上限 45） | 參考名稱 / 價格 |
 | --- | --- | --- | --- |
-| `com.arcconceptgames.gangquan.coins400` | `金幣 400` | `獲得 400 金幣，用來買造型、桌布、圖鑑與浴火重生` | Coins 400 / NT$30 |
+| `com.arcconceptgames.gangquan.coins400a` | `金幣 400` | `獲得 400 金幣，用來買造型、桌布、圖鑑與浴火重生` | Coins 400 / NT$30 |
 | `com.arcconceptgames.gangquan.coins1350` | `金幣 1,350` | `獲得 1,350 金幣，用來買造型、桌布、圖鑑與浴火重生` | Coins 1350 / NT$90 |
 | `com.arcconceptgames.gangquan.coins2400` | `金幣 2,400` | `獲得 2,400 金幣，用來買造型、桌布、圖鑑與浴火重生` | Coins 2400 / NT$150 |
 | `com.arcconceptgames.gangquan.coins5200` | `金幣 5,200` | `獲得 5,200 金幣，用來買造型、桌布、圖鑑與浴火重生` | Coins 5200 / NT$300 |
@@ -168,7 +168,7 @@ iPhone と iPad に対応。ゲーム内で 繁體中文／日本語／English �
 
 | 商品 ID | 顯示名稱（上限 30） | 描述（上限 45） | 參考名稱 / 價格 |
 | --- | --- | --- | --- |
-| `com.arcconceptgames.gangquan.coins400` | `コイン 400` | `400コイン。スキン・壁紙・図鑑・不死鳥の購入に使えます` | Coins 400 / NT$30 |
+| `com.arcconceptgames.gangquan.coins400a` | `コイン 400` | `400コイン。スキン・壁紙・図鑑・不死鳥の購入に使えます` | Coins 400 / NT$30 |
 | `com.arcconceptgames.gangquan.coins1350` | `コイン 1,350` | `1,350コイン。スキン・壁紙・図鑑・不死鳥の購入に使えます` | Coins 1350 / NT$90 |
 | `com.arcconceptgames.gangquan.coins2400` | `コイン 2,400` | `2,400コイン。スキン・壁紙・図鑑・不死鳥の購入に使えます` | Coins 2400 / NT$150 |
 | `com.arcconceptgames.gangquan.coins5200` | `コイン 5,200` | `5,200コイン。スキン・壁紙・図鑑・不死鳥の購入に使えます` | Coins 5200 / NT$300 |
@@ -242,7 +242,7 @@ For iPhone and iPad. Switch between 繁體中文, 日本語, and English in the 
 
 | 商品 ID | 顯示名稱（上限 30） | 描述（上限 45） | 參考名稱 / 價格 |
 | --- | --- | --- | --- |
-| `com.arcconceptgames.gangquan.coins400` | `400 Coins` | `400 coins for skins, wallpapers & Phoenix` | Coins 400 / NT$30 |
+| `com.arcconceptgames.gangquan.coins400a` | `400 Coins` | `400 coins for skins, wallpapers & Phoenix` | Coins 400 / NT$30 |
 | `com.arcconceptgames.gangquan.coins1350` | `1,350 Coins` | `1,350 coins for skins, wallpapers & Phoenix` | Coins 1350 / NT$90 |
 | `com.arcconceptgames.gangquan.coins2400` | `2,400 Coins` | `2,400 coins for skins, wallpapers & Phoenix` | Coins 2400 / NT$150 |
 | `com.arcconceptgames.gangquan.coins5200` | `5,200 Coins` | `5,200 coins for skins, wallpapers & Phoenix` | Coins 5200 / NT$300 |

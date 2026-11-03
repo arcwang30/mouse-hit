@@ -12,7 +12,7 @@ G.iap = {
 
   // App Store Connect 要建立同樣 ID 的「消耗型項目」;coins 是買了拿到的金幣
   PACKS: {
-    s: { id: 'com.arcconceptgames.gangquan.coins400', coins: 400, mock: 'NT$30' },
+    s: { id: 'com.arcconceptgames.gangquan.coins400a', coins: 400, mock: 'NT$30' },
     m: { id: 'com.arcconceptgames.gangquan.coins1350', coins: 1350, mock: 'NT$90', tag: '超值' },
     l: { id: 'com.arcconceptgames.gangquan.coins2400', coins: 2400, mock: 'NT$150', tag: '熱門' },
     xl: { id: 'com.arcconceptgames.gangquan.coins5200', coins: 5200, mock: 'NT$300', tag: '最划算' },

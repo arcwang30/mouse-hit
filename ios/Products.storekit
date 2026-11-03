@@ -12,7 +12,7 @@
         { "description" : "400 coins", "displayName" : "400 Coins", "locale" : "en_US" },
         { "description" : "獲得 400 金幣", "displayName" : "金幣 400", "locale" : "zh_Hant" }
       ],
-      "productID" : "com.arcconceptgames.gangquan.coins400",
+      "productID" : "com.arcconceptgames.gangquan.coins400a",
       "referenceName" : "Coins 400",
       "type" : "Consumable"
     },

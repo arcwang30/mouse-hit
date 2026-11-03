@@ -12,7 +12,7 @@
 
 | 產品 ID | 類型 | 內容 | 建議售價(參考) |
 |---|---|---|---|
-| `com.arcconceptgames.gangquan.coins400` | **消耗型項目** | 金幣 400 | NT$30 |
+| `com.arcconceptgames.gangquan.coins400a` | **消耗型項目** | 金幣 400 | NT$30 |
 | `com.arcconceptgames.gangquan.coins1350` | **消耗型項目** | 金幣 1350(標示「超值」) | NT$90 |
 | `com.arcconceptgames.gangquan.coins2400` | **消耗型項目** | 金幣 2400(標示「熱門」) | NT$150 |
 | `com.arcconceptgames.gangquan.coins5200` | **消耗型項目** | 金幣 5200(標示「最划算」) | NT$300 |
