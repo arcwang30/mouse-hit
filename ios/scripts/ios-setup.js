@@ -59,7 +59,13 @@ console.log('Updated: PrivacyInfo.xcprivacy');
 const MIN_IOS = '15.0';
 const podfile = path.join(iosRoot, 'ios', 'App', 'Podfile');
 if (fs.existsSync(podfile)) {
-  const p = fs.readFileSync(podfile, 'utf8').replace(/platform :ios, '[\d.]+'/, `platform :ios, '${MIN_IOS}'`);
+  let p = fs.readFileSync(podfile, 'utf8').replace(/platform :ios, '[\d.]+'/, `platform :ios, '${MIN_IOS}'`);
+  // 各外掛(Pods)的最低版本也要拉高,否則新版 Xcode 會說 IPHONEOS_DEPLOYMENT_TARGET 低於支援範圍而編譯失敗
+  const MARK = '# gangquan: raise pod deployment targets';
+  if (!p.includes(MARK)) {
+    const fix = `post_install do |installer|\n  ${MARK}\n  installer.pods_project.targets.each do |t|\n    t.build_configurations.each { |c| c.build_settings['IPHONEOS_DEPLOYMENT_TARGET'] = '${MIN_IOS}' }\n  end\n`;
+    p = /post_install do \|installer\|\n/.test(p) ? p.replace(/post_install do \|installer\|\n/, fix) : p + '\n' + fix + 'end\n';
+  }
   fs.writeFileSync(podfile, p);
   console.log('Updated: Podfile(iOS ' + MIN_IOS + ')');
 }
