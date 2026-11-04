@@ -1073,7 +1073,7 @@ G.I18N = {
   '告訴你現在要做什麼(攻擊、防禦、破綻…),下方的細條是剩餘時間。': ['今やること(攻撃・防御・隙…)を表示。下の細いバーは残り時間。', 'Tells you what to do now (attack, defend, opening…); the thin bar below is the time left.'],
   '符號出現的地方:點擊、按住或滑動來攻擊與防禦。': ['記号が出る場所。タップ・長押し・スワイプで攻撃と防御。', 'Where symbols appear: tap, hold, or swipe to attack and defend.'],
   '遊戲目標': ['ゲームの目的', 'Objective'],
-  '每關 7 波敵人,最後一波是 BOSS。打倒全部就過關,HP 歸零就 GAME OVER!': ['各ステージは 7 WAVE、最後は BOSS。全部倒せばクリア、HP が 0 になると GAME OVER!', 'Each stage has 7 waves, the last one a BOSS. Beat them all to clear; HP at 0 is GAME OVER!'],
+  '每關有數波敵人,BOSS 關的最後一波是 BOSS。打倒全部就過關,HP 歸零就 GAME OVER!': ['各ステージは数 WAVE の戦い。BOSS ステージの最後の WAVE は BOSS。全部倒せばクリア、HP が 0 になると GAME OVER!', 'Each stage has several waves; on a BOSS stage the last wave is the BOSS. Beat them all to clear; HP at 0 is GAME OVER!'],
   '你的回合': ['あなたのターン', 'Your Turn'],
   '九宮格冒出拳頭,點中就出拳攻擊。出現越快越要搶,讓它消失就少打一拳。': ['9 マスに拳が出たらタップして攻撃。消える前に素早く!逃すと 1 発損する。', 'Fists pop up on the 3×3 grid—tap them to punch. Be quick; a missed fist is a lost punch.'],
   '敵人回合': ['敵のターン', 'Enemy Turn'],
