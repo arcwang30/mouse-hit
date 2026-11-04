@@ -392,6 +392,9 @@ html:lang(en) .round-tab { font-size: calc(2.7 * var(--cw)); letter-spacing: 0; 
 }
 #shop .pg-sub { font-size: calc(4.4 * var(--cw)); color: var(--neon-y); text-shadow: 0 0 calc(1.2 * var(--cw)) var(--neon-y); letter-spacing: .05em; }
 #shopTabs .pg-tab { flex: 1; padding-left: calc(.5 * var(--cw)); padding-right: calc(.5 * var(--cw)); font-size: calc(3 * var(--cw)); }
+/* 日文的分頁名比較長(主人公図鑑、雑魚図鑑…),六個放一排會超出畫面:縮小字級與間距 */
+html[lang="ja"] #shopTabs { gap: calc(.8 * var(--cw)); }
+html[lang="ja"] #shopTabs .pg-tab { font-size: calc(2.6 * var(--cw)); letter-spacing: -.02em; }
 .shop-tip { margin: 0 0 calc(2.4 * var(--cw)); font-size: calc(3 * var(--cw)); color: var(--steel-hi); text-align: center; line-height: 1.5; }
 .shop-skins { display: grid; grid-template-columns: repeat(3, 1fr); gap: calc(2.4 * var(--cw)); }
 .shop-skin { display: flex; flex-direction: column; align-items: center; gap: calc(1 * var(--cw)); padding: calc(2 * var(--cw)) calc(1.4 * var(--cw)); background: #0a1418; clip-path: var(--chamfer); box-shadow: inset 0 0 0 calc(.3 * var(--cw)) #19f0ff40; }
