@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<title>橫幅主視覺產生器</title>
+<!-- App Store 橫幅主視覺產生器(霓虹都會風):把模擬器截圖(遊戲畫面裁成 9:16)排進賽博龐克風宣傳圖,加上角色去背圖、標語與特效,三個語系 × iPhone／iPad × 6 張。
+     要用本機伺服器開(它也負責讀截圖、角色圖,並把畫好的 JPG 存回電腦):
+       powershell -ExecutionPolicy Bypass -File tools\promo-server.ps1
+       → http://localhost:8130/tools/promo_maker.html
+     截圖放 <截圖資料夾>\{ZH,JP,EN}\{iphone,ipad}\{主畫面,戰鬥,3選1,選關,商店1,商店2,商店3,成就}.png(模擬器 ⌘S 的原圖,iPhone 1206×2622、iPad 2064×2752)
+     角色圖放 promo/chars/(20 主角火拳、21 主角比 YA、22 紅鈴、23 小隼、24 雷獅、25 主角熱血;白底或透明底都可以,載入時自動去背)
+     輸出:<截圖資料夾>\宣傳圖\final\{zh,ja,en}_{iphone63,ipad}_{1-6}.jpg(JPG,沒有透明通道)
+     規則:每張圖最多 2 個角色(CAST);標語只寫遊戲裡真的有的東西 -->
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@900&family=Noto+Sans+JP:wght@900&family=Teko:wght@700&display=swap" rel="stylesheet">
+<style>
+  body { margin: 0; padding: 16px; background: #14151c; color: #ddd; font: 14px/1.5 system-ui, sans-serif; }
+  #bar { display: flex; gap: 8px 12px; align-items: center; flex-wrap: wrap; margin-bottom: 12px; }
+  button, select { font: inherit; padding: 6px 12px; }
+  #st { color: #9fd; }
+</style>
+</head>
+<body>
+<div id="bar">
+  
+  <button id="batch">輸出 header_16x9.png（5244×2950）</button>
+  <span id="st">載入中…</span>
+</div>
+<canvas id="cv" style="max-width:100%;height:auto;border:1px solid #333"></canvas>
+<script>
+'use strict';
+const $ = id => document.getElementById(id);
+const st = t => { $('st').textContent = t; };
+const yieldNow = () => new Promise(r => { const ch = new MessageChannel(); ch.port1.onmessage = () => r(); ch.port2.postMessage(0); });
+const mk = (w, h) => { const c = document.createElement('canvas'); c.width = Math.round(w); c.height = Math.round(h); return c; };
+const rr = (c, x, y, w, h, r) => { c.beginPath(); c.roundRect(x, y, w, h, r); };
+let seed = 1;
+const rnd = () => { seed = (seed * 16807) % 2147483647; return (seed - 1) / 2147483646; };
+
+// ===================== 裝置與素材 =====================
+// crop:截圖裡的遊戲區(9:16);iPhone 上下是霓虹格線的黑邊,iPad 左右是
+const DEV = { phone: { W: 1206, H: 2622, dir: 'iphone', crop: [0, 239, 1206, 2144], tag: 'iphone63' },
+              pad:   { W: 2064, H: 2752, dir: 'ipad',   crop: [258, 0, 1548, 2752], tag: 'ipad' } };
+const LD = { zh: 'ZH', ja: 'JP', en: 'EN' };
+const SHOT = { 1: '主畫面', 2: '戰鬥', 3: '3選1', 4: '選關', 6: '成就' };
+const FONT = { zh: { f: "'Noto Sans TC'", w: 900, k: 1 }, ja: { f: "'Noto Sans JP'", w: 900, k: 1 }, en: { f: "'Teko'", w: 700, k: 1.25 } };
+const imgCache = {};
+const loadImg = u => imgCache[u] || (imgCache[u] = new Promise((res, rej) => { const i = new Image(); i.onload = () => res(i); i.onerror = () => rej(new Error('載入失敗:' + u)); i.src = u; }));
+const shotCache = {};
+async function shot(lang, dev, name) {
+  const key = lang + dev + name; if (shotCache[key]) return shotCache[key];
+  const D = DEV[dev], im = await loadImg(`/shots/${LD[lang]}/${D.dir}/${encodeURIComponent(name)}.png`), [x, y, w, h] = D.crop;
+  const c = mk(w, h); c.getContext('2d').drawImage(im, x, y, w, h, 0, 0, w, h);
+  return (shotCache[key] = c);
+}
+
+// 角色:白底(或透明底)原圖 → 從四邊往內填充「近白色」當背景去掉(角色有粗外框,框內的白色不會被填到),再把邊緣的淺色殘邊吃掉
+const CHARS = { hero1: '20.webp', hero2: '21.jpg', girl: '22.webp', hayabusa: '23.webp', lei: '24.webp', hero3: '25.webp' };
+const cuts = {};
+function cutout(im) {
+  const w = im.naturalWidth, h = im.naturalHeight, c = mk(w, h), g = c.getContext('2d', { willReadFrequently: true });
+  g.drawImage(im, 0, 0);
+  const d = g.getImageData(0, 0, w, h), p = d.data, seen = new Uint8Array(w * h), q = new Int32Array(w * h);
+  let qh = 0, qt = 0;
+  const near = k => { const i = k * 4; return p[i + 3] < 24 || (p[i] > 234 && p[i + 1] > 234 && p[i + 2] > 234); };
+  const push = (x, y) => { const k = y * w + x; if (!seen[k] && near(k)) { seen[k] = 1; q[qt++] = k; } };
+  for (let x = 0; x < w; x++) { push(x, 0); push(x, h - 1); }
+  for (let y = 0; y < h; y++) { push(0, y); push(w - 1, y); }
+  while (qh < qt) { const k = q[qh++], x = k % w, y = (k / w) | 0; if (x > 0) push(x - 1, y); if (x < w - 1) push(x + 1, y); if (y > 0) push(x, y - 1); if (y < h - 1) push(x, y + 1); }
+  for (let k = 0; k < w * h; k++) if (seen[k]) p[k * 4 + 3] = 0;
+  for (let it = 0; it < 2; it++) {   // 吃掉貼著背景的淺色殘邊
+    const kill = [];
+    for (let y = 1; y < h - 1; y++) for (let x = 1; x < w - 1; x++) {
+      const k = y * w + x, i = k * 4; if (p[i + 3] === 0) continue;
+      if ((p[(k - 1) * 4 + 3] === 0 || p[(k + 1) * 4 + 3] === 0 || p[(k - w) * 4 + 3] === 0 || p[(k + w) * 4 + 3] === 0) && Math.min(p[i], p[i + 1], p[i + 2]) > 150) kill.push(i + 3);
+    }
+    kill.forEach(i => { p[i] = 0; });
+  }
+  g.putImageData(d, 0, 0);
+  let x0 = w, y0 = h, x1 = 0, y1 = 0;   // 裁掉透明邊
+  for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) if (p[(y * w + x) * 4 + 3] > 40) { if (x < x0) x0 = x; if (x > x1) x1 = x; if (y < y0) y0 = y; if (y > y1) y1 = y; }
+  const o = mk(x1 - x0 + 1, y1 - y0 + 1); o.getContext('2d').drawImage(c, x0, y0, o.width, o.height, 0, 0, o.width, o.height);
+  return o;
+}
+// 把角色畫在 (cx, bottom)(腳底中心),高 h(寬度超過 maxW 就縮小);glow:邊緣光暈色
+function drawCut(c, key, cx, bottom, h, o = {}) {
+  const cut = cuts[key]; if (o.maxW && cut.width * h / cut.height > o.maxW) h = o.maxW * cut.height / cut.width;
+  const w = cut.width * h / cut.height;
+  c.save(); c.translate(cx, bottom); if (o.flip) c.scale(-1, 1);
+  if (o.glow) { c.shadowColor = o.glow; c.shadowBlur = o.blur || 50; } else { c.shadowColor = 'rgba(0,0,0,.55)'; c.shadowBlur = 40; c.shadowOffsetY = 16; }
+  c.drawImage(cut, -w / 2, -h, w, h); c.restore();
+  return { w, h };
+}
+
+function bgA(c, W, H, u) {
+  const hz = H * (window.HZ || 0.255);
+  let g = c.createLinearGradient(0, 0, 0, hz); [[0, '#06041a'], [.55, '#1a0a4a'], [.85, '#6a1580'], [1, '#e0348f']].forEach(([o, col]) => g.addColorStop(o, col)); c.fillStyle = g; c.fillRect(0, 0, W, hz + 2);
+  g = c.createLinearGradient(0, hz, 0, H); [[0, '#2a0a50'], [.25, '#12062e'], [1, '#05021a']].forEach(([o, col]) => g.addColorStop(o, col)); c.fillStyle = g; c.fillRect(0, hz, W, H - hz);
+  seed = 5; for (let i = 0; i < 150; i++) { c.fillStyle = `rgba(255,255,255,${0.15 + rnd() * 0.6})`; c.beginPath(); c.arc(rnd() * W, rnd() * hz * 0.8, (0.6 + rnd() * 1.8) * u, 0, 7); c.fill(); }
+  const sr = W * 0.27, sx = W * 0.73, sy = hz - sr * 0.2, sc = mk(sr * 2, sr * 2), sg = sc.getContext('2d');   // 日落
+  const sgd = sg.createLinearGradient(0, 0, 0, sr * 2); [[0, '#ffd23f'], [.5, '#ff4fa0'], [1, '#b82bff']].forEach(([o, col]) => sgd.addColorStop(o, col)); sg.fillStyle = sgd; sg.beginPath(); sg.arc(sr, sr, sr, 0, 7); sg.fill();
+  sg.globalCompositeOperation = 'destination-out'; for (let i = 0; i < 8; i++) sg.fillRect(0, sr * (1.0 + i * 0.12), sr * 2, (4 + i * 3.4) * u);
+  c.save(); c.beginPath(); c.rect(0, 0, W, hz); c.clip(); c.shadowColor = 'rgba(255,60,200,.75)'; c.shadowBlur = 70 * u; c.drawImage(sc, sx - sr, sy - sr); c.restore();
+  seed = 21; let x = -20 * u;   // 天際線
+  while (x < W) {
+    const w = (46 + rnd() * 70) * u, h = (90 + rnd() * 300) * u;
+    c.fillStyle = '#09061f'; c.fillRect(x, hz - h, w, h + 2); c.fillStyle = 'rgba(25,240,255,.55)'; c.fillRect(x, hz - h, w, 2.5 * u);
+    for (let wy = hz - h + 16 * u; wy < hz - 10 * u; wy += 17 * u) for (let wx = x + 8 * u; wx < x + w - 10 * u; wx += 15 * u) if (rnd() < 0.26) { c.fillStyle = ['rgba(255,210,63,.8)', 'rgba(25,240,255,.75)', 'rgba(255,43,214,.75)'][(rnd() * 3) | 0]; c.fillRect(wx, wy, 6 * u, 8 * u); }
+    if (rnd() < 0.22) { const col = rnd() < 0.5 ? '#ff2bd6' : '#19f0ff'; c.save(); c.shadowColor = col; c.shadowBlur = 20 * u; c.fillStyle = col; c.fillRect(x + w * 0.4, hz - h * (0.45 + rnd() * 0.4), 6 * u, 70 * u); c.restore(); }
+    x += w + rnd() * 6 * u;
+  }
+  c.save(); c.beginPath(); c.rect(0, hz, W, H - hz); c.clip(); c.lineWidth = 2.4 * u;   // 地板格線
+  for (let i = -24; i <= 24; i++) { c.strokeStyle = i % 2 ? 'rgba(25,240,255,.42)' : 'rgba(255,43,214,.42)'; c.beginPath(); c.moveTo(W / 2 + i * W * 0.012, hz); c.lineTo(W / 2 + i * W * 0.17, H); c.stroke(); }
+  for (let j = 1; j <= 15; j++) { const t = Math.pow(j / 15, 2.3), y = hz + (H - hz) * t; c.strokeStyle = `rgba(25,240,255,${0.12 + 0.5 * t})`; c.beginPath(); c.moveTo(0, y); c.lineTo(W, y); c.stroke(); }
+  c.restore();
+  g = c.createLinearGradient(0, hz - 50 * u, 0, hz + 130 * u); g.addColorStop(0, 'rgba(255,43,214,0)'); g.addColorStop(.4, 'rgba(255,43,214,.5)'); g.addColorStop(1, 'rgba(255,43,214,0)'); c.fillStyle = g; c.fillRect(0, hz - 50 * u, W, 180 * u);
+  c.fillStyle = 'rgba(0,0,0,.07)'; for (let y = 0; y < H; y += 6 * u) c.fillRect(0, y, W, 2.2 * u);
+  g = c.createRadialGradient(W / 2, H / 2, W * 0.35, W / 2, H / 2, H * 0.78); g.addColorStop(0, 'rgba(0,0,0,0)'); g.addColorStop(1, 'rgba(0,0,0,.55)'); c.fillStyle = g; c.fillRect(0, 0, W, H);
+}
+function frameA(c, x, y, w, h, sh, u) {
+  const r = 64 * u, b = 14 * u;
+  c.save(); c.shadowColor = 'rgba(25,240,255,.7)'; c.shadowBlur = 70 * u; rr(c, x - b, y - b, w + b * 2, h + b * 2, r + b); c.fillStyle = '#070520'; c.fill(); c.restore();
+  const g = c.createLinearGradient(x, y, x + w, y + h); g.addColorStop(0, '#19f0ff'); g.addColorStop(.5, '#7a6cff'); g.addColorStop(1, '#ff2bd6');
+  c.save(); c.lineWidth = 7 * u; c.strokeStyle = g; c.shadowColor = 'rgba(255,43,214,.6)'; c.shadowBlur = 30 * u; rr(c, x - b, y - b, w + b * 2, h + b * 2, r + b); c.stroke(); c.restore();
+  c.save(); rr(c, x, y, w, h, r); c.clip(); c.drawImage(sh, x, y, w, h);
+  const s = c.createLinearGradient(x, y, x + w, y + h * 0.5); s.addColorStop(0, 'rgba(255,255,255,.10)'); s.addColorStop(.35, 'rgba(255,255,255,0)'); c.fillStyle = s; c.fillRect(x, y, w, h); c.restore();
+}
+function sparkleBg(c, W, H, u) {   // 散落的十字光點
+  seed = 77; for (let i = 0; i < 16; i++) {
+    const x = rnd() * W, y = rnd() * H * 0.26 + 20 * u, s = (10 + rnd() * 16) * u, col = rnd() < 0.5 ? 'rgba(25,240,255,.7)' : 'rgba(255,43,214,.7)';
+    c.save(); c.strokeStyle = col; c.lineWidth = 3 * u; c.shadowColor = col; c.shadowBlur = 12 * u; c.beginPath(); c.moveTo(x - s, y); c.lineTo(x + s, y); c.moveTo(x, y - s); c.lineTo(x, y + s); c.stroke(); c.restore();
+  }
+}
+// 特效群組:HUD 圓環(青、洋紅虛線環)+ 漂浮六角形 + 光束 + 火星(呼應主角的火焰),補在畫面空的地方
+function fxCluster(c, cx, cy, R, u, sd) {
+  seed = sd; c.save();
+  let g = c.createRadialGradient(cx, cy, 0, cx, cy, R * 1.3); g.addColorStop(0, 'rgba(122,108,255,.28)'); g.addColorStop(.6, 'rgba(255,43,214,.10)'); g.addColorStop(1, 'rgba(255,43,214,0)'); c.fillStyle = g; c.fillRect(cx - R * 1.4, cy - R * 1.4, R * 2.8, R * 2.8);
+  const ring = (r, col, lw, dash, rot, blur) => { c.save(); c.translate(cx, cy); c.rotate(rot); c.strokeStyle = col; c.lineWidth = lw * u; c.shadowColor = col; c.shadowBlur = blur * u; c.setLineDash(dash.map(d => d * r)); c.beginPath(); c.arc(0, 0, r, 0, Math.PI * 2); c.stroke(); c.restore(); };
+  ring(R, 'rgba(25,240,255,.85)', 7, [0.9, 0.25, 0.25, 0.25], rnd() * 6, 24);
+  ring(R * 0.78, 'rgba(255,43,214,.8)', 5, [0.5, 0.18, 1.4, 0.2], rnd() * 6, 20);
+  ring(R * 1.18, 'rgba(25,240,255,.35)', 3, [2.5, 0.3], rnd() * 6, 8);
+  ring(R * 0.5, 'rgba(255,230,120,.6)', 3, [0.3, 0.2], rnd() * 6, 10);
+  for (let i = 0; i < 9; i++) {   // 漂浮六角形
+    const a = rnd() * Math.PI * 2, d = R * (1.0 + rnd() * 0.7), hx = cx + Math.cos(a) * d, hy = cy + Math.sin(a) * d, r = R * (0.07 + rnd() * 0.16), col = rnd() < 0.5 ? '25,240,255' : '255,43,214', rot = rnd() * 1;
+    c.beginPath(); for (let k = 0; k < 6; k++) { const an = Math.PI / 6 + rot + k * Math.PI / 3; c.lineTo(hx + r * Math.cos(an), hy + r * Math.sin(an)); } c.closePath();
+    c.fillStyle = `rgba(${col},.12)`; c.fill(); c.strokeStyle = `rgba(${col},.8)`; c.lineWidth = 3.5 * u; c.shadowColor = `rgba(${col},.9)`; c.shadowBlur = 14 * u; c.stroke();
+  }
+  c.shadowColor = 'transparent';
+  for (let i = 0; i < 6; i++) {   // 斜向光束
+    const a = -0.9 + rnd() * 0.3, len = R * (0.8 + rnd() * 1.3), x0 = cx + (rnd() - 0.5) * R * 2.2, y0 = cy + (rnd() - 0.5) * R * 2.2, col = rnd() < 0.5 ? '25,240,255' : '255,43,214';
+    const lg = c.createLinearGradient(x0, y0, x0 + Math.cos(a) * len, y0 + Math.sin(a) * len); lg.addColorStop(0, `rgba(${col},0)`); lg.addColorStop(.5, `rgba(${col},.7)`); lg.addColorStop(1, `rgba(${col},0)`);
+    c.strokeStyle = lg; c.lineWidth = (5 + rnd() * 6) * u; c.beginPath(); c.moveTo(x0, y0); c.lineTo(x0 + Math.cos(a) * len, y0 + Math.sin(a) * len); c.stroke();
+  }
+  for (let i = 0; i < 40; i++) {   // 火星
+    const a = rnd() * Math.PI * 2, d = R * (0.4 + rnd() * 1.4), x = cx + Math.cos(a) * d, y = cy + Math.sin(a) * d - rnd() * R * 0.3, r = (2 + rnd() * 6) * u;
+    c.fillStyle = `rgba(255,${150 + (rnd() * 90 | 0)},60,${0.4 + rnd() * 0.6})`; c.shadowColor = 'rgba(255,140,40,.95)'; c.shadowBlur = r * 4; c.beginPath(); c.arc(x, y, r, 0, 7); c.fill();
+  }
+  c.restore();
+}
+// ===================== 橫幅主視覺 header_16x9(5244×2950 PNG,對應 yaki_mochi 的 promo/store/header_16x9.png)=====================
+const W = 5244, H = 2950, U = W / 1500;
+window.HZ = 0.5;
+async function drawHeader() {
+  const cv = $('cv'); cv.width = W; cv.height = H; const c = cv.getContext('2d');
+  for (const k of Object.keys(CHARS)) cuts[k] = cutout(await loadImg('/chars/' + CHARS[k]));
+  cuts.logo = cutout(await loadImg('/assets/images/ui/logo.png'));
+  bgA(c, W, H, U);
+  fxCluster(c, W * 0.5, H * 0.46, 760, U, 11);                 // 主角背後的大 HUD 圓環
+  fxCluster(c, W * 0.115, H * 0.3, 430, U, 23);
+  fxCluster(c, W * 0.885, H * 0.3, 430, U, 37);
+  fxCluster(c, W * 0.2, H * 0.72, 520, U, 51);
+  fxCluster(c, W * 0.8, H * 0.72, 520, U, 63);
+  sparkleBg(c, W, H * 1.9, U);
+  // 主角居中
+  drawCut(c, 'hero1', W * 0.5, H * 1.0, H * 0.88, { glow: 'rgba(255,120,30,.9)', blur: 130 });
+  // 遊戲標題 logo(上方置中)
+  const lg = cuts.logo, lw = W * 0.5, lh = lg.height * lw / lg.width;
+  c.save(); c.shadowColor = 'rgba(255,120,30,.9)'; c.shadowBlur = 90; c.drawImage(lg, W / 2 - lw / 2, H * 0.045, lw, lh); c.restore();
+  // 地面光暈
+  const g = c.createLinearGradient(0, H * 0.88, 0, H); g.addColorStop(0, 'rgba(255,43,214,0)'); g.addColorStop(1, 'rgba(255,43,214,.28)'); c.fillStyle = g; c.fillRect(0, H * 0.88, W, H * 0.12);
+  st('完成 ' + W + '×' + H);
+}
+$('batch').onclick = async () => {
+  const blob = await new Promise(r => $('cv').toBlob(r, 'image/png'));
+  const r = await fetch('/out/header_16x9.png', { method: 'POST', body: blob }); st(r.ok ? '已存檔(宣傳圖\header_16x9.png)' : '存檔失敗');
+};
+document.fonts.ready.then(drawHeader).catch(e => st('錯誤:' + e.message));
+</script>
+</body>
+</html>
