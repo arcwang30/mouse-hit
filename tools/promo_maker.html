@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<title>宣傳圖產生器</title>
+<!-- App Store 截圖產生器:把模擬器截的實際遊戲畫面(⌘S)排進宣傳圖版面(霓虹背景+大標語+裝置外框),輸出三個語系的 JPG
+     用法見 docs/App Store 截圖.md。要用本機伺服器開(在專案資料夾執行 python3 -m http.server 8000,再開 http://localhost:8000/tools/promo_maker.html):
+     用 file:// 直接開的話,瀏覽器會把背景圖當成跨來源,輸出 JPG 時失敗。需要網路(Google 字型、JSZip)
+     輸入:iPhone 6.3 吋模擬器截圖(1206×2622)、iPad Pro 13 吋模擬器截圖(2064×2752),各 6 張,依拍攝順序 = 畫面 1~6
+     輸出:{zh,ja,en}_{iphone63|iphone69|ipad}_{1-6}.jpg(JPG:App Store 截圖不能有透明通道) -->
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@900&family=Noto+Sans+JP:wght@900&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+<style>
+  @font-face { font-family: 'Orbitron'; font-weight: 800; src: url('../assets/fonts/orbitron-800.ttf'); }
+  body { margin: 0; padding: 16px; background: #14151c; color: #ddd; font: 14px/1.5 system-ui, sans-serif; }
+  h1 { font-size: 18px; margin: 0 0 10px; }
+  #bar { display: flex; gap: 10px 14px; align-items: center; flex-wrap: wrap; margin-bottom: 12px; }
+  button, select { font: inherit; padding: 6px 12px; }
+  label { white-space: nowrap; }
+  #st { color: #9fd; }
+  .row { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 14px; }
+  .slot { width: 90px; text-align: center; font-size: 12px; color: #aaa; }
+  .slot img { width: 90px; height: 150px; object-fit: cover; background: #222; border: 1px solid #444; display: block; }
+  .slot.pad img { height: 120px; }
+  #out { display: flex; flex-wrap: wrap; gap: 10px; }
+  #out figure { margin: 0; }
+  #out img { height: 420px; display: block; border: 1px solid #444; }
+  #out figcaption { font-size: 12px; color: #aaa; }
+</style>
+</head>
+<body>
+<h1>App Store 截圖產生器</h1>
+<div id="bar">
+  <label>模擬器截圖(可一次選 12 張,依檔名/拍攝順序排成畫面 1~6):<input type="file" id="files" accept="image/png,image/jpeg" multiple></label>
+  <select id="lang"><option value="all">全部語言</option><option>zh</option><option>ja</option><option>en</option></select>
+  <label><input type="checkbox" id="s1" checked> iPhone 6.3 吋</label>
+  <label><input type="checkbox" id="s3" checked> iPad 13 吋</label>
+  <label><input type="checkbox" id="s2"> iPhone 6.9 吋(選填)</label>
+  <button id="preview" disabled>預覽</button>
+  <button id="zip" disabled>輸出 ZIP</button>
+  <span id="st">先選截圖</span>
+</div>
+<div class="row" id="slots"></div>
+<div id="out"></div>
+<script>
+'use strict';
+const $ = id => document.getElementById(id);
+const st = t => { $('st').textContent = t; };
+const yieldNow = () => new Promise(r => { const ch = new MessageChannel(); ch.port1.onmessage = () => r(); ch.port2.postMessage(0); });
+
+// iphone63:App Store Connect 必填(配備動態島的 iPhone,6.1/6.3 吋);iphone69:選填;ipad:iPad 13 吋(必填,App 支援 iPad)
+const SIZES = { iphone63: [1206, 2622, 'phone'], iphone69: [1320, 2868, 'phone'], ipad: [2064, 2752, 'pad'] };
+const LANGS = ['zh', 'ja', 'en'];
+const FONTS = { zh: "'Noto Sans TC'", ja: "'Noto Sans JP'", en: "'Orbitron'" };
+
+// ===================== 文案:[ ] 括起來的字用金橘色強調 =====================
+// 只能寫遊戲裡真的有的東西(審核 2.3.3)。畫面順序:1 主選單 2 戰鬥 3 技能三選一 4 關卡選擇 5 成長 6 商店
+const COPY = {
+  1: { zh: ['[一拳]打向雲端', '九宮格連打 × Roguelike', '完全免費・沒有廣告・離線也能玩'],
+       ja: ['[一撃]ずつ、雲の上へ', '九マス連打×ローグライク', '完全無料・広告なし・オフラインOK'],
+       en: ['[PUNCH] YOUR WAY', 'TO THE [CLOUDS]', 'Free to play. No ads. Plays offline.'],
+       badge: { zh: '完全\n免費', ja: '完全\n無料', en: 'FREE\nTO PLAY' } },
+  2: { zh: ['點[拳頭]出擊', '點[盾牌]防禦', '看準九宮格的符號,抓破綻放必殺!'],
+       ja: ['[こぶし]で攻撃', '[シールド]で防御', '九マスのシンボルを見極め、必殺技を叩き込め!'],
+       en: ['TAP [FISTS] TO ATTACK', 'TAP [SHIELDS] TO BLOCK', 'Read the grid, find the opening, unleash your ultimate!'],
+       badge: { zh: '連擊\nFEVER', ja: 'コンボ\nFEVER', en: 'COMBO\nFEVER' } },
+  3: { zh: ['每場都[不一樣]', '[三選一]技能構築', '33 種技能與改變規則的「技法」'],
+       ja: ['毎回[ちがう]', '[3択]スキル構築', '33種のスキルと、ルールを変える「技法」'],
+       en: ['EVERY RUN IS [NEW]', 'PICK 1 OF [3]', 'Build your combo from 33 skills and Techniques'],
+       badge: { zh: '33 種\n技能', ja: '33種\nスキル', en: '33\nSKILLS' } },
+  4: { zh: ['[三章 90 關]', '一路打到雲端!', '機制各異的敵人與 BOSS,越打越刺激'],
+       ja: ['[3章・90ステージ]', '雲の上まで駆け上がれ!', 'ギミックの違う敵とボスが待ち受ける'],
+       en: ['[3 CHAPTERS]', '[90] STAGES', 'Enemies and bosses with tricks of their own'],
+       badge: { zh: '90\n關', ja: '90\nSTAGE', en: '90\nSTAGES' } },
+  5: { zh: ['[越打越強]', '養成你的炎鋼', '用成長點數強化體魄、拳力、心法與反應'],
+       ja: ['[育てて]強くなる', '炎鋼を鍛えよう', '成長ポイントで体力・拳力・心法・反応を強化'],
+       en: ['GET [STRONGER]', 'EVERY FIGHT', 'Upgrade Vitality, Power, Spirit and Reflex'],
+       badge: { zh: '成長\n強化', ja: 'レベル\nUP', en: 'LEVEL\nUP' } },
+  6: { zh: ['[收集]造型與圖鑑', '打造你的九宮格', '用金幣換造型、桌布與角色圖鑑'],
+       ja: ['スキンや図鑑を', '[コレクション]!', 'コインでスキン・壁紙・図鑑を集めよう'],
+       en: ['COLLECT [SKINS]', '& THE [CODEX]', 'Spend coins on skins, wallpapers and character codex'],
+       badge: { zh: '收集\n全部!', ja: '全部\n集めよう', en: 'GOTTA\nCOLLECT' } },
+};
+const BADGE_COL = { 1: ['#ffb02a', '#ff6a10', 0.16], 2: ['#ff5a7a', '#c01844', -0.14], 3: ['#5ad8ff', '#1f6ad6', 0.14],
+                    4: ['#ffb02a', '#ff6a10', -0.14], 5: ['#7ae08a', '#2a9a4a', 0.15], 6: ['#ff7ad0', '#c03a9a', -0.15] };
+
+// ===================== 素材 =====================
+const raws = { phone: [], pad: [] };   // 依畫面順序的 Image
+let bgImg = null;
+const loadImg = src => new Promise((res, rej) => { const im = new Image(); im.onload = () => res(im); im.onerror = () => rej(new Error('載入失敗:' + (src.slice ? src.slice(0, 60) : src))); im.src = src; });
+loadImg('../assets/images/backgrounds/title_wide.jpg').then(im => { bgImg = im; }).catch(() => { /* 沒有也能畫,只是少了背景圖 */ });
+
+async function acceptImages(list) {   // list: [{ name, img }]
+  list.sort((a, b) => a.name.localeCompare(b.name, undefined, { numeric: true }));
+  raws.phone = []; raws.pad = [];
+  for (const { img } of list) {
+    const r = img.height / img.width;
+    if (r > 1.6) raws.phone.push(img); else if (r > 1.1) raws.pad.push(img);   // 橫式的不收
+  }
+  const box = $('slots'); box.innerHTML = '';
+  // App Store Connect 接受的截圖尺寸(2026-11 頁面實際列出):iPhone 6.1/6.3 吋、6.9 吋;iPad 13 吋
+  const OK = { phone: ['1206x2622', '1179x2556', '1320x2868', '1290x2796', '1260x2736'], pad: ['2064x2752', '2048x2732'] };
+  for (const kind of ['phone', 'pad']) raws[kind].forEach((im, i) => {
+    const d = document.createElement('div'); d.className = 'slot ' + kind;
+    const fine = OK[kind].includes(im.width + 'x' + im.height);
+    d.innerHTML = `<img src="${im.src}"><div>${kind === 'phone' ? 'iPhone' : 'iPad'} ${i + 1}<br>${im.width}×${im.height}${fine ? '' : '<br><b style="color:#fa6">尺寸偏小,輸出會放大</b>'}</div>`;
+    box.appendChild(d);
+  });
+  const ok = raws.phone.length || raws.pad.length;
+  $('preview').disabled = $('zip').disabled = !ok;
+  st(`iPhone ${raws.phone.length} 張、iPad ${raws.pad.length} 張(各最多用 6 張)`);
+}
+$('files').onchange = async e => {
+  const list = [];
+  for (const f of e.target.files) list.push({ name: f.name, img: await loadImg(URL.createObjectURL(f)) });
+  await acceptImages(list);
+};
+window.loadUrls = async urls => acceptImages(await Promise.all(urls.map(async u => ({ name: u, img: await loadImg(u) }))));   // 測試用
+
+// ===================== 繪圖 =====================
+let seed = 1;
+const rnd = () => { seed = (seed * 16807) % 2147483647; return (seed - 1) / 2147483646; };
+const rr = (c, x, y, w, h, r) => { c.beginPath(); c.roundRect(x, y, w, h, r); };
+
+// 背景:遊戲標題的延伸圖(壓暗)+ 霓虹格線 + 下方火光 + 火星
+function drawBg(c, W, H, u) {
+  c.fillStyle = '#070918'; c.fillRect(0, 0, W, H);
+  if (bgImg) {   // cover,偏上
+    const k = Math.max(W / bgImg.width, H / bgImg.height), w = bgImg.width * k, h = bgImg.height * k;
+    c.drawImage(bgImg, (W - w) / 2, 0, w, h);
+  }
+  const v = c.createLinearGradient(0, 0, 0, H); v.addColorStop(0, 'rgba(6,8,28,.72)'); v.addColorStop(0.45, 'rgba(8,8,30,.62)'); v.addColorStop(1, 'rgba(24,6,10,.82)');
+  c.fillStyle = v; c.fillRect(0, 0, W, H);
+  // 霓虹格線(和遊戲兩側的格線背景同風格)
+  c.save(); c.lineWidth = 1.4 * u; const gap = 54 * u;
+  for (let x = gap / 2; x < W; x += gap) { c.strokeStyle = 'rgba(25,240,255,.11)'; c.beginPath(); c.moveTo(x, 0); c.lineTo(x, H); c.stroke(); }
+  for (let y = gap / 2; y < H; y += gap) { c.strokeStyle = 'rgba(255,43,214,.09)'; c.beginPath(); c.moveTo(0, y); c.lineTo(W, y); c.stroke(); }
+  c.restore();
+  for (const [x, y, r, col, a] of [[0.12, 0.1, 0.55, '25,240,255', 0.2], [0.92, 0.28, 0.5, '255,43,214', 0.16], [0.5, 1.02, 0.85, '255,110,30', 0.5]]) {
+    const g = c.createRadialGradient(x * W, y * H, 0, x * W, y * H, r * W);
+    g.addColorStop(0, `rgba(${col},${a})`); g.addColorStop(1, `rgba(${col},0)`); c.fillStyle = g; c.fillRect(0, 0, W, H);
+  }
+  seed = 11;
+  for (let i = 0; i < 90; i++) {   // 火星
+    const x = rnd() * W, y = H * (0.35 + rnd() * 0.65), r = (1.5 + rnd() * 4) * u, a = 0.25 + rnd() * 0.6;
+    c.fillStyle = `rgba(255,${150 + rnd() * 90 | 0},60,${a})`; c.shadowColor = 'rgba(255,140,40,.9)'; c.shadowBlur = r * 3; c.beginPath(); c.arc(x, y, r, 0, 7); c.fill();
+  }
+  c.shadowColor = 'transparent';
+}
+
+// 大標語:[ ] = 金橘色;深色描邊+外光暈;太寬自動縮小
+function title(c, text, cx, y, size, maxW, font) {
+  const parts = []; text.replace(/\[([^\]]+)\]|([^[]+)/g, (m, hi, plain) => { parts.push({ t: hi || plain, hi: !!hi }); });
+  c.save(); c.textBaseline = 'middle'; c.lineJoin = 'round';
+  const setF = s => { c.font = `800 ${s}px ${font}, sans-serif`; };
+  setF(size); let w = parts.reduce((a, p) => a + c.measureText(p.t).width, 0);
+  if (w > maxW) { size *= maxW / w; setF(size); w = maxW; }
+  const x0 = cx - w / 2;
+  const pass = fn => { let xx = x0; parts.forEach(p => { fn(p, xx); xx += c.measureText(p.t).width; }); };
+  c.shadowColor = 'rgba(0,0,0,.6)'; c.shadowOffsetY = size * 0.07; c.shadowBlur = size * 0.12;
+  c.strokeStyle = '#05061a'; c.lineWidth = size * 0.3; pass((p, xx) => c.strokeText(p.t, xx, y));
+  c.shadowColor = 'transparent';
+  c.strokeStyle = '#ff7a18'; c.lineWidth = size * 0.1; pass((p, xx) => { if (p.hi) c.strokeText(p.t, xx, y); });
+  pass((p, xx) => {
+    if (p.hi) { const g = c.createLinearGradient(0, y - size / 2, 0, y + size / 2); g.addColorStop(0, '#fff2a0'); g.addColorStop(0.5, '#ffbe2e'); g.addColorStop(1, '#ff7a10'); c.fillStyle = g; }
+    else c.fillStyle = '#ffffff';
+    c.fillText(p.t, xx, y);
+  });
+  c.restore();
+}
+function subtitle(c, text, cx, y, size, maxW, font) {
+  c.save(); c.font = `800 ${size}px ${font}, sans-serif`; c.textAlign = 'center'; c.textBaseline = 'middle'; c.lineJoin = 'round';
+  const w = c.measureText(text).width; if (w > maxW) { size *= maxW / w; c.font = `800 ${size}px ${font}, sans-serif`; }
+  c.lineWidth = size * 0.26; c.strokeStyle = 'rgba(5,6,26,.9)'; c.strokeText(text, cx, y);
+  c.fillStyle = '#b8f6ff'; c.shadowColor = 'rgba(25,240,255,.7)'; c.shadowBlur = size * 0.35; c.fillText(text, cx, y); c.restore();
+}
+function badge(c, x, y, r, text, col1, col2, rot, font) {
+  c.save(); c.translate(x, y); c.rotate(rot);
+  c.shadowColor = 'rgba(0,0,0,.5)'; c.shadowBlur = r * 0.2; c.shadowOffsetY = r * 0.06;
+  c.beginPath(); for (let j = 0; j < 32; j++) { const a = j * Math.PI / 16, q = j % 2 ? r * 0.86 : r; c.lineTo(Math.cos(a) * q, Math.sin(a) * q); } c.closePath();
+  const g = c.createRadialGradient(0, -r * 0.3, 0, 0, 0, r); g.addColorStop(0, col1); g.addColorStop(1, col2); c.fillStyle = g; c.fill();
+  c.shadowColor = 'transparent'; c.lineWidth = r * 0.07; c.strokeStyle = '#fff'; c.stroke();
+  const lines = text.split('\n'), fs = r * (lines.length > 2 ? 0.3 : 0.4);
+  c.font = `800 ${fs}px ${font}, sans-serif`; c.textAlign = 'center'; c.textBaseline = 'middle'; c.lineJoin = 'round';
+  lines.forEach((l, i) => {
+    const yy = (i - (lines.length - 1) / 2) * fs * 1.12, w = c.measureText(l).width, k = Math.min(1, r * 1.5 / w);
+    c.save(); c.scale(k, k); c.lineWidth = fs * 0.22; c.strokeStyle = 'rgba(40,10,30,.75)'; c.strokeText(l, 0, yy / k); c.fillStyle = '#fff'; c.fillText(l, 0, yy / k); c.restore();
+  });
+  c.restore();
+}
+function sparkle(c, x, y, r, a = 1) {
+  c.save(); c.globalAlpha = a; c.fillStyle = '#e8fdff'; c.shadowColor = 'rgba(25,240,255,.95)'; c.shadowBlur = r;
+  c.beginPath(); for (let j = 0; j < 8; j++) { const ang = j * Math.PI / 4, q = j % 2 ? r * 0.16 : r; c.lineTo(x + Math.cos(ang) * q, y + Math.sin(ang) * q); } c.closePath(); c.fill(); c.restore();
+}
+// 裝置外框:黑色邊框+霓虹青→洋紅的外緣+光暈,裡面放實際畫面(圓角裁切)
+function device(c, x, y, w, h, shot, kind, u) {
+  const r = kind === 'phone' ? w * 0.125 : w * 0.04, b = (kind === 'phone' ? 13 : 16) * u;
+  c.save(); c.shadowColor = 'rgba(25,240,255,.45)'; c.shadowBlur = 60 * u; c.shadowOffsetY = 0;
+  rr(c, x - b, y - b, w + b * 2, h + b * 2, r + b); c.fillStyle = '#05060f'; c.fill(); c.restore();
+  c.save(); c.shadowColor = 'rgba(0,0,0,.6)'; c.shadowBlur = 40 * u; c.shadowOffsetY = 20 * u; rr(c, x - b, y - b, w + b * 2, h + b * 2, r + b); c.fillStyle = '#05060f'; c.fill(); c.restore();
+  const ln = c.createLinearGradient(x, y, x + w, y + h); ln.addColorStop(0, '#19f0ff'); ln.addColorStop(0.5, '#6a7cff'); ln.addColorStop(1, '#ff2bd6');
+  c.save(); c.lineWidth = 5 * u; c.strokeStyle = ln; rr(c, x - b, y - b, w + b * 2, h + b * 2, r + b); c.stroke(); c.restore();
+  c.save(); rr(c, x, y, w, h, r); c.clip(); c.drawImage(shot, x, y, w, h); c.restore();
+}
+
+// 一張宣傳圖
+function compose(n, lang, sizeKey, shot) {
+  const [W, H, kind] = SIZES[sizeKey], u = W / 1080, font = FONTS[lang], pad = kind === 'pad';
+  const c = document.createElement('canvas'); c.width = W; c.height = H; const g = c.getContext('2d');
+  drawBg(g, W, H, u);
+  const copy = COPY[n], [l1, l2, sub] = copy[lang];
+  const ty = (pad ? 190 : 215) * u, ts = (pad ? 104 : 124) * u;
+  title(g, l1, W / 2, ty, ts, W - 120 * u, font);
+  title(g, l2, W / 2, ty + ts * 1.2, ts, W - 120 * u, font);
+  subtitle(g, sub, W / 2, ty + ts * 2.15, (pad ? 40 : 44) * u, W - 150 * u, font);
+  for (const [x, y, r] of [[0.07, 0.15, 24], [0.94, 0.16, 30], [0.06, 0.55, 17], [0.94, 0.62, 21], [0.1, 0.9, 24]]) sparkle(g, x * W, y * H, r * u);
+  const top = ty + ts * 2.15 + 80 * u, bottom = H - (pad ? 90 : 120) * u, aspect = shot.width / shot.height;
+  let h = bottom - top, w = h * aspect; const maxW = W * (pad ? 0.78 : 0.76); if (w > maxW) { w = maxW; h = w / aspect; }
+  const dx = (W - w) / 2, dy = top + Math.min(20 * u, (bottom - top - h) / 2);
+  device(g, dx, dy, w, h, shot, kind, u);
+  const [c1, c2, rot] = BADGE_COL[n], br = (pad ? 96 : 108) * u;
+  badge(g, n % 2 ? dx + w - 10 * u : dx + 10 * u, dy + h * (n % 2 ? 0.1 : 0.88), br, copy.badge[lang], c1, c2, rot, font);
+  return c;
+}
+
+async function loadFonts(lang) {
+  const all = Object.values(COPY).flatMap(s => [...s[lang], s.badge[lang]]).join('');
+  await Promise.all([document.fonts.load(`800 40px ${FONTS[lang]}`, all), document.fonts.load(`900 40px ${FONTS[lang]}`, all)]);
+  await document.fonts.ready;
+}
+function jobs() {
+  const langs = $('lang').value === 'all' ? LANGS : [$('lang').value], out = [];
+  const sizes = [['iphone63', $('s1').checked], ['iphone69', $('s2').checked], ['ipad', $('s3').checked]].filter(s => s[1]).map(s => s[0]);
+  for (const lang of langs) for (const sz of sizes) {
+    const src = raws[SIZES[sz][2]];
+    for (let i = 0; i < Math.min(6, src.length); i++) out.push({ lang, sz, n: i + 1, shot: src[i] });
+  }
+  return out;
+}
+const toBlob = c => new Promise(r => c.toBlob(r, 'image/jpeg', 0.93));
+async function run(save) {
+  $('preview').disabled = $('zip').disabled = true; $('out').innerHTML = '';
+  const list = jobs(), zip = save ? new JSZip() : null; let done = 0;
+  for (const lang of new Set(list.map(j => j.lang))) await loadFonts(lang);
+  for (const j of list) {
+    st(`繪製中 ${done + 1} / ${list.length}`);
+    const c = compose(j.n, j.lang, j.sz, j.shot), blob = await toBlob(c), name = `${j.lang}_${j.sz}_${j.n}.jpg`;
+    if (zip) zip.file(name, blob);
+    const fig = document.createElement('figure'), im = new Image(); im.src = URL.createObjectURL(blob);
+    fig.appendChild(im); const cap = document.createElement('figcaption'); cap.textContent = `${name}  ${c.width}×${c.height}`; fig.appendChild(cap);
+    $('out').appendChild(fig); done++; await yieldNow();
+  }
+  if (zip) {
+    st('打包 ZIP…');
+    const a = document.createElement('a'); a.href = URL.createObjectURL(await zip.generateAsync({ type: 'blob' })); a.download = 'gangquan_store_screenshots.zip'; a.click();
+  }
+  st(`完成:${done} 張` + (save ? '(已下載 ZIP)' : ''));
+  $('preview').disabled = $('zip').disabled = false;
+}
+$('preview').onclick = () => run(false);
+$('zip').onclick = () => run(true);
+window.__compose = compose; window.__run = run;
+</script>
+</body>
+</html>
