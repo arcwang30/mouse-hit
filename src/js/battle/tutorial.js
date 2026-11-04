@@ -341,7 +341,8 @@
       const t = TIPS[id], el = G.$('#tipCard');
       G.$('#tipIcon').textContent = t.icon;
       G.$('#tipTitle').textContent = G.t(t.title);
-      G.$('#tipText').textContent = G.t(t.text);
+      // iOS App 只有觸控:說明文字結尾的「鍵盤:…」那句拿掉(各語言的翻譯都是同一個位置)
+      G.$('#tipText').textContent = G.iap.native ? G.t(t.text).replace(/\s*(鍵盤|キーボード|Keyboard)[:：][^。.]*[。.]\s*$/, '') : G.t(t.text);
       const wasPaused = G.clock.paused;
       if (!wasPaused) G.clock.pause();
       this.open = true;

@@ -85,8 +85,10 @@ G.pages = {
       html = '<div class="ui-shot"></div>' +
         H.ui.map(([t, d], k) => `<div class="ht-row"><div class="ht-ic"><i class="um-n big">${k + 1}</i></div><div><b>${G.t(t)}</b><p>${G.t(d)}</p></div></div>`).join('');
     } else if (p === 2) {
-      html = '<table class="ht-table"><tr>' + ['操作', '鍵盤', '滑鼠', '手機'].map(h => `<th>${G.t(h)}</th>`).join('') + '</tr>' +
-        H.controls.map(r => `<tr>${r.map((t, k) => k ? `<td>${G.t(t).replace(/\n/g, '<br>')}</td>` : `<th>${G.t(t)}</th>`).join('')}</tr>`).join('') +
+      // iOS App 只有觸控:不列鍵盤、滑鼠兩欄(網頁版、Steam 版照舊)
+      const cols = G.iap.native ? [0, 3] : [0, 1, 2, 3];
+      html = '<table class="ht-table"><tr>' + cols.map(k => `<th>${G.t(['操作', '鍵盤', '滑鼠', '手機'][k])}</th>`).join('') + '</tr>' +
+        H.controls.map(r => `<tr>${cols.map(k => k ? `<td>${G.t(r[k]).replace(/\n/g, '<br>')}</td>` : `<th>${G.t(r[k])}</th>`).join('')}</tr>`).join('') +
         '</table><h3 class="ht-h3">' + G.t('進階技巧') + '</h3>' +
         H.tips.map(([t, d]) => `<div class="ht-tip"><b>${G.t(t)}</b><p>${G.t(d)}</p></div>`).join('');
     } else if (p === 3) {
