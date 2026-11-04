@@ -27,6 +27,7 @@ G.WALLPAPERS = [
   { id: 'w-snow',   kind: 'world', name: '雪嶺古寺',   price: 530, anim: true },
   { id: 'w-subway', kind: 'world', name: '霓虹地下鐵', price: 560, anim: true },
 ];
+G.WALLPAPERS.forEach(w => { if (w.price) w.price = G.shopPrice(w.price); });
 
 G.wall = {
   // 已擁有:預設、買過的,或完成了對應成就

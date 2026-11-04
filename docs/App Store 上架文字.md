@@ -258,7 +258,7 @@ Thank you for reviewing Steel Fist: Wind & Cloud.
 - The game is free to download and every chapter can be played without paying. No account or sign-in is needed, and no personal data is collected.
 - The only in-app purchases are four CONSUMABLE coin packs (400 / 1,350 / 2,400 / 5,200 coins). Coins are virtual currency spent in the in-game shop on cosmetics (grid skins, wallpapers), a codex, and the "Phoenix" revive item. Because they are consumable, there is no "Restore Purchases"; coins are stored in the save file.
 - How to buy coins: from the main menu open the shop (the shop button on the main screen), then tap "＋ Buy Coins" next to the coin count. Tapping the price button of an item you cannot afford also opens the coin store.
-- Phoenix: shop > Items tab (120 coins). Tap any stage in Stage Select; the sortie screen lets you bring Phoenix; it is consumed only when it actually revives you.
+- Phoenix: shop > Items tab (200 coins). Tap any stage in Stage Select; the sortie screen lets you bring Phoenix; it is consumed only when it actually revives you.
 - The game works offline and has no ads. The game does not connect to any server of ours.
 - The game's artwork and music were created with the assistance of AI tools. The game contains no voice acting or synthesized speech.
 

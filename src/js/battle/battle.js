@@ -72,7 +72,8 @@ const BREAK_GAUGE = { fast: 6, block: 4, late: 2, memory: 15, miss: -15 };
 const BREAK_TUTORIAL_MS = 4500; // 新手教學的破綻數字限時(正式關卡見 G.ROUNDS 的 breakTime)
 const ENRAGE_FROM = 3, ENRAGE_MAX = 5; // 修羅以上:敵人第幾次攻擊起開始狂暴(每次再加 G.ROUNDS 的 enrage,最多疊幾層)
 const BONUS_STARS = [40, 70]; // 特訓關:狂打幾 HIT 拿第二、第三顆星
-const CHAPTER_COINS = 300;    // 章節通關獎勵(每一輪第一次打倒最終 BOSS)
+const REPLAY_COINS = 0.5;     // 重打已通關關卡的金幣比例
+const CHAPTER_COINS = 300;   // 章節通關獎勵(每一輪第一次打倒最終 BOSS)
 // 成長點數(過關結算):首次通關 = 關卡類型的基本值 + region × 區域編號(第二章從 7 起算);重玩 ×REPLAY_PTS、沒過關 ×LOSE_PTS × 打倒的波數比例
 // 每顆第一次拿到的星星 +STAR_PTS;最後再乘周回倍率(×1.5 / ×2)與賞金獵人
 const STAGE_PTS = { normal: 8, bonus: 8, elite: 12, boss: 18, region: 2 }, REPLAY_PTS = 0.2, LOSE_PTS = 0.2, STAR_PTS = 3;
@@ -2277,7 +2278,9 @@ G.battle = {
     // 金幣:過關 15 + 每關 2 + 每顆星 8(精英 ×1.5、BOSS ×2);沒過關每擊倒一波 2;第二、三輪 ×1.5 / ×2
     // 狂打獎勵關(s.bonusCoins)和特殊事件(s.eventCoins)賺到的金幣不論輸贏都入帳
     const typeMul = { elite: 1.5, boss: 2 }[this.stage.type] || 1;
-    const coins = this.coins = Math.round((win ? (15 + i * 2 + rate.stars * 8) * typeMul : s.waves * 2) * G.roundCfg().points) + (s.bonusCoins || 0) + (s.eventCoins || 0);
+    // 重打已經通關的關卡只拿一半(避免刷關賺滿金幣);首通、沒過關的照舊
+    const replayMul = win && !firstClear ? REPLAY_COINS : 1;
+    const coins = this.coins = Math.round((win ? (15 + i * 2 + rate.stars * 8) * typeMul * replayMul : s.waves * 2) * G.roundCfg().points) + (s.bonusCoins || 0) + (s.eventCoins || 0);
     // 章節通關獎勵:每一輪第一次打倒最終 BOSS,額外 300 金幣(再乘周回倍率)
     if (win && i === G.STAGES.length - 1 && !pr.chapterDone) {
       pr.chapterDone = true;

@@ -12,7 +12,7 @@ G.skillAvailable = (s, p) => {
 };
 // 浴火重生:倒下時 HP 全滿復活一次。不在技能選擇裡,改成商店的道具(用金幣買),出戰前選擇要不要帶入;真的復活時才消耗一個
 // 免費玩家的保底:新存檔送 PHOENIX.gift 個、每日登入第 7 天再送 1 個;同一關連敗 PHOENIX.pityDeaths 次後,下一次出戰有一次免費的浴火重生(不扣庫存)
-G.PHOENIX = { icon: '🌅', name: '浴火重生', desc: '倒下時 HP 全滿復活一次(限一次)', price: 120, gift: 1, pityDeaths: 2 };
+G.PHOENIX = { icon: '🌅', name: '浴火重生', desc: '倒下時 HP 全滿復活一次(限一次)', price: 200, gift: 1, pityDeaths: 2 };
 G.phoenixPity = i => ((G.prog().deaths || {})[i] || 0) >= G.PHOENIX.pityDeaths;
 // 第 i 關出戰要帶哪一種浴火重生:'pity' 保底(免費)、'item' 庫存、null 不帶(教學、狂打獎勵關不能帶)
 G.phoenixPlan = i => {

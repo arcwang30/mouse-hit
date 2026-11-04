@@ -1,5 +1,7 @@
 // 共用工具與存檔
 window.G = {};
+// 商店定價(造型、桌布、圖鑑共用):基準價 300 以下 ×1.5、超過 300 ×2,取整到 10。資料檔寫的是基準價,載入時換算
+G.shopPrice = p => Math.round(p * (p > 300 ? 2 : 1.5) / 10) * 10;
 
 G.$ = s => document.querySelector(s);
 G.sleep = ms => new Promise(r => setTimeout(r, ms));

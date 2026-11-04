@@ -28,6 +28,7 @@ G.DEX_HERO = [
   { id: 'leishi',   name: '雷獅', img: 'allies/leishi.webp', price: 350,
     bio: '失蹤三年的拳王。曾被控制頸環奪走意志、成為地下拳場的「鐵籠拳霸」,被炎鋼一拳打醒後成為並肩作戰的夥伴。' },
 ];
+G.DEX_HERO.forEach(h => { h.price = G.shopPrice(h.price); });
 
 // 每個敵人第一次出現的關卡,依章節排下去:回傳序號 = (章節 - 1) × 100 + 關卡(0 起算);狂打獎勵關的木樁算第一關
 G.dexFirstStage = id => {
@@ -46,10 +47,10 @@ G.dexList = kind => {
   const list = ids.map(id => {
     const st = G.dexFirstStage(id), reg = G.stageAt(st).region + Math.floor(st / 100) * 6; // 價格依第一次出現的區域(每章 +6 區)
     // 價格:原本的 7 折,取整到 10
-    return { kind, id, enemy: G.ENEMIES[id], stage: st, price: Math.round((kind === 'boss' ? 150 + reg * 54 : 60 + reg * 18) * 0.7 / 10) * 10 };
+    return { kind, id, enemy: G.ENEMIES[id], stage: st, price: G.shopPrice(Math.round((kind === 'boss' ? 150 + reg * 54 : 60 + reg * 18) * 0.7 / 10) * 10) };
   });
-  if (kind === 'minion') list.push({ kind, id: 'dummy', dummy: true, stage: 0, price: 40 }, // 狂打獎勵關的木樁
-    { kind, id: 'mimic', mimic: true, enemy: G.MIMIC, stage: 0, price: 100 });      // 神秘寶箱的寶箱怪
+  if (kind === 'minion') list.push({ kind, id: 'dummy', dummy: true, stage: 0, price: G.shopPrice(40) }, // 狂打獎勵關的木樁
+    { kind, id: 'mimic', mimic: true, enemy: G.MIMIC, stage: 0, price: G.shopPrice(100) });      // 神秘寶箱的寶箱怪
   return list;
 };
 G.DEX_KINDS = ['hero', 'minion', 'boss'];

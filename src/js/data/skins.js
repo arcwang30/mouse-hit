@@ -25,6 +25,7 @@ G.SKINS = [
   { id: 'carbon',   name: '碳纖', desc: '在商店購買', price: 490 },
   { id: 'rainbow',  name: '彩虹', desc: '在商店購買', price: 630 },
 ];
+G.SKINS.forEach(s => { if (s.price) s.price = G.shopPrice(s.price); });
 
 G.skin = {
   // 商店造型:買了才算解鎖;其他:沒有條件或已達成條件
